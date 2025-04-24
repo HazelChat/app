@@ -1,0 +1,267 @@
+/*
+* Uncomment the following line to use the Inter font when not working on a Next.js project.
+* @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+* Then replace var(--font-inter) to Inter
+*/
+
+@import "tailwindcss";
+@import "tw-animate-css";
+
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+  "Segoe UI Symbol", "Noto Color Emoji";
+  --font-mono: "Geist Mono", 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', '"Liberation Mono"', '"Courier New"', 'monospace';
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+
+  --color-ring: var(--ring);
+
+  --color-bg: var(--bg);
+  --color-fg: var(--fg);
+
+  --color-primary: var(--primary);
+  --color-primary-fg: var(--primary-fg);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-fg: var(--secondary-fg);
+
+  --color-accent: var(--accent);
+  --color-accent-fg: var(--accent-fg);
+
+  --color-success: var(--success);
+  --color-success-fg: var(--success-fg);
+
+  --color-danger: var(--danger);
+  --color-danger-fg: var(--danger-fg);
+
+  --color-warning: var(--warning);
+  --color-warning-fg: var(--warning-fg);
+
+  --color-muted: var(--muted);
+  --color-muted-fg: var(--muted-fg);
+
+  --color-overlay: var(--overlay);
+  --color-overlay-fg: var(--overlay-fg);
+
+  --color-navbar: var(--navbar);
+  --color-navbar-fg: var(--navbar-fg);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-fg: var(--sidebar-fg);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+}
+
+@layer base {
+  :root {
+    --bg: oklch(1 0 0);
+    --fg: oklch(0.145 0 0);
+    
+    --primary: oklch(0.6 0.118 184.704);
+    --primary-fg: oklch(1 0 0);
+    
+    --secondary: oklch(0.922 0 0);
+    --secondary-fg: oklch(0.145 0 0);
+    
+    --overlay: oklch(1 0 0);
+    --overlay-fg: oklch(0.145 0 0);
+    
+    --primary: oklch(0.6 0.118 184.704);
+    --primary-fg: oklch(1 0 0);
+    
+    --muted: oklch(0.97 0 0);
+    --muted-fg: oklch(0.556 0 0);
+    
+    --success: oklch(0.596 0.145 163.225);
+    --success-fg: oklch(1 0 0);
+    
+    --warning: oklch(0.828 0.189 84.429);
+    --warning-fg: oklch(0.279 0.077 45.635);
+    
+    --danger: oklch(0.577 0.245 27.325);
+    --danger-fg: oklch(0.971 0.013 17.38);
+    
+    --border: oklch(0.910 0 0);
+    --input: oklch(0.87 0 0);
+    --ring: oklch(0.6 0.118 184.704);
+    
+    --navbar: oklch(0.97 0 0);
+    --navbar-fg: oklch(0.145 0 0);
+    
+    --sidebar: oklch(0.97 0 0);
+    --sidebar-fg: oklch(0.145 0 0);
+    
+    --chart-1: oklch(0.6 0.118 184.704);
+    --chart-2: oklch(0.777 0.152 181.912);
+    --chart-3: oklch(0.855 0.138 181.071);
+    --chart-4: oklch(0.91 0.096 180.426);
+    --chart-5: oklch(0.953 0.051 180.801);
+    
+    --radius-lg: 1rem;
+    --radius-xs: calc(var(--radius-lg) * 0.5);
+    --radius-sm: calc(var(--radius-lg) * 0.75);
+    --radius-md: calc(var(--radius-lg) * 0.9);
+    --radius-xl: calc(var(--radius-lg) * 1.25);
+    --radius-2xl: calc(var(--radius-lg) * 1.5);
+    --radius-3xl: calc(var(--radius-lg) * 2);
+    --radius-4xl: calc(var(--radius-lg) * 3);
+  }
+  
+  .dark {
+    --bg: oklch(0.095 0 0);
+    --fg: oklch(0.985 0 0);
+    
+    --primary: oklch(0.6 0.118 184.704);
+    --primary-fg: oklch(1 0 0);
+    
+    --secondary: oklch(0.239 0 0);
+    --secondary-fg: oklch(0.985 0 0);
+    
+    --primary: oklch(0.6 0.118 184.704);
+    --primary-fg: oklch(1 0 0);
+    
+    --muted: oklch(0.205 0 0);
+    --muted-fg: oklch(0.708 0 0);
+    
+    --overlay: oklch(0.165 0 0);
+    --overlay-fg: oklch(0.985 0 0);
+    
+    --success: oklch(0.596 0.145 163.225);
+    --success-fg: oklch(1 0 0);
+    
+    --warning: oklch(0.828 0.189 84.429);
+    --warning-fg: oklch(0.279 0.077 45.635);
+    
+    --danger: oklch(0.577 0.245 27.325);
+    --danger-fg: oklch(0.971 0.013 17.38);
+    
+    --border: oklch(0.271 0 0);
+    --input: oklch(0.321 0 0);
+    --ring: oklch(0.6 0.118 184.704);
+    
+    --navbar: oklch(0.165 0 0);
+    --navbar-fg: oklch(0.985 0 0);
+    
+    --sidebar: oklch(0.155 0 0);
+    --sidebar-fg: oklch(0.985 0 0);
+   
+    --chart-1: oklch(0.511 0.096 186.391);
+    --chart-2: oklch(0.704 0.14 182.503);
+    --chart-3: oklch(0.777 0.152 181.912);
+    --chart-4: oklch(0.855 0.138 181.071);
+    --chart-5: oklch(0.91 0.096 180.426);
+  }
+}
+
+@variant dark (&:is(.dark *));
+
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--border, currentColor);
+  }
+
+  * {
+    text-rendering: optimizeLegibility;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  html {
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    font-variation-settings: normal;
+    scroll-behavior: smooth;
+    height: 100%;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--fg);
+    
+  }
+
+  ::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 4px;
+  }
+}
+
+
+
+
+
+
+
+
+    /* Code styling */
+    .hljs-comment,
+    .hljs-quote {
+      color: #616161;
+    }
+
+    .hljs-variable,
+    .hljs-template-variable,
+    .hljs-attribute,
+    .hljs-tag,
+    .hljs-name,
+    .hljs-regexp,
+    .hljs-link,
+    .hljs-name,
+    .hljs-selector-id,
+    .hljs-selector-class {
+      color: #f98181;
+    }
+
+    .hljs-number,
+    .hljs-meta,
+    .hljs-built_in,
+    .hljs-builtin-name,
+    .hljs-literal,
+    .hljs-type,
+    .hljs-params {
+      color: #fbbc88;
+    }
+
+    .hljs-string,
+    .hljs-symbol,
+    .hljs-bullet {
+      color: #b9f18d;
+    }
+
+    .hljs-title,
+    .hljs-section {
+      color: #faf594;
+    }
+
+    .hljs-keyword,
+    .hljs-selector-tag {
+      color: #70cff8;
+    }
+
+    .hljs-emphasis {
+      font-style: italic;
+    }
+
+    .hljs-strong {
+      font-weight: 700;
+    }
