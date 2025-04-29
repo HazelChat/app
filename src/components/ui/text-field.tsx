@@ -1,6 +1,6 @@
-import { Field } from "@ark-ui/solid"
-import { type JSXElement, Show } from "solid-js"
-import { FieldErrorText, FieldGroup, FieldHelperText, FieldLabel, FieldRoot } from "./field"
+import type { Field } from "@ark-ui/solid"
+import { type JSXElement, Show, splitProps } from "solid-js"
+import { FieldErrorText, FieldGroup, FieldHelperText, FieldInput, FieldLabel, FieldRoot } from "./field"
 
 export interface TextFieldProps extends Omit<Field.InputProps, "prefix"> {
 	label?: string
@@ -9,29 +9,42 @@ export interface TextFieldProps extends Omit<Field.InputProps, "prefix"> {
 
 	prefix?: JSXElement
 	suffix?: JSXElement
+
+	isInvalid?: boolean
 }
 
-export const TextField = (props: TextFieldProps) => (
-	<FieldRoot invalid>
-		<Show when={props.label}>
-			<FieldLabel>{props.label}</FieldLabel>
-		</Show>
-		<FieldGroup>
-			<Show when={props.prefix}>
-				<Show when={typeof props.prefix === "string"} fallback={props.prefix}>
-					<span class="ml-2 text-muted-fg">{props.prefix}</span>
-				</Show>
+export const TextField = (props: TextFieldProps) => {
+	const [specialProps, fieldRootProps, rest] = splitProps(
+		props,
+		["prefix", "suffix", "label", "helperText", "errorText"],
+		["isInvalid"],
+	)
+
+	return (
+		<FieldRoot invalid={fieldRootProps.isInvalid}>
+			<Show when={specialProps.label}>
+				<FieldLabel>{specialProps.label}</FieldLabel>
 			</Show>
-			<Field.Input class="w-full min-w-0 bg-transparent px-2.5 py-2 text-base text-fg placeholder-muted-fg outline-hidden focus:outline-hidden sm:text-sm/6 [&::-ms-reveal]:hidden [&::-webkit-search-cancel-button]:hidden" />
-			<Show when={props.suffix}>
-				<Show when={typeof props.suffix === "string"} fallback={props.suffix}>
-					<span class="mr-2 text-muted-fg">{props.suffix}</span>
+			<FieldGroup>
+				<Show when={specialProps.prefix}>
+					<Show when={typeof specialProps.prefix === "string"} fallback={specialProps.prefix}>
+						<span class="ml-2 text-muted-fg">{specialProps.prefix}</span>
+					</Show>
 				</Show>
+				<FieldInput
+					{...rest}
+					class="w-full min-w-0 bg-transparent px-2.5 py-2 text-base text-fg placeholder-muted-fg outline-hidden focus:outline-hidden sm:text-sm/6 [&::-ms-reveal]:hidden [&::-webkit-search-cancel-button]:hidden"
+				/>
+				<Show when={specialProps.suffix}>
+					<Show when={typeof specialProps.suffix === "string"} fallback={specialProps.suffix}>
+						<span class="mr-2 text-muted-fg">{specialProps.suffix}</span>
+					</Show>
+				</Show>
+			</FieldGroup>
+			<Show when={specialProps.helperText}>
+				<FieldHelperText>{specialProps.helperText}</FieldHelperText>
 			</Show>
-		</FieldGroup>
-		<Show when={props.helperText}>
-			<FieldHelperText>{props.helperText}</FieldHelperText>
-		</Show>
-		<FieldErrorText>{props.errorText}</FieldErrorText>
-	</FieldRoot>
-)
+			<FieldErrorText>{specialProps.errorText}</FieldErrorText>
+		</FieldRoot>
+	)
+}

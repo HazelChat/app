@@ -15,7 +15,7 @@
 		"@ark-ui/solid": "^5.7.0",
 		"@rocicorp/zero": "^0.18.2025042300",
 		"@tailwindcss/vite": "^4.1.4",
-		"@tanstack/react-form": "^1.8.0",
+		"@tanstack/solid-form": "^1.9.0",
 		"@tanstack/router-plugin": "^1.117.2",
 		"@tanstack/solid-router": "^1.117.1",
 		"@tanstack/solid-router-devtools": "^1.117.1",

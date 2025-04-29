@@ -2,6 +2,7 @@ import {
 	Field,
 	type FieldErrorTextProps,
 	type FieldHelperTextProps,
+	type FieldInputProps,
 	type FieldLabelProps,
 	type FieldRootProps,
 } from "@ark-ui/solid"
@@ -71,4 +72,18 @@ export const FieldLabel = (props: FieldLabelProps) => {
 export const FieldHelperText = (props: FieldHelperTextProps) => {
 	const [classProps, rest] = splitProps(props, ["class"])
 	return <Field.HelperText {...rest} class={description({ class: classProps.class })} />
+}
+
+export const FieldInput = (props: FieldInputProps) => {
+	const [classProps, rest] = splitProps(props, ["class"])
+
+	return (
+		<Field.Input
+			{...rest}
+			class={twMerge(
+				"w-full min-w-0 bg-transparent px-2.5 py-2 text-base text-fg placeholder-muted-fg outline-hidden focus:outline-hidden sm:text-sm/6 [&::-ms-reveal]:hidden [&::-webkit-search-cancel-button]:hidden",
+				classProps.class,
+			)}
+		/>
+	)
 }

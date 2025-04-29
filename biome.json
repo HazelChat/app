@@ -21,6 +21,7 @@
 				"noSvgWithoutTitle": "off"
 			},
 			"correctness": {
+				"noChildrenProp": "off",
 				"useHookAtTopLevel": "error",
 				"noUnusedImports": "off"
 			},
