@@ -1,11 +1,16 @@
 import { Link, useParams } from "@tanstack/solid-router"
 import { useAuth } from "clerk-solidjs"
 import { For, createMemo } from "solid-js"
+import { twMerge } from "tailwind-merge"
 import { useDmChannels } from "~/lib/hooks/data/use-dm-channels"
 import { IconHashtag } from "./icons/hashtag"
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
 
-export const Sidebar = () => {
+export interface SidebarProps {
+	class?: string
+}
+
+export const Sidebar = (props: SidebarProps) => {
 	const params = useParams({ from: "/_app/$serverId" })
 	const serverId = createMemo(() => params().serverId)
 
@@ -30,32 +35,34 @@ export const Sidebar = () => {
 			.filter((channel) => channel !== null)
 	})
 	return (
-		<ul class="flex flex-col gap-3">
-			<For each={computedChannels()}>
-				{(channel) => (
-					<Link to="/$serverId/chat/$id" params={{ serverId: serverId(), id: channel.id }}>
-						<li class="group/sidebar-item flex items-center gap-2 rounded-md px-2 py-1 hover:bg-muted">
-							<div class="-space-x-4 flex items-center justify-center">
-								<For each={channel.friends}>
-									{(friend) => (
-										<div class="inline-block">
-											<Avatar>
-												<AvatarImage src={friend.avatarUrl} alt={friend.tag} />
-												<AvatarFallback>{friend.displayName}</AvatarFallback>
-											</Avatar>
-										</div>
-									)}
-								</For>
-							</div>
+		<div class={twMerge("flex h-full flex-col bg-sidebar px-3 py-2 text-sidebar-foreground", props.class)}>
+			<ul class="flex flex-col gap-3">
+				<For each={computedChannels()}>
+					{(channel) => (
+						<Link to="/$serverId/chat/$id" params={{ serverId: serverId(), id: channel.id }}>
+							<li class="group/sidebar-item flex items-center gap-2 rounded-md px-2 py-1 hover:bg-muted">
+								<div class="-space-x-4 flex items-center justify-center">
+									<For each={channel.friends}>
+										{(friend) => (
+											<div class="inline-block">
+												<Avatar class="size-6">
+													<AvatarImage src={friend.avatarUrl} alt={friend.tag} />
+													<AvatarFallback>{friend.displayName}</AvatarFallback>
+												</Avatar>
+											</div>
+										)}
+									</For>
+								</div>
 
-							<p class="text-muted-foreground group-hover/sidebar-item:text-foreground">
-								{channel.friends.map((friend) => friend.displayName).join(", ")}
-							</p>
-						</li>
-					</Link>
-				)}
-			</For>
-		</ul>
+								<p class="text-muted-foreground group-hover/sidebar-item:text-foreground">
+									{channel.friends.map((friend) => friend.displayName).join(", ")}
+								</p>
+							</li>
+						</Link>
+					)}
+				</For>
+			</ul>
+		</div>
 	)
 }
 

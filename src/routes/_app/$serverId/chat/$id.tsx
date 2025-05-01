@@ -80,7 +80,7 @@ function RouteComponent() {
 	})
 
 	return (
-		<div>
+		<div class="w-full">
 			<ChatTopbar />
 			<div class="flex-1 space-y-6 overflow-y-auto p-4 pl-0">
 				<For each={processedMessages().processedGroupedMessages}>
