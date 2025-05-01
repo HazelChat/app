@@ -83,7 +83,7 @@ function RouteComponent() {
 		<div class="flex-1 space-y-6 overflow-y-auto p-4 pl-0">
 			<For each={Object.entries(processedMessages().processedGroupedMessages)}>
 				{([date, messages], dateIndex) => <div class="flex flex-col">
-					<div class="py-2 text-center text-muted-fg text-sm">
+					<div class="py-2 text-center text-muted-foreground text-sm">
 						<span>{date}</span>
 					</div>
 

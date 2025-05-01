@@ -63,7 +63,7 @@ export function ChatMessage(props: { message: Message, isLastMessage: boolean, i
                     </AvatarFallback>
                 </Avatar>
                 <UserTag user={props.message.replyToMessage?.author!} />
-                <span class="text-ellipsis text-fg text-xs">
+                <span class="text-ellipsis text-foreground text-xs">
 						{getPlainTextFromContent(props.message.replyToMessage?.content ?? "")}
 					</span>
             </Button>
@@ -78,7 +78,7 @@ export function ChatMessage(props: { message: Message, isLastMessage: boolean, i
 				</Avatar>
 			</Show>
 			<Show when={!showAvatar}>
-				<div class="w-10 items-center justify-end pr-1 text-[10px] text-muted-fg leading-tight opacity-0 group-hover:opacity-100">
+				<div class="w-10 items-center justify-end pr-1 text-[10px] text-muted-foreground leading-tight opacity-0 group-hover:opacity-100">
 					{messageTime()}
 				</div>
 			</Show>
@@ -86,7 +86,7 @@ export function ChatMessage(props: { message: Message, isLastMessage: boolean, i
 				<Show when={showAvatar}>
 					<div class="flex items-baseline gap-2">
 						<span class="font-semibold">{props.message.author?.displayName}</span>
-						<span class="text-muted-fg text-xs">{messageTime()}</span>
+						<span class="text-muted-foreground text-xs">{messageTime()}</span>
 					</div>
 				</Show>
 				{/* TODO: This should be a markdown viewer */}
