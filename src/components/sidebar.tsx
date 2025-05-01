@@ -1,8 +1,9 @@
 import { Link, useParams } from "@tanstack/solid-router"
 import { useAuth } from "clerk-solidjs"
-import { For, createMemo } from "solid-js"
+import { For, Show, createMemo } from "solid-js"
 import { useDmChannels } from "~/lib/hooks/data/use-dm-channels"
 import { IconHashtag } from "./icons/hashtag"
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
 
 export const Sidebar = () => {
 	const params = useParams({ from: "/_app/$serverId" })
@@ -34,7 +35,18 @@ export const Sidebar = () => {
 				{(channel) => (
 					<Link to="/$serverId/chat/$id" params={{ serverId: serverId(), id: channel.id }}>
 						<li class="group/sidebar-item flex items-center gap-2 rounded-md px-2 py-1 hover:bg-muted">
-							<span>Avatar here</span>
+							<div class="-space-x-4 flex items-center justify-center">
+								<For each={channel.friends}>
+									{(friend) => (
+										<div class="inline-block">
+											<Avatar>
+												<AvatarImage src={friend.avatarUrl} alt={friend.tag} />
+												<AvatarFallback>{friend.displayName}</AvatarFallback>
+											</Avatar>
+										</div>
+									)}
+								</For>
+							</div>
 
 							<p class="text-muted-foreground group-hover/sidebar-item:text-foreground">
 								{channel.friends.map((friend) => friend.displayName).join(", ")}

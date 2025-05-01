@@ -1,8 +1,6 @@
 import { Splitter } from "@ark-ui/solid"
 import { Outlet, createFileRoute } from "@tanstack/solid-router"
-import { createMemo } from "solid-js"
 import { Sidebar } from "~/components/sidebar"
-import { useDmChannels } from "~/lib/hooks/data/use-dm-channels"
 
 export const Route = createFileRoute("/_app/$serverId")({
 	component: RouteComponent,
