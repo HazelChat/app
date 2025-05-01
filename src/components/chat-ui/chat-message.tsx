@@ -52,20 +52,20 @@ export function ChatMessage(props: { message: Message, isLastMessage: boolean, i
 		isGroupStart: props.isGroupStart,
 		isGroupEnd: props.isGroupEnd,
 	})}>
-        <Show when={props.message.replyToMessageId}>
-            <Button class="flex items-center gap-1 pl-12 text-left w-fit" intent="ghost">
-                <Avatar class="w-4 h-4">
-                    <AvatarImage src={props.message.replyToMessage?.author?.avatarUrl} />
-                    <AvatarFallback>
-                        {props.message.replyToMessage?.author?.displayName.slice(0, 2)}
-                    </AvatarFallback>
-                </Avatar>
-                <UserTag user={props.message.replyToMessage?.author!} />
-                <span class="text-ellipsis text-foreground text-xs">
-						{getPlainTextFromContent(props.message.replyToMessage?.content ?? "")}
-					</span>
-            </Button>
-        </Show>
+		<Show when={props.message.replyToMessageId}>
+			<Button class="flex items-center gap-1 pl-12 text-left w-fit" intent="ghost">
+				<Avatar class="w-4 h-4">
+					<AvatarImage src={props.message.replyToMessage?.author?.avatarUrl} />
+					<AvatarFallback>
+						{props.message.replyToMessage?.author?.displayName.slice(0, 2)}
+					</AvatarFallback>
+				</Avatar>
+				<UserTag user={props.message.replyToMessage?.author!} />
+				<span class="text-ellipsis text-foreground text-xs">
+					{getPlainTextFromContent(props.message.replyToMessage?.content ?? "")}
+				</span>
+			</Button>
+		</Show>
 		<div class="flex gap-4">
 			<Show when={showAvatar}>
 				<Avatar>
