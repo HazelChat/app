@@ -1,5 +1,6 @@
 import { createForm } from "@tanstack/solid-form"
 import { type } from "arktype"
+import { IconInternet } from "~/components/icons/internet"
 import { Button } from "~/components/ui/button"
 import { TextField } from "~/components/ui/text-field"
 import { useZero } from "~/lib/zero-context"
@@ -62,7 +63,7 @@ export const Useronboarding = () => {
 					children={(field) => (
 						<TextField
 							label="Tag"
-							prefix="@"
+							prefix={<IconInternet class="ml-2 size-4 text-muted-foreground" />}
 							name={field().name}
 							value={field().state.value}
 							onBlur={field().handleBlur}

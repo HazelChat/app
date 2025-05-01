@@ -28,16 +28,16 @@ export const TextField = (props: TextFieldProps) => {
 			<FieldGroup>
 				<Show when={specialProps.prefix}>
 					<Show when={typeof specialProps.prefix === "string"} fallback={specialProps.prefix}>
-						<span class="ml-2 text-muted-fg">{specialProps.prefix}</span>
+						<span class="ml-2 text-muted-foreground">{specialProps.prefix}</span>
 					</Show>
 				</Show>
 				<FieldInput
 					{...rest}
-					class="w-full min-w-0 bg-transparent px-2.5 py-2 text-base text-fg placeholder-muted-fg outline-hidden focus:outline-hidden sm:text-sm/6 [&::-ms-reveal]:hidden [&::-webkit-search-cancel-button]:hidden"
+					class="w-full min-w-0 bg-transparent px-2.5 py-2 text-base text-foreground placeholder-muted-foreground outline-hidden focus:outline-hidden sm:text-sm/6 [&::-ms-reveal]:hidden [&::-webkit-search-cancel-button]:hidden"
 				/>
 				<Show when={specialProps.suffix}>
 					<Show when={typeof specialProps.suffix === "string"} fallback={specialProps.suffix}>
-						<span class="mr-2 text-muted-fg">{specialProps.suffix}</span>
+						<span class="mr-2 text-muted-foreground">{specialProps.suffix}</span>
 					</Show>
 				</Show>
 			</FieldGroup>
