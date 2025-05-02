@@ -35,7 +35,7 @@ export const Sidebar = (props: SidebarProps) => {
 			.filter((channel) => channel !== null)
 	})
 	return (
-		<div class={twMerge("flex h-full flex-col bg-sidebar px-3 py-2 text-sidebar-foreground", props.class)}>
+		<div class={twMerge("flex h-full flex-col bg-sidebar px-2 py-3 text-sidebar-foreground", props.class)}>
 			<ul class="flex flex-col gap-3">
 				<For each={computedChannels()}>
 					{(channel) => (
@@ -45,7 +45,7 @@ export const Sidebar = (props: SidebarProps) => {
 									<For each={channel.friends}>
 										{(friend) => (
 											<div class="inline-block">
-												<Avatar class="size-6">
+												<Avatar class="size-7">
 													<AvatarImage src={friend.avatarUrl} alt={friend.tag} />
 													<AvatarFallback>{friend.displayName}</AvatarFallback>
 												</Avatar>

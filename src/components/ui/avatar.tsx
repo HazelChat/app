@@ -25,7 +25,7 @@ export const AvatarImage = (props: ArkAvatar.ImageProps) => {
 export const AvatarFallback = (props: ArkAvatar.FallbackProps) => {
 	return (
 		<ArkAvatar.Fallback
-			class={twMerge("flex h-full w-full items-center justify-center bg-muted", props.class)}
+			class={twMerge("flex h-full w-full items-center justify-center bg-primary", props.class)}
 			{...props}
 		/>
 	)
