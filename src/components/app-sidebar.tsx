@@ -1,4 +1,4 @@
-import { Link, useParams } from "@tanstack/solid-router"
+import { Link, useNavigate, useParams } from "@tanstack/solid-router"
 import { useAuth } from "clerk-solidjs"
 import { For, createMemo } from "solid-js"
 import { useDmChannels } from "~/lib/hooks/data/use-dm-channels"
@@ -25,6 +25,7 @@ export const AppSidebar = (props: SidebarProps) => {
 	const { channels: serverChannels } = useServerChannels(serverId)
 
 	const { userId } = useAuth()
+	const navigate = useNavigate()
 
 	const computedChannels = createMemo(() => {
 		return dmChannels()
@@ -58,10 +59,6 @@ export const AppSidebar = (props: SidebarProps) => {
 							)}
 						/>
 						<Dialog.Content>
-							<Dialog.Header>
-								<Dialog.Title>Join a Channel</Dialog.Title>
-								<Dialog.Description>Enter the name of the channel you want to join.</Dialog.Description>
-							</Dialog.Header>
 							<Tabs defaultValue={"join"}>
 								<Tabs.List>
 									<Tabs.Trigger value="join">Join</Tabs.Trigger>

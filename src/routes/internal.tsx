@@ -1,11 +1,11 @@
-import { PopoverIndicator } from "@ark-ui/solid"
+import { createListCollection } from "@ark-ui/solid/listbox"
 import { createFileRoute } from "@tanstack/solid-router"
-import { IconCheck } from "~/components/icons/check"
 import { IconPhone } from "~/components/icons/phone"
 import { Avatar } from "~/components/ui/avatar"
 import { Button } from "~/components/ui/button"
 import { Card } from "~/components/ui/card"
 import { Dialog } from "~/components/ui/dialog"
+import { ListBox } from "~/components/ui/list-box"
 import { Menu } from "~/components/ui/menu"
 import { Popover } from "~/components/ui/popover"
 import { Separator } from "~/components/ui/separator"
@@ -13,11 +13,22 @@ import { Tabs } from "~/components/ui/tabs"
 import { TextField } from "~/components/ui/text-field"
 import { Tooltip } from "~/components/ui/tooltip"
 
+import { Index } from "solid-js"
+
 export const Route = createFileRoute("/internal")({
 	component: RouteComponent,
 })
 
 function RouteComponent() {
+	const collection = createListCollection({
+		items: [
+			{ label: "React", value: "react" },
+			{ label: "Solid", value: "solid" },
+			{ label: "Svelte", value: "svelte", disabled: true },
+			{ label: "Vue", value: "vue" },
+		],
+	})
+
 	return (
 		<div class="container mx-auto flex flex-col gap-6 py-16">
 			<div class="flex flex-row flex-wrap gap-3">
@@ -184,6 +195,35 @@ function RouteComponent() {
 						<p>Tab 3 Content</p>
 					</Tabs.Content>
 				</Tabs>
+			</div>
+			<div class="flex flex-row gap-3">
+				<ListBox id="wow" collection={collection}>
+					<ListBox.Label>Select your Framework</ListBox.Label>
+
+					<ListBox.Content>
+						<Index each={collection.items}>
+							{(item) => (
+								<ListBox.Item item={item()}>
+									<ListBox.ItemText>{item().label}</ListBox.ItemText>
+									<ListBox.ItemIndicator />
+								</ListBox.Item>
+							)}
+						</Index>
+					</ListBox.Content>
+				</ListBox>
+				<ListBox id="listboxId" collection={collection}>
+					<ListBox.Label>Select your Framework</ListBox.Label>
+
+					<ListBox.Content>
+						<Index each={collection.items}>
+							{(item) => (
+								<ListBox.Item item={item()}>
+									<ListBox.ItemText>{item().label}</ListBox.ItemText>
+								</ListBox.Item>
+							)}
+						</Index>
+					</ListBox.Content>
+				</ListBox>
 			</div>
 		</div>
 	)
