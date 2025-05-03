@@ -15,6 +15,7 @@ import { newId } from "~/lib/id-helpers"
 import { Popover } from "../ui/popover"
 import { Menu } from "../ui/menu"
 import { ConfirmDialog } from "./confirm-dialog"
+import { useParams } from "@tanstack/solid-router"
 
 function extractTextFromJsonNodes(nodes: any[]): string {
 	if (!Array.isArray(nodes)) return ""
@@ -55,9 +56,11 @@ export function ChatMessage(props: {
 	isGroupEnd: boolean
 }) {
 	const z = useZero()
+	const params = useParams({ from: "/_app/$serverId/chat/$id" })()
 	const showAvatar = createMemo(() => props.isGroupStart)
 	const [chatStore, setChatStore] = chatStore$
 	const [pendingAction, setPendingAction] = createSignal<ChatAction | null>(null)
+	const isPinned = createMemo(() => props.message.pinnedInChannels?.some((p) => p.channelId === params.id))
 
 	const messageTime = createMemo(() => {
 		return new Date(props.message.createdAt!).toLocaleTimeString("en-US", {
@@ -204,15 +207,21 @@ export function ChatMessage(props: {
 		},
 		{
 			key: "pin",
-			label: "Pin",
-			icon: <IconPin2 class="size-4" />,
+			label: isPinned() ? "Unpin" : "Pin",
+			icon: isPinned() ? <IconPin2 class="size-4" /> : <IconPin2 class="size-4" />,
 			onAction: async () => {
-				const id = newId("pinnedMessages")
-				await z.mutate.pinnedMessages.insert({
-					id,
-					messageId: props.message.id,
-					channelId: props.message.channelId!,
-				})
+				if (isPinned()) {
+					await z.mutate.pinnedMessages.delete({
+						id: props.message.pinnedInChannels?.find((p) => p.channelId === params.id)!.id,
+					})
+				} else {
+					const id = newId("pinnedMessages")
+					await z.mutate.pinnedMessages.insert({
+						id,
+						messageId: props.message.id,
+						channelId: props.message.channelId!,
+					})
+				}
 			},
 			hotkey: "p",
 			showMenu: true,
@@ -255,6 +264,7 @@ export function ChatMessage(props: {
 				isGettingRepliedTo: false,
 				isGroupStart: props.isGroupStart,
 				isGroupEnd: props.isGroupEnd,
+				isPinned: isPinned(),
 			})}
 		>
 			<Show when={props.message.replyToMessageId}>
@@ -408,6 +418,10 @@ export const chatMessageStyles = tv({
 		},
 		isGroupEnd: {
 			true: "mb-2",
+			false: "",
+		},
+		isPinned: {
+			true: "border-primary border-l-2 bg-primary/20 hover:bg-primary/15",
 			false: "",
 		},
 	},

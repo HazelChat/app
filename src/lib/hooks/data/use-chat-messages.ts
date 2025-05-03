@@ -12,6 +12,7 @@ export const useChatMessages = (channelId: string) => {
 			.related("replyToMessage", (q) => q.related("author"))
 			.related("childMessages")
 			.related("reactions")
+			.related("pinnedInChannels")
 			.where(({ cmp }) => cmp("channelId", "=", channelId))
 			.orderBy("createdAt", "desc"),
 	)
