@@ -32,6 +32,7 @@ export function ChatMessage(props: {
 	isLastMessage: boolean
 	isGroupStart: boolean
 	isGroupEnd: boolean
+	messagesEndRef: HTMLDivElement | undefined
 }) {
 	const showAvatar = createMemo(() => props.isGroupStart)
 
@@ -43,9 +44,9 @@ export function ChatMessage(props: {
 		})
 	})
 
-	const attachedCount = createMemo(() => {
-		return props.message.attachedFiles?.length ?? 0
-	})
+	const isLastMessage = createMemo(() => props.isLastMessage)
+
+	const attachedCount = createMemo(() => props.message.attachedFiles?.length ?? 0)
 
 	const itemClass = createMemo(() =>
 		twMerge(
@@ -73,9 +74,13 @@ export function ChatMessage(props: {
 			})}
 		>
 			<Show when={props.message.replyToMessageId}>
-				<Button class="flex w-fit items-center gap-1 pl-12 text-left" intent="ghost" onClick={() => {
-					if (props.message.replyToMessageId) scrollToMessage(props.message.replyToMessageId)
-				}}>
+				<Button
+					class="flex w-fit items-center gap-1 pl-12 text-left"
+					intent="ghost"
+					onClick={() => {
+						if (props.message.replyToMessageId) scrollToMessage(props.message.replyToMessageId)
+					}}
+				>
 					<Avatar class="size-4">
 						<AvatarImage src={props.message.replyToMessage?.author?.avatarUrl} />
 						<AvatarFallback>{props.message.replyToMessage?.author?.displayName.slice(0, 2)}</AvatarFallback>
@@ -86,7 +91,7 @@ export function ChatMessage(props: {
 					</span>
 				</Button>
 			</Show>
-			<div class="flex gap-4">
+			<div class="flex gap-4" ref={isLastMessage() ? props.messagesEndRef : undefined}>
 				<Show when={showAvatar()}>
 					<Avatar>
 						<AvatarImage src={props.message.author?.avatarUrl} />

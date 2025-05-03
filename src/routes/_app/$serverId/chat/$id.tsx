@@ -2,6 +2,7 @@ import { createFileRoute, useParams } from "@tanstack/solid-router"
 import { type Accessor, For, createMemo } from "solid-js"
 import { ChatMessage } from "~/components/chat-ui/chat-message"
 import { ChatTopbar } from "~/components/chat-ui/chat-topbar"
+import { FloatingBar } from "~/components/chat-ui/floating-bar"
 import { type Message, useChatMessages } from "~/lib/hooks/data/use-chat-messages"
 
 export const Route = createFileRoute("/_app/$serverId/chat/$id")({
@@ -10,6 +11,8 @@ export const Route = createFileRoute("/_app/$serverId/chat/$id")({
 
 function RouteComponent() {
 	const params = useParams({ from: "/_app/$serverId/chat/$id" })()
+
+	const messagesEndRef: HTMLDivElement | undefined = undefined
 
 	const messages = createMemo(() => useChatMessages(params.id))
 	const processedMessages = createMemo(() => {
@@ -103,6 +106,7 @@ function RouteComponent() {
 											isLastMessage={isLastMessage}
 											isGroupStart={isGroupStart}
 											isGroupEnd={isGroupEnd}
+											messagesEndRef={messagesEndRef}
 										/>
 									)
 								}}
@@ -110,6 +114,9 @@ function RouteComponent() {
 						</div>
 					)}
 				</For>
+			</div>
+			<div class="mx-2 mb-6">
+				<FloatingBar channelId={params.id} />
 			</div>
 		</div>
 	)
