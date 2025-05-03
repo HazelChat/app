@@ -489,7 +489,7 @@ function IconBrandLinear(props: { class: string }) {
 	)
 }
 
-export function IconPin2(props: { class: string }) {
+export function IconPin2(props: { class?: string }) {
 	return (
 		<svg
 			xmlns="http://www.w3.org/2000/svg"

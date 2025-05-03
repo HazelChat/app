@@ -112,7 +112,7 @@ function ReplyInfo(props: {
 	)
 }
 
-function IconCircleXFill() {
+export function IconCircleXFill() {
 	return (
 		<svg
 			xmlns="http://www.w3.org/2000/svg"

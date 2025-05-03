@@ -10,6 +10,7 @@ import { IconUserPlus } from "../icons/user-plus"
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar"
 import { Button } from "../ui/button"
 import { TextField } from "../ui/text-field"
+import { PinnedModal } from "./pinned-modal"
 
 export function ChatTopbar() {
 	const params = useParams({ from: "/_app/$serverId/chat/$id" })()
@@ -57,7 +58,7 @@ export function ChatTopbar() {
 				<Button size="icon" intent="ghost">
 					<IconPhone />
 				</Button>
-				{/* <PinnedModal channelId={channelId} /> */}
+				<PinnedModal />
 				<Button size="icon" intent="ghost">
 					<IconUserPlus />
 				</Button>
