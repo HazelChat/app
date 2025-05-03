@@ -38,28 +38,7 @@ export const Sidebar = (props: SidebarProps) => {
 		<div class={twMerge("flex h-full flex-col bg-sidebar px-2 py-3 text-sidebar-foreground", props.class)}>
 			<ul class="flex flex-col gap-3">
 				<For each={computedChannels()}>
-					{(channel) => (
-						<Link to="/$serverId/chat/$id" params={{ serverId: serverId(), id: channel.id }}>
-							<li class="group/sidebar-item flex items-center gap-2 rounded-md px-2 py-1 hover:bg-muted">
-								<div class="-space-x-4 flex items-center justify-center">
-									<For each={channel.friends}>
-										{(friend) => (
-											<div class="inline-block">
-												<Avatar class="size-7">
-													<AvatarImage src={friend.avatarUrl} alt={friend.tag} />
-													<AvatarFallback>{friend.displayName}</AvatarFallback>
-												</Avatar>
-											</div>
-										)}
-									</For>
-								</div>
-
-								<p class="text-muted-foreground group-hover/sidebar-item:text-foreground">
-									{channel.friends.map((friend) => friend.displayName).join(", ")}
-								</p>
-							</li>
-						</Link>
-					)}
+					{(channel) => <ChannelLink channel={channel} serverId={serverId()} />}
 				</For>
 			</ul>
 		</div>
@@ -82,3 +61,48 @@ export const ChannelItem = (props: ChannelItemProps) => {
 		</li>
 	)
 }
+
+// Define types for props for better clarity
+interface Friend {
+	id: string // Assuming id is string
+	avatarUrl: string
+	tag: string
+	displayName: string
+}
+
+interface Channel {
+	id: string
+	friends: Friend[]
+}
+
+interface ChannelLinkProps {
+	channel: Channel
+	serverId: string
+}
+
+const ChannelLink = (props: ChannelLinkProps) => {
+	return (
+		<Link to="/$serverId/chat/$id" params={{ serverId: props.serverId, id: props.channel.id }}>
+			<li class="group/sidebar-item flex items-center gap-2 rounded-md px-2 py-1 hover:bg-muted">
+				<div class="-space-x-4 flex items-center justify-center">
+					<For each={props.channel.friends}>
+						{(friend) => (
+							<div class="inline-block">
+								<Avatar class="size-7">
+									<AvatarImage src={friend.avatarUrl} alt={friend.tag} />
+									<AvatarFallback>{friend.displayName}</AvatarFallback>
+								</Avatar>
+							</div>
+						)}
+					</For>
+				</div>
+				<p class="text-muted-foreground group-hover/sidebar-item:text-foreground">
+					{/* Derive display name directly from props */}
+					{props.channel.friends.map((friend) => friend.displayName).join(", ")}
+				</p>
+			</li>
+		</Link>
+	)
+}
+
+export default ChannelLink
