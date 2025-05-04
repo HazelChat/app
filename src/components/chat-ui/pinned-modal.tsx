@@ -3,11 +3,11 @@ import { For, createMemo } from "solid-js"
 import { IconPin } from "~/components/icons/pin"
 import { usePinnedMessages } from "~/lib/hooks/data/use-pinned-messages"
 import { useZero } from "~/lib/zero/zero-context"
+import { IconCircleXSolid } from "../icons/solid/circle-x-solid"
 import { Avatar } from "../ui/avatar"
 import { Button } from "../ui/button"
 import { Popover } from "../ui/popover"
 import { chatMessageStyles } from "./chat-message"
-import { IconCircleXFill } from "./floating-bar"
 
 export function PinnedModal() {
 	const z = useZero()
@@ -64,7 +64,7 @@ export function PinnedModal() {
 											intent="ghost"
 											class="group-hover:opacity-100"
 										>
-											<IconCircleXFill />
+											<IconCircleXSolid />
 										</Button>
 									</div>
 									<Avatar

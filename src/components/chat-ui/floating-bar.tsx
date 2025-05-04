@@ -5,8 +5,9 @@ import { useChatMessage } from "~/lib/hooks/data/use-chat-message"
 import { newId } from "~/lib/id-helpers"
 import { useZero } from "~/lib/zero/zero-context"
 import { chatStore$ } from "~/routes/_app/$serverId/chat/$id"
-import { IconButton } from "../icon-button"
-import { IconPlus } from "../icons/plus"
+import { IconCirclePlusSolid } from "../icons/solid/circle-plus-solid"
+import { IconCircleXSolid } from "../icons/solid/circle-x-solid"
+import { Button } from "../ui/button"
 
 export function FloatingBar(props: { channelId: string }) {
 	const auth = useAuth()
@@ -38,16 +39,18 @@ export function FloatingBar(props: { channelId: string }) {
 			</Show>
 			<div
 				class={twMerge(
-					"group flex w-full items-center rounded-sm border border-border/90 bg-secondary transition hover:border-border/90",
+					"group flex h-12 w-full items-center rounded-sm border border-border bg-sidebar transition duration-300 ease-in hover:border-muted-foreground/70",
 				)}
 			>
-				<IconButton
+				<Button
+					size="icon"
 					class="mr-1 ml-2"
+					intent="icon"
 					// onPress={openFileSelector}
 					// isDisabled={isUploading}
 				>
-					<IconPlus />
-				</IconButton>
+					<IconCirclePlusSolid class="size-6!" />
+				</Button>
 
 				<div class="w-full">
 					<input
@@ -86,29 +89,13 @@ function ReplyInfo(props: {
 			<p>
 				Replying to <span class="font-semibold text-fg">{message()!.messages()!.author?.displayName}</span>
 			</p>
-			<IconButton onClick={() => setChatStore((prev) => ({ ...prev, replyToMessageId: null }))}>
-				<IconCircleXFill />
-			</IconButton>
+			<Button
+				size="icon"
+				intent="icon"
+				onClick={() => setChatStore((prev) => ({ ...prev, replyToMessageId: null }))}
+			>
+				<IconCircleXSolid />
+			</Button>
 		</div>
-	)
-}
-
-export function IconCircleXFill() {
-	return (
-		<svg
-			xmlns="http://www.w3.org/2000/svg"
-			width="24"
-			height="24"
-			viewBox="0 0 24 24"
-			fill="none"
-			stroke="currentColor"
-			stroke-width="2"
-			stroke-linecap="round"
-			stroke-linejoin="round"
-			class="lucide lucide-circle-x-fill lucide-circle-x-fill"
-		>
-			<path d="M18 6L6 18" />
-			<path d="M6 6l12 12" />
-		</svg>
 	)
 }

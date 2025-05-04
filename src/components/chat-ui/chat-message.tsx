@@ -12,7 +12,7 @@ import { IconPin } from "../icons/pin"
 import { IconPlus } from "../icons/plus"
 import { IconReply } from "../icons/reply"
 import { IconTrash } from "../icons/trash"
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar"
+import { Avatar } from "../ui/avatar"
 import { Button, buttonVariants } from "../ui/button"
 import { Menu } from "../ui/menu"
 import { Popover } from "../ui/popover"
@@ -305,7 +305,7 @@ export function ChatMessage(props: {
 								fallback={
 									<Tooltip lazyMount>
 										<Tooltip.Trigger>
-											<Button intent="ghost" size="icon" onClick={() => handleAction(a)}>
+											<Button intent="ghost" size="square" onClick={() => handleAction(a)}>
 												{a.icon}
 											</Button>
 											<Tooltip.Content>
@@ -321,7 +321,7 @@ export function ChatMessage(props: {
 								<Popover lazyMount>
 									<Tooltip>
 										<Tooltip.Trigger>
-											<Button intent="ghost" size="icon">
+											<Button intent="ghost" size="square">
 												{a.icon}
 											</Button>
 										</Tooltip.Trigger>
@@ -336,7 +336,7 @@ export function ChatMessage(props: {
 						)}
 					</For>
 					<Menu open={open()} onOpenChange={() => setOpen((prev) => !prev)} lazyMount>
-						<Menu.Trigger class={twMerge(buttonVariants({ intent: "ghost", size: "icon" }))}>
+						<Menu.Trigger class={twMerge(buttonVariants({ intent: "ghost", size: "square" }))}>
 							<IconHorizontalDots class="size-4" />
 						</Menu.Trigger>
 						<Menu.Content>
