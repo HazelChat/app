@@ -133,7 +133,9 @@ export const ChannelItem = (props: ChannelItemProps) => {
 		<Link to="/$serverId/chat/$id" params={{ serverId: props.serverId, id: props.channel.id }}>
 			<Sidebar.Item>
 				<IconHashtag class="size-5 text-muted-foreground" />
-				<p class="text-muted-foreground group-hover/sidebar-item:text-foreground">{props.channel.name}</p>
+				<p class="text-ellipsis text-nowrap text-muted-foreground group-hover/sidebar-item:text-foreground">
+					{props.channel.name}
+				</p>
 			</Sidebar.Item>
 		</Link>
 	)
@@ -172,7 +174,7 @@ const DmChannelLink = (props: DmChannelLinkProps) => {
 						)}
 					</For>
 				</div>
-				<p class="text-muted-foreground group-hover/sidebar-item:text-foreground">
+				<p class="truncate text-muted-foreground group-hover/sidebar-item:text-foreground">
 					{/* Derive display name directly from props */}
 					{props.channel.friends.map((friend) => friend.displayName).join(", ")}
 				</p>
