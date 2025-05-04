@@ -31,16 +31,23 @@ export function ChatTopbar() {
 		<div class="flex h-16 items-center justify-between gap-2 border-b bg-sidebar p-3">
 			<div class="flex items-center gap-2">
 				<Show when={isSingleDm()}>
-					<Avatar src={friends()[0].avatarUrl} name={friends()[0].displayName} />
+					<Avatar size="sm" src={friends()[0].avatarUrl} name={friends()[0].displayName} />
 				</Show>
 				<Show when={!isSingleDm()}>
 					<div class="-space-x-4 flex items-center justify-center">
 						<For each={friends()}>
-							{(friend) => <Avatar src={friend.avatarUrl} name={friend.displayName} />}
+							{(friend) => (
+								<Avatar
+									class="ring-background"
+									size="sm"
+									src={friend.avatarUrl}
+									name={friend.displayName}
+								/>
+							)}
 						</For>
 					</div>
 				</Show>
-				<p class="text-sidebar-fg">
+				<p class="max-w-[120px] truncate text-sidebar-fg">
 					{friends()
 						.map((friend) => friend.displayName)
 						.join(", ")}
