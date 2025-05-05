@@ -1,10 +1,14 @@
 # TODOs
 
 ## Chat UI
-- Add markdown rendering 
+- Add markdown rendering
 - Fix Reply to message Styling
 - Emoji Picker
 - Add day/week/year to pinned message list
+- Image preview
+    - Add next/prev image support when there are multiple images in a message (including keyboard support)
+    - Maybe show metadata like filename, filesize and resolution somewhere
+    - Add zoom
 
 -- Later TODOS
 - Threads
