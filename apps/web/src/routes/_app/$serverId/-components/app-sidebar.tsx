@@ -1,6 +1,6 @@
 import { Link, useParams } from "@tanstack/solid-router"
 import { useAuth } from "clerk-solidjs"
-import { For, createMemo, createSignal } from "solid-js"
+import { type Accessor, For, createMemo, createSignal } from "solid-js"
 import { IconHashtag } from "~/components/icons/hashtag"
 import { useDmChannels } from "~/lib/hooks/data/use-dm-channels"
 import { useServerChannels } from "~/lib/hooks/data/use-server-channels"
@@ -51,72 +51,94 @@ export const AppSidebar = (props: SidebarProps) => {
 
 	return (
 		<Sidebar {...props}>
-			<Sidebar.Group
-				title="Text Channels"
-				action={
-					<Dialog
-						open={createChannelModalOpen()}
-						onOpenChange={(details) => setCreateChannelModalOpen(details.open)}
-					>
-						<Dialog.Trigger
-							class="text-muted-foreground"
-							asChild={(props) => (
-								<Button intent="ghost" size="icon" {...props}>
-									<IconPlusSmall />
-								</Button>
-							)}
-						/>
-						<Dialog.Content>
-							<Tabs defaultValue={"join"}>
-								<Tabs.List>
-									<Tabs.Trigger value="join">Join</Tabs.Trigger>
-									<Tabs.Trigger value="create">Create New</Tabs.Trigger>
-								</Tabs.List>
-								<Tabs.Content value="join">
-									<JoinPublicChannel
-										serverId={serverId}
-										onSuccess={() => setCreateChannelModalOpen(false)}
-									/>
-								</Tabs.Content>
-								<Tabs.Content value="create">
-									<CreateChannelForm
-										serverId={serverId}
-										onSuccess={() => setCreateChannelModalOpen(false)}
-									/>
-								</Tabs.Content>
-							</Tabs>
-						</Dialog.Content>
-					</Dialog>
-				}
-			>
-				<For each={serverChannels()}>
-					{(channel) => <ChannelItem channel={channel} serverId={serverId()} />}
-				</For>
-			</Sidebar.Group>
-			<Sidebar.Group title="DM's" action={<CreateDmDialog serverId={serverId} />}>
-				<For each={computedChannels()}>
-					{(channel) => <DmChannelLink channel={channel} serverId={serverId()} />}
-				</For>
-			</Sidebar.Group>
+			<Sidebar.Header>
+				<Button>Hello</Button>
+			</Sidebar.Header>
+			<Sidebar.Content>
+				<Sidebar.Group>
+					<Sidebar.GroupLabel>Text Channels</Sidebar.GroupLabel>
+					<Sidebar.GroupAction>
+						<Dialog
+							open={createChannelModalOpen()}
+							onOpenChange={(details) => setCreateChannelModalOpen(details.open)}
+						>
+							<Dialog.Trigger
+								class="text-muted-foreground"
+								asChild={(props) => (
+									<Button intent="ghost" size="icon" {...props}>
+										<IconPlusSmall />
+									</Button>
+								)}
+							/>
+							<Dialog.Content>
+								<Tabs defaultValue={"join"}>
+									<Tabs.List>
+										<Tabs.Trigger value="join">Join</Tabs.Trigger>
+										<Tabs.Trigger value="create">Create New</Tabs.Trigger>
+									</Tabs.List>
+									<Tabs.Content value="join">
+										<JoinPublicChannel
+											serverId={serverId}
+											onSuccess={() => setCreateChannelModalOpen(false)}
+										/>
+									</Tabs.Content>
+									<Tabs.Content value="create">
+										<CreateChannelForm
+											serverId={serverId}
+											onSuccess={() => setCreateChannelModalOpen(false)}
+										/>
+									</Tabs.Content>
+								</Tabs>
+							</Dialog.Content>
+						</Dialog>
+					</Sidebar.GroupAction>
+					<Sidebar.Menu>
+						<For each={serverChannels()}>
+							{(channel) => <ChannelItem channel={channel} serverId={serverId} />}
+						</For>
+					</Sidebar.Menu>
+				</Sidebar.Group>
+				<Sidebar.Group>
+					<Sidebar.GroupLabel>DM's</Sidebar.GroupLabel>
+					<Sidebar.GroupAction>
+						<CreateDmDialog serverId={serverId} />
+					</Sidebar.GroupAction>
+					<Sidebar.Menu>
+						<For each={computedChannels()}>
+							{(channel) => <DmChannelLink channel={channel} serverId={serverId} />}
+						</For>
+					</Sidebar.Menu>
+				</Sidebar.Group>
+			</Sidebar.Content>
 		</Sidebar>
 	)
 }
 
 export interface ChannelItemProps {
 	channel: Channel
-	serverId: string
+	serverId: Accessor<string>
 }
 
 export const ChannelItem = (props: ChannelItemProps) => {
+	const params = createMemo(() => ({
+		serverId: props.serverId(),
+		id: props.channel.id,
+	}))
 	return (
-		<Link to="/$serverId/chat/$id" params={{ serverId: props.serverId, id: props.channel.id }}>
-			<Sidebar.Item>
+		<Sidebar.MenuItem>
+			<Sidebar.MenuButton
+				asChild={(props) => (
+					<Link to="/$serverId/chat/$id" params={params()} {...props()}>
+						{props().children}
+					</Link>
+				)}
+			>
 				<IconHashtag class="size-5 text-muted-foreground" />
 				<p class="text-ellipsis text-nowrap text-muted-foreground group-hover/sidebar-item:text-foreground">
 					{props.channel.name}
 				</p>
-			</Sidebar.Item>
-		</Link>
+			</Sidebar.MenuButton>
+		</Sidebar.MenuItem>
 	)
 }
 
@@ -134,13 +156,24 @@ interface ComputedChannel {
 
 interface DmChannelLinkProps {
 	channel: ComputedChannel
-	serverId: string
+	serverId: Accessor<string>
 }
 
 const DmChannelLink = (props: DmChannelLinkProps) => {
+	const params = createMemo(() => ({
+		serverId: props.serverId(),
+		id: props.channel.id,
+	}))
+
 	return (
-		<Link to="/$serverId/chat/$id" params={{ serverId: props.serverId, id: props.channel.id }}>
-			<Sidebar.Item>
+		<Sidebar.MenuItem>
+			<Sidebar.MenuButton
+				asChild={(parentProps) => (
+					<Link to="/$serverId/chat/$id" params={params()} {...parentProps()}>
+						{parentProps().children}
+					</Link>
+				)}
+			>
 				<div class="-space-x-4 flex items-center justify-center">
 					<For each={props.channel.friends}>
 						{(friend) => (
@@ -154,7 +187,7 @@ const DmChannelLink = (props: DmChannelLinkProps) => {
 					{/* Derive display name directly from props */}
 					{props.channel.friends.map((friend) => friend.displayName).join(", ")}
 				</p>
-			</Sidebar.Item>
-		</Link>
+			</Sidebar.MenuButton>
+		</Sidebar.MenuItem>
 	)
 }
