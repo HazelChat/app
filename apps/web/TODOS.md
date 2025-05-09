@@ -27,9 +27,13 @@
 - Close DM Chat
 
 ## Server Page
-- Members page
 - Kick User
 - Manage Roles
+
+
+## Avatar Servers
+- Add a separate service to try to fetch avatars from other servers or when not found,
+create an avatar
 
 
 # Investigations
