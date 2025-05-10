@@ -185,6 +185,10 @@ export const permissions = definePermissions<AuthData, Schema>(schema, () => {
 			row: {
 				select: [channelMembers_isChannelParticipant, channelMembers_isPublicChannel],
 				insert: [channelMembers_isChannelParticipant],
+				update: {
+					preMutation: [channelMembers_isChannelParticipant],
+					postMutation: [channelMembers_isChannelParticipant],
+				},
 				delete: [channelMembers_isChannelParticipant],
 			},
 		},
