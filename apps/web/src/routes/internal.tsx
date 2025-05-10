@@ -59,20 +59,6 @@ function RouteComponent() {
 			</div>
 			<div class="flex flex-row flex-wrap gap-3">
 				<Avatar src="https://avatars.githubusercontent.com/u/101927?v=4" name="UI" class="size-10" />
-				<Avatar.Root class="size-10">
-					<Avatar.Image src="https://avatars.githubusercontent.com/u/101927?v=4" />
-					<Avatar.Fallback>UI</Avatar.Fallback>
-				</Avatar.Root>
-				<Avatar.Root shape="circle" class="size-10">
-					<Avatar.Image src="https://avatars.githubusercontent.com/u/101927?v=4" />
-					<Avatar.Fallback>UI</Avatar.Fallback>
-				</Avatar.Root>
-				<Avatar.Root class="size-10">
-					<Avatar.Fallback>FB</Avatar.Fallback>
-				</Avatar.Root>
-				<Avatar.Root shape="circle" class="size-10">
-					<Avatar.Fallback>FB</Avatar.Fallback>
-				</Avatar.Root>
 			</div>
 			<div class="flex gap-3">
 				<Card>

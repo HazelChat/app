@@ -1,35 +1,24 @@
-import { Avatar as ArkAvatar } from "@ark-ui/solid"
-import { Show, splitProps } from "solid-js"
+import { type HTMLArkProps, ark } from "@ark-ui/solid"
+import { splitProps } from "solid-js"
 
 import { twMerge } from "tailwind-merge"
 import { type VariantProps, tv } from "tailwind-variants"
-import { IconUser } from "../icons/user"
 
-export interface AvatarProps extends AvatarRootProps {
-	name?: string
+export type AvatarProps = {
+	name: string
 	src?: string
-}
+} & HTMLArkProps<"img"> &
+	VariantProps<typeof avatarVariants>
 
-const getInitials = (name = "") =>
-	name
-		.split(" ")
-		.map((part) => part[0])
-		.splice(0, 2)
-		.join("")
-		.toUpperCase()
-
-export const AvatarMolecule = (props: AvatarProps) => {
+export const Avatar = (props: AvatarProps) => {
 	const [localProps, rootProps] = splitProps(props, ["name", "src"])
 
 	return (
-		<AvatarRoot {...rootProps}>
-			<AvatarFallback>
-				<Show when={localProps.name} fallback={<IconUser />}>
-					{getInitials(localProps.name)}
-				</Show>
-			</AvatarFallback>
-			<AvatarImage src={localProps.src} alt={localProps.name} />
-		</AvatarRoot>
+		<ark.img
+			class={twMerge(avatarVariants(rootProps), rootProps.class)}
+			src={localProps.src || `https://avatar.vercel.sh/${props.name}.svg`}
+			alt={localProps.name}
+		/>
 	)
 }
 
@@ -52,32 +41,3 @@ export const avatarVariants = tv({
 		size: "default",
 	},
 })
-
-export interface AvatarRootProps extends ArkAvatar.RootProps, VariantProps<typeof avatarVariants> {}
-
-export const AvatarRoot = (props: AvatarRootProps) => {
-	const [local, rest] = splitProps(props, ["class", "shape", "size"])
-
-	return <ArkAvatar.Root class={twMerge(avatarVariants(local), local.class)} {...rest} />
-}
-
-export const AvatarImage = (props: ArkAvatar.ImageProps) => {
-	return <ArkAvatar.Image class={twMerge("aspect-square h-full w-full", props.class)} {...props} />
-}
-
-export const AvatarFallback = (props: ArkAvatar.FallbackProps) => {
-	return (
-		<ArkAvatar.Fallback
-			class={twMerge("flex h-full w-full select-none items-center justify-center bg-primary", props.class)}
-			{...props}
-		/>
-	)
-}
-
-const Avatar = Object.assign(AvatarMolecule, {
-	Root: AvatarRoot,
-	Image: AvatarImage,
-	Fallback: AvatarFallback,
-})
-
-export { Avatar }

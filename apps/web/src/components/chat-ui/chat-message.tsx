@@ -291,7 +291,7 @@ export function ChatMessage(props: {
 				>
 					<Avatar
 						class="size-4"
-						name={props.message.replyToMessage?.author?.displayName}
+						name={props.message.replyToMessage?.author?.displayName!}
 						src={props.message.replyToMessage?.author?.avatarUrl}
 					/>
 					<UserTag user={props.message.replyToMessage?.author!} />
@@ -366,7 +366,7 @@ export function ChatMessage(props: {
 					</Menu>
 				</div>
 				<Show when={showAvatar()}>
-					<Avatar src={props.message.author?.avatarUrl} name={props.message.author?.displayName} />
+					<Avatar src={props.message.author?.avatarUrl} name={props.message.author?.displayName!} />
 				</Show>
 				<Show when={!showAvatar()}>
 					<div class="w-10 items-center justify-end pr-1 text-[10px] text-muted-foreground leading-tight opacity-0 group-hover:opacity-100">

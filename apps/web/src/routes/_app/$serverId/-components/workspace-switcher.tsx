@@ -27,9 +27,7 @@ export const WorkspaceSwitcher = () => {
 								class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
 								{...props()}
 							>
-								<div class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-									<Avatar size="xss" src={activeServer()?.imageUrl} name={activeServer()?.name} />
-								</div>
+								<Avatar size="xs" src={activeServer()?.imageUrl} name={activeServer()?.name!} />
 								<div class="grid flex-1 text-left text-sm leading-tight">
 									<span class="truncate font-semibold">{activeServer()?.name}</span>
 								</div>

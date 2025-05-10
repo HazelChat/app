@@ -22,7 +22,7 @@ import { IconSupport } from "~/components/icons/support"
 import { IconX } from "~/components/icons/x"
 import { Menu } from "~/components/ui/menu"
 import { IconSignOut } from "~/components/ui/signout"
-import { toaster } from "~/components/ui/toaster"
+
 import { useZero } from "~/lib/zero/zero-context"
 import { CreateChannelForm } from "./create-channel-form"
 import { CreateDmDialog } from "./create-dm-dialog"

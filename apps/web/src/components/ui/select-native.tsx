@@ -1,7 +1,7 @@
 import type { Field } from "@ark-ui/solid"
 import type { JSXElement } from "solid-js"
 import { Show, splitProps } from "solid-js"
-import { FieldErrorText, FieldGroup, FieldHelperText, FieldInput, FieldLabel, FieldRoot, FieldSelect } from "./field"
+import { FieldErrorText, FieldGroup, FieldHelperText, FieldLabel, FieldRoot, FieldSelect } from "./field"
 
 export interface SelectNativeProps extends Omit<Field.SelectProps, "prefix"> {
 	label?: string

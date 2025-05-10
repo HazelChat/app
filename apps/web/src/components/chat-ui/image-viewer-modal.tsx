@@ -1,5 +1,5 @@
 import { Format } from "@ark-ui/solid"
-import { type Accessor, For, Show, createEffect, createSignal, onMount } from "solid-js"
+import { type Accessor, For, Show, createEffect, createSignal } from "solid-js"
 import type { Message } from "~/lib/hooks/data/use-chat-messages"
 import { IconCopy } from "../icons/copy"
 import { IconDownload } from "../icons/download"
@@ -128,7 +128,7 @@ export function ImageViewerModal(props: ImageViewerModalProps) {
 				onClick={handleClose}
 			>
 				<div class="absolute top-3 left-5 flex items-center gap-2">
-					<Avatar src={props.author?.avatarUrl} name={props.author?.displayName} />
+					<Avatar src={props.author?.avatarUrl} name={props.author?.displayName!} />
 					<div class="flex flex-col">
 						<span class="text-sm">{props.author?.displayName}</span>
 
