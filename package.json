@@ -13,5 +13,6 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^1.9.4"
-	}
+	},
+	"trustedDependencies": ["@rocicorp/zero-sqlite3"]
 }
