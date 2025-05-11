@@ -21,7 +21,6 @@ export const ZeroApiLive = HttpApiBuilder.group(MakiApi, "Zero", (handlers) =>
 				)
 
 				const result = yield* Effect.promise(() => processor.process(createMutators(), raw))
-				console.log("Zero push result", JSON.stringify(result, null, 2))
 				return result
 			}),
 		)

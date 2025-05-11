@@ -5,7 +5,7 @@ export function createMutators() {
 	return {
 		messages: {
 			insert: async (tx, data: Message) => {
-				await tx.mutate.messages.update(data)
+				await tx.mutate.messages.insert(data)
 			},
 		},
 	} as const satisfies CustomMutatorDefs<typeof schema>
