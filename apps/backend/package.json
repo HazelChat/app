@@ -9,9 +9,9 @@
 		"cf-typegen": "wrangler types"
 	},
 	"devDependencies": {
-		"typescript": "^5.8.3",
 		"@maki-chat/api-schema": "workspace:*",
 		"@maki-chat/markdown": "workspace:*",
+		"typescript": "^5.8.3",
 		"wrangler": "^4.14.4"
 	},
 	"packageManager": "bun@1.2.12",
