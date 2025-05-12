@@ -81,6 +81,73 @@ export const schema = {
       primaryKey: ["userId", "channelId"],
       serverName: "channel_members",
     },
+    channelNotifications: {
+      name: "channelNotifications",
+      columns: {
+        channelId: {
+          type: "string",
+          optional: false,
+          customType: null as unknown as ZeroCustomType<
+            typeof zeroSchema,
+            "channelNotifications",
+            "channelId"
+          >,
+          serverName: "channel_id",
+        },
+        userId: {
+          type: "string",
+          optional: false,
+          customType: null as unknown as ZeroCustomType<
+            typeof zeroSchema,
+            "channelNotifications",
+            "userId"
+          >,
+          serverName: "user_id",
+        },
+        lastSeenMessageId: {
+          type: "string",
+          optional: true,
+          customType: null as unknown as ZeroCustomType<
+            typeof zeroSchema,
+            "channelNotifications",
+            "lastSeenMessageId"
+          >,
+          serverName: "last_seen_message_id",
+        },
+        notificationCount: {
+          type: "number",
+          optional: true,
+          customType: null as unknown as ZeroCustomType<
+            typeof zeroSchema,
+            "channelNotifications",
+            "notificationCount"
+          >,
+          serverName: "notification_count",
+        },
+        createdAt: {
+          type: "number",
+          optional: true,
+          customType: null as unknown as ZeroCustomType<
+            typeof zeroSchema,
+            "channelNotifications",
+            "createdAt"
+          >,
+          serverName: "created_at",
+        },
+        updatedAt: {
+          type: "number",
+          optional: true,
+          customType: null as unknown as ZeroCustomType<
+            typeof zeroSchema,
+            "channelNotifications",
+            "updatedAt"
+          >,
+          serverName: "updated_at",
+        },
+      },
+      primaryKey: ["channelId", "userId"],
+      serverName: "channel_notifications",
+    },
     messages: {
       name: "messages",
       columns: {
