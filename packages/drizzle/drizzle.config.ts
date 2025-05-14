@@ -6,7 +6,6 @@ export default defineConfig({
 	dialect: "postgresql",
 	dbCredentials: {
 		url: "postgresql://user:password@127.0.0.1:5430/postgres",
-		// PRODDB
-		// url: "postgresql://postgres:mkwqhcfdnqdelwn1@142.132.228.194:6992/zero",
+		// url: "postgresql://postgres:CMaOXuhzjmDJiuMFxaxwMZykGFSJFDcJ@centerbeam.proxy.rlwy.net:31496/railway",
 	},
 })

@@ -4,7 +4,7 @@
  */
 {
 	"$schema": "../../node_modules/wrangler/config-schema.json",
-	"name": "discord-clone-backend",
+	"name": "maki-chat-backend",
 	"main": "src/index.ts",
 	"compatibility_date": "2025-04-15",
 	"compatibility_flags": ["nodejs_compat"],
@@ -20,7 +20,7 @@
 	"hyperdrive": [
 		{
 			"binding": "HYPERDRIVE",
-			"id": "<YOUR_DATABASE_ID>",
+			"id": "35603f772c1040c1b7bc8175ab0889ad",
 			"localConnectionString": "postgresql://user:password@127.0.0.1:5430/postgres"
 		}
 	],
