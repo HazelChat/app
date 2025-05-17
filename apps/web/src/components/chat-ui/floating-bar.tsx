@@ -179,9 +179,10 @@ const useFileAttachment = () => {
 	}
 }
 
-const useGlobalEditorFocus = (editorRef: () => HTMLDivElement | undefined) => {
+const useGlobalEditorFocus = (editorRef: () => HTMLTextAreaElement | undefined) => {
 	createEffect(() => {
-		if (!editorRef()) {
+		const ref = editorRef()
+		if (!ref) {
 			return
 		}
 
@@ -208,7 +209,9 @@ const useGlobalEditorFocus = (editorRef: () => HTMLDivElement | undefined) => {
 
 			if (isPrintableKey) {
 				event.preventDefault()
-				editorRef()?.focus()
+				ref.focus()
+				const content = editorRef()?.value + event.key
+				ref.value = content
 			}
 		}
 
@@ -232,7 +235,7 @@ export function FloatingBar(props: { channelId: string }) {
 		clearAttachments, // Use this for a potential 'clear all' button if needed
 	} = useFileAttachment()
 
-	const [editorRef, setEditorRef] = createSignal<HTMLInputElement>()
+	const [editorRef, setEditorRef] = createSignal<HTMLTextAreaElement>()
 	useGlobalEditorFocus(editorRef)
 
 	const isUploading = createMemo(() => attachments().some((att) => att.status === "uploading"))
@@ -384,7 +387,7 @@ function ReplyInfo(props: {
 
 	if (!message()?.messages()) return null
 
-	const [chatStore, setChatStore] = chatStore$
+	const [_, setChatStore] = chatStore$
 
 	return (
 		<div
