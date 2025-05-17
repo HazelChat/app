@@ -10,7 +10,6 @@
 - Add day/week/year to pinned message list
 - Add some Date viewer to shown messages
 - Fix weird Avatar flashing caused by reloads (probbaly means to fork virtua and change For to Index for our usecase)
-- Fix scroll issue when smooth scroll takes over when almost reaching the bottom LOL
 - Image preview
     - Add next/prev image support when there are multiple images in a message (including keyboard support)
     - Maybe show metadata like filename, filesize and resolution somewhere
