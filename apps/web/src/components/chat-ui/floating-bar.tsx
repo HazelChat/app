@@ -9,6 +9,8 @@ import { chatStore$ } from "~/routes/_app/$serverId/chat/$id"
 import { IconLoader } from "../icons/loader"
 import { IconCirclePlusSolid } from "../icons/solid/circle-plus-solid"
 import { IconCircleXSolid } from "../icons/solid/circle-x-solid"
+import { ChatInput } from "../markdown-input/chat-input"
+import { MarkdownInput } from "../markdown-input/markdown-input"
 import { Button } from "../ui/button"
 
 // Type for individual attachment state
@@ -287,6 +289,8 @@ export function FloatingBar(props: { channelId: string }) {
 
 	return (
 		<div>
+			<ChatInput />
+
 			<Show when={showAttachmentArea()}>
 				<div class="flex flex-col gap-0 rounded-sm rounded-b-none border border-border/90 border-b-0 bg-secondary/90 px-2 py-1 transition hover:border-border/90">
 					<For each={attachments()}>
