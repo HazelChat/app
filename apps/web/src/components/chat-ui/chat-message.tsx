@@ -41,6 +41,7 @@ import { UserAvatar } from "../user-ui/user-popover-content"
 import { ChatImage } from "./chat-image"
 
 import { Text } from "@maki-chat/markdown/base-components"
+import { IconThread } from "../icons/thread"
 
 function extractTextFromJsonNodes(nodes: any[]): string {
 	if (!Array.isArray(nodes)) return ""
@@ -222,7 +223,7 @@ export function ChatMessage(props: ChatMessageProps) {
 		{
 			key: "thread",
 			label: "Thread",
-			icon: <IconTrash class="size-4" />,
+			icon: <IconThread class="size-4" />,
 			onAction: async () => {
 				const threadChannelId = props.message().threadChannelId ?? newId("serverChannels")
 
