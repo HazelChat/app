@@ -286,6 +286,8 @@ export function ChatMessage(props: ChatMessageProps) {
 
 	const [open, setOpen] = createSignal(false)
 
+	console.log(props.message().content)
+
 	createEffect(() => {
 		if (props.isFirstNewMessage()) {
 			setTimeout(async () => {
@@ -432,7 +434,9 @@ export function ChatMessage(props: ChatMessageProps) {
 									rel="noopener noreferrer"
 								/>
 							),
-							p: (props) => <p class="leading-none" {...props} />,
+							p: (props) => {
+								return <p class="leading-none" {...props} />
+							},
 							h1: (props) => <h1 class="font-bold text-xl" {...props} />,
 							blockquote: (props) => (
 								<blockquote

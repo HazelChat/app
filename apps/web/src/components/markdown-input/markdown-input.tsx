@@ -32,7 +32,7 @@ export function MarkdownInput<CustomTokenType extends string = never>(props: Mar
 	])
 	return (
 		<ContentEditable
-			// @ts-expect-error iDK XD
+			// @ts-expect-error
 			textContent={baseProps.value()}
 			aria-placeholder={baseProps.placeholder}
 			render={(value) => {

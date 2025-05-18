@@ -1,5 +1,7 @@
-import { type Accessor, type JSX, splitProps } from "solid-js"
+import hljs from "highlight.js"
+import { type Accessor, type JSX, onMount, splitProps } from "solid-js"
 import { MarkdownInput } from "./markdown-input"
+import "highlight.js/styles/github-dark.css"
 
 export interface ChatInputProps extends JSX.HTMLAttributes<HTMLDivElement> {
 	value: Accessor<string>
@@ -16,8 +18,19 @@ export const ChatInput = (props: ChatInputProps) => {
 			renderers={{
 				header1: (token) => <h1 class="font-bold text-2xl">{token.content}</h1>,
 				bold: (token) => <strong class="font-bold">{token.content}</strong>,
-				codeblock: (token) => <pre class="rounded bg-muted p-2">{token.content}</pre>,
-				highlight: (token) => <mark class="bg-yellow-200">{token.content.replace(/==/g, "")}</mark>,
+				codeblock: (token) => {
+					let codeRef: HTMLPreElement | undefined
+					// onMount(() => {
+					// 	if (codeRef) {
+					// 		hljs.highlightElement(codeRef.querySelector("code") as HTMLElement)
+					// 	}
+					// })
+					return (
+						<pre ref={codeRef} class="overflow-x-auto rounded bg-muted p-2">
+							<code>{token.content}</code>
+						</pre>
+					)
+				},
 				callout: (token) => <div class="border-blue-500 border-l-4 bg-blue-50 pl-2">{token.content}</div>,
 				default: (token) => <span>{token.content}</span>,
 			}}

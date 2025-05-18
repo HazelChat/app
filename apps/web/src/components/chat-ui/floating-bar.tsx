@@ -181,7 +181,7 @@ const useFileAttachment = () => {
 	}
 }
 
-const useGlobalEditorFocus = (editorRef: () => HTMLTextAreaElement | undefined) => {
+const createGlobalEditorFocus = (editorRef: () => HTMLTextAreaElement | undefined) => {
 	createEffect(() => {
 		const ref = editorRef()
 		if (!ref) {
@@ -233,7 +233,8 @@ export function FloatingBar(props: { channelId: string }) {
 
 	const [input, setInput] = createSignal("")
 	const [editorRef, setEditorRef] = createSignal<HTMLTextAreaElement>()
-	useGlobalEditorFocus(editorRef)
+
+	createGlobalEditorFocus(editorRef)
 
 	const isUploading = createMemo(() => attachments().some((att) => att.status === "uploading"))
 	const successfulKeys = createMemo(() =>

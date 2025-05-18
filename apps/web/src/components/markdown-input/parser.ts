@@ -19,6 +19,9 @@ export interface TokenPattern<T extends string> {
 export interface Token<T extends string> {
 	type: T
 	content: string
+	// parsedContent: string
+	// prefix: string
+	// postfix: string
 }
 
 export function parseMarkdownTokens<CustomTokenType extends string = never>(
