@@ -37,8 +37,11 @@ export function MarkdownInput<CustomTokenType extends string = never>(props: Mar
 			aria-placeholder={baseProps.placeholder}
 			render={(value) => {
 				const blocks = parseMarkdownTokens(value(), baseProps.additionalPatterns || [])
+
+				console.log(value() === blocks.reduce((acc, cur) => acc + cur.content, ""))
+
 				return (
-					<Show when={blocks.length > 0}>
+					<span>
 						<For each={blocks}>
 							{(block) => {
 								const comp = baseProps.renderers?.[block.type]
@@ -53,7 +56,7 @@ export function MarkdownInput<CustomTokenType extends string = never>(props: Mar
 								return <span>{block.content}</span>
 							}}
 						</For>
-					</Show>
+					</span>
 				)
 			}}
 			onTextContent={baseProps.onValueChange}

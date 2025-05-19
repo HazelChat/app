@@ -53,10 +53,12 @@ export const oldUploadHandler = async (request: Request) => {
 				httpMetadata: { contentType: contentType ?? undefined },
 			})
 			// Return the *generated* key as JSON on success
-			return new Response(JSON.stringify({ key: generatedKey }), {
-				status: 200,
-				headers: { "Content-Type": "application/json" },
-			})
+			return addCorsHeaders(
+				new Response(JSON.stringify({ key: generatedKey }), {
+					status: 200,
+					headers: { "Content-Type": "application/json" },
+				}),
+			)
 		} catch (error) {
 			console.error(`Error uploading file ${generatedKey}:`, error)
 			return new Response(`Failed to upload file: ${error instanceof Error ? error.message : String(error)}`, {
