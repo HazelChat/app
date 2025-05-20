@@ -80,7 +80,7 @@ export function ChatMessage(props: ChatMessageProps) {
 	const params = useParams({ from: "/_app/$serverId/chat/$id" })()
 	const showAvatar = createMemo(() => props.isGroupStart())
 
-	const { set } = useChat()
+	const { state, setState } = useChat()
 
 	const [pendingAction, setPendingAction] = createSignal<ChatAction | null>(null)
 	const isPinned = createMemo(() => props.message().pinnedInChannels?.some((p) => p.channelId === params.id))
@@ -238,7 +238,7 @@ export function ChatMessage(props: ChatMessageProps) {
 					})
 				}
 
-				set("openThreadId", threadChannelId)
+				setState("openThreadId", threadChannelId)
 			},
 			hotkey: "t",
 			showButton: !props.isThread,
@@ -248,7 +248,7 @@ export function ChatMessage(props: ChatMessageProps) {
 			label: "Reply",
 			icon: <IconReply class="size-4" />,
 			onAction: () => {
-				set("replyToMessageId", props.message().id)
+				setState("replyToMessageId", props.message().id)
 			},
 			hotkey: "shift+r",
 			showButton: true,
@@ -559,14 +559,14 @@ function ThreadButton(props: { message: Message }) {
 		return { authors: authors.slice(0, 4), total: authors.length }
 	})
 
-	const { set } = useChat()
+	const { setState } = useChat()
 
 	return (
 		<Button
 			intent="ghost"
 			class="mt-1 flex w-full justify-start px-1"
 			onClick={() => {
-				set("openThreadId", props.message.threadChannelId)
+				setState("openThreadId", props.message.threadChannelId)
 			}}
 		>
 			<For each={topFourAuthors().authors}>

@@ -243,7 +243,7 @@ const createGlobalEditorFocus = (props: {
 export function FloatingBar(props: { channelId: string }) {
 	const auth = useAuth()
 
-	const { state, set } = useChat()
+	const { state, setState } = useChat()
 
 	const { attachments, setFileInputRef, handleFileChange, openFileSelector, removeAttachment, clearAttachments } =
 		useFileAttachment()
@@ -287,7 +287,7 @@ export function FloatingBar(props: { channelId: string }) {
 				attachedFiles: successfulKeys(),
 			})
 			.then(() => {
-				set("replyToMessageId", null)
+				setState("replyToMessageId", null)
 
 				setInput("")
 				clearAttachments()
@@ -304,7 +304,7 @@ export function FloatingBar(props: { channelId: string }) {
 				</div>
 			</Show>
 			<Show when={state.replyToMessageId}>
-				<ReplyInfo replyToMessageId={state.replyToMessageId} showAttachmentArea={showAttachmentArea()} />
+				<ReplyInfo showAttachmentArea={showAttachmentArea()} />
 			</Show>
 			<div
 				class={twMerge(
@@ -383,30 +383,29 @@ function Attachment(props: { attachment: Attachment; removeAttachment: (id: stri
 }
 
 function ReplyInfo(props: {
-	replyToMessageId: string | null
 	showAttachmentArea: boolean
 }) {
-	const { set } = useChat()
-	const message = createMemo(() => {
-		return useChatMessage(props.replyToMessageId!)
-	})
+	const { setState, state } = useChat()
+	const replyToMessageId = createMemo(() => state.replyToMessageId!)
 
-	if (!message()?.messages()) return null
+	const { message } = useChatMessage(replyToMessageId)
 
 	return (
-		<div
-			class={twMerge(
-				"flex items-center justify-between gap-2 rounded-sm rounded-b-none border border-border/90 border-b-0 bg-secondary/90 px-2 py-1 text-muted-fg text-sm transition hover:border-border/90",
-				props.showAttachmentArea && "rounded-t-none",
-			)}
-		>
-			<p>
-				Replying to <span class="font-semibold text-fg">{message()!.messages()!.author?.displayName}</span>
-			</p>
-			<Button size="icon" intent="icon" onClick={() => set("replyToMessageId", null)}>
-				<IconCircleXSolid />
-			</Button>
-		</div>
+		<Show when={message()}>
+			<div
+				class={twMerge(
+					"flex items-center justify-between gap-2 rounded-sm rounded-b-none border border-border/90 border-b-0 bg-secondary/90 px-2 py-1 text-muted-fg text-sm transition hover:border-border/90",
+					props.showAttachmentArea && "rounded-t-none",
+				)}
+			>
+				<p>
+					Replying to <span class="font-semibold text-fg">{message()!.author?.displayName}</span>
+				</p>
+				<Button size="icon" intent="icon" onClick={() => setState("replyToMessageId", null)}>
+					<IconCircleXSolid />
+				</Button>
+			</div>
+		</Show>
 	)
 }
 

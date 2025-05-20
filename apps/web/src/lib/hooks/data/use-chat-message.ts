@@ -1,20 +1,20 @@
 import { createQuery } from "@rocicorp/zero/solid"
-import { createMemo } from "solid-js"
+import { type Accessor, createMemo } from "solid-js"
 import { useZero } from "~/lib/zero/zero-context"
 
-export const useChatMessage = (id: string) => {
+export const useChatMessage = (id: Accessor<string>) => {
 	const z = useZero()
 
-	const messageQuery = z.query.messages
-		.limit(100)
-		.related("author")
-		.where(({ cmp }) => cmp("id", "=", id))
-		.orderBy("createdAt", "desc")
-		.one()
+	const messageQuery = createMemo(() =>
+		z.query.messages
+			.related("author")
+			.where(({ cmp }) => cmp("id", "=", id()))
+			.one(),
+	)
 
-	const [messages, messagesResult] = createQuery(() => messageQuery)
+	const [message, messagesResult] = createQuery(messageQuery)
 
 	const isLoading = createMemo(() => messagesResult().type !== "complete")
 
-	return { messages, isLoading }
+	return { message, isLoading }
 }

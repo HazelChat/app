@@ -96,10 +96,6 @@ export const Markdown: Component<Partial<SolidMarkdownOptions>> = (opts) => {
 		})
 	}
 
-	createEffect(() => {
-		console.log(node.children, opts.children)
-	})
-
 	return (
 		<div class={options.class}>
 			<MarkdownRoot
