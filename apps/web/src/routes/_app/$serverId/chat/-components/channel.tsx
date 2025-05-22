@@ -1,6 +1,7 @@
 import { type Accessor, createEffect, createMemo, createSignal, on } from "solid-js"
 import { VList, type VListHandle } from "virtua/solid"
 import { ChatMessage } from "~/components/chat-ui/chat-message"
+import { ChatTypingPresence } from "~/components/chat-ui/chat-typing-presence"
 import { FloatingBar } from "~/components/chat-ui/floating-bar"
 import { useChat } from "~/lib/hooks/data/use-chat"
 import type { Message } from "~/lib/hooks/data/use-chat-messages"
@@ -124,6 +125,7 @@ export function Channel(props: { channelId: Accessor<string>; serverId: Accessor
 			</VList>
 			<div class="mx-2 mb-6">
 				<FloatingBar channelId={props.channelId()} />
+				<ChatTypingPresence />
 			</div>
 		</div>
 	)

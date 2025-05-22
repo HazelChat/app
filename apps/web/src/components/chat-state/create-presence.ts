@@ -46,7 +46,9 @@ export const createPresence = () => {
 		const updateState = () => {
 			const state = channel().presenceState<PresenceUser>()
 
-			const presenceUsers = Object.keys(state).map((key) => state[key][0])
+			const presenceUsers = Object.keys(state)
+				.map((key) => state[key][0])
+				.filter((user) => user.user_id !== userId())
 
 			setState(
 				"typingUserIds",
