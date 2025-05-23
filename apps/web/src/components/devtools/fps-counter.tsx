@@ -1,49 +1,69 @@
 import { type Component, createSignal, onCleanup, onMount } from "solid-js"
 
 export const FpsCounter: Component = () => {
-	// Signal to store and display the FPS value
+	const getInitialVisibility = (): boolean => {
+		try {
+			const stored = localStorage.getItem("fps-counter-visible")
+			return stored !== null ? JSON.parse(stored) : true
+		} catch {
+			return true
+		}
+	}
+
 	const [fps, setFps] = createSignal<number>(0)
+	const [isVisible, setIsVisible] = createSignal<boolean>(getInitialVisibility())
 
 	let frameCount = 0
 	let lastTime: number = performance.now()
-	let animationFrameId: number | undefined // Can be undefined initially
+	let animationFrameId: number | undefined
 
-	// The core loop function that runs on each frame
 	const loop = (currentTime: DOMHighResTimeStamp) => {
 		frameCount++
 		const elapsedTime: number = currentTime - lastTime
 
-		// Update the FPS display roughly every second
 		if (elapsedTime >= 1000) {
-			// Calculate FPS: (frames / time_in_seconds)
 			const calculatedFps: number = Math.round((frameCount * 1000) / elapsedTime)
 			setFps(calculatedFps)
 
-			// Reset counter and timer for the next interval
 			frameCount = 0
 			lastTime = currentTime
 		}
 
-		// Request the next frame
 		animationFrameId = requestAnimationFrame(loop)
 	}
 
-	// Start the loop when the component mounts
+	const toggleVisibility = () => {
+		const newVisibility = !isVisible()
+		setIsVisible(newVisibility)
+		try {
+			localStorage.setItem("fps-counter-visible", JSON.stringify(newVisibility))
+		} catch {
+			console.warn("Failed to save FPS counter visibility to localStorage")
+		}
+	}
+
+	const handleKeyDown = (event: KeyboardEvent) => {
+		if (event.metaKey && event.key === "g") {
+			event.preventDefault()
+			toggleVisibility()
+		}
+	}
+
 	onMount(() => {
-		// Initialize timer and start the loop
 		lastTime = performance.now()
-		frameCount = 0 // Reset count just before starting
+		frameCount = 0
 		animationFrameId = requestAnimationFrame(loop)
+
+		document.addEventListener("keydown", handleKeyDown)
 	})
 
-	// Stop the loop when the component unmounts to prevent memory leaks
 	onCleanup(() => {
 		if (animationFrameId !== undefined) {
 			cancelAnimationFrame(animationFrameId)
 		}
+		document.removeEventListener("keydown", handleKeyDown)
 	})
 
-	// Render the FPS value
 	return (
 		<div
 			style={{
@@ -55,7 +75,8 @@ export const FpsCounter: Component = () => {
 				padding: "5px 10px",
 				"border-radius": "3px",
 				"font-family": "monospace",
-				"z-index": "9999", // Ensure it's on top
+				"z-index": "9999",
+				display: isVisible() ? "block" : "none",
 			}}
 		>
 			FPS: {fps()}
