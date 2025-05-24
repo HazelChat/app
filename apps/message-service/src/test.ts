@@ -37,14 +37,16 @@ const simpleTest = Effect.gen(function* () {
 	const channelId = ChannelId.make(`cha_${nanoid(10)}`)
 	const authorId = UserId.make(`usr_${nanoid(10)}`)
 
-	console.log(
-		yield* create({
-			content: "Hello, world!",
-			channelId: channelId,
-			threadChannelId: Option.none(),
-			authorId: authorId,
-			replyToMessageId: Option.none(),
-			attachedFiles: ["lol"],
+	yield* create({
+		content: "Hello, world!",
+		channelId: channelId,
+		threadChannelId: Option.none(),
+		authorId: authorId,
+		replyToMessageId: Option.none(),
+		attachedFiles: ["lol"],
+	}).pipe(
+		Effect.repeat({
+			times: 100000,
 		}),
 	)
 })

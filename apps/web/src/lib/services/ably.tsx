@@ -2,7 +2,6 @@ import type { Message } from "@maki-chat/zero"
 import Ably from "ably"
 import { useAuth } from "clerk-solidjs"
 import { type JSX, createContext, createEffect, createSignal, onCleanup, onMount, useContext } from "solid-js"
-import { toaster } from "~/components/ui/toaster"
 
 const ably = new Ably.Realtime("NY2l4Q._SC2Cw:4EX9XKKwif-URelo-XiW7AuAqAjy8QzOheHhnjocjkk")
 

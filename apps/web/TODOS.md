@@ -12,7 +12,8 @@
 - Fix weird Avatar flashing caused by reloads (probbaly means to fork virtua and change For to Index for our usecase)
 - Image preview
     - Maybe show metadata like filename, filesize and resolution somewhere
-- Make Uploading Better
+    - Add simple zoom in/out functionality
+- Make Uploading    
  - Show some progress 
  - Multi file upload should be display better
  - Dont allow uploading the same file multiple times

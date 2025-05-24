@@ -15,6 +15,7 @@ const SqlLive = SqlCassandra.layer({
 	localDataCenter: "datacenter1",
 	keyspace: "chat",
 	transformQueryNames: String.camelToSnake,
+	transformResultNames: String.snakeToCamel,
 })
 
 const Live = HttpLive.pipe(

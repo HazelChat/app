@@ -18,6 +18,7 @@
 	},
 	"packageManager": "bun@1.2.12",
 	"dependencies": {
+		"@effect/experimental": "^0.46.7",
 		"@effect/platform": "^0.82.7",
 		"@rocicorp/zero": "^0.20.2025052100",
 		"@supabase/supabase-js": "^2.49.8",
