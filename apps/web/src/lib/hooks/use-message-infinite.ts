@@ -1,43 +1,40 @@
+import { FetchHttpClient, HttpApiClient } from "@effect/platform"
+import { MakiApi } from "@maki-chat/api-schema"
 import { useInfiniteQuery } from "@tanstack/solid-query"
+import { Effect, Logger, ManagedRuntime, Runtime } from "effect"
 
-interface Message {
-	id: string
-	content: string
-	timestamp: string
-	userId: string
-}
+const appLayer = Logger.replace(
+	Logger.defaultLogger,
+	// Custom logger implementation
+	Logger.make(({ message }) => console.log(message)),
+)
 
-interface MessageCursorResult {
-	data: Message[]
-	pagination: {
-		hasNext: boolean
-		hasPrevious: boolean
-		nextCursor?: string
-		previousCursor?: string
-	}
-}
+const runtime = ManagedRuntime.make(appLayer)
 
-interface GetMessagesParams {
-	cursor?: string
-	limit?: number
-}
-
-const fetchMessages = async ({ cursor, limit = 20 }: GetMessagesParams): Promise<MessageCursorResult> => {
-	const params = new URLSearchParams()
-	if (cursor) params.append("cursor", cursor)
-	params.append("limit", limit.toString())
-
-	const response = await fetch(`http://localhost:8787/messages?${params}`)
-	if (!response.ok) {
-		throw new Error("Failed to fetch messages")
-	}
-	return response.json()
-}
+const runEffect = <A, E>(effect: Effect.Effect<A, E>) => runtime.runPromise(effect)
 
 export const createInfiniteMessages = (limit = 20) => {
 	return useInfiniteQuery(() => ({
 		queryKey: ["messages", limit],
-		queryFn: ({ pageParam }) => fetchMessages({ cursor: pageParam, limit }),
+		queryFn: ({ pageParam }) =>
+			runEffect(
+				Effect.gen(function* () {
+					console.log("Fetching messages with limit:", limit, "and pageParam:", pageParam)
+					const apiClient = yield* HttpApiClient.make(MakiApi, {
+						baseUrl: "http://localhost:8787",
+					})
+					const result = yield* apiClient.Message.getMessages({
+						urlParams: {
+							limit: limit,
+							cursor: pageParam as any,
+						},
+					})
+
+					console.log("Fetched messages:", result)
+
+					return result
+				}).pipe(Effect.provide(FetchHttpClient.layer)),
+			),
 		getNextPageParam: (lastPage) => (lastPage.pagination.hasNext ? lastPage.pagination.nextCursor : undefined),
 		getPreviousPageParam: (firstPage) =>
 			firstPage.pagination.hasPrevious ? firstPage.pagination.previousCursor : undefined,

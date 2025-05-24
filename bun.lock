@@ -53,6 +53,8 @@
       "dependencies": {
         "@ark-ui/solid": "^5.9.1",
         "@bigmistqke/solid-contenteditable": "^0.0.11",
+        "@effect/platform": "^0.82.7",
+        "@effect/platform-browser": "^0.62.7",
         "@maki-chat/api-schema": "workspace:*",
         "@maki-chat/markdown": "workspace:*",
         "@maki-chat/zero": "workspace:*",
@@ -281,6 +283,8 @@
     "@effect/experimental": ["@effect/experimental@0.46.7", "", { "dependencies": { "uuid": "^11.0.3" }, "peerDependencies": { "@effect/platform": "^0.82.7", "effect": "^3.15.4", "ioredis": "^5", "lmdb": "^3" }, "optionalPeers": ["ioredis", "lmdb"] }, "sha512-38T7ykK6g9a3dMrhvu0dTomnA0UiIRfuf5zVH4LOlNBMYxeHcrohixVbk0I0lo4Ut+QsuNaw1lTL4MXbZ3hVtw=="],
 
     "@effect/platform": ["@effect/platform@0.82.7", "", { "dependencies": { "find-my-way-ts": "^0.1.5", "msgpackr": "^1.11.4", "multipasta": "^0.2.5" }, "peerDependencies": { "effect": "^3.15.4" } }, "sha512-+8Ke8Azowkxlgv+GzKCsAPlQmmB5A8ITKG5xololiG6TXEM6oXH48bzi1wWvAP4YZ16HzEyMTvDz/Wfql0ncqQ=="],
+
+    "@effect/platform-browser": ["@effect/platform-browser@0.62.7", "", { "dependencies": { "multipasta": "^0.2.5" }, "peerDependencies": { "@effect/platform": "^0.82.7", "effect": "^3.15.4" } }, "sha512-j0Fpr3ggm2KrQcUTTB5QsXDt6hNGiMFouSuOwdOdhaOS+hu5MYjMA6VBw69eNm7xc+Yf4kPCvrkekI5ZaFCBDA=="],
 
     "@effect/platform-bun": ["@effect/platform-bun@0.65.4", "", { "dependencies": { "@effect/platform-node-shared": "^0.35.4", "multipasta": "^0.2.5" }, "peerDependencies": { "@effect/cluster": "^0.34.4", "@effect/platform": "^0.82.7", "@effect/rpc": "^0.59.8", "@effect/sql": "^0.35.7", "effect": "^3.15.4" } }, "sha512-kTAnQStndpeyE7kWGhnrR+Z2uC+BD1ZEs1eeHpSHUuu+XJQSkSVmJTh1KvcML1WQbLpFjz/dJZ/0dZgMGVvwAA=="],
 

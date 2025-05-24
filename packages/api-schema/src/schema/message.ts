@@ -1,7 +1,6 @@
 import { Schema } from "effect"
 import { UserId } from "./user"
 
-import { types } from "cassandra-driver"
 import * as Model from "../model"
 
 export const ChannelId = Schema.String.pipe(Schema.brand("@hazel/channel-id"))
@@ -27,9 +26,11 @@ export class Message extends Model.Class<Message>("@hazel/Message")({
 	id: Model.Field({
 		insert: MessageId,
 		update: MessageId,
-		select: Schema.transform(Schema.instanceOf(types.TimeUuid), MessageId, {
+		select: Schema.transform(Schema.Any, MessageId, {
 			strict: true,
-			encode: (value) => types.TimeUuid.fromString(value),
+			encode: (value) => value,
+			// TODO: Cant use cassandra dep since we use this in the browser
+			// encode: (value) => types.TimeUuid.fromString(value),
 			decode: (value) => value.toString(),
 		}),
 		json: MessageId,

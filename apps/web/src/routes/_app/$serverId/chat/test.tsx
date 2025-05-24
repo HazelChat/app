@@ -1,5 +1,6 @@
 import { Format } from "@ark-ui/solid"
 import { createFileRoute } from "@tanstack/solid-router"
+import { DateTime } from "effect"
 
 import { For, Show, createEffect, createSignal, onCleanup } from "solid-js"
 import { createInfiniteMessages } from "~/lib/hooks/use-message-infinite"
@@ -56,7 +57,7 @@ function InfiniteScrollMessages() {
 								<div class="message-content">{message.content}</div>
 								<div class="message-meta">
 									<span class="message-timestamp">
-										<Format.RelativeTime value={new Date(message.createdAt)} />
+										{/* <Format.RelativeTime value={DateTime.toDate(message.createdAt)} /> */}
 									</span>
 									<span class="message-user">User: {message.authorId}</span>
 								</div>

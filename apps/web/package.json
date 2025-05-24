@@ -14,6 +14,8 @@
 	"dependencies": {
 		"@ark-ui/solid": "^5.9.1",
 		"@bigmistqke/solid-contenteditable": "^0.0.11",
+		"@effect/platform": "^0.82.7",
+		"@effect/platform-browser": "^0.62.7",
 		"@maki-chat/api-schema": "workspace:*",
 		"@maki-chat/markdown": "workspace:*",
 		"@maki-chat/zero": "workspace:*",

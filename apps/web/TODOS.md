@@ -56,6 +56,6 @@
  - Integrate into the chatUI
  - Add channelID filters
  - Add Authentication to endpoints
- - Integrate Effect Api client to react query
+ - Make Pagination Smarter DONT FETCH ALL MESSAGES KEKWS
 
  - Add Websocket and connect
