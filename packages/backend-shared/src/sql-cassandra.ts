@@ -63,7 +63,6 @@ export const make = (
 			constructor(private readonly client: Cassandra.Client) {}
 
 			private runRaw(cql: string, params?: ReadonlyArray<any>) {
-				// console.debug("Executing CQL:", cql, "with params:", params)
 				return Effect.async<Cassandra.types.ResultSet, SqlError>((resume) => {
 					this.client.execute(cql, params || [], (err, result) => {
 						if (err) {
@@ -84,7 +83,6 @@ export const make = (
 			}
 
 			private run(cql: string, params?: ReadonlyArray<any>) {
-				// console.debug("Executing CQL:", cql, "with params:", params)
 				return this.runRaw(cql, params).pipe(Effect.map((result) => result.rows || []))
 			}
 

@@ -881,21 +881,23 @@ export const makePartitionedPaginatedQuery = <
             select * from ${sql(options.tableName)}
             where ${sql(partitionColumn)} = ${partitionValue}
             and (created_at, ${sql(cursorColumn)}) ${sql.unsafe(orderDirection === "ASC" ? ">" : "<")} (${cursorCreatedAt}, ${cursor})
-            limit ${fetchLimit}
+            limit ${sql.unsafe(fetchLimit.toString())}
           `
 				}
 				if (cursor) {
 					return sql`
-            select * from ${sql(options.tableName)}
-            where ${sql(partitionColumn)} = ${partitionValue}
-            and ${sql(cursorColumn)} ${sql.unsafe(orderDirection === "ASC" ? ">" : "<")} ${cursor}
-            limit ${fetchLimit}
-          `
+							select * from ${sql(options.tableName)}
+								where ${sql(partitionColumn)} = ${partitionValue}
+								and ${sql(cursorColumn)} ${sql.unsafe(orderDirection === "ASC" ? ">" : "<")} ${cursor}
+								order by ${sql(cursorColumn)} ${sql.unsafe(orderDirection)}
+								limit ${sql.unsafe(fetchLimit.toString())}
+  					`
 				}
 				return sql`
             select * from ${sql(options.tableName)}
             where ${sql(partitionColumn)} = ${partitionValue}
-            limit ${fetchLimit}
+			order by ${sql(cursorColumn)} ${sql.unsafe(orderDirection)}
+            limit ${sql.unsafe(fetchLimit.toString())}
           `
 			},
 		})
@@ -946,6 +948,7 @@ export const makePartitionedPaginatedQuery = <
 							cursorCreatedAt = cursorInfo.value.created_at
 						}
 					}
+					console.log(actualLimit)
 
 					const results = yield* querySchema({
 						cursor: params.cursor ?? null,
@@ -954,7 +957,7 @@ export const makePartitionedPaginatedQuery = <
 						partitionValue,
 					})
 
-					console.log(results, "XD")
+					console.log(results.length, "XD")
 
 					const hasNext = results.length > actualLimit
 					const data = hasNext ? results.slice(0, actualLimit) : results
