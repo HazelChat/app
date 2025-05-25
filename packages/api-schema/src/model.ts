@@ -948,7 +948,6 @@ export const makePartitionedPaginatedQuery = <
 							cursorCreatedAt = cursorInfo.value.created_at
 						}
 					}
-					console.log(actualLimit)
 
 					const results = yield* querySchema({
 						cursor: params.cursor ?? null,
@@ -956,8 +955,6 @@ export const makePartitionedPaginatedQuery = <
 						limit: actualLimit,
 						partitionValue,
 					})
-
-					console.log(results.length, "XD")
 
 					const hasNext = results.length > actualLimit
 					const data = hasNext ? results.slice(0, actualLimit) : results

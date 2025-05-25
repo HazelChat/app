@@ -1,5 +1,6 @@
 import { FetchHttpClient, HttpApiClient } from "@effect/platform"
 import { MakiApi } from "@maki-chat/api-schema"
+import type { MessageId } from "@maki-chat/api-schema/schema/message.js"
 import { useInfiniteQuery } from "@tanstack/solid-query"
 import { Effect, Logger, ManagedRuntime, Runtime } from "effect"
 
@@ -19,18 +20,15 @@ export const createInfiniteMessages = (limit = 20) => {
 		queryFn: ({ pageParam }) =>
 			runEffect(
 				Effect.gen(function* () {
-					console.log("Fetching messages with limit:", limit, "and pageParam:", pageParam)
 					const apiClient = yield* HttpApiClient.make(MakiApi, {
 						baseUrl: "http://localhost:8787",
 					})
 					const result = yield* apiClient.Message.getMessages({
 						urlParams: {
 							limit: limit,
-							cursor: pageParam as any,
+							cursor: pageParam as MessageId | undefined,
 						},
 					})
-
-					console.log("Fetched messages:", result)
 
 					return result
 				}).pipe(Effect.provide(FetchHttpClient.layer)),

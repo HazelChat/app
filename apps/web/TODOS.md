@@ -56,6 +56,5 @@
  - Integrate into the chatUI
  - Add channelID filters
  - Add Authentication to endpoints
- - Make Pagination Smarter DONT FETCH ALL MESSAGES KEKWS
 
  - Add Websocket and connect
