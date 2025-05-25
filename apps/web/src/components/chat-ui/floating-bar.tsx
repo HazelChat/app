@@ -279,16 +279,17 @@ export function FloatingBar(props: { channelId: ChannelId }) {
 		if (text.trim().length === 0 && successfulKeys().length === 0) return
 		const content = text.trim()
 
-		setInput("")
-
 		// TODO: If we are not a channel member and the channel is a thread, we need to add the current user as a channel member
-		await createMessageMutation.mutateAsync({
+		createMessageMutation.mutate({
 			content: content,
 			authorId: auth.userId()! as any,
 			replyToMessageId: Option.fromNullable(state.replyToMessageId as MessageId),
 			attachedFiles: successfulKeys(),
 			threadChannelId: Option.none(),
 		})
+
+		setInput("")
+		setState("replyToMessageId", null)
 
 		trackTyping(false)
 	}
@@ -389,17 +390,19 @@ function ReplyInfo(props: {
 	const replyToMessageId = createMemo(() => state.replyToMessageId!)
 
 	const channelId = createMemo(() => state.channelId)
-	const messageQuery = MessageQueries.createMessageQuery({
+	const query = MessageQueries.createMessageQuery({
 		messageId: replyToMessageId,
 		channelId: channelId,
 	})
 
-	const authorId = createMemo(() => messageQuery.data?.authorId!)
+	const messageData = createMemo(() => query.data)
+
+	const authorId = createMemo(() => messageData()?.authorId!)
 
 	const { user: author } = useUser(authorId)
 
 	return (
-		<Show when={messageQuery.data}>
+		<Show when={messageData()?.authorId}>
 			<div
 				class={twMerge(
 					"flex items-center justify-between gap-2 rounded-sm rounded-b-none border border-border/90 border-b-0 bg-secondary/90 px-2 py-1 text-muted-fg text-sm transition hover:border-border/90",
