@@ -61,9 +61,12 @@ reactivity needs to be fixed
   - Fix Pinned Message Popover
   - Fix Reply to Message weirdly scrolling up? rerendering idk
  - Add Optimistic Updates to TSQ 
- - Add Websocket and connect
+ - Add Supabase  Realtime
 
  - Add Authentication to endpoints
+ - Replace Effect SQL with Drizzle completly 
+ - Add Ably for Notifications 
+
 
 
 
