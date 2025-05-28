@@ -1,0 +1,13 @@
+{
+	"framework": "solid",
+	"projectName": "maki-chat",
+	"typescript": true,
+	"tailwind": true,
+	"packageManager": "npm",
+	"toolchain": "none",
+	"mode": "file-router",
+	"git": true,
+	"variableValues": {},
+	"version": 1,
+	"existingAddOns": []
+}

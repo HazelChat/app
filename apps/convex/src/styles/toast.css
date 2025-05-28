@@ -1,0 +1,65 @@
+@keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  @keyframes shrink {
+    from {
+      transform: scaleX(1);
+    }
+    to {
+      transform: scaleX(0);
+    }
+  }
+  
+  [data-scope='toast'][data-part='root'] {
+    overflow-wrap: anywhere;
+    translate: var(--x) var(--y);
+    scale: var(--scale);
+    z-index: var(--z-index);
+    height: var(--height);
+    opacity: var(--opacity);
+  
+    will-change: translate, opacity, scale;
+    transition:
+      translate 400ms,
+      scale 400ms,
+      opacity 400ms,
+      height 400ms,
+      box-shadow 200ms;
+    transition-timing-function: cubic-bezier(0.21, 1.02, 0.73, 1);
+  
+    &[data-state='closed'] {
+      transition:
+        translate 400ms,
+        scale 400ms,
+        opacity 200ms;
+      transition-timing-function: cubic-bezier(0.06, 0.71, 0.55, 1);
+    }
+  }
+  
+  [data-scope='toast'] .spinner {
+    animation: spin 1s linear infinite;
+  }
+  
+  [data-scope='toast'][data-part='progressbar'] {
+    height: 4px;
+    background: rgb(116, 116, 116);
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+    inset-inline: 0;
+    animation-name: shrink;
+    animation-fill-mode: forwards;
+  }
+  
+  [data-scope='toast'][data-part='progressbar'][data-type='loading'] {
+    animation-name: none;
+  }
+  
+
+  

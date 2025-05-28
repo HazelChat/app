@@ -1,15 +1,34 @@
 {
-  "name": "convex",
-  "module": "index.ts",
-  "type": "module",
-  "private": true,
-  "devDependencies": {
-    "@types/bun": "latest"
-  },
-  "peerDependencies": {
-    "typescript": "^5"
-  },
-  "dependencies": {
-    "convex": "^1.24.2"
-  }
+	"name": "convex",
+	"module": "index.ts",
+	"type": "module",
+	"private": true,
+	"scripts": {
+		"dev": "vite --port 3000",
+		"start": "vite --port 3000",
+		"build": "vite build",
+		"serve": "vite preview"
+	},
+	"devDependencies": {
+		"@tailwindcss/vite": "^4.1.7",
+		"solid-devtools": "^0.34.0",
+		"tailwindcss": "^4.1.7",
+		"tw-animate-css": "^1.3.0",
+		"typescript": "^5.8.3",
+		"vite": "^6.3.5",
+		"vite-plugin-solid": "^2.11.6",
+		"vite-tsconfig-paths": "^5.1.4"
+	},
+	"dependencies": {
+		"@ark-ui/solid": "^5.9.2",
+		"@tanstack/router-plugin": "^1.120.11",
+		"@tanstack/solid-form": "^1.12.0",
+		"@tanstack/solid-router": "^1.120.10",
+		"@tanstack/solid-router-devtools": "^1.120.10",
+		"convex": "^1.24.2",
+		"solid-js": "^1.9.7",
+		"tailwind-merge": "^3.3.0",
+		"tailwind-variants": "^1.0.0",
+		"virtua": "^0.41.2"
+	}
 }
