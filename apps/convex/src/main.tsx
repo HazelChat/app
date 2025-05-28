@@ -43,7 +43,7 @@ const InnerProviders = () => {
 	)
 }
 
-const convex = new ConvexSolidClient("http://127.0.0.1:3212")
+const convex = new ConvexSolidClient("http://127.0.0.1:3210")
 
 function App() {
 	return (
