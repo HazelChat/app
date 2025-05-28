@@ -17,6 +17,7 @@ import { Route as AppIndexImport } from './routes/_app/index'
 import { Route as AuthSignUpImport } from './routes/_auth/sign-up'
 import { Route as AuthSignInImport } from './routes/_auth/sign-in'
 import { Route as AppOtherPageImport } from './routes/_app/other-page'
+import { Route as AppOnboardingIndexImport } from './routes/_app/onboarding/index'
 
 // Create/Update Routes
 
@@ -51,6 +52,12 @@ const AuthSignInRoute = AuthSignInImport.update({
 const AppOtherPageRoute = AppOtherPageImport.update({
   id: '/other-page',
   path: '/other-page',
+  getParentRoute: () => AppLayoutRoute,
+} as any)
+
+const AppOnboardingIndexRoute = AppOnboardingIndexImport.update({
+  id: '/onboarding/',
+  path: '/onboarding/',
   getParentRoute: () => AppLayoutRoute,
 } as any)
 
@@ -100,6 +107,13 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof AppIndexImport
       parentRoute: typeof AppLayoutImport
     }
+    '/_app/onboarding/': {
+      id: '/_app/onboarding/'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof AppOnboardingIndexImport
+      parentRoute: typeof AppLayoutImport
+    }
   }
 }
 
@@ -108,11 +122,13 @@ declare module '@tanstack/solid-router' {
 interface AppLayoutRouteChildren {
   AppOtherPageRoute: typeof AppOtherPageRoute
   AppIndexRoute: typeof AppIndexRoute
+  AppOnboardingIndexRoute: typeof AppOnboardingIndexRoute
 }
 
 const AppLayoutRouteChildren: AppLayoutRouteChildren = {
   AppOtherPageRoute: AppOtherPageRoute,
   AppIndexRoute: AppIndexRoute,
+  AppOnboardingIndexRoute: AppOnboardingIndexRoute,
 }
 
 const AppLayoutRouteWithChildren = AppLayoutRoute._addFileChildren(
@@ -139,6 +155,7 @@ export interface FileRoutesByFullPath {
   '/sign-in': typeof AuthSignInRoute
   '/sign-up': typeof AuthSignUpRoute
   '/': typeof AppIndexRoute
+  '/onboarding': typeof AppOnboardingIndexRoute
 }
 
 export interface FileRoutesByTo {
@@ -147,6 +164,7 @@ export interface FileRoutesByTo {
   '/sign-in': typeof AuthSignInRoute
   '/sign-up': typeof AuthSignUpRoute
   '/': typeof AppIndexRoute
+  '/onboarding': typeof AppOnboardingIndexRoute
 }
 
 export interface FileRoutesById {
@@ -157,13 +175,14 @@ export interface FileRoutesById {
   '/_auth/sign-in': typeof AuthSignInRoute
   '/_auth/sign-up': typeof AuthSignUpRoute
   '/_app/': typeof AppIndexRoute
+  '/_app/onboarding/': typeof AppOnboardingIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '' | '/other-page' | '/sign-in' | '/sign-up' | '/'
+  fullPaths: '' | '/other-page' | '/sign-in' | '/sign-up' | '/' | '/onboarding'
   fileRoutesByTo: FileRoutesByTo
-  to: '' | '/other-page' | '/sign-in' | '/sign-up' | '/'
+  to: '' | '/other-page' | '/sign-in' | '/sign-up' | '/' | '/onboarding'
   id:
     | '__root__'
     | '/_app'
@@ -172,6 +191,7 @@ export interface FileRouteTypes {
     | '/_auth/sign-in'
     | '/_auth/sign-up'
     | '/_app/'
+    | '/_app/onboarding/'
   fileRoutesById: FileRoutesById
 }
 
@@ -203,7 +223,8 @@ export const routeTree = rootRoute
       "filePath": "_app/layout.tsx",
       "children": [
         "/_app/other-page",
-        "/_app/"
+        "/_app/",
+        "/_app/onboarding/"
       ]
     },
     "/_auth": {
@@ -227,6 +248,10 @@ export const routeTree = rootRoute
     },
     "/_app/": {
       "filePath": "_app/index.tsx",
+      "parent": "/_app"
+    },
+    "/_app/onboarding/": {
+      "filePath": "_app/onboarding/index.tsx",
       "parent": "/_app"
     }
   }
