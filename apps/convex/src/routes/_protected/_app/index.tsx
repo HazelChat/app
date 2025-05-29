@@ -7,7 +7,6 @@ import { getCurrentServerId } from "~/lib/helpers/localstorage"
 
 export const Route = createFileRoute("/_protected/_app/")({
 	component: App,
-	beforeLoad: async ({ context }) => {},
 })
 
 function App() {

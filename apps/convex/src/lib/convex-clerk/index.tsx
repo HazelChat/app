@@ -27,7 +27,7 @@ export function ConvexProviderWithClerk(props: {
 	const useAuthFromClerk = createUseAuthFromClerk(() => props.useAuth)
 
 	return (
-		<ConvexProviderWithAuth client={props.client} useAuth={useAuthFromClerk()}>
+		<ConvexProviderWithAuth client={props.client} useAuth={useAuthFromClerk}>
 			{props.children}
 		</ConvexProviderWithAuth>
 	)
@@ -57,10 +57,10 @@ function createUseAuthFromClerk(useAuth: () => UseAuth) {
 		const isLoading = createMemo(() => !isLoaded())
 		const isAuthenticated = createMemo(() => isSignedIn() ?? false)
 
-		return createMemo(() => ({
+		return {
 			isLoading: isLoading,
 			isAuthenticated: isAuthenticated,
 			fetchAccessToken: fetchAccessToken(),
-		}))
+		}
 	}
 }

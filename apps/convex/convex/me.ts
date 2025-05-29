@@ -1,4 +1,3 @@
-import type { Id } from "./_generated/dataModel"
 import { query } from "./_generated/server"
 
 export const get = query({
