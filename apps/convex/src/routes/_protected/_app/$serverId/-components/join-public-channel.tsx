@@ -1,9 +1,9 @@
 import { useNavigate } from "@tanstack/solid-router"
+import { api } from "convex-hazel/_generated/api"
+import type { Id } from "convex-hazel/_generated/dataModel"
 import { type Accessor, For, Show } from "solid-js"
 import { IconHashtag } from "~/components/icons/hashtag"
-
-import { usePublicServers } from "~/lib/hooks/data/use-public-servers"
-import { useZero } from "~/lib/zero/zero-context"
+import { createMutation } from "~/lib/convex"
 
 export interface JoinPublicChannelProps {
 	serverId: Accessor<string>
@@ -11,11 +11,11 @@ export interface JoinPublicChannelProps {
 }
 
 export const JoinPublicChannel = (props: JoinPublicChannelProps) => {
-	const z = useZero()
-
 	const navigate = useNavigate()
 
 	const { channels: unjoinedChannel } = usePublicServers(props.serverId)
+
+	const joinChannel = createMutation(api.channels.joinChannel)
 
 	return (
 		<Show
@@ -28,9 +28,9 @@ export const JoinPublicChannel = (props: JoinPublicChannelProps) => {
 						class="items-2 flex w-full gap-2 rounded-md px-2 py-1 hover:bg-muted"
 						type="button"
 						onClick={async () => {
-							await z.mutate.channelMembers.upsert({
-								userId: z.userID,
-								channelId: channel.id,
+							await joinChannel({
+								channelId: channel.id as Id<"channels">,
+								serverId: props.serverId() as Id<"servers">,
 							})
 
 							props.onSuccess?.()

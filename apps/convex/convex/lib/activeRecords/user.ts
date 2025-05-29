@@ -99,4 +99,8 @@ export class User {
 	public get doc(): Doc<"users"> {
 		return this.user
 	}
+
+	public get id(): Id<"users"> {
+		return this.user._id
+	}
 }

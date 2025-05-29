@@ -78,7 +78,7 @@ export default defineSchema({
 
 		joinedAt: v.number(),
 		deletedAt: v.optional(v.number()),
-	}),
+	}).index("by_channelIdAndUserId", ["channelId", "userId"]),
 	pinnedMessages: defineTable({
 		messageId: v.id("messages"),
 		channelId: v.id("channels"),

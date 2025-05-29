@@ -1,20 +1,21 @@
 import { Link, useParams } from "@tanstack/solid-router"
+import { api } from "convex-hazel/_generated/api"
 import { For, createMemo } from "solid-js"
 import { IconChevronUpDown } from "~/components/icons/chevron-up-down"
 import { IconPlus } from "~/components/icons/plus"
 import { Avatar } from "~/components/ui/avatar"
 import { Menu } from "~/components/ui/menu"
 import { Sidebar } from "~/components/ui/sidebar"
-import { useUserServers } from "~/lib/hooks/data/use-user-servers"
+import { createQuery } from "~/lib/convex"
 
 export const WorkspaceSwitcher = () => {
 	const params = useParams({
-		from: "/_app/$serverId",
+		from: "/_protected/_app/$serverId",
 	})
 
-	const { servers } = useUserServers()
+	const servers = createQuery(api.servers.getServersForUser)
 
-	const activeServer = createMemo(() => servers().find((server) => server.id === params().serverId))
+	const activeServer = createMemo(() => servers()?.find((server) => server._id === params().serverId))
 
 	return (
 		<Sidebar.Menu>
@@ -42,12 +43,12 @@ export const WorkspaceSwitcher = () => {
 								{(server) => (
 									<Menu.Item
 										class="flex items-center gap-2"
-										value={server.id}
+										value={server._id}
 										asChild={(props) => (
 											<Link
 												to="/$serverId"
 												params={{
-													serverId: server.id,
+													serverId: server._id,
 												}}
 												{...props()}
 											/>

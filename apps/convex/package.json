@@ -10,9 +10,9 @@
 		"serve": "vite preview"
 	},
 	"devDependencies": {
-		"@tailwindcss/vite": "^4.1.7",
+		"@tailwindcss/vite": "^4.1.8",
 		"solid-devtools": "^0.34.0",
-		"tailwindcss": "^4.1.7",
+		"tailwindcss": "^4.1.8",
 		"tw-animate-css": "^1.3.0",
 		"typescript": "^5.8.3",
 		"vite": "^6.3.5",
@@ -26,7 +26,8 @@
 		"@tanstack/solid-router": "^1.120.10",
 		"@tanstack/solid-router-devtools": "^1.120.10",
 		"clerk-solidjs": "^2.0.10",
-		"convex": "^1.24.2",
+		"convex": "^1.24.3",
+		"convex-helpers": "^0.1.89",
 		"solid-js": "^1.9.7",
 		"tailwind-merge": "^3.3.0",
 		"tailwind-variants": "^1.0.0",
