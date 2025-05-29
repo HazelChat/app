@@ -11,6 +11,7 @@ export const getChannels = userQuery({
 		const channels = await ctx.db
 			.query("channels")
 			.withIndex("by_serverId", (q) => q.eq("serverId", args.serverId))
+			.filter((q) => q.neq(q.field("type"), "thread"))
 			.collect()
 
 		const channelsWithMembers = await asyncMap(channels, async (channel) => {
@@ -142,17 +143,14 @@ export const updateChannelPreferences = userMutation({
 		isMuted: v.optional(v.boolean()),
 		isHidden: v.optional(v.boolean()),
 	},
-	handler: async (ctx, args) => {
+	handler: async (ctx, { serverId, channelId, ...args }) => {
 		const channelMember = await ctx.db
 			.query("channelMembers")
-			.withIndex("by_channelIdAndUserId", (q) => q.eq("channelId", args.channelId).eq("userId", ctx.user.id))
+			.withIndex("by_channelIdAndUserId", (q) => q.eq("channelId", channelId).eq("userId", ctx.user.id))
 			.first()
 
 		if (!channelMember) throw new Error("You are not a member of this channel")
 
-		await ctx.db.patch(channelMember._id, {
-			isMuted: args.isMuted,
-			isHidden: args.isHidden,
-		})
+		await ctx.db.patch(channelMember._id, args)
 	},
 })

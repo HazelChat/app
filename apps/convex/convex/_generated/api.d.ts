@@ -14,7 +14,6 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as accounts from "../accounts.js";
-import type * as channelMembers from "../channelMembers.js";
 import type * as channels from "../channels.js";
 import type * as lib_activeRecords_account from "../lib/activeRecords/account.js";
 import type * as lib_activeRecords_user from "../lib/activeRecords/user.js";
@@ -39,7 +38,6 @@ import type * as users from "../users.js";
  */
 declare const fullApi: ApiFromModules<{
   accounts: typeof accounts;
-  channelMembers: typeof channelMembers;
   channels: typeof channels;
   "lib/activeRecords/account": typeof lib_activeRecords_account;
   "lib/activeRecords/user": typeof lib_activeRecords_user;

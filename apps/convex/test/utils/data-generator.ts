@@ -43,3 +43,15 @@ export async function createUser(
 	const role = props.role || "member"
 	return await t.mutation(api.users.createUser, { role, serverId: props.serverId })
 }
+
+export async function createChannel(
+	t: TestConvex<typeof schema> | TestConvexForDataModel<(typeof schema)["schemaValidation"]>,
+	props: { serverId: Id<"servers">; userId: Id<"users"> },
+) {
+	return await t.mutation(api.channels.createChannel, {
+		serverId: props.serverId,
+		name: "Test Channel",
+		type: "public",
+		ownerId: props.userId,
+	})
+}
