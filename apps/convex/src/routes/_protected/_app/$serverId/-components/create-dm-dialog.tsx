@@ -1,5 +1,4 @@
 import { createListCollection } from "@ark-ui/solid"
-import { createQuery } from "@rocicorp/zero/solid"
 import { useNavigate } from "@tanstack/solid-router"
 import { type Accessor, For, Index, createMemo, createSignal } from "solid-js"
 import { IconPlusSmall } from "~/components/icons/plus-small"
@@ -9,20 +8,18 @@ import { Button } from "~/components/ui/button"
 import { Dialog } from "~/components/ui/dialog"
 import { ListBox } from "~/components/ui/list-box"
 import { TextField } from "~/components/ui/text-field"
-import { createJoinChannelMutation } from "~/lib/actions/user-actions"
 
 import type { User } from "@maki-chat/zero"
-import { useZero } from "~/lib/zero/zero-context"
+import { api } from "convex-hazel/_generated/api"
+import { createQuery } from "~/lib/convex"
 
 export interface CreateDmDialogProps {
 	serverId: Accessor<string>
 }
 
 export const CreateDmDialog = (props: CreateDmDialogProps) => {
-	const z = useZero()
-	const friendQuery = z.query.users
 
-	const [friends] = createQuery(() => friendQuery)
+	const [friends] = createQuery(api.servers.)
 
 	const [friendFilter, setFriendFilter] = createSignal<string>("")
 
