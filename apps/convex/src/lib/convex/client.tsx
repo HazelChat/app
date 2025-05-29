@@ -100,12 +100,6 @@ export class ConvexSolidClient {
 	}
 
 	setAuth(fetchToken: AuthTokenFetcher, onChange?: (isAuthenticated: boolean) => void) {
-		if (typeof fetchToken === "string") {
-			throw new Error(
-				"Passing a string to ConvexSolidClient.setAuth is no longer supported, " +
-					"please upgrade to passing in an async function to handle reauthentication.",
-			)
-		}
 		this.sync.setAuth(fetchToken, onChange ?? (() => {}))
 	}
 

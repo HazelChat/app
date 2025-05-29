@@ -23,6 +23,7 @@ import { IconSignOut } from "~/components/ui/signout"
 
 import { api } from "convex-hazel/_generated/api"
 import type { Id } from "convex-hazel/_generated/dataModel"
+import type { FunctionReturnType } from "convex/server"
 import { createMutation, createQuery } from "~/lib/convex"
 import { cn } from "~/lib/utils"
 import { CreateChannelForm } from "./create-channel-form"
@@ -92,9 +93,9 @@ export const AppSidebar = (props: SidebarProps) => {
 						</Dialog>
 					</Sidebar.GroupAction>
 					<Sidebar.Menu>
-						{/* <Index each={serverChannels()}>
+						<Index each={serverChannels()}>
 							{(channel) => <ChannelItem channel={channel} serverId={serverId} />}
-						</Index> */}
+						</Index>
 					</Sidebar.Menu>
 				</Sidebar.Group>
 				<Sidebar.Group>
@@ -103,9 +104,9 @@ export const AppSidebar = (props: SidebarProps) => {
 						<CreateDmDialog serverId={serverId} />
 					</Sidebar.GroupAction>
 					<Sidebar.Menu>
-						{/* <Index each={dmChannels()}>
+						<Index each={dmChannels()}>
 							{(channel) => <DmChannelLink channel={channel} serverId={serverId} />}
-						</Index> */}
+						</Index>
 					</Sidebar.Menu>
 				</Sidebar.Group>
 				<Sidebar.Group class="mt-auto">
@@ -137,7 +138,7 @@ export const AppSidebar = (props: SidebarProps) => {
 }
 
 export interface ChannelItemProps {
-	channel: Accessor<Channel & { members: readonly Member[] }>
+	channel: Accessor<FunctionReturnType<typeof api.channels.getChannels>["serverChannels"][0]>
 	serverId: Accessor<string>
 }
 
@@ -145,14 +146,10 @@ export const ChannelItem = (props: ChannelItemProps) => {
 	const { userId } = useAuth()
 	const params = createMemo(() => ({
 		serverId: props.serverId(),
-		id: props.channel().id,
+		id: props.channel()._id,
 	}))
 
 	const leaveChannel = createMutation(api.channels.leaveChannel)
-
-	const isMuted = createMemo(() =>
-		props.channel().members.some((member) => member.isMuted && member.userId === userId()),
-	)
 
 	return (
 		<Sidebar.MenuItem>
@@ -167,7 +164,7 @@ export const ChannelItem = (props: ChannelItemProps) => {
 				<p
 					class={cn(
 						"text-ellipsis text-nowrap text-muted-foreground group-hover/sidebar-item:text-foreground",
-						isMuted() && "opacity-60",
+						props.channel().isMuted && "opacity-60",
 					)}
 				>
 					{props.channel().name}
@@ -187,13 +184,17 @@ export const ChannelItem = (props: ChannelItemProps) => {
 					)}
 				/>
 				<Menu.Content>
-					<MuteMenuItem channelId={() => props.channel().id} serverId={props.serverId} isMuted={isMuted} />
+					<MuteMenuItem
+						channelId={() => props.channel()._id}
+						serverId={props.serverId}
+						isMuted={() => props.channel().isMuted}
+					/>
 					<Menu.Item
 						class="flex items-center gap-2 text-destructive"
 						value="close"
 						onSelect={() => {
 							leaveChannel({
-								channelId: props.channel().id as Id<"channels">,
+								channelId: props.channel()._id as Id<"channels">,
 								serverId: props.serverId() as Id<"servers">,
 							})
 						}}
@@ -207,28 +208,15 @@ export const ChannelItem = (props: ChannelItemProps) => {
 	)
 }
 
-interface Friend {
-	id: string
-	avatarUrl: string
-	tag: string
-	displayName: string
-}
-
-interface ComputedChannel {
-	id: string
-	isMuted: boolean
-	friends: Friend[]
-}
-
 interface DmChannelLinkProps {
-	channel: Accessor<ComputedChannel>
+	channel: Accessor<FunctionReturnType<typeof api.channels.getChannels>["dmChannels"][0]>
 	serverId: Accessor<string>
 }
 
 const DmChannelLink = (props: DmChannelLinkProps) => {
 	const params = createMemo(() => ({
 		serverId: props.serverId(),
-		id: props.channel().id,
+		id: props.channel()._id,
 	}))
 
 	const updateChannelPreferences = createMutation(api.channels.updateChannelPreferences)
@@ -243,10 +231,10 @@ const DmChannelLink = (props: DmChannelLinkProps) => {
 				)}
 			>
 				<div class="-space-x-4 flex items-center justify-center">
-					<Index each={props.channel().friends}>
-						{(friend) => (
+					<Index each={props.channel().members}>
+						{(member) => (
 							<div class="inline-block">
-								<Avatar class="size-7" src={friend().avatarUrl} name={friend().displayName} />
+								<Avatar class="size-7" src={member().user.avatarUrl} name={member().user.displayName} />
 							</div>
 						)}
 					</Index>
@@ -259,7 +247,7 @@ const DmChannelLink = (props: DmChannelLinkProps) => {
 				>
 					{props
 						.channel()
-						.friends.map((friend) => friend.displayName)
+						.members.map((member) => member.user.displayName)
 						.join(", ")}
 				</p>
 			</Sidebar.MenuButton>
@@ -290,7 +278,7 @@ const DmChannelLink = (props: DmChannelLinkProps) => {
 					</Menu.Item>
 					<Menu.Separator />
 					<MuteMenuItem
-						channelId={() => props.channel().id}
+						channelId={() => props.channel()._id}
 						serverId={props.serverId}
 						isMuted={() => props.channel().isMuted}
 					/>
@@ -299,7 +287,7 @@ const DmChannelLink = (props: DmChannelLinkProps) => {
 						value="close"
 						onSelect={async () => {
 							await updateChannelPreferences({
-								channelId: props.channel().id as Id<"channels">,
+								channelId: props.channel()._id as Id<"channels">,
 								serverId: props.serverId() as Id<"servers">,
 								isHidden: true,
 							})

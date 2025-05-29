@@ -24,9 +24,20 @@ export const getChannels = userQuery({
 
 			if (!currentUser) return null
 
+			const members = await asyncMap(channelMembers, async (member) => {
+				const user = await ctx.db.get(member.userId)
+
+				if (!user) return null
+
+				return {
+					...member,
+					user,
+				}
+			})
+
 			return {
 				...channel,
-				members: channelMembers,
+				members: members.filter((member) => member !== null),
 				isMuted: currentUser?.isMuted || false,
 				isHidden: currentUser?.isHidden || false,
 				currentUser,
