@@ -16,7 +16,7 @@ export const Route = createFileRoute("/_protected/_app")({
 					},
 				})
 			}
-		}, 300)
+		}, 0)
 	},
 })
 

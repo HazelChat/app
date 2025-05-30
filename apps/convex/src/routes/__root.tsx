@@ -8,16 +8,8 @@ interface RootContext {
 	convex: ConvexSolidClient
 }
 
-const errorCount = 0
-
 export const Route = createRootRouteWithContext<RootContext>()({
 	component: RootComponent,
-	// errorComponent: (props) => {
-	// 	errorCount++
-
-	// 	props.reset()
-	// 	return <></>
-	// },
 })
 
 function RootComponent() {

@@ -5,15 +5,6 @@ import { For, Match, Show, Switch, createEffect } from "solid-js"
 
 export const Route = createFileRoute("/_protected")({
 	component: RouteComponent,
-	// beforeLoad: async ({ context }) => {
-	// 	const token = await context.auth.getToken()
-
-	// 	if (!token) {
-	// 		throw redirect({
-	// 			to: "/sign-in",
-	// 		})
-	// 	}
-	// },
 })
 
 function RouteComponent() {
@@ -31,7 +22,7 @@ function RouteComponent() {
 	return (
 		<Switch>
 			<Match when={isLoading()}>
-				<p>Loading...</p>
+				<p>Loading auth...</p>
 			</Match>
 			<Match when={isAuthenticated()}>
 				<Outlet />

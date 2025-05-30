@@ -9,25 +9,20 @@ import { AppSidebar } from "./-components/app-sidebar"
 export const Route = createFileRoute("/_protected/_app/$serverId")({
 	component: RouteComponent,
 	beforeLoad: async ({ context, params }) => {
-		const server = await context.convex
-			.query(api.servers.getServer, {
+		setTimeout(async () => {
+			const server = await context.convex.query(api.servers.getServer, {
 				serverId: params.serverId as Id<"servers">,
 			})
-			.catch(() => {
+
+			if (!server) {
 				removeCurrentServerId()
 				throw redirect({
 					to: "/",
 				})
-			})
+			}
 
-		if (!server) {
-			removeCurrentServerId()
-			throw redirect({
-				to: "/",
-			})
-		}
-
-		setCurrentServerId(server._id)
+			setCurrentServerId(server._id)
+		}, 0)
 	},
 })
 
