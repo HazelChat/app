@@ -59,7 +59,11 @@ export function Channel(props: { channelId: Accessor<Id<"channels">>; serverId: 
 				const currentTime = currentMessage._creationTime
 				const prevTime = prevMessage._creationTime
 				const timeDiff = currentTime - prevTime
-				if (currentMessage.authorId === prevMessage.authorId && timeDiff < timeThreshold) {
+				if (
+					currentMessage.authorId === prevMessage.authorId &&
+					timeDiff < timeThreshold &&
+					!prevMessage.replyToMessageId
+				) {
 					isGroupStart = false
 				}
 			}
