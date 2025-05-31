@@ -440,7 +440,7 @@ export function insertAtBottomIfLoaded<Query extends PaginatedQueryReference>(op
 	localQueryStore: OptimisticLocalStore
 	item: PaginatedQueryItem<Query>
 }) {
-	console.debug('[Convex] insertAtBottomIfLoaded called', options);
+	console.debug("[Convex] insertAtBottomIfLoaded called", options)
 	const { paginatedQuery, localQueryStore, item, argsToMatch } = options
 	const queries = localQueryStore.getAllQueries(paginatedQuery)
 	const queriesThatMatch = queries.filter((q) => {

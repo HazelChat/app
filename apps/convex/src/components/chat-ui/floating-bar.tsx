@@ -257,31 +257,20 @@ export function FloatingBar() {
 	const { trackTyping } = createPresence()
 
 	const createMessage = createMutation(api.messages.createMessage).withOptimisticUpdate((localStore, args) => {
-		optimisticallyUpdateValueInPaginatedQuery(
-			localStore,
-			api.messages.getMessages,
-			{
-				channelId: args.channelId,
-				serverId: args.serverId,
+		return insertAtBottomIfLoaded({
+			paginatedQuery: api.messages.getMessages,
+			argsToMatch: { channelId: args.channelId, serverId: args.serverId },
+			localQueryStore: localStore,
+			item: {
+				_id: crypto.randomUUID() as Id<"messages">,
+				...args,
+				author: {},
+				_creationTime: Date.now(),
+				updatedAt: Date.now(),
+				authorId: auth.userId() as Id<"users">,
+				reactions: [],
 			},
-			(currentValue) => {
-				insertAtBottomIfLoaded({
-					paginatedQuery: api.messages.getMessages,
-					argsToMatch: { channelId: args.channelId, serverId: args.serverId },
-					localQueryStore: localStore,
-					item: {
-						_id: crypto.randomUUID() as Id<"messages">,
-						...args,
-						author: {},
-						_creationTime: Date.now(),
-						updatedAt: Date.now(),
-						authorId: auth.userId() as Id<"users">,
-						reactions: [],
-					},
-				})
-				return currentValue
-			},
-		)
+		})
 	})
 
 	const { attachments, setFileInputRef, handleFileChange, openFileSelector, removeAttachment, clearAttachments } =

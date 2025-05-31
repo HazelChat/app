@@ -91,6 +91,10 @@ export function Channel(props: { channelId: Accessor<ChannelId>; serverId: Acces
 		}),
 	)
 
+	createEffect(() => {
+		console.log(processedMessages(), "XD")
+	})
+
 	return (
 		<div class="flex flex-1 flex-col">
 			<VList

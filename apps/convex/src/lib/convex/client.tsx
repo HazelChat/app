@@ -269,6 +269,7 @@ function createMutationInternal<Mutation extends FunctionReference<"mutation">>(
 			optimisticUpdate: update,
 		})
 	}
+
 	mutation.withOptimisticUpdate = function withOptimisticUpdate(
 		optimisticUpdate: OptimisticUpdate<any>,
 	): SolidMutation<Mutation> {
