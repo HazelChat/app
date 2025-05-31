@@ -1,5 +1,14 @@
 import { useAuth } from "clerk-solidjs"
-import { type Accessor, For, type JSX, Show, createEffect, createMemo, createSignal, onCleanup } from "solid-js"
+import {
+	type Accessor,
+	For,
+	type JSX,
+	Show,
+	createEffect,
+	createMemo,
+	createSignal,
+	onCleanup,
+} from "solid-js"
 import { twMerge } from "tailwind-merge"
 import { tv } from "tailwind-variants"
 import { IconLoader } from "../icons/loader"
@@ -256,25 +265,41 @@ export function FloatingBar() {
 	const { state, setState } = useChat()
 	const { trackTyping } = createPresence()
 
-	const createMessage = createMutation(api.messages.createMessage).withOptimisticUpdate((localStore, args) => {
-		return insertAtBottomIfLoaded({
-			paginatedQuery: api.messages.getMessages,
-			argsToMatch: { channelId: args.channelId, serverId: args.serverId },
-			localQueryStore: localStore,
-			item: {
-				_id: crypto.randomUUID() as Id<"messages">,
-				...args,
-				author: {},
-				_creationTime: Date.now(),
-				updatedAt: Date.now(),
-				authorId: auth.userId() as Id<"users">,
-				reactions: [],
-			},
-		})
+	const currentUser = createQuery(api.me.getUser, {
+		serverId: state.serverId,
 	})
 
-	const { attachments, setFileInputRef, handleFileChange, openFileSelector, removeAttachment, clearAttachments } =
-		useFileAttachment()
+	const createMessage = createMutation(api.messages.createMessage).withOptimisticUpdate(
+		(localStore, args) => {
+			const author = currentUser()
+			// If Current User is not loaded, dont optimistically update
+			if (!author) return
+
+			return insertAtTop({
+				paginatedQuery: api.messages.getMessages,
+				argsToMatch: { channelId: args.channelId, serverId: args.serverId },
+				localQueryStore: localStore,
+				item: {
+					_id: crypto.randomUUID() as Id<"messages">,
+					...args,
+					author: author,
+					_creationTime: Date.now(),
+					updatedAt: Date.now(),
+					authorId: author._id,
+					reactions: [],
+				},
+			})
+		},
+	)
+
+	const {
+		attachments,
+		setFileInputRef,
+		handleFileChange,
+		openFileSelector,
+		removeAttachment,
+		clearAttachments,
+	} = useFileAttachment()
 
 	const [input, setInput] = createSignal("")
 	const [editorRef, setEditorRef] = createSignal<HTMLDivElement>()
@@ -322,7 +347,9 @@ export function FloatingBar() {
 			<Show when={showAttachmentArea()}>
 				<div class="flex flex-col gap-0 rounded-sm rounded-b-none border border-border/90 border-b-0 bg-secondary/90 px-2 py-1 transition hover:border-border/90">
 					<For each={attachments()}>
-						{(attachment) => <Attachment attachment={attachment} removeAttachment={removeAttachment} />}
+						{(attachment) => (
+							<Attachment attachment={attachment} removeAttachment={removeAttachment} />
+						)}
 					</For>
 				</div>
 			</Show>

@@ -1,6 +1,5 @@
-import { useNavigate } from "@tanstack/solid-router"
 import { api } from "convex-hazel/_generated/api"
-import type { Doc, Id } from "convex-hazel/_generated/dataModel"
+import type { Id } from "convex-hazel/_generated/dataModel"
 import { type Accessor, createEffect, createMemo, createSignal, on } from "solid-js"
 import { VList, type VListHandle } from "virtua/solid"
 import { ChatTypingPresence } from "~/components/chat-ui/chat-typing-presence"

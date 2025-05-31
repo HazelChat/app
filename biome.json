@@ -44,7 +44,7 @@
 		"enabled": true,
 		"indentStyle": "tab",
 		"indentWidth": 4,
-		"lineWidth": 120,
+		"lineWidth": 110,
 		"ignore": ["node_modules", ".next", "dist"]
 	},
 	"javascript": {
