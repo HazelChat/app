@@ -11,7 +11,7 @@ import type { Message } from "~/lib/types"
 const PAGE_SIZE = 30
 
 export function Channel(props: { channelId: Accessor<Id<"channels">>; serverId: Accessor<Id<"servers">> }) {
-	const channel = createQuery(api.channels.getChannel, {
+	const { data: channel } = createQuery(api.channels.getChannel, {
 		channelId: props.channelId(),
 		serverId: props.serverId(),
 	})

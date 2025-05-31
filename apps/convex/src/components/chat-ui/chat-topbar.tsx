@@ -19,7 +19,7 @@ export function ChatTopbar() {
 
 	const { state } = useChat()
 
-	const channel = createQuery(api.channels.getChannel, {
+	const { data: channel } = createQuery(api.channels.getChannel, {
 		channelId: state.channelId,
 		serverId: params.serverId as Id<"servers">,
 	})

@@ -22,7 +22,7 @@ export function MessageReply(props: MessageReplyProps) {
 
 	const replyToMessageId = createMemo(() => props.message().replyToMessageId)
 
-	const reployToMessage = createQuery(api.messages.getMessage, {
+	const { data: reployToMessage } = createQuery(api.messages.getMessage, {
 		id: replyToMessageId()!,
 		channelId: state.channelId,
 		serverId: state.serverId,
@@ -83,7 +83,9 @@ export function MessageReply(props: MessageReplyProps) {
 									),
 									p: (props) => <span class="">{props.children}</span>,
 									h1: (props) => <span class="font-bold">{props.children}</span>,
-									blockquote: (props) => <IconQuote class="inline-flex text-muted-foreground" />,
+									blockquote: (props) => (
+										<IconQuote class="inline-flex text-muted-foreground" />
+									),
 									pre: (props) => <IconCode class="inline-flex text-muted-foreground" />,
 									img: (parentProps) => {
 										return <IconImage class="inline-flex text-muted-foreground" />

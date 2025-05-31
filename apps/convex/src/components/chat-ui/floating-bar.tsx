@@ -265,7 +265,7 @@ export function FloatingBar() {
 	const { state, setState } = useChat()
 	const { trackTyping } = createPresence()
 
-	const currentUser = createQuery(api.me.getUser, {
+	const { data: currentUser } = createQuery(api.me.getUser, {
 		serverId: state.serverId,
 	})
 
@@ -441,7 +441,7 @@ function ReplyInfo(props: {
 
 	const channelId = createMemo(() => state.channelId)
 
-	const message = createQuery(api.messages.getMessage, {
+	const { data: message } = createQuery(api.messages.getMessage, {
 		id: replyToMessageId(),
 		channelId: channelId(),
 		serverId: state.serverId,

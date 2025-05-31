@@ -13,7 +13,7 @@ export const WorkspaceSwitcher = () => {
 		from: "/_protected/_app/$serverId",
 	})
 
-	const servers = createQuery(api.servers.getServersForUser)
+	const { data: servers } = createQuery(api.servers.getServersForUser)
 
 	const activeServer = createMemo(() => servers()?.find((server) => server._id === params().serverId))
 
@@ -28,7 +28,11 @@ export const WorkspaceSwitcher = () => {
 								class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
 								{...props()}
 							>
-								<Avatar size="xs" src={activeServer()?.imageUrl} name={activeServer()?.name!} />
+								<Avatar
+									size="xs"
+									src={activeServer()?.imageUrl}
+									name={activeServer()?.name!}
+								/>
 								<div class="grid flex-1 text-left text-sm leading-tight">
 									<span class="truncate font-semibold">{activeServer()?.name}</span>
 								</div>
@@ -55,7 +59,9 @@ export const WorkspaceSwitcher = () => {
 										)}
 									>
 										<Avatar size="xs" src={server.imageUrl} name={server.name} />
-										<span class="truncate text-muted-foreground text-xs">{server.name}</span>
+										<span class="truncate text-muted-foreground text-xs">
+											{server.name}
+										</span>
 									</Menu.Item>
 								)}
 							</For>

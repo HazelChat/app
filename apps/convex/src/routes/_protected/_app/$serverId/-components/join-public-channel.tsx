@@ -13,7 +13,7 @@ export interface JoinPublicChannelProps {
 export const JoinPublicChannel = (props: JoinPublicChannelProps) => {
 	const navigate = useNavigate()
 
-	const unjoinedChannels = createQuery(api.channels.getUnjoinedPublicChannels, {
+	const { data: unjoinedChannels } = createQuery(api.channels.getUnjoinedPublicChannels, {
 		serverId: props.serverId() as Id<"servers">,
 	})
 
@@ -45,7 +45,9 @@ export const JoinPublicChannel = (props: JoinPublicChannelProps) => {
 						}}
 					>
 						<IconHashtag class="size-5 text-muted-foreground" />
-						<p class="text-muted-foreground group-hover/sidebar-item:text-foreground">{channel.name}</p>
+						<p class="text-muted-foreground group-hover/sidebar-item:text-foreground">
+							{channel.name}
+						</p>
 					</button>
 				)}
 			</For>

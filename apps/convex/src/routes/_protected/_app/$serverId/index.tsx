@@ -20,7 +20,7 @@ function RouteComponent() {
 
 	const [searchQuery, setSearchQuery] = createSignal("")
 
-	const members = createQuery(api.social.getMembers, {
+	const { data: members } = createQuery(api.social.getMembers, {
 		serverId: serverId() as Id<"servers">,
 	})
 

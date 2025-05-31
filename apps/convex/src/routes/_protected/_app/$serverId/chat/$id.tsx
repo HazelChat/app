@@ -55,11 +55,13 @@ function ChatImageViewerModal() {
 	const message = createMemo(() => {
 		if (!messageId()) return null
 
-		return createQuery(api.messages.getMessage, {
+		const { data } = createQuery(api.messages.getMessage, {
 			id: messageId(),
 			channelId: state.channelId,
 			serverId: state.serverId,
-		})()
+		})
+
+		return data()
 	})
 
 	const availableImages = createMemo(() => message()?.attachedFiles ?? [])

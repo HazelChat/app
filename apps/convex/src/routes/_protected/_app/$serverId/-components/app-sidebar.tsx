@@ -40,7 +40,7 @@ export const AppSidebar = (props: SidebarProps) => {
 	const params = useParams({ from: "/_protected/_app/$serverId" })
 	const serverId = createMemo(() => params().serverId)
 
-	const channels = createQuery(api.channels.getChannels, {
+	const { data: channels } = createQuery(api.channels.getChannels, {
 		serverId: serverId() as Id<"servers">,
 	})
 
@@ -234,7 +234,11 @@ const DmChannelLink = (props: DmChannelLinkProps) => {
 					<Index each={props.channel().members}>
 						{(member) => (
 							<div class="inline-block">
-								<Avatar class="size-7" src={member().user.avatarUrl} name={member().user.displayName} />
+								<Avatar
+									class="size-7"
+									src={member().user.avatarUrl}
+									name={member().user.displayName}
+								/>
 							</div>
 						)}
 					</Index>

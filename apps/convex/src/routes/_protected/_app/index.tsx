@@ -11,7 +11,7 @@ export const Route = createFileRoute("/_protected/_app/")({
 
 function App() {
 	const navigate = useNavigate()
-	const servers = createQuery(api.servers.getServersForUser)
+	const { data: servers } = createQuery(api.servers.getServersForUser)
 
 	createEffect(() => {
 		if (servers()?.length === 0) {

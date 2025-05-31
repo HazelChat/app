@@ -18,7 +18,7 @@ export interface CreateDmDialogProps {
 }
 
 export const CreateDmDialog = (props: CreateDmDialogProps) => {
-	const friends = createQuery(api.social.getFriends, {
+	const { data: friends } = createQuery(api.social.getFriends, {
 		serverId: props.serverId() as Id<"servers">,
 	})
 
@@ -98,7 +98,11 @@ export const CreateDmDialog = (props: CreateDmDialogProps) => {
 								{(item) => (
 									<ListBox.Item item={item()}>
 										<div class="flex items-center gap-3">
-											<Avatar size="xs" src={item().avatarUrl} name={item().displayName} />
+											<Avatar
+												size="xs"
+												src={item().avatarUrl}
+												name={item().displayName}
+											/>
 											<ListBox.ItemText>{item().displayName}</ListBox.ItemText>
 										</div>
 

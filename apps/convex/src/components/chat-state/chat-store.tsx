@@ -55,10 +55,11 @@ export const ChatProvider = (props: { children: JSX.Element } & Omit<InputChatSt
 	return (
 		<Show when={params()} keyed>
 			{(params) => {
-				const channel = createQuery(api.channels.getChannel, {
+				const { data: channel } = createQuery(api.channels.getChannel, {
 					channelId: props.channelId,
 					serverId: props.serverId,
 				})
+
 				const chatStore$ = createChatStore({
 					...restProps,
 					channel: undefined,

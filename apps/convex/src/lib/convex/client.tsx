@@ -238,7 +238,9 @@ export class ConvexSolidClient {
 	}
 }
 
-export const ConvexContext: Context<ConvexSolidClient | undefined> = createContext<ConvexSolidClient | undefined>()
+export const ConvexContext: Context<ConvexSolidClient | undefined> = createContext<
+	ConvexSolidClient | undefined
+>()
 
 export function ConvexProvider(props: {
 	client: ConvexSolidClient
@@ -274,7 +276,9 @@ function createMutationInternal<Mutation extends FunctionReference<"mutation">>(
 		optimisticUpdate: OptimisticUpdate<any>,
 	): SolidMutation<Mutation> {
 		if (update !== undefined) {
-			throw new Error(`Already specified optimistic update for mutation ${getFunctionName(mutationReference)}`)
+			throw new Error(
+				`Already specified optimistic update for mutation ${getFunctionName(mutationReference)}`,
+			)
 		}
 		return createMutationInternal(mutationReference, client, optimisticUpdate)
 	}
@@ -299,7 +303,11 @@ export type OptionalRestArgsOrSkip<FuncRef extends FunctionReference<any>> = Fun
 export function createQuery<Query extends FunctionReference<"query">>(
 	query: Query,
 	...args: OptionalRestArgsOrSkip<Query>
-): Accessor<Query["_returnType"] | undefined> {
+): {
+	data: Accessor<Query["_returnType"] | undefined>
+	error: Accessor<Error | undefined>
+	isLoading: Accessor<boolean>
+} {
 	const skip = args[0] === "skip"
 	const argsObject = args[0] === "skip" ? {} : parseArgs(args[0])
 
@@ -308,6 +316,7 @@ export function createQuery<Query extends FunctionReference<"query">>(
 
 	const [result, setResult] = createSignal<Query["_returnType"] | undefined>(undefined)
 	const [error, setError] = createSignal<Error | undefined>(undefined)
+	const [isLoading, setIsLoading] = createSignal<boolean>(!skip)
 
 	const memoizedArgs = createMemo(() => JSON.stringify(convexToJson(argsObject)))
 
@@ -315,9 +324,11 @@ export function createQuery<Query extends FunctionReference<"query">>(
 		if (skip) {
 			setResult(undefined)
 			setError(undefined)
+			setIsLoading(false)
 			return
 		}
 
+		setIsLoading(true)
 		memoizedArgs()
 
 		const watch = client.watchQuery(query, argsObject)
@@ -325,6 +336,7 @@ export function createQuery<Query extends FunctionReference<"query">>(
 		const existingResult = watch.localQueryResult()
 		if (existingResult !== undefined) {
 			setResult(existingResult)
+			setIsLoading(false)
 		}
 
 		const unsubscribe = watch.onUpdate(() => {
@@ -332,22 +344,22 @@ export function createQuery<Query extends FunctionReference<"query">>(
 				const newResult = watch.localQueryResult()
 				setResult(newResult)
 				setError(undefined)
+				setIsLoading(false)
 			} catch (e) {
 				setError(e as Error)
 				setResult(undefined)
+				setIsLoading(false)
 			}
 		})
 
 		onCleanup(unsubscribe)
 	})
 
-	return createMemo(() => {
-		const err = error()
-		if (err) {
-			throw err
-		}
-		return result()
-	})
+	return {
+		data: result,
+		error,
+		isLoading,
+	}
 }
 
 export function createMutation<Mutation extends FunctionReference<"mutation">>(
@@ -358,7 +370,9 @@ export function createMutation<Mutation extends FunctionReference<"mutation">>(
 	return createMutationInternal(mutation, client)
 }
 
-export function createAction<Action extends FunctionReference<"action">>(action: Action): SolidAction<Action> {
+export function createAction<Action extends FunctionReference<"action">>(
+	action: Action,
+): SolidAction<Action> {
 	const client = useConvex()
 
 	return createMemo(() => createActionInternal(action, client)) as unknown as SolidAction<Action>
