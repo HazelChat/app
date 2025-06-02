@@ -1,59 +1,95 @@
-import { useSignIn } from "@clerk/clerk-expo"
-import { Link, useRouter } from "expo-router"
-import React from "react"
-import { Text, TextInput, TouchableOpacity, View } from "react-native"
+import { useSSO } from "@clerk/clerk-expo"
+import { FontAwesome } from "@expo/vector-icons"
+import * as AuthSession from "expo-auth-session"
+import * as WebBrowser from "expo-web-browser"
+import React, { useCallback, useEffect } from "react"
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native"
+
+export const useWarmUpBrowser = () => {
+	useEffect(() => {
+		// Preloads the browser for Android devices to reduce authentication load time
+		// See: https://docs.expo.dev/guides/authentication/#improving-user-experience
+		void WebBrowser.warmUpAsync()
+		return () => {
+			// Cleanup: closes browser when component unmounts
+			void WebBrowser.coolDownAsync()
+		}
+	}, [])
+}
+
+// Handle any pending authentication sessions
+WebBrowser.maybeCompleteAuthSession()
 
 export default function Page() {
-	const { signIn, setActive, isLoaded } = useSignIn()
-	const router = useRouter()
+	useWarmUpBrowser()
+	const { startSSOFlow } = useSSO()
 
-	const [emailAddress, setEmailAddress] = React.useState("")
-	const [password, setPassword] = React.useState("")
-
-	const onSignInPress = async () => {
-		if (!isLoaded) return
-
-		try {
-			const signInAttempt = await signIn.create({
-				identifier: emailAddress,
-				password,
-			})
-
-			if (signInAttempt.status === "complete") {
-				await setActive({ session: signInAttempt.createdSessionId })
-				router.replace("/")
-			} else {
-				console.error(JSON.stringify(signInAttempt, null, 2))
+	const handleSignIn = useCallback(
+		async (strategy: "oauth_google" | "oauth_github") => {
+			try {
+				const { createdSessionId, setActive } = await startSSOFlow({
+					strategy,
+					redirectUrl: AuthSession.makeRedirectUri(),
+				})
+				if (createdSessionId) {
+					setActive!({ session: createdSessionId })
+				}
+			} catch (err) {
+				console.error(JSON.stringify(err, null, 2))
 			}
-		} catch (err) {
-			console.error(JSON.stringify(err, null, 2))
-		}
-	}
+		},
+		[startSSOFlow],
+	)
 
 	return (
-		<View>
-			<Text>Sign in</Text>
-			<TextInput
-				autoCapitalize="none"
-				value={emailAddress}
-				placeholder="Enter email"
-				onChangeText={(emailAddress) => setEmailAddress(emailAddress)}
-			/>
-			<TextInput
-				value={password}
-				placeholder="Enter password"
-				secureTextEntry={true}
-				onChangeText={(password) => setPassword(password)}
-			/>
-			<TouchableOpacity onPress={onSignInPress}>
-				<Text>Continue</Text>
+		<View style={styles.container}>
+			<TouchableOpacity
+				style={[styles.button, { backgroundColor: "#fff", borderColor: "#4285F4", borderWidth: 1 }]}
+				onPress={() => handleSignIn("oauth_google")}
+				activeOpacity={0.8}
+			>
+				<FontAwesome name="google" size={22} color="#4285F4" style={styles.icon} />
+				<Text style={[styles.buttonText, { color: "#4285F4" }]}>Sign in with Google</Text>
 			</TouchableOpacity>
-			<View style={{ display: "flex", flexDirection: "row", gap: 3 }}>
-				<Text>Don't have an account?</Text>
-				<Link href="/sign-up">
-					<Text>Sign up</Text>
-				</Link>
-			</View>
+			<TouchableOpacity
+				style={[styles.button, { backgroundColor: "#24292F", marginTop: 16 }]}
+				onPress={() => handleSignIn("oauth_github")}
+				activeOpacity={0.8}
+			>
+				<FontAwesome name="github" size={22} color="#fff" style={styles.icon} />
+				<Text style={[styles.buttonText, { color: "#fff" }]}>Sign in with GitHub</Text>
+			</TouchableOpacity>
 		</View>
 	)
 }
+
+const styles = StyleSheet.create({
+	container: {
+		flex: 1,
+		justifyContent: "center",
+		alignItems: "center",
+		backgroundColor: "#f9f9f9",
+		paddingHorizontal: 24,
+	},
+	button: {
+		flexDirection: "row",
+		alignItems: "center",
+		paddingVertical: 14,
+		paddingHorizontal: 24,
+		borderRadius: 8,
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.08,
+		shadowRadius: 4,
+		elevation: 2,
+		width: "100%",
+		maxWidth: 340,
+	},
+	icon: {
+		marginRight: 12,
+	},
+	buttonText: {
+		fontSize: 16,
+		fontWeight: "600",
+	},
+})

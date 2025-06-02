@@ -1,112 +1,95 @@
-import { useSignUp } from "@clerk/clerk-expo"
-import { Link, useRouter } from "expo-router"
-import * as React from "react"
-import { Text, TextInput, TouchableOpacity, View } from "react-native"
+import { useSSO } from "@clerk/clerk-expo"
+import { FontAwesome } from "@expo/vector-icons"
+import * as AuthSession from "expo-auth-session"
+import * as WebBrowser from "expo-web-browser"
+import React, { useCallback, useEffect } from "react"
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native"
 
-export default function SignUpScreen() {
-	const { isLoaded, signUp, setActive } = useSignUp()
-	const router = useRouter()
-
-	const [emailAddress, setEmailAddress] = React.useState("")
-	const [password, setPassword] = React.useState("")
-	const [pendingVerification, setPendingVerification] = React.useState(false)
-	const [code, setCode] = React.useState("")
-
-	// Handle submission of sign-up form
-	const onSignUpPress = async () => {
-		if (!isLoaded) return
-
-		console.log(emailAddress, password)
-
-		// Start sign-up process using email and password provided
-		try {
-			await signUp.create({
-				emailAddress,
-				password,
-			})
-
-			// Send user an email with verification code
-			await signUp.prepareEmailAddressVerification({ strategy: "email_code" })
-
-			// Set 'pendingVerification' to true to display second form
-			// and capture OTP code
-			setPendingVerification(true)
-		} catch (err) {
-			// See https://clerk.com/docs/custom-flows/error-handling
-			// for more info on error handling
-			console.error(JSON.stringify(err, null, 2))
+export const useWarmUpBrowser = () => {
+	useEffect(() => {
+		// Preloads the browser for Android devices to reduce authentication load time
+		// See: https://docs.expo.dev/guides/authentication/#improving-user-experience
+		void WebBrowser.warmUpAsync()
+		return () => {
+			// Cleanup: closes browser when component unmounts
+			void WebBrowser.coolDownAsync()
 		}
-	}
+	}, [])
+}
 
-	// Handle submission of verification form
-	const onVerifyPress = async () => {
-		if (!isLoaded) return
+// Handle any pending authentication sessions
+WebBrowser.maybeCompleteAuthSession()
 
-		try {
-			// Use the code the user provided to attempt verification
-			const signUpAttempt = await signUp.attemptEmailAddressVerification({
-				code,
-			})
+export default function Page() {
+	useWarmUpBrowser()
+	const { startSSOFlow } = useSSO()
 
-			// If verification was completed, set the session to active
-			// and redirect the user
-			if (signUpAttempt.status === "complete") {
-				await setActive({ session: signUpAttempt.createdSessionId })
-				router.replace("/")
-			} else {
-				// If the status is not complete, check why. User may need to
-				// complete further steps.
-				console.error(JSON.stringify(signUpAttempt, null, 2))
+	const handleSignIn = useCallback(
+		async (strategy: "oauth_google" | "oauth_github") => {
+			try {
+				const { createdSessionId, setActive } = await startSSOFlow({
+					strategy,
+					redirectUrl: AuthSession.makeRedirectUri(),
+				})
+				if (createdSessionId) {
+					setActive!({ session: createdSessionId })
+				}
+			} catch (err) {
+				console.error(JSON.stringify(err, null, 2))
 			}
-		} catch (err) {
-			// See https://clerk.com/docs/custom-flows/error-handling
-			// for more info on error handling
-			console.error(JSON.stringify(err, null, 2))
-		}
-	}
-
-	if (pendingVerification) {
-		return (
-			<>
-				<Text>Verify your email</Text>
-				<TextInput
-					value={code}
-					placeholder="Enter your verification code"
-					onChangeText={(code) => setCode(code)}
-				/>
-				<TouchableOpacity onPress={onVerifyPress}>
-					<Text>Verify</Text>
-				</TouchableOpacity>
-			</>
-		)
-	}
+		},
+		[startSSOFlow],
+	)
 
 	return (
-		<View>
-			<>
-				<Text>Sign up</Text>
-				<TextInput
-					autoCapitalize="none"
-					value={emailAddress}
-					placeholder="Enter email"
-					onChangeText={(email) => setEmailAddress(email)}
-				/>
-				<TextInput
-					value={password}
-					placeholder="Enter password"
-					secureTextEntry={true}
-					onChangeText={(password) => setPassword(password)}
-				/>
-				<TouchableOpacity onPress={onSignUpPress}>
-					<Text>Continue</Text>
-				</TouchableOpacity>
-				<View style={{ display: "flex", flexDirection: "row", gap: 3 }}>
-					<Text>Already have an account?</Text>
-					<Link href="/sign-in">
-						<Text>Sign in</Text>
-					</Link>
-				</View>
-			</>
+		<View style={styles.container}>
+			<TouchableOpacity
+				style={[styles.button, { backgroundColor: "#fff", borderColor: "#4285F4", borderWidth: 1 }]}
+				onPress={() => handleSignIn("oauth_google")}
+				activeOpacity={0.8}
+			>
+				<FontAwesome name="google" size={22} color="#4285F4" style={styles.icon} />
+				<Text style={[styles.buttonText, { color: "#4285F4" }]}>Sign in with Google</Text>
+			</TouchableOpacity>
+			<TouchableOpacity
+				style={[styles.button, { backgroundColor: "#24292F", marginTop: 16 }]}
+				onPress={() => handleSignIn("oauth_github")}
+				activeOpacity={0.8}
+			>
+				<FontAwesome name="github" size={22} color="#fff" style={styles.icon} />
+				<Text style={[styles.buttonText, { color: "#fff" }]}>Sign in with GitHub</Text>
+			</TouchableOpacity>
 		</View>
 	)
 }
+
+const styles = StyleSheet.create({
+	container: {
+		flex: 1,
+		justifyContent: "center",
+		alignItems: "center",
+		backgroundColor: "#f9f9f9",
+		paddingHorizontal: 24,
+	},
+	button: {
+		flexDirection: "row",
+		alignItems: "center",
+		paddingVertical: 14,
+		paddingHorizontal: 24,
+		borderRadius: 8,
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.08,
+		shadowRadius: 4,
+		elevation: 2,
+		width: "100%",
+		maxWidth: 340,
+	},
+	icon: {
+		marginRight: 12,
+	},
+	buttonText: {
+		fontSize: 16,
+		fontWeight: "600",
+	},
+})
