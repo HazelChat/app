@@ -22,7 +22,7 @@
 	},
 	"devDependencies": {
 		"@total-typescript/tsconfig": "^1.0.4",
-		"typescript": "^5.8.3"
+		"typescript": "5.8.3"
 	},
 	"exports": {
 		".": "./src/index.tsx",
