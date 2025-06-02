@@ -1,4 +1,5 @@
 import { SignOutButton } from "@/components/SignOutButton"
+import { NotificationHandler } from "@/components/notification-handler"
 import { SignedIn, SignedOut, useUser } from "@clerk/clerk-expo"
 import { Link } from "expo-router"
 import { Text, View } from "react-native"
@@ -11,6 +12,7 @@ export default function Page() {
 			<SignedIn>
 				<Text>Hello {user?.emailAddresses[0].emailAddress}</Text>
 				<SignOutButton />
+				<NotificationHandler userId={user?.id!} />
 			</SignedIn>
 			<SignedOut>
 				<Link href="/(auth)/sign-in">
