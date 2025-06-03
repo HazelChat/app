@@ -7,6 +7,7 @@ import * as Notifications from "expo-notifications"
 import { useEffect, useState } from "react"
 
 import { api } from "@hazel/backend/api"
+import { ThemedText } from "./ThemedText"
 
 Notifications.setNotificationHandler({
 	handleNotification: async () => ({
@@ -111,11 +112,13 @@ export const NotificationHandler = ({ userId }: { userId: string }) => {
 
 	return (
 		<>
-			<Text>Your Expo push token: {expoPushToken}</Text>
+			<ThemedText>Your Expo push token: {expoPushToken}</ThemedText>
 			<View style={{ alignItems: "center", justifyContent: "center" }}>
-				<Text>Title: {notification?.request.content.title} </Text>
-				<Text>Body: {notification?.request.content.body} WOW</Text>
-				<Text>Data: {notification && JSON.stringify(notification.request.content.data)}</Text>
+				<ThemedText>Title: {notification?.request.content.title} </ThemedText>
+				<ThemedText>Body: {notification?.request.content.body} WOW</ThemedText>
+				<ThemedText>
+					Data: {notification && JSON.stringify(notification.request.content.data)}
+				</ThemedText>
 			</View>
 
 			<Button title="Get Token" onPress={async () => registerForPushNotificationsAsync(userId)} />

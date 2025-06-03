@@ -20,12 +20,13 @@ export const recordPushNotificationToken = accountMutation({
 })
 
 export const sendPushNotification = internalMutation({
-	args: { title: v.string(), to: v.id("accounts") },
+	args: { title: v.string(), body: v.optional(v.string()), to: v.id("accounts") },
 	handler: async (ctx, args) => {
 		const pushId = await pushNotifications.sendPushNotification(ctx, {
 			userId: args.to,
 			notification: {
 				title: args.title,
+				body: args.body,
 			},
 		})
 	},

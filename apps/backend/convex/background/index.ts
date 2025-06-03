@@ -11,6 +11,14 @@ export const sendNotification = internalMutation({
 		channelId: v.id("channels"),
 	},
 	handler: async (ctx, args) => {
+		const message = await ctx.db.get(args.messageId)
+		if (!message) return
+
+		const author = await ctx.db.get(message.authorId)
+		if (!author) return
+		const channel = await ctx.db.get(args.channelId)
+		if (!channel) return
+
 		const channelMembers = await ctx.db
 			.query("channelMembers")
 			.withIndex("by_channelIdAndUserId", (q) => q.eq("channelId", args.channelId))
@@ -42,8 +50,9 @@ export const sendNotification = internalMutation({
 			if (!account) return
 
 			await ctx.scheduler.runAfter(0, internal.expo.sendPushNotification, {
-				title: "New message",
+				title: `${author.displayName} sent you a message in ${channel.name}`,
 				to: account._id,
+				body: message.content,
 			})
 		})
 	},
