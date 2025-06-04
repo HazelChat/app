@@ -1,6 +1,6 @@
 import type { Id } from "@hazel/backend"
 import { api } from "@hazel/backend/api"
-import { useMutation, useQuery } from "convex/react"
+import { useMutation, usePaginatedQuery, useQuery } from "convex/react"
 import { useLocalSearchParams } from "expo-router"
 import { useState } from "react"
 import { Button, FlatList, Text, TextInput, View } from "react-native"
@@ -10,12 +10,15 @@ export default function ChannelView() {
 	const servers = useQuery(api.servers.getServersForUser, {})
 	const serverId = servers?.[0]?._id
 
-	const messages = useQuery(
+	const PAGE_SIZE = 30
+
+	const messages = usePaginatedQuery(
 		api.messages.getMessages,
-		channelId && serverId
-			? { serverId, channelId, paginationOpts: { numItems: 50, cursor: null } }
-			: "skip",
+		channelId && serverId ? { serverId, channelId } : "skip",
+		{ initialNumItems: PAGE_SIZE },
 	)
+
+	const displayedMessages = (messages.results ?? []).slice().reverse()
 
 	const createMessage = useMutation(api.messages.createMessage)
 	const [text, setText] = useState("")
@@ -36,8 +39,14 @@ export default function ChannelView() {
 	return (
 		<View style={{ flex: 1, padding: 16 }}>
 			<FlatList
-				data={messages?.page ?? []}
+				data={displayedMessages}
 				keyExtractor={(item) => item._id}
+				onEndReached={() => {
+					if (messages.status === "CanLoadMore") {
+						messages.loadMore(PAGE_SIZE)
+					}
+				}}
+				onEndReachedThreshold={0.2}
 				renderItem={({ item }) => (
 					<View style={{ marginBottom: 8 }}>
 						<Text style={{ fontWeight: "bold" }}>{item.author.displayName}</Text>
