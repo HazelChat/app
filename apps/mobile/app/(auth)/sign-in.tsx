@@ -29,7 +29,7 @@ export default function Page() {
 			try {
 				const { createdSessionId, setActive } = await startSSOFlow({
 					strategy,
-					redirectUrl: AuthSession.makeRedirectUri(),
+					redirectUrl: AuthSession.makeRedirectUri({}),
 				})
 				if (createdSessionId) {
 					setActive!({ session: createdSessionId })
