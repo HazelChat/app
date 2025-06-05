@@ -1,10 +1,11 @@
 import { api } from "@hazel/backend/api"
+import { useQuery } from "@tanstack/solid-query"
 import { createFileRoute } from "@tanstack/solid-router"
-import { Show, createSignal } from "solid-js"
+import { Show, Suspense, createSignal } from "solid-js"
 import { Button } from "~/components/ui/button"
 import { Card } from "~/components/ui/card"
 import { SelectNative } from "~/components/ui/select-native"
-import { createQuery } from "~/lib/convex"
+import { convexQuery } from "~/lib/convex-query"
 import { useTheme } from "~/lib/theme"
 
 export const Route = createFileRoute("/_protected/_app/$serverId/settings")({
@@ -12,7 +13,7 @@ export const Route = createFileRoute("/_protected/_app/$serverId/settings")({
 })
 
 function RouteComponent() {
-	const notificationStatus = createQuery(api.expo.getStatusForUser)
+	const notificationStatusQuery = useQuery(() => convexQuery(api.expo.getStatusForUser, {}))
 	const [showOnline, setShowOnline] = createSignal(true)
 	const [videoEnabled, setVideoEnabled] = createSignal(false)
 	const [callingEnabled, setCallingEnabled] = createSignal(false)
@@ -25,26 +26,28 @@ function RouteComponent() {
 					<Card.Title>Notifications</Card.Title>
 				</Card.Header>
 				<Card.Content class="space-y-2">
-					<Show when={notificationStatus()} keyed>
-						{(status) => (
-							<>
-								<div class="flex items-center justify-between">
-									<span class="text-muted-foreground text-sm">
-										{status.paused ? "Paused" : "Active"}
-									</span>
-									<Button size="small">{status.paused ? "Resume" : "Pause"}</Button>
-								</div>
-								<div class="flex items-center justify-between">
-									<span class="text-muted-foreground text-sm">
-										{status.hasToken ? "Registered" : "Not Registered"}
-									</span>
-									<Button size="small">
-										{status.hasToken ? "Unregister" : "Register"}
-									</Button>
-								</div>
-							</>
-						)}
-					</Show>
+					<Suspense>
+						<Show when={notificationStatusQuery.data} keyed>
+							{(status) => (
+								<>
+									<div class="flex items-center justify-between">
+										<span class="text-muted-foreground text-sm">
+											{status.paused ? "Paused" : "Active"}
+										</span>
+										<Button size="small">{status.paused ? "Resume" : "Pause"}</Button>
+									</div>
+									<div class="flex items-center justify-between">
+										<span class="text-muted-foreground text-sm">
+											{status.hasToken ? "Registered" : "Not Registered"}
+										</span>
+										<Button size="small">
+											{status.hasToken ? "Unregister" : "Register"}
+										</Button>
+									</div>
+								</>
+							)}
+						</Show>
+					</Suspense>
 				</Card.Content>
 			</Card>
 			<Card>

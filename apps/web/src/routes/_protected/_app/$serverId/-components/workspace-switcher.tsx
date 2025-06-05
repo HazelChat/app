@@ -1,4 +1,5 @@
 import { api } from "@hazel/backend/api"
+import { useQuery } from "@tanstack/solid-query"
 import { Link, useParams } from "@tanstack/solid-router"
 import { For, createMemo, createSignal } from "solid-js"
 import { IconChevronUpDown } from "~/components/icons/chevron-up-down"
@@ -6,7 +7,7 @@ import { IconPlus } from "~/components/icons/plus"
 import { Avatar } from "~/components/ui/avatar"
 import { Menu } from "~/components/ui/menu"
 import { Sidebar } from "~/components/ui/sidebar"
-import { createQuery } from "~/lib/convex"
+import { convexQuery } from "~/lib/convex-query"
 import { CreateServerDialog } from "./create-server-dialog"
 
 export const WorkspaceSwitcher = () => {
@@ -16,9 +17,11 @@ export const WorkspaceSwitcher = () => {
 
 	const [createDialogOpen, setCreateDialogOpen] = createSignal(false)
 
-	const servers = createQuery(api.servers.getServersForUser)
+	const serversQuery = useQuery(() => convexQuery(api.servers.getServersForUser, {}))
 
-	const activeServer = createMemo(() => servers()?.find((server) => server._id === params().serverId))
+	const activeServer = createMemo(() =>
+		serversQuery.data?.find((server) => server._id === params().serverId),
+	)
 
 	return (
 		<>
@@ -47,7 +50,7 @@ export const WorkspaceSwitcher = () => {
 						<Menu.Content class="min-w-56 rounded-lg">
 							<Menu.ItemGroup>
 								<Menu.Label>Servers</Menu.Label>
-								<For each={servers()}>
+								<For each={serversQuery.data}>
 									{(server) => (
 										<Menu.Item
 											class="flex items-center gap-2"

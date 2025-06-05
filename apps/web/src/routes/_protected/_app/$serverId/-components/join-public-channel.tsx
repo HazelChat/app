@@ -1,23 +1,27 @@
 import type { Id } from "@hazel/backend"
 import { api } from "@hazel/backend/api"
+import { useQuery } from "@tanstack/solid-query"
 import { useNavigate } from "@tanstack/solid-router"
 import { type Accessor, For, Show, createMemo } from "solid-js"
 import { IconHashtag } from "~/components/icons/hashtag"
-import { createMutation, createQuery } from "~/lib/convex"
+import { createMutation } from "~/lib/convex"
+import { convexQuery } from "~/lib/convex-query"
 
 export interface JoinPublicChannelProps {
-	serverId: Accessor<string>
+	serverId: Accessor<Id<"servers">>
 	onSuccess?: () => void
 }
 
 export const JoinPublicChannel = (props: JoinPublicChannelProps) => {
 	const navigate = useNavigate()
 
-	const unjoinedChannels = createQuery(api.channels.getUnjoinedPublicChannels, {
-		serverId: props.serverId() as Id<"servers">,
-	})
+	const unjoinedChannelsQuery = useQuery(() =>
+		convexQuery(api.channels.getUnjoinedPublicChannels, {
+			serverId: props.serverId(),
+		}),
+	)
 
-	const computedUnjoinedChannels = createMemo(() => unjoinedChannels() || [])
+	const computedUnjoinedChannels = createMemo(() => unjoinedChannelsQuery.data || [])
 
 	const joinChannel = createMutation(api.channels.joinChannel)
 

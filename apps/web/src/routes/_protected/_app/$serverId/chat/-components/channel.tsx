@@ -1,5 +1,6 @@
 import type { Id } from "@hazel/backend"
 import { api } from "@hazel/backend/api"
+import { useQuery } from "@tanstack/solid-query"
 import {
 	type Accessor,
 	ErrorBoundary,
@@ -15,6 +16,7 @@ import { ChatTypingPresence } from "~/components/chat-ui/chat-typing-presence"
 import { FloatingBar } from "~/components/chat-ui/floating-bar"
 import { ChatMessage } from "~/components/chat-ui/message/chat-message"
 import { createCachedPaginatedQuery, createQuery, resetPaginationId } from "~/lib/convex"
+import { convexQuery } from "~/lib/convex-query"
 import type { Message } from "~/lib/types"
 
 const PAGE_SIZE = 30
@@ -56,10 +58,12 @@ window.addEventListener("beforeunload", () => {
 
 export function Channel(props: { channelId: Accessor<Id<"channels">>; serverId: Accessor<Id<"servers">> }) {
 	onMount(() => resetPaginationId())
-	const channel = createQuery(api.channels.getChannel, {
-		channelId: props.channelId(),
-		serverId: props.serverId(),
-	})
+	const channelQuery = useQuery(() =>
+		convexQuery(api.channels.getChannel, {
+			channelId: props.channelId(),
+			serverId: props.serverId(),
+		}),
+	)
 
 	const paginatedMessages = createCachedPaginatedQuery(
 		api.messages.getMessages,
@@ -265,7 +269,7 @@ export function Channel(props: { channelId: Accessor<Id<"channels">>; serverId: 
 										isGroupEnd={() => messageItem.data.isGroupEnd}
 										isFirstNewMessage={() =>
 											messageItem.data.message._id ===
-											channel()?.currentUser?.lastSeenMessageId
+											channelQuery.data?.currentUser?.lastSeenMessageId
 										}
 										serverId={props.serverId}
 										isThread={() => false}

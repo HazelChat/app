@@ -11,16 +11,16 @@ import { TextField } from "~/components/ui/text-field"
 
 import type { Doc, Id } from "@hazel/backend"
 import { api } from "@hazel/backend/api"
-import { createMutation, createQuery } from "~/lib/convex"
+import { useQuery } from "@tanstack/solid-query"
+import { createMutation } from "~/lib/convex"
+import { convexQuery } from "~/lib/convex-query"
 
 export interface CreateDmDialogProps {
-	serverId: Accessor<string>
+	serverId: Accessor<Id<"servers">>
 }
 
 export const CreateDmDialog = (props: CreateDmDialogProps) => {
-	const friends = createQuery(api.social.getFriends, {
-		serverId: props.serverId() as Id<"servers">,
-	})
+	const friendsQuery = useQuery(() => convexQuery(api.social.getFriends, { serverId: props.serverId() }))
 
 	const createDmChannelMutation = createMutation(api.channels.createChannel)
 
@@ -31,7 +31,7 @@ export const CreateDmDialog = (props: CreateDmDialogProps) => {
 	const navigate = useNavigate()
 
 	const filteredFriends = createMemo(() => {
-		const initalFriends = friends()
+		const initalFriends = friendsQuery.data
 
 		if (!initalFriends) return []
 
