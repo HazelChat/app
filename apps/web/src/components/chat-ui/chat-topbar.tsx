@@ -1,8 +1,9 @@
 import type { Id } from "@hazel/backend"
 import { api } from "@hazel/backend/api"
+import { useQuery } from "@tanstack/solid-query"
 import { useParams } from "@tanstack/solid-router"
 import { For, Match, Show, Switch, createMemo } from "solid-js"
-import { createQuery } from "~/lib/convex"
+import { convexQuery } from "~/lib/convex-query"
 import { useChat } from "../chat-state/chat-store"
 import { IconGroup } from "../icons/group"
 import { IconHashtag } from "../icons/hashtag"
@@ -19,22 +20,24 @@ export function ChatTopbar() {
 
 	const { state } = useChat()
 
-	const me = createQuery(api.me.getUser, {
-		serverId: params.serverId as Id<"servers">,
-	})
+	const meQuery = useQuery(() => ({
+		...convexQuery(api.me.getUser, { serverId: params.serverId as Id<"servers"> }),
+	}))
 
-	const channel = createQuery(api.channels.getChannel, {
-		channelId: state.channelId,
-		serverId: params.serverId as Id<"servers">,
-	})
+	const channelQuery = useQuery(() =>
+		convexQuery(api.channels.getChannel, {
+			channelId: state.channelId,
+			serverId: params.serverId as Id<"servers">,
+		}),
+	)
 
 	const filteredMembers = createMemo(
-		() => channel()?.members.filter((member) => member.userId !== me()?._id) || [],
+		() => channelQuery.data?.members.filter((member) => member.userId !== meQuery.data?._id) || [],
 	)
 
 	return (
 		<div class="flex h-16 items-center justify-between gap-2 border-b bg-sidebar p-3">
-			<Show when={channel()}>
+			<Show when={channelQuery.data}>
 				{(channel) => (
 					<>
 						<div class="flex items-center gap-2">

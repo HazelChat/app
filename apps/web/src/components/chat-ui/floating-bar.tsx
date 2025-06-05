@@ -1,14 +1,5 @@
 import { useAuth } from "clerk-solidjs"
-import {
-	type Accessor,
-	For,
-	type JSX,
-	Show,
-	createEffect,
-	createMemo,
-	createSignal,
-	onCleanup,
-} from "solid-js"
+import { For, type JSX, Show, Suspense, createEffect, createMemo, createSignal, onCleanup } from "solid-js"
 import { twMerge } from "tailwind-merge"
 import { tv } from "tailwind-variants"
 import { IconLoader } from "../icons/loader"
@@ -19,7 +10,9 @@ import { Button } from "../ui/button"
 
 import type { Id } from "@hazel/backend"
 import { api } from "@hazel/backend/api"
-import { createMutation, createQuery, insertAtTop } from "~/lib/convex"
+import { useQuery } from "@tanstack/solid-query"
+import { createMutation, insertAtTop } from "~/lib/convex"
+import { convexQuery } from "~/lib/convex-query"
 import { useChat } from "../chat-state/chat-store"
 import { createPresence } from "../chat-state/create-presence"
 import { setElementAnchorAndFocus } from "../markdown-input/utils"
@@ -294,13 +287,13 @@ export function FloatingBar() {
 	const { state, setState } = useChat()
 	const { trackTyping } = createPresence()
 
-	const currentUser = createQuery(api.me.getUser, {
-		serverId: state.serverId,
-	})
+	const meQuery = useQuery(() => ({
+		...convexQuery(api.me.getUser, { serverId: state.serverId }),
+	}))
 
 	const createMessage = createMutation(api.messages.createMessage).withOptimisticUpdate(
 		(localStore, args) => {
-			const author = currentUser()
+			const author = meQuery.data
 			// If Current User is not loaded, dont optimistically update
 			if (!author) return
 
@@ -470,30 +463,50 @@ function ReplyInfo(props: {
 
 	const channelId = createMemo(() => state.channelId)
 
-	const message = createQuery(api.messages.getMessage, {
-		id: replyToMessageId(),
-		channelId: channelId(),
-		serverId: state.serverId,
+	const messageQuery = useQuery(() => ({
+		...convexQuery(api.messages.getMessage, {
+			id: replyToMessageId(),
+			channelId: channelId(),
+			serverId: state.serverId,
+		}),
+		enabled: !!replyToMessageId(),
+		staleTime: Number.POSITIVE_INFINITY,
+	}))
+
+	createEffect(() => {
+		if (messageQuery.error) {
+			setState("replyToMessageId", null)
+		}
 	})
 
 	return (
-		<Show when={message()} keyed>
-			{(message) => (
+		<Suspense
+			fallback={
 				<div
 					class={twMerge(
 						"flex items-center justify-between gap-2 rounded-sm rounded-b-none border border-border/90 border-b-0 bg-secondary/90 px-2 py-1 text-muted-fg text-sm transition hover:border-border/90",
 						props.showAttachmentArea && "rounded-t-none",
 					)}
 				>
-					<p>
-						Replying to <span class="font-semibold text-fg">{message.author.displayName}</span>
-					</p>
-					<Button size="icon" intent="icon" onClick={() => setState("replyToMessageId", null)}>
-						<IconCircleXSolid />
-					</Button>
+					<IconLoader class="animate-spin" />
 				</div>
-			)}
-		</Show>
+			}
+		>
+			<div
+				class={twMerge(
+					"flex items-center justify-between gap-2 rounded-sm rounded-b-none border border-border/90 border-b-0 bg-secondary/90 px-2 py-1 text-muted-fg text-sm transition hover:border-border/90",
+					props.showAttachmentArea && "rounded-t-none",
+				)}
+			>
+				<p>
+					Replying to{" "}
+					<span class="font-semibold text-fg">{messageQuery.data?.author.displayName}</span>
+				</p>
+				<Button size="icon" intent="icon" onClick={() => setState("replyToMessageId", null)}>
+					<IconCircleXSolid />
+				</Button>
+			</div>
+		</Suspense>
 	)
 }
 

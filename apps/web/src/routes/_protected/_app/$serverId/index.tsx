@@ -1,7 +1,7 @@
 import type { Id } from "@hazel/backend"
 import { api } from "@hazel/backend/api"
+import { useQueries, useQuery } from "@tanstack/solid-query"
 import { createFileRoute } from "@tanstack/solid-router"
-import { useAuth } from "clerk-solidjs"
 import { For, Show, createMemo, createSignal } from "solid-js"
 import { IconChat } from "~/components/icons/chat"
 import { IconHorizontalDots } from "~/components/icons/horizontal-dots"
@@ -9,7 +9,8 @@ import { IconSearch } from "~/components/icons/search"
 import { Avatar } from "~/components/ui/avatar"
 import { Button } from "~/components/ui/button"
 import { TextField } from "~/components/ui/text-field"
-import { createMutation, createQuery } from "~/lib/convex"
+import { createMutation } from "~/lib/convex"
+import { convexQuery } from "~/lib/convex-query"
 
 export const Route = createFileRoute("/_protected/_app/$serverId/")({
 	component: RouteComponent,
@@ -21,11 +22,16 @@ function RouteComponent() {
 
 	const [searchQuery, setSearchQuery] = createSignal("")
 
-	const currentUser = createQuery(api.me.get)
+	const currentUserQuery = useQuery(() => convexQuery(api.me.get, {}))
 
-	const members = createQuery(api.social.getMembers, {
-		serverId: serverId() as Id<"servers">,
-	})
+	const [membersQuery] = useQueries(() => ({
+		queries: [
+			convexQuery(api.social.getMembers, {
+				serverId: serverId() as Id<"servers">,
+			}),
+			convexQuery(api.me.get, {}),
+		],
+	}))
 
 	const createDmChannel = createMutation(api.channels.creatDmChannel)
 
@@ -58,7 +64,7 @@ function RouteComponent() {
 					prefix={<IconSearch class="ml-3 size-5" />}
 					placeholder="Search Members"
 				/>
-				<For each={members()}>
+				<For each={membersQuery.data}>
 					{(member) => (
 						<div class="flex items-center justify-between gap-2 rounded-md px-2 py-1.5 hover:bg-muted/40">
 							<div class="flex items-center gap-2">
@@ -69,7 +75,7 @@ function RouteComponent() {
 									<p class="text-muted-foreground">{member.tag}</p>
 								</div>
 							</div>
-							<Show when={currentUser()?._id !== member.accountId}>
+							<Show when={currentUserQuery.data?._id !== member.accountId}>
 								<div class="flex items-center gap-2">
 									<Button
 										intent="ghost"

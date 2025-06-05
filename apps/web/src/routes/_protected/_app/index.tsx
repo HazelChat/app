@@ -1,8 +1,9 @@
 import { api } from "@hazel/backend/api"
-import { Link, createFileRoute, redirect, useNavigate } from "@tanstack/solid-router"
+import { useQuery } from "@tanstack/solid-query"
+import { Link, createFileRoute, useNavigate } from "@tanstack/solid-router"
 import { For, createEffect } from "solid-js"
 import { Card } from "~/components/ui/card"
-import { createQuery } from "~/lib/convex"
+import { convexQuery } from "~/lib/convex-query"
 import { getCurrentServerId } from "~/lib/helpers/localstorage"
 
 export const Route = createFileRoute("/_protected/_app/")({
@@ -11,10 +12,10 @@ export const Route = createFileRoute("/_protected/_app/")({
 
 function App() {
 	const navigate = useNavigate()
-	const servers = createQuery(api.servers.getServersForUser)
+	const serversQuery = useQuery(() => convexQuery(api.servers.getServersForUser, {}))
 
 	createEffect(() => {
-		if (servers()?.length === 0) {
+		if (serversQuery.data?.length === 0) {
 			navigate({
 				to: "/onboarding",
 			})
@@ -37,7 +38,7 @@ function App() {
 	return (
 		<main class="container mx-auto flex w-full py-14">
 			<div class="flex flex-row gap-3">
-				<For each={servers()}>
+				<For each={serversQuery.data}>
 					{(server) => (
 						<Link to="/$serverId" params={{ serverId: server._id }}>
 							<Card>

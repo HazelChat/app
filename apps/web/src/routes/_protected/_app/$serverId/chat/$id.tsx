@@ -4,16 +4,23 @@ import { ChatTopbar } from "~/components/chat-ui/chat-topbar"
 
 import type { Id } from "@hazel/backend"
 import { api } from "@hazel/backend/api"
+import { useQuery } from "@tanstack/solid-query"
 import { ChatProvider, useChat } from "~/components/chat-state/chat-store"
 import { ImageViewerModal } from "~/components/chat-ui/image-viewer-modal"
 import { IconX } from "~/components/icons/x"
 import { Button } from "~/components/ui/button"
-import { createQuery } from "~/lib/convex"
+import { convexQuery } from "~/lib/convex-query"
 import { Channel } from "./-components/channel"
-// import { Channel } from "./-components/channel"
 
 export const Route = createFileRoute("/_protected/_app/$serverId/chat/$id")({
 	component: Root,
+	loader: ({ context: { queryClient }, params }) =>
+		queryClient.ensureQueryData(
+			convexQuery(api.channels.getChannel, {
+				channelId: params.id as Id<"channels">,
+				serverId: params.serverId as Id<"servers">,
+			}),
+		),
 })
 
 function Root() {
@@ -61,21 +68,20 @@ function ChatImageViewerModal() {
 
 	const messageId = createMemo(() => state.imageDialog.messageId!)
 
-	const message = createMemo(() => {
-		if (!messageId()) return null
-
-		return createQuery(api.messages.getMessage, {
+	const messageQuery = useQuery(() => ({
+		...convexQuery(api.messages.getMessage, {
 			id: messageId(),
 			channelId: state.channelId,
 			serverId: state.serverId,
-		})()
-	})
+		}),
+		enabled: !!messageId(),
+	}))
 
-	const availableImages = createMemo(() => message()?.attachedFiles ?? [])
+	const availableImages = createMemo(() => messageQuery.data?.attachedFiles ?? [])
 	const defaultImage = createMemo(() => state.imageDialog.selectedImage!)
 
 	return (
-		<Show when={message() && defaultImage()}>
+		<Show when={messageQuery.data && defaultImage()}>
 			<ImageViewerModal
 				availableImages={availableImages}
 				defaultImage={defaultImage}
@@ -87,8 +93,8 @@ function ChatImageViewerModal() {
 						selectedImage: null,
 					}))
 				}
-				author={message()!.author}
-				createdAt={message()!._creationTime!}
+				author={messageQuery.data!.author}
+				createdAt={messageQuery.data!._creationTime!}
 				bucketUrl={import.meta.env.VITE_BUCKET_URL}
 			/>
 		</Show>

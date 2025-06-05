@@ -1,9 +1,11 @@
 import type { Id } from "@hazel/backend"
 import { api } from "@hazel/backend/api"
+import { useQuery } from "@tanstack/solid-query"
 import { useParams } from "@tanstack/solid-router"
 import { For, createMemo } from "solid-js"
 import { IconPin } from "~/components/icons/pin"
-import { createMutation, createQuery } from "~/lib/convex"
+import { createMutation } from "~/lib/convex"
+import { convexQuery } from "~/lib/convex-query"
 import { IconCircleXSolid } from "../icons/solid/circle-x-solid"
 import { Avatar } from "../ui/avatar"
 import { Button } from "../ui/button"
@@ -15,14 +17,18 @@ export function PinnedModal() {
 	const channelId = createMemo(() => params.id)
 	const serverId = createMemo(() => params.serverId)
 
-	const pinnedMessages = createQuery(api.pinnedMessages.getPinnedMessages, {
-		channelId: channelId() as Id<"channels">,
-		serverId: serverId() as Id<"servers">,
-	})
+	const pinnedMessagesQuery = useQuery(() =>
+		convexQuery(api.pinnedMessages.getPinnedMessages, {
+			channelId: channelId() as Id<"channels">,
+			serverId: serverId() as Id<"servers">,
+		}),
+	)
 
 	const deletePinnedMessageMutation = createMutation(api.pinnedMessages.deletePinnedMessage)
 
-	const sortedPins = createMemo(() => [...(pinnedMessages() || [])].sort((a, b) => a.pinnedAt - b.pinnedAt))
+	const sortedPins = createMemo(() =>
+		[...(pinnedMessagesQuery.data || [])].sort((a, b) => a.pinnedAt - b.pinnedAt),
+	)
 
 	const scrollToMessage = (messageId: string) => {
 		const element = document.getElementById(`message-${messageId}`)

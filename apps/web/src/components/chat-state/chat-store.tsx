@@ -1,16 +1,7 @@
 import type { Doc, Id } from "@hazel/backend"
 import { api } from "@hazel/backend/api"
 import { useQuery } from "@tanstack/solid-query"
-import {
-	type Accessor,
-	type JSX,
-	Show,
-	createContext,
-	createEffect,
-	createMemo,
-	splitProps,
-	useContext,
-} from "solid-js"
+import { type Accessor, type JSX, Show, createContext, createMemo, splitProps, useContext } from "solid-js"
 import { createStore } from "solid-js/store"
 import { convexQuery } from "~/lib/convex-query"
 
