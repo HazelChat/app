@@ -54,7 +54,11 @@ window.addEventListener("beforeunload", () => {
 	console.log("Before unload RO:", typeof ResizeObserver)
 })
 
-export function Channel(props: { channelId: Accessor<Id<"channels">>; serverId: Accessor<Id<"servers">> }) {
+export function Channel(props: {
+	channelId: Accessor<Id<"channels">>
+	serverId: Accessor<Id<"servers">>
+	isThread: boolean
+}) {
 	onMount(() => resetPaginationId())
 	const channel = createQuery(api.channels.getChannel, {
 		channelId: props.channelId(),
@@ -268,6 +272,7 @@ export function Channel(props: { channelId: Accessor<Id<"channels">>; serverId: 
 											channel()?.currentUser?.lastSeenMessageId
 										}
 										serverId={props.serverId}
+										isThread={props.isThread}
 									/>
 								)
 							})()}

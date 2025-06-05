@@ -10,12 +10,13 @@ import { Tooltip } from "~/components/ui/tooltip"
 import type { Doc } from "@hazel/backend"
 import { ConfirmDialog } from "../confirm-dialog"
 import { createMessageActions } from "./message-actions-config"
+import type { Message } from "~/lib/types"
 
 interface MessageActionsProps {
-	message: Accessor<Doc<"messages">>
+	message: Accessor<Message>
 	serverId: Accessor<string>
 	isPinned: Accessor<boolean>
-	hasThreadWithMessages: Accessor<boolean>
+	isThread: boolean
 }
 
 export function MessageActions(props: MessageActionsProps) {
@@ -25,7 +26,7 @@ export function MessageActions(props: MessageActionsProps) {
 	const actions = createMessageActions({
 		message: props.message,
 		isPinned: props.isPinned,
-		hasThreadWithMessages: props.hasThreadWithMessages,
+		isThread: props.isThread,
 	})
 
 	const handleAction = (action: any) => {

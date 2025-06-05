@@ -17,13 +17,12 @@ interface ChatMessageProps {
 	isGroupStart: Accessor<boolean>
 	isGroupEnd: Accessor<boolean>
 	isFirstNewMessage: Accessor<boolean>
+	isThread: boolean
 }
 
 export function ChatMessage(props: ChatMessageProps) {
 	const isRepliedTo = createMemo(() => !!props.message().replyToMessageId)
 	const showAvatar = createMemo(() => props.isGroupStart() || isRepliedTo())
-
-	const hasThreadWithMessages = createMemo(() => props.message().threadMessages?.length > 0)
 
 	const { state } = useChat()
 
@@ -81,7 +80,7 @@ export function ChatMessage(props: ChatMessageProps) {
 					message={props.message}
 					serverId={props.serverId}
 					isPinned={isPinned}
-					hasThreadWithMessages={hasThreadWithMessages}
+					isThread={props.isThread}
 				/>
 
 				<MessageHeader message={props.message} showAvatar={showAvatar} serverId={props.serverId} />
