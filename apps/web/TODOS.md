@@ -17,9 +17,8 @@
 
 - Delete Notification after it was seen (maybe just a simple cron cleanup job)
 - Improve typing presence todo less calls
-- Fix Test Setup
 
-- Integrate with Tanstack Table for basic creaetQUery etc
+- Integrate with Tanstack Query for basic creaetQUery etc
 
 - Rework presence with convex component https://github.com/get-convex/presence, probably need to fork to a typing indicator...
 

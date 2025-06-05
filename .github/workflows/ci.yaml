@@ -9,6 +9,9 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -32,16 +35,12 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-    #   - name: Lint
-    #     run: bun run lint
-
       - name: Type check
         run: bun run typecheck
 
       - name: Run tests
         run: bun run test --coverage.enabled true
+        
       - name: 'Report Coverage'
-        # Set if: always() to also generate the report if tests are failing
-        # Only works if you set `reportOnFailure: true` in your vite config as specified above
         if: always() 
-        uses:  davelosert/vitest-coverage-report-action@v2
+        uses: davelosert/vitest-coverage-report-action@v2
