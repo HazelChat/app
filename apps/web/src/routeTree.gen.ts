@@ -11,103 +11,103 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
-import { Route as ProtectedLayoutImport } from './routes/_protected/layout'
-import { Route as AuthLayoutImport } from './routes/_auth/layout'
-import { Route as AuthSignUpImport } from './routes/_auth/sign-up'
-import { Route as AuthSignInImport } from './routes/_auth/sign-in'
-import { Route as ProtectedAppLayoutImport } from './routes/_protected/_app/layout'
-import { Route as ProtectedOnboardingIndexImport } from './routes/_protected/onboarding/index'
-import { Route as ProtectedAppIndexImport } from './routes/_protected/_app/index'
-import { Route as ProtectedAppServerIdLayoutImport } from './routes/_protected/_app/$serverId/layout'
-import { Route as ProtectedAppServerIdIndexImport } from './routes/_protected/_app/$serverId/index'
-import { Route as ProtectedAppServerIdSettingsImport } from './routes/_protected/_app/$serverId/settings'
-import { Route as ProtectedAppServerIdBillingImport } from './routes/_protected/_app/$serverId/billing'
-import { Route as ProtectedAppServerIdProfileIdImport } from './routes/_protected/_app/$serverId/profile/$id'
-import { Route as ProtectedAppServerIdChatIdImport } from './routes/_protected/_app/$serverId/chat/$id'
+import { Route as ProtectedLayoutRouteImport } from './routes/_protected/layout'
+import { Route as AuthLayoutRouteImport } from './routes/_auth/layout'
+import { Route as AuthSignUpRouteImport } from './routes/_auth/sign-up'
+import { Route as AuthSignInRouteImport } from './routes/_auth/sign-in'
+import { Route as ProtectedAppLayoutRouteImport } from './routes/_protected/_app/layout'
+import { Route as ProtectedOnboardingIndexRouteImport } from './routes/_protected/onboarding/index'
+import { Route as ProtectedAppIndexRouteImport } from './routes/_protected/_app/index'
+import { Route as ProtectedAppServerIdLayoutRouteImport } from './routes/_protected/_app/$serverId/layout'
+import { Route as ProtectedAppServerIdIndexRouteImport } from './routes/_protected/_app/$serverId/index'
+import { Route as ProtectedAppServerIdSettingsRouteImport } from './routes/_protected/_app/$serverId/settings'
+import { Route as ProtectedAppServerIdBillingRouteImport } from './routes/_protected/_app/$serverId/billing'
+import { Route as ProtectedAppServerIdProfileIdRouteImport } from './routes/_protected/_app/$serverId/profile/$id'
+import { Route as ProtectedAppServerIdChatIdRouteImport } from './routes/_protected/_app/$serverId/chat/$id'
 
 // Create/Update Routes
 
-const ProtectedLayoutRoute = ProtectedLayoutImport.update({
+const ProtectedLayoutRoute = ProtectedLayoutRouteImport.update({
   id: '/_protected',
   getParentRoute: () => rootRoute,
 } as any)
 
-const AuthLayoutRoute = AuthLayoutImport.update({
+const AuthLayoutRoute = AuthLayoutRouteImport.update({
   id: '/_auth',
   getParentRoute: () => rootRoute,
 } as any)
 
-const AuthSignUpRoute = AuthSignUpImport.update({
+const AuthSignUpRoute = AuthSignUpRouteImport.update({
   id: '/sign-up',
   path: '/sign-up',
   getParentRoute: () => AuthLayoutRoute,
 } as any)
 
-const AuthSignInRoute = AuthSignInImport.update({
+const AuthSignInRoute = AuthSignInRouteImport.update({
   id: '/sign-in',
   path: '/sign-in',
   getParentRoute: () => AuthLayoutRoute,
 } as any)
 
-const ProtectedAppLayoutRoute = ProtectedAppLayoutImport.update({
+const ProtectedAppLayoutRoute = ProtectedAppLayoutRouteImport.update({
   id: '/_app',
   getParentRoute: () => ProtectedLayoutRoute,
 } as any)
 
-const ProtectedOnboardingIndexRoute = ProtectedOnboardingIndexImport.update({
-  id: '/onboarding/',
-  path: '/onboarding/',
-  getParentRoute: () => ProtectedLayoutRoute,
-} as any)
+const ProtectedOnboardingIndexRoute =
+  ProtectedOnboardingIndexRouteImport.update({
+    id: '/onboarding/',
+    path: '/onboarding/',
+    getParentRoute: () => ProtectedLayoutRoute,
+  } as any)
 
-const ProtectedAppIndexRoute = ProtectedAppIndexImport.update({
+const ProtectedAppIndexRoute = ProtectedAppIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => ProtectedAppLayoutRoute,
 } as any)
 
-const ProtectedAppServerIdLayoutRoute = ProtectedAppServerIdLayoutImport.update(
-  {
+const ProtectedAppServerIdLayoutRoute =
+  ProtectedAppServerIdLayoutRouteImport.update({
     id: '/$serverId',
     path: '/$serverId',
     getParentRoute: () => ProtectedAppLayoutRoute,
-  } as any,
-)
+  } as any)
 
-const ProtectedAppServerIdIndexRoute = ProtectedAppServerIdIndexImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => ProtectedAppServerIdLayoutRoute,
-} as any)
+const ProtectedAppServerIdIndexRoute =
+  ProtectedAppServerIdIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => ProtectedAppServerIdLayoutRoute,
+  } as any)
 
 const ProtectedAppServerIdSettingsRoute =
-  ProtectedAppServerIdSettingsImport.update({
+  ProtectedAppServerIdSettingsRouteImport.update({
     id: '/settings',
     path: '/settings',
     getParentRoute: () => ProtectedAppServerIdLayoutRoute,
   } as any)
 
 const ProtectedAppServerIdBillingRoute =
-  ProtectedAppServerIdBillingImport.update({
+  ProtectedAppServerIdBillingRouteImport.update({
     id: '/billing',
     path: '/billing',
     getParentRoute: () => ProtectedAppServerIdLayoutRoute,
   } as any)
 
 const ProtectedAppServerIdProfileIdRoute =
-  ProtectedAppServerIdProfileIdImport.update({
+  ProtectedAppServerIdProfileIdRouteImport.update({
     id: '/profile/$id',
     path: '/profile/$id',
     getParentRoute: () => ProtectedAppServerIdLayoutRoute,
   } as any)
 
-const ProtectedAppServerIdChatIdRoute = ProtectedAppServerIdChatIdImport.update(
-  {
+const ProtectedAppServerIdChatIdRoute =
+  ProtectedAppServerIdChatIdRouteImport.update({
     id: '/chat/$id',
     path: '/chat/$id',
     getParentRoute: () => ProtectedAppServerIdLayoutRoute,
-  } as any,
-)
+  } as any)
 
 // Populate the FileRoutesByPath interface
 
@@ -117,92 +117,92 @@ declare module '@tanstack/solid-router' {
       id: '/_auth'
       path: ''
       fullPath: ''
-      preLoaderRoute: typeof AuthLayoutImport
+      preLoaderRoute: typeof AuthLayoutRouteImport
       parentRoute: typeof rootRoute
     }
     '/_protected': {
       id: '/_protected'
       path: ''
       fullPath: ''
-      preLoaderRoute: typeof ProtectedLayoutImport
+      preLoaderRoute: typeof ProtectedLayoutRouteImport
       parentRoute: typeof rootRoute
     }
     '/_protected/_app': {
       id: '/_protected/_app'
       path: ''
       fullPath: ''
-      preLoaderRoute: typeof ProtectedAppLayoutImport
-      parentRoute: typeof ProtectedLayoutImport
+      preLoaderRoute: typeof ProtectedAppLayoutRouteImport
+      parentRoute: typeof ProtectedLayoutRouteImport
     }
     '/_auth/sign-in': {
       id: '/_auth/sign-in'
       path: '/sign-in'
       fullPath: '/sign-in'
-      preLoaderRoute: typeof AuthSignInImport
-      parentRoute: typeof AuthLayoutImport
+      preLoaderRoute: typeof AuthSignInRouteImport
+      parentRoute: typeof AuthLayoutRouteImport
     }
     '/_auth/sign-up': {
       id: '/_auth/sign-up'
       path: '/sign-up'
       fullPath: '/sign-up'
-      preLoaderRoute: typeof AuthSignUpImport
-      parentRoute: typeof AuthLayoutImport
+      preLoaderRoute: typeof AuthSignUpRouteImport
+      parentRoute: typeof AuthLayoutRouteImport
     }
     '/_protected/_app/$serverId': {
       id: '/_protected/_app/$serverId'
       path: '/$serverId'
       fullPath: '/$serverId'
-      preLoaderRoute: typeof ProtectedAppServerIdLayoutImport
-      parentRoute: typeof ProtectedAppLayoutImport
+      preLoaderRoute: typeof ProtectedAppServerIdLayoutRouteImport
+      parentRoute: typeof ProtectedAppLayoutRouteImport
     }
     '/_protected/_app/': {
       id: '/_protected/_app/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof ProtectedAppIndexImport
-      parentRoute: typeof ProtectedAppLayoutImport
+      preLoaderRoute: typeof ProtectedAppIndexRouteImport
+      parentRoute: typeof ProtectedAppLayoutRouteImport
     }
     '/_protected/onboarding/': {
       id: '/_protected/onboarding/'
       path: '/onboarding'
       fullPath: '/onboarding'
-      preLoaderRoute: typeof ProtectedOnboardingIndexImport
-      parentRoute: typeof ProtectedLayoutImport
+      preLoaderRoute: typeof ProtectedOnboardingIndexRouteImport
+      parentRoute: typeof ProtectedLayoutRouteImport
     }
     '/_protected/_app/$serverId/billing': {
       id: '/_protected/_app/$serverId/billing'
       path: '/billing'
       fullPath: '/$serverId/billing'
-      preLoaderRoute: typeof ProtectedAppServerIdBillingImport
-      parentRoute: typeof ProtectedAppServerIdLayoutImport
+      preLoaderRoute: typeof ProtectedAppServerIdBillingRouteImport
+      parentRoute: typeof ProtectedAppServerIdLayoutRouteImport
     }
     '/_protected/_app/$serverId/settings': {
       id: '/_protected/_app/$serverId/settings'
       path: '/settings'
       fullPath: '/$serverId/settings'
-      preLoaderRoute: typeof ProtectedAppServerIdSettingsImport
-      parentRoute: typeof ProtectedAppServerIdLayoutImport
+      preLoaderRoute: typeof ProtectedAppServerIdSettingsRouteImport
+      parentRoute: typeof ProtectedAppServerIdLayoutRouteImport
     }
     '/_protected/_app/$serverId/': {
       id: '/_protected/_app/$serverId/'
       path: '/'
       fullPath: '/$serverId/'
-      preLoaderRoute: typeof ProtectedAppServerIdIndexImport
-      parentRoute: typeof ProtectedAppServerIdLayoutImport
+      preLoaderRoute: typeof ProtectedAppServerIdIndexRouteImport
+      parentRoute: typeof ProtectedAppServerIdLayoutRouteImport
     }
     '/_protected/_app/$serverId/chat/$id': {
       id: '/_protected/_app/$serverId/chat/$id'
       path: '/chat/$id'
       fullPath: '/$serverId/chat/$id'
-      preLoaderRoute: typeof ProtectedAppServerIdChatIdImport
-      parentRoute: typeof ProtectedAppServerIdLayoutImport
+      preLoaderRoute: typeof ProtectedAppServerIdChatIdRouteImport
+      parentRoute: typeof ProtectedAppServerIdLayoutRouteImport
     }
     '/_protected/_app/$serverId/profile/$id': {
       id: '/_protected/_app/$serverId/profile/$id'
       path: '/profile/$id'
       fullPath: '/$serverId/profile/$id'
-      preLoaderRoute: typeof ProtectedAppServerIdProfileIdImport
-      parentRoute: typeof ProtectedAppServerIdLayoutImport
+      preLoaderRoute: typeof ProtectedAppServerIdProfileIdRouteImport
+      parentRoute: typeof ProtectedAppServerIdLayoutRouteImport
     }
   }
 }
