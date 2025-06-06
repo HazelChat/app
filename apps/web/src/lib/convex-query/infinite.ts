@@ -86,7 +86,7 @@ export function useConvexInfiniteQuery<Query extends PaginatedQueryReference>(
 					},
 				}
 
-				const watch = convex.watchQuery(query, pageArgs)
+				const watch = convex.watchQuery(query, pageArgs as never)
 
 				const unsubscribe = watch.onUpdate(() => {
 					const result = watch.localQueryResult()
@@ -137,5 +137,5 @@ export function useConvexInfiniteQuery<Query extends PaginatedQueryReference>(
 		}),
 	)
 
-	return queryResult
+	return queryResult as any
 }
