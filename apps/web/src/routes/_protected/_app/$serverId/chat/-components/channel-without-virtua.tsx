@@ -3,13 +3,16 @@ import { api } from "@hazel/backend/api"
 import { useQuery } from "@tanstack/solid-query"
 import {
 	type Accessor,
+	type Component,
 	For,
+	type JSX,
 	Show,
 	createEffect,
 	createMemo,
 	createSignal,
 	mapArray,
 	on,
+	onCleanup,
 	onMount,
 } from "solid-js"
 import { createStore, reconcile } from "solid-js/store"
@@ -43,6 +46,8 @@ const MessageSkeleton = (props: { isGroupStart: boolean }) => (
 	</div>
 )
 
+const MessagePlaceholder = () => <div class="h-[42px]" />
+
 export function ChannelWithoutVirtua(props: {
 	channelId: Accessor<Id<"channels">>
 	serverId: Accessor<Id<"servers">>
@@ -67,7 +72,7 @@ export function ChannelWithoutVirtua(props: {
 		setTimeout(() => {
 			console.log(bottomRef)
 			bottomRef?.scrollIntoView({ behavior: "smooth" })
-		}, 1000)
+		}, 500)
 	})
 
 	createEffect(() => {
@@ -159,16 +164,18 @@ export function ChannelWithoutVirtua(props: {
 
 					<For each={processedMessages()}>
 						{(item) => (
-							<ChatMessage
-								message={() => item.message}
-								isGroupStart={item.isGroupStart}
-								isGroupEnd={item.isGroupEnd}
-								isFirstNewMessage={() =>
-									item.message._id === channelQuery.data?.currentUser?.lastSeenMessageId
-								}
-								serverId={props.serverId}
-								isThread={props.isThread}
-							/>
+							<LazyRender placeholder={<MessagePlaceholder />}>
+								<ChatMessage
+									message={() => item.message}
+									isGroupStart={item.isGroupStart}
+									isGroupEnd={item.isGroupEnd}
+									isFirstNewMessage={() =>
+										item.message._id === channelQuery.data?.currentUser?.lastSeenMessageId
+									}
+									serverId={props.serverId}
+									isThread={props.isThread}
+								/>
+							</LazyRender>
 						)}
 					</For>
 				</Show>
@@ -179,6 +186,46 @@ export function ChannelWithoutVirtua(props: {
 				<FloatingBar />
 				<ChatTypingPresence />
 			</div>
+		</div>
+	)
+}
+
+interface LazyRenderProps {
+	placeholder: JSX.Element
+	children: JSX.Element
+}
+
+export const LazyRender: Component<LazyRenderProps> = (props) => {
+	const [isVisible, setIsVisible] = createSignal(false)
+	let elementRef: HTMLDivElement | undefined
+
+	onMount(() => {
+		const observer = new IntersectionObserver(
+			(entries) => {
+				// When the placeholder is visible, update the signal and stop observing
+				if (entries[0].isIntersecting) {
+					setIsVisible(true)
+					observer.unobserve(elementRef!)
+				}
+			},
+			{
+				// You can tweak the rootMargin to load content slightly before it enters the screen
+				rootMargin: "200px",
+			},
+		)
+
+		if (elementRef) {
+			observer.observe(elementRef)
+		}
+
+		onCleanup(() => observer.disconnect())
+	})
+
+	return (
+		<div ref={elementRef}>
+			<Show when={isVisible()} fallback={props.placeholder}>
+				{props.children}
+			</Show>
 		</div>
 	)
 }
