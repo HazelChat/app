@@ -63,6 +63,13 @@ export function ChannelWithoutVirtua(props: {
 
 	const [messages, setMessages] = createStore<Message[]>([])
 
+	onMount(() => {
+		setTimeout(() => {
+			console.log(bottomRef)
+			bottomRef?.scrollIntoView({ behavior: "smooth" })
+		}, 1000)
+	})
+
 	createEffect(() => {
 		setMessages(
 			reconcile(messagesQuery.data?.pages.flatMap((page) => page.page).reverse() ?? [], { key: "_id" }),
@@ -116,22 +123,9 @@ export function ChannelWithoutVirtua(props: {
 		}),
 	)
 
-	createEffect(() => {
-		setTimeout(() => {
-			if (bottomRef && scrollContainerRef) {
-				bottomRef.scrollIntoView({ behavior: "auto" })
-				setTimeout(() => {
-					console.log("After scrollIntoView, scrollTop:", scrollContainerRef.scrollTop)
-				}, 0)
-			}
-		}, 0)
-	})
-
 	const handleScroll = (e: Event) => {
 		const target = e.currentTarget as HTMLDivElement
 		if (!target) return
-
-		console.log(target.scrollHeight - target.scrollTop - target.clientHeight < 120)
 
 		setShouldStickToBottom(target.scrollHeight - target.scrollTop - target.clientHeight < 120)
 
@@ -155,7 +149,6 @@ export function ChannelWithoutVirtua(props: {
 						</div>
 					}
 				>
-					{/* This spacer pushes content to the bottom */}
 					<div class="min-h-0 flex-1" />
 
 					<Show when={messagesQuery.isFetchingNextPage}>
@@ -179,7 +172,7 @@ export function ChannelWithoutVirtua(props: {
 						)}
 					</For>
 				</Show>
-				<div ref={bottomRef} class="flex-1" />
+				<div ref={bottomRef} class="h-[1px] flex-1" />
 			</div>
 
 			<div class="mx-2 flex flex-col gap-1.5">
