@@ -23,7 +23,7 @@ import { convexQuery } from "~/lib/convex-query"
 import { useConvexInfiniteQuery } from "~/lib/convex-query/infinite"
 import type { Message } from "~/lib/types"
 
-const PAGE_SIZE = 25
+const PAGE_SIZE = 30
 
 // Skeleton component for loading messages
 const MessageSkeleton = (props: { isGroupStart: boolean }) => (
@@ -70,9 +70,8 @@ export function ChannelWithoutVirtua(props: {
 
 	onMount(() => {
 		setTimeout(() => {
-			console.log(bottomRef)
 			bottomRef?.scrollIntoView({ behavior: "smooth" })
-		}, 500)
+		}, 1000)
 	})
 
 	createEffect(() => {
