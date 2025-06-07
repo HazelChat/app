@@ -1,6 +1,12 @@
 import type { Doc } from "@hazel/backend"
 
-export type Message = Doc<"messages"> & {
-	author: Doc<"users">
-	threadMessages: (Doc<"messages"> & { author: Doc<"users"> })[]
+type AttachedFile = Doc<"messages">["attachedFiles"][number] & {
+	url: string
 }
+
+export type Message = Omit<Doc<"messages">, "attachedFiles"> & {
+	author: Doc<"users">
+	threadMessages: (Omit<Doc<"messages">, "attachedFiles"> & { author: Doc<"users"> } & {
+		attachedFiles: AttachedFile[]
+	})[]
+} & { attachedFiles: AttachedFile[] }

@@ -52,7 +52,12 @@ export default defineSchema({
 		.index("by_accountId_serverId", ["accountId", "serverId"])
 		.index("by_server_id", ["serverId"]),
 	messages: defineTable({
-		attachedFiles: v.array(v.string()),
+		attachedFiles: v.array(
+			v.object({
+				key: v.string(),
+				fileName: v.string(),
+			}),
+		),
 		content: v.string(),
 
 		authorId: v.id("users"),

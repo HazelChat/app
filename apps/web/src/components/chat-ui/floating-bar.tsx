@@ -136,7 +136,6 @@ export function FloatingBar() {
 
 	const uploadFile = useUploadFile(api.attachments)
 	const [selectedFiles, setSelectedFiles] = createSignal<Attachment[]>([])
-	const [isUploading, setIsUploading] = createSignal(false)
 
 	const handleFileChange = async (e: Event) => {
 		const file = (e.target as HTMLInputElement).files?.[0]
@@ -150,6 +149,8 @@ export function FloatingBar() {
 					status: "uploading",
 				},
 			])
+			// // Sleep 3 seconds
+			// await new Promise((resolve) => setTimeout(resolve, 500))
 
 			uploadFile(file)
 				.then((key) => {
@@ -188,6 +189,11 @@ export function FloatingBar() {
 				item: {
 					_id: crypto.randomUUID() as Id<"messages">,
 					...args,
+					// TODO: handle url somehow
+					attachedFiles: args.attachedFiles.map((file) => ({
+						...file,
+						url: "",
+					})),
 					author: author,
 					_creationTime: Date.now(),
 					updatedAt: Date.now(),
@@ -219,7 +225,10 @@ export function FloatingBar() {
 		createMessage({
 			content: content,
 			replyToMessageId: state.replyToMessageId || undefined,
-			attachedFiles: successFiles.map((file) => file.key!),
+			attachedFiles: successFiles.map((file) => ({
+				key: file.key!,
+				fileName: file.file.name,
+			})),
 			serverId: state.serverId,
 			channelId: state.channelId,
 		})
@@ -232,15 +241,18 @@ export function FloatingBar() {
 
 	return (
 		<div>
-			{/* <Show when={showAttachmentArea()}>
+			<Show when={selectedFiles().length > 0}>
 				<div class="flex flex-col gap-0 rounded-sm rounded-b-none border border-border/90 border-b-0 bg-secondary/90 px-2 py-1 transition hover:border-border/90">
-					<For each={attachments()}>
+					<For each={selectedFiles()}>
 						{(attachment) => (
-							<Attachment attachment={attachment} removeAttachment={removeAttachment} />
+							<div class="flex items-center gap-2">
+								<p>{attachment.file.name}</p>
+								<p>{attachment.status}</p>
+							</div>
 						)}
 					</For>
 				</div>
-			</Show> */}
+			</Show>
 			<Show when={state.replyToMessageId}>
 				<ReplyInfo showAttachmentArea={false} />
 			</Show>
@@ -259,7 +271,7 @@ export function FloatingBar() {
 							;(fileInput as HTMLInputElement).click()
 						}
 					}}
-					disabled={isUploading()}
+					disabled={selectedFiles().some((file) => file.status === "uploading")}
 				>
 					<IconCirclePlusSolid class="size-5!" />
 				</Button>

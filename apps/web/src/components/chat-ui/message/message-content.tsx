@@ -124,8 +124,8 @@ export function MessageContent(props: MessageContentProps) {
 									])}
 								>
 									<ChatImage
-										src={file}
-										alt={file}
+										src={file.url}
+										alt={file.fileName}
 										class={cn([
 											"h-full w-full object-cover",
 											{
@@ -138,7 +138,7 @@ export function MessageContent(props: MessageContentProps) {
 												reconcile({
 													open: true,
 													messageId: props.message()._id,
-													selectedImage: file,
+													selectedImage: file.url,
 												}),
 											)
 										}}

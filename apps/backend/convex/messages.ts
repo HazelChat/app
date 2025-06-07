@@ -58,10 +58,13 @@ export const getMessages = userQuery({
 					const messageAuthor = await ctx.db.get(message.authorId)
 					if (!messageAuthor) throw new Error("Message author not found")
 
-					const attachedFiles = await asyncMap(
-						message.attachedFiles,
-						async (file) => await r2.getUrl(file),
-					)
+					const attachedFiles = await asyncMap(message.attachedFiles, async (file) => {
+						const url = await r2.getUrl(file.key)
+						return {
+							...file,
+							url,
+						}
+					})
 
 					return {
 						...message,
@@ -88,7 +91,13 @@ export const getMessages = userQuery({
 			// TODO: This should not happen when user is deleted we should give all messages to a default user
 			if (!messageAuthor) throw new Error("Message author not found")
 
-			const attachedFiles = await asyncMap(message.attachedFiles, async (file) => await r2.getUrl(file))
+			const attachedFiles = await asyncMap(message.attachedFiles, async (file) => {
+				const url = await r2.getUrl(file.key)
+				return {
+					...file,
+					url,
+				}
+			})
 
 			return {
 				...message,
@@ -112,7 +121,12 @@ export const createMessage = userMutation({
 		channelId: v.id("channels"),
 		threadChannelId: v.optional(v.id("channels")),
 		replyToMessageId: v.optional(v.id("messages")),
-		attachedFiles: v.array(v.string()),
+		attachedFiles: v.array(
+			v.object({
+				key: v.string(),
+				fileName: v.string(),
+			}),
+		),
 	},
 	handler: async (ctx, args) => {
 		if (args.content.trim() === "") {
