@@ -124,7 +124,7 @@ export function MessageContent(props: MessageContentProps) {
 									])}
 								>
 									<ChatImage
-										src={`${import.meta.env.VITE_BUCKET_URL}/${file}`}
+										src={file}
 										alt={file}
 										class={cn([
 											"h-full w-full object-cover",

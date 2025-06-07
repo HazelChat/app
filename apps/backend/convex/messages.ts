@@ -3,6 +3,7 @@ import { paginationOptsValidator } from "convex/server"
 import { v } from "convex/values"
 import { internal } from "./_generated/api"
 import { userMutation, userQuery } from "./middleware/withUser"
+import { r2 } from "./attachments"
 
 export const getMessage = userQuery({
 	args: {
@@ -45,6 +46,7 @@ export const getMessages = userQuery({
 			.order("desc")
 			.paginate(args.paginationOpts)
 
+		// TODO: Refactor this so we don't duplicate code like monkeys
 		const messagesWithThreadMessages = await asyncMap(messages.page, async (message) => {
 			if (message.threadChannelId) {
 				const threadMessages = await ctx.db
@@ -55,8 +57,15 @@ export const getMessages = userQuery({
 				const threadMessagesWithAuthor = await asyncMap(threadMessages, async (message) => {
 					const messageAuthor = await ctx.db.get(message.authorId)
 					if (!messageAuthor) throw new Error("Message author not found")
+
+					const attachedFiles = await asyncMap(
+						message.attachedFiles,
+						async (file) => await r2.getUrl(file),
+					)
+
 					return {
 						...message,
+						attachedFiles: attachedFiles,
 						author: messageAuthor,
 					}
 				})
@@ -79,9 +88,12 @@ export const getMessages = userQuery({
 			// TODO: This should not happen when user is deleted we should give all messages to a default user
 			if (!messageAuthor) throw new Error("Message author not found")
 
+			const attachedFiles = await asyncMap(message.attachedFiles, async (file) => await r2.getUrl(file))
+
 			return {
 				...message,
 				author: messageAuthor,
+				attachedFiles: attachedFiles,
 			}
 		})
 

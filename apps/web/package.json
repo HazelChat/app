@@ -27,6 +27,7 @@
 		"@100mslive/hms-video-store": "^0.12.35",
 		"@ark-ui/solid": "^5.12.0",
 		"@bigmistqke/solid-contenteditable": "^0.0.11",
+		"@convex-dev/r2": "^0.6.1",
 		"@hazel/backend": "workspace:*",
 		"@tanstack/query-persist-client-core": "^5.80.6",
 		"@tanstack/query-sync-storage-persister": "^5.80.6",

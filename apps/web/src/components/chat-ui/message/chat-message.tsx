@@ -41,6 +41,9 @@ export function ChatMessage(props: ChatMessageProps) {
 	}
 
 	createEffect(async () => {
+		if (props.message().attachedFiles.length > 0) {
+			console.log(props.message().attachedFiles)
+		}
 		if (props.isFirstNewMessage()) {
 			console.log("TODO: Implement setting lastSeenMessageId to null")
 			// await z.mutate.channelMembers.update({

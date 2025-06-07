@@ -16,172 +16,7 @@ import { convexQuery } from "~/lib/convex-query"
 import { useChat } from "../chat-state/chat-store"
 import { createPresence } from "../chat-state/create-presence"
 import { setElementAnchorAndFocus } from "../markdown-input/utils"
-
-// Type for individual attachment state
-type Attachment = {
-	id: string
-	file: File
-	status: "pending" | "uploading" | "success" | "error"
-	key?: string // Server-generated key after successful upload
-	error?: string // Error message on failure
-}
-
-const useFileAttachment = () => {
-	const [attachments, setAttachments] = createSignal<Attachment[]>([])
-	const [fileInputRef, setFileInputRef] = createSignal<HTMLInputElement>()
-
-	// Function to add new files, filters for images
-	const addFiles = (files: FileList | File[]) => {
-		const imageFiles = Array.from(files).filter((file) => file.type.startsWith("image/"))
-
-		if (imageFiles.length === 0) {
-			// Optionally show an error if non-images were selected/pasted
-			console.warn("No valid image files selected.")
-			return
-		}
-
-		const newAttachments: Attachment[] = imageFiles.map((file) => ({
-			id: "XD",
-			file: file,
-			status: "pending",
-		}))
-
-		setAttachments((prev) => [...prev, ...newAttachments])
-	}
-
-	// Effect to process pending uploads
-	createEffect(() => {
-		const pendingAttachments = attachments().filter((att) => att.status === "pending")
-
-		if (pendingAttachments.length === 0) {
-			return
-		}
-
-		// Set status to uploading immediately
-		setAttachments((prev) =>
-			prev.map((att) =>
-				pendingAttachments.some((p) => p.id === att.id) ? { ...att, status: "uploading" } : att,
-			),
-		)
-
-		const uploadPromises = pendingAttachments.map(async (attachment) => {
-			try {
-				const uploadUrl = `${import.meta.env.VITE_CONVEX_URL}/store`
-				const response = await fetch(uploadUrl, {
-					method: "PUT",
-					body: attachment.file,
-					headers: {
-						"Content-Type": attachment.file.type,
-					},
-				})
-
-				if (!response.ok) {
-					const errorText = await response.text()
-					throw new Error(`Upload failed: ${response.statusText} - ${errorText}`)
-				}
-
-				const result = await response.json()
-				if (!result || typeof result.key !== "string") {
-					throw new Error("Invalid response received after upload.")
-				}
-
-				return { id: attachment.id, status: "success" as const, key: result.key }
-			} catch (error: any) {
-				console.error("Error uploading file:", attachment.file.name, error)
-				return {
-					id: attachment.id,
-					status: "error" as const,
-					error: error.message || "An unknown error occurred.",
-				}
-			}
-		})
-
-		// Process results using for...of loop
-		Promise.allSettled(uploadPromises).then((results) => {
-			setAttachments((prev) => {
-				const updatedAttachments = [...prev]
-				for (const result of results) {
-					if (result.status === "fulfilled") {
-						const { id, status, key, error } = result.value
-						const index = updatedAttachments.findIndex((att) => att.id === id)
-						if (index !== -1) {
-							updatedAttachments[index] = {
-								...updatedAttachments[index],
-								status: status,
-								key: key,
-								error: error,
-							}
-						}
-					}
-				}
-				return updatedAttachments
-			})
-		})
-	})
-
-	const handleFileChange: JSX.ChangeEventHandlerUnion<HTMLInputElement, Event> = (e) => {
-		if (e.currentTarget.files) {
-			addFiles(e.currentTarget.files)
-		}
-		// Clear input value to allow selecting the same file again
-		if (e.currentTarget) e.currentTarget.value = ""
-	}
-
-	const openFileSelector = () => {
-		fileInputRef()?.click()
-	}
-
-	// Function to remove a specific attachment by its ID
-	const removeAttachment = (idToRemove: string) => {
-		setAttachments((prev) => prev.filter((att) => att.id !== idToRemove))
-		// Note: This doesn't cancel ongoing uploads for the removed file.
-		// Cancellation would require AbortController integration.
-	}
-
-	// Function to clear all attachments
-	const clearAttachments = () => {
-		setAttachments([])
-		if (fileInputRef()) {
-			fileInputRef()!.value = ""
-		}
-	}
-
-	const handlePaste = (e: ClipboardEvent) => {
-		const items = e.clipboardData?.items
-		if (!items) return
-
-		const filesToPaste: File[] = []
-		for (let i = 0; i < items.length; i++) {
-			if (items[i].kind === "file") {
-				const file = items[i].getAsFile()
-				if (file) {
-					filesToPaste.push(file)
-				}
-			}
-		}
-
-		if (filesToPaste.length > 0) {
-			e.preventDefault() // Prevent default paste only if files are found
-			addFiles(filesToPaste)
-		}
-	}
-
-	createEffect(() => {
-		window.addEventListener("paste", handlePaste)
-		onCleanup(() => {
-			window.removeEventListener("paste", handlePaste)
-		})
-	})
-
-	return {
-		attachments,
-		setFileInputRef,
-		handleFileChange,
-		openFileSelector,
-		removeAttachment,
-		clearAttachments,
-	}
-}
+import { useUploadFile } from "~/lib/convex-r2"
 
 const createGlobalEditorFocus = (props: {
 	editorRef: () => HTMLDivElement | undefined
@@ -281,6 +116,14 @@ const createGlobalEditorFocus = (props: {
 	})
 }
 
+type Attachment = {
+	id: string
+	file: File
+	status: "uploading" | "success" | "error"
+	key?: string // Server-generated key after successful upload
+	error?: string // Error message on failure
+}
+
 export function FloatingBar() {
 	const auth = useAuth()
 
@@ -290,6 +133,47 @@ export function FloatingBar() {
 	const meQuery = useQuery(() => ({
 		...convexQuery(api.me.getUser, { serverId: state.serverId }),
 	}))
+
+	const uploadFile = useUploadFile(api.attachments)
+	const [selectedFiles, setSelectedFiles] = createSignal<Attachment[]>([])
+	const [isUploading, setIsUploading] = createSignal(false)
+
+	const handleFileChange = async (e: Event) => {
+		const file = (e.target as HTMLInputElement).files?.[0]
+		if (file) {
+			const id = crypto.randomUUID()
+			setSelectedFiles([
+				...selectedFiles(),
+				{
+					id,
+					file,
+					status: "uploading",
+				},
+			])
+
+			uploadFile(file)
+				.then((key) => {
+					setSelectedFiles(
+						selectedFiles().map((attachment) => {
+							if (attachment.id === id) {
+								return { ...attachment, key, status: "success" }
+							}
+							return attachment
+						}),
+					)
+				})
+				.catch((error) => {
+					setSelectedFiles(
+						selectedFiles().map((attachment) => {
+							if (attachment.id === id) {
+								return { ...attachment, status: "error", error: error.message }
+							}
+							return attachment
+						}),
+					)
+				})
+		}
+	}
 
 	const createMessage = createMutation(api.messages.createMessage).withOptimisticUpdate(
 		(localStore, args) => {
@@ -315,44 +199,27 @@ export function FloatingBar() {
 		},
 	)
 
-	const {
-		attachments,
-		setFileInputRef,
-		handleFileChange,
-		openFileSelector,
-		removeAttachment,
-		clearAttachments,
-	} = useFileAttachment()
-
 	const [editorRef, setEditorRef] = createSignal<HTMLDivElement>()
 
 	createGlobalEditorFocus({ editorRef })
-
-	const isUploading = createMemo(() => attachments().some((att) => att.status === "uploading"))
-	const successfulKeys = createMemo(() =>
-		attachments()
-			.filter((att) => att.status === "success" && att.key)
-			.map((att) => att.key as string),
-	)
-	const showAttachmentArea = createMemo(() => successfulKeys().length > 0)
 
 	async function handleSubmit(text: string) {
 		const userId = auth.userId()
 		if (!userId) return
 
-		if (isUploading()) {
-			console.warn("Upload in progress. Please wait.")
-			return
-		}
+		console.log(selectedFiles())
 
-		if (text.trim().length === 0 && successfulKeys().length === 0) return
+		if (text.trim().length === 0) return
+		if (selectedFiles().some((file) => file.status === "uploading")) return
+
+		const successFiles = selectedFiles().filter((file) => file.status === "success")
 
 		const content = text.trim()
 
 		createMessage({
 			content: content,
 			replyToMessageId: state.replyToMessageId || undefined,
-			attachedFiles: successfulKeys(),
+			attachedFiles: successFiles.map((file) => file.key!),
 			serverId: state.serverId,
 			channelId: state.channelId,
 		})
@@ -365,7 +232,7 @@ export function FloatingBar() {
 
 	return (
 		<div>
-			<Show when={showAttachmentArea()}>
+			{/* <Show when={showAttachmentArea()}>
 				<div class="flex flex-col gap-0 rounded-sm rounded-b-none border border-border/90 border-b-0 bg-secondary/90 px-2 py-1 transition hover:border-border/90">
 					<For each={attachments()}>
 						{(attachment) => (
@@ -373,9 +240,9 @@ export function FloatingBar() {
 						)}
 					</For>
 				</div>
-			</Show>
+			</Show> */}
 			<Show when={state.replyToMessageId}>
-				<ReplyInfo showAttachmentArea={showAttachmentArea()} />
+				<ReplyInfo showAttachmentArea={false} />
 			</Show>
 			<div
 				class={twMerge(
@@ -386,7 +253,12 @@ export function FloatingBar() {
 					size="icon"
 					class="my-3 mr-3 ml-2"
 					intent="icon"
-					onClick={openFileSelector}
+					onClick={() => {
+						const fileInput = document.querySelector('input[type="file"]')
+						if (fileInput) {
+							;(fileInput as HTMLInputElement).click()
+						}
+					}}
 					disabled={isUploading()}
 				>
 					<IconCirclePlusSolid class="size-5!" />
@@ -414,43 +286,14 @@ export function FloatingBar() {
 					<input
 						type="file"
 						multiple
-						ref={setFileInputRef}
 						onChange={handleFileChange}
+						// ref={setFileInputRef}
 						accept="image/*"
 						class="hidden"
-						disabled={isUploading()}
+						// disabled={isUploading()}
 					/>
 				</div>
 			</div>
-		</div>
-	)
-}
-
-function Attachment(props: { attachment: Attachment; removeAttachment: (id: string) => void }) {
-	function getStatusText() {
-		if (props.attachment.status === "uploading") {
-			return "Uploading..."
-		}
-		if (props.attachment.status === "error") {
-			return `${props.attachment.file.name} - Error: ${props.attachment.error?.substring(0, 30) || "Failed"}${props.attachment.error && props.attachment.error.length > 30 ? "..." : ""}`
-		}
-		return props.attachment.file.name
-	}
-
-	return (
-		<div class="flex items-center justify-between gap-2 py-0.5">
-			<div class={attachmentStatusStyles({ status: props.attachment.status })}>
-				<Show when={props.attachment.status === "uploading"}>
-					<IconLoader class="size-4 flex-shrink-0 animate-spin" />
-				</Show>
-				<Show when={props.attachment.status === "error"}>
-					<IconCircleXSolid class="size-4 flex-shrink-0 text-red-500" />
-				</Show>
-				<span class="truncate font-medium text-sm">{getStatusText()}</span>
-			</div>
-			<Button size="icon" intent="icon" onClick={() => props.removeAttachment(props.attachment.id)}>
-				<IconCircleXSolid class="size-4" />
-			</Button>
 		</div>
 	)
 }
