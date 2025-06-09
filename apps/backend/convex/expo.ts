@@ -1,6 +1,6 @@
 import { PushNotifications } from "@convex-dev/expo-push-notifications"
 import { v } from "convex/values"
-import { components } from "./_generated/api"
+import { api, components } from "./_generated/api"
 import type { Id } from "./_generated/dataModel"
 import { internalMutation } from "./_generated/server"
 import { accountMutation, accountQuery } from "./middleware/withAccount"

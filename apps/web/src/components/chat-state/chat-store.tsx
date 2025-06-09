@@ -78,29 +78,17 @@ export const ChatProvider = (props: {
 	}))
 
 	return (
-		<Suspense
-			fallback={
-				<div class="flex flex-col-reverse p-4">
-					{Array.from({ length: 15 }).map((_, i) => (
-						<MessageSkeleton isGroupStart={i % 3 === 0} />
-					))}
-				</div>
-			}
-		>
-			<Show when={params()} keyed>
-				{(params) => {
-					const chatStore$ = createChatStore({
-						channel: channelQuery.data,
-						channelId: params.channelId,
-						serverId: params.serverId,
-					})
+		<Show when={params()} keyed>
+			{(params) => {
+				const chatStore$ = createChatStore({
+					channel: channelQuery.data,
+					channelId: params.channelId,
+					serverId: params.serverId,
+				})
 
-					return (
-						<ChatContext.Provider value={chatStore$}>{childProps.children}</ChatContext.Provider>
-					)
-				}}
-			</Show>
-		</Suspense>
+				return <ChatContext.Provider value={chatStore$}>{childProps.children}</ChatContext.Provider>
+			}}
+		</Show>
 	)
 }
 

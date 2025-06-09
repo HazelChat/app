@@ -8,6 +8,8 @@
     - Start call in channel
     - Show active call in channel + show call history
 
+- Fork Presence Component and add a method to get if specific accountId is online in roomId
+
 # Fixes
 
 
