@@ -87,19 +87,19 @@ function ChatImageViewerModal() {
 	}))
 
 	const availableImages = createMemo(() => messageQuery.data?.attachedFiles ?? [])
-	const defaultImage = createMemo(() => state.imageDialog.selectedImage!)
+	// const defaultImageKey = createMemo(() => state.imageDialog.selectedImageKey!)
 
 	return (
-		<Show when={messageQuery.data && defaultImage()}>
+		<Show when={messageQuery.data && state.imageDialog.selectedImageKey}>
 			<ImageViewerModal
 				availableImages={availableImages}
-				defaultImage={defaultImage}
+				defaultImageKey={state.imageDialog.selectedImageKey!}
 				onOpenChange={() =>
 					setState("imageDialog", (prev) => ({
 						...prev,
 						open: false,
 						messageId: null,
-						selectedImage: null,
+						selectedImageKey: null,
 					}))
 				}
 				author={messageQuery.data!.author}

@@ -1,6 +1,6 @@
 import type { Doc } from "@hazel/backend"
 
-type AttachedFile = Doc<"messages">["attachedFiles"][number] & {
+export type AttachedFile = Doc<"messages">["attachedFiles"][number] & {
 	url: string
 }
 

@@ -18,10 +18,11 @@ import { Dialog as ArkDialog } from "@ark-ui/solid"
 import type { Doc } from "@hazel/backend"
 import { twMerge } from "tailwind-merge"
 import { Carousel } from "../ui/carousel"
+import type { AttachedFile } from "~/lib/types"
 
 interface ImageViewerModalProps {
-	defaultImage: Accessor<string>
-	availableImages: Accessor<string[]>
+	defaultImageKey: string
+	availableImages: Accessor<AttachedFile[]>
 	onOpenChange: (open: boolean) => void
 	author: Doc<"users">
 	createdAt: number
@@ -29,7 +30,17 @@ interface ImageViewerModalProps {
 }
 
 export function ImageViewerModal(props: ImageViewerModalProps) {
-	const [selectedImage, setSelectedImage] = createSignal<string>(props.defaultImage())
+	const [selectedImage, setSelectedImage] = createSignal<AttachedFile>(
+		(() => {
+			// console.log("props", props.availableImages(), props.defaultImageKey)
+			return props.availableImages().find((image) => image.key === props.defaultImageKey)!
+		})(),
+	)
+
+	createEffect(() => {
+		console.log(props.defaultImageKey)
+		setSelectedImage(props.availableImages().find((image) => image.key === props.defaultImageKey)!)
+	})
 
 	const imageModalActions = [
 		{
@@ -37,16 +48,14 @@ export function ImageViewerModal(props: ImageViewerModalProps) {
 			icon: <IconDownload />,
 			onClick: async (e: MouseEvent) => {
 				e.stopPropagation()
-				const imageUrl = selectedImage()?.startsWith("https")
-					? selectedImage()!
-					: `${props.bucketUrl}/${selectedImage()}`
+				const imageUrl = selectedImage().url
 				try {
 					const response = await fetch(imageUrl)
 					const blob = await response.blob()
 					const url = URL.createObjectURL(blob)
 					const a = document.createElement("a")
 					a.href = url
-					a.download = selectedImage()!
+					a.download = selectedImage().fileName
 					a.click()
 					URL.revokeObjectURL(url)
 				} catch (error) {
@@ -65,9 +74,7 @@ export function ImageViewerModal(props: ImageViewerModalProps) {
 			icon: <IconCopy />,
 			onClick: async (e: MouseEvent) => {
 				e.stopPropagation()
-				const imageUrl = selectedImage()?.startsWith("https")
-					? selectedImage()!
-					: `${props.bucketUrl}/${selectedImage()}`
+				const imageUrl = selectedImage().url
 				try {
 					const response = await fetch(imageUrl)
 					const blob = await response.blob()
@@ -92,7 +99,7 @@ export function ImageViewerModal(props: ImageViewerModalProps) {
 			icon: <IconLink />,
 			onClick: (e: MouseEvent) => {
 				e.stopPropagation()
-				navigator.clipboard.writeText(`${props.bucketUrl}/${selectedImage()}`)
+				navigator.clipboard.writeText(selectedImage().url)
 
 				toaster.create({
 					title: "Image URL copied",
@@ -106,7 +113,7 @@ export function ImageViewerModal(props: ImageViewerModalProps) {
 			icon: <IconOpenLink />,
 			onClick: (e: MouseEvent) => {
 				e.stopPropagation()
-				window.open(`${props.bucketUrl}/${selectedImage()}`, "_blank")
+				window.open(selectedImage().url, "_blank")
 			},
 		},
 		{
@@ -147,12 +154,8 @@ export function ImageViewerModal(props: ImageViewerModalProps) {
 							when={props.availableImages().length > 1}
 							fallback={
 								<img
-									src={
-										selectedImage()?.startsWith("https")
-											? selectedImage()!
-											: `${props.bucketUrl}/${selectedImage()}`
-									}
-									alt={selectedImage()!}
+									src={selectedImage().url}
+									alt={selectedImage().fileName}
 									class="max-h-[90vh] max-w-[90vw] rounded-md"
 								/>
 							}
@@ -161,7 +164,9 @@ export function ImageViewerModal(props: ImageViewerModalProps) {
 								class="mx-36"
 								loop
 								slideCount={props.availableImages().length}
-								page={props.availableImages().indexOf(selectedImage())}
+								page={props
+									.availableImages()
+									.findIndex((image) => image.key === selectedImage().key)}
 								onPageChange={(details) =>
 									setSelectedImage(props.availableImages()[details.page])
 								}
@@ -177,11 +182,7 @@ export function ImageViewerModal(props: ImageViewerModalProps) {
 											<Carousel.Item index={index}>
 												{/* biome-ignore lint/a11y/useKeyWithClickEvents: <explanation> */}
 												<img
-													src={
-														image()?.startsWith("https")
-															? image()!
-															: `${props.bucketUrl}/${image()}`
-													}
+													src={image().url}
 													alt={`Slide ${index}`}
 													class="max-h-[70vh] max-w-[90vw] rounded-md"
 													onClick={(e) => e.stopPropagation()}

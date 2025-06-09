@@ -5,6 +5,7 @@ import { tv } from "tailwind-variants"
 import { IconLoader } from "../icons/loader"
 import { IconCirclePlusSolid } from "../icons/solid/circle-plus-solid"
 import { IconCircleXSolid } from "../icons/solid/circle-x-solid"
+import { IconDocument } from "../icons/document"
 import { ChatInput } from "../markdown-input/chat-input"
 import { Button } from "../ui/button"
 
@@ -206,6 +207,7 @@ export function FloatingBar() {
 	)
 
 	const [editorRef, setEditorRef] = createSignal<HTMLDivElement>()
+	const [fileInputRef, setFileInputRef] = createSignal<HTMLInputElement>()
 
 	createGlobalEditorFocus({ editorRef })
 
@@ -234,6 +236,10 @@ export function FloatingBar() {
 		})
 
 		setState("replyToMessageId", null)
+		setSelectedFiles([])
+		if (fileInputRef()) {
+			fileInputRef()!.value = ""
+		}
 
 		setState("inputText", "")
 		trackTyping(false)
@@ -242,19 +248,21 @@ export function FloatingBar() {
 	return (
 		<div>
 			<Show when={selectedFiles().length > 0}>
-				<div class="flex flex-col gap-0 rounded-sm rounded-b-none border border-border/90 border-b-0 bg-secondary/90 px-2 py-1 transition hover:border-border/90">
+				<div class="flex flex-wrap gap-2 rounded-sm rounded-b-none border border-border/90 border-b-0 bg-secondary/90 p-3 transition hover:border-border/90">
 					<For each={selectedFiles()}>
 						{(attachment) => (
-							<div class="flex items-center gap-2">
-								<p>{attachment.file.name}</p>
-								<p>{attachment.status}</p>
-							</div>
+							<AttachmentPreview
+								attachment={attachment}
+								onRemove={() => {
+									setSelectedFiles(selectedFiles().filter((f) => f.id !== attachment.id))
+								}}
+							/>
 						)}
 					</For>
 				</div>
 			</Show>
 			<Show when={state.replyToMessageId}>
-				<ReplyInfo showAttachmentArea={false} />
+				<ReplyInfo showAttachmentArea={selectedFiles().length > 0} />
 			</Show>
 			<div
 				class={twMerge(
@@ -299,7 +307,7 @@ export function FloatingBar() {
 						type="file"
 						multiple
 						onChange={handleFileChange}
-						// ref={setFileInputRef}
+						ref={setFileInputRef}
 						accept="image/*"
 						class="hidden"
 						// disabled={isUploading()}
@@ -388,4 +396,72 @@ const getElementCenter = (element: Element) => {
 		x: rect.left + rect.width / 2,
 		y: rect.top + rect.height / 2,
 	}
+}
+
+function AttachmentPreview(props: {
+	attachment: Attachment
+	onRemove: () => void
+}) {
+	const isImage = () => props.attachment.file.type.startsWith("image/")
+	const [imageUrl, setImageUrl] = createSignal<string>()
+
+	createEffect(() => {
+		if (isImage()) {
+			const url = URL.createObjectURL(props.attachment.file)
+			setImageUrl(url)
+			onCleanup(() => URL.revokeObjectURL(url))
+		}
+	})
+
+	return (
+		<div class="group relative pb-6">
+			<div
+				class={twMerge(
+					"flex h-20 w-20 items-center justify-center rounded-lg border-2 transition-colors",
+					props.attachment.status === "uploading" && "border-muted-foreground/50 bg-muted/50",
+					props.attachment.status === "success" && "border-green-500/50 bg-green-50/50",
+					props.attachment.status === "error" && "border-red-500/50 bg-red-50/50",
+				)}
+			>
+				<Show
+					when={isImage() && imageUrl()}
+					fallback={
+						<div class="flex flex-col items-center gap-1">
+							<IconDocument class="h-8 w-8 text-muted-foreground" />
+							<span class="w-full truncate px-1 text-center text-muted-foreground text-xs">
+								{props.attachment.file.name.split(".").pop()?.toUpperCase()}
+							</span>
+						</div>
+					}
+				>
+					<img
+						src={imageUrl()}
+						alt={props.attachment.file.name}
+						class="h-full w-full rounded-md object-cover"
+					/>
+				</Show>
+
+				<Show when={props.attachment.status === "uploading"}>
+					<div class="absolute inset-0 flex items-center justify-center rounded-lg bg-black/20">
+						<IconLoader class="h-4 w-4 animate-spin text-white" />
+					</div>
+				</Show>
+			</div>
+
+			<Button
+				size="icon"
+				intent="icon"
+				class="-right-2 -top-2 absolute h-6 w-6 rounded-full bg-red-500 opacity-0 transition-opacity hover:bg-red-600 group-hover:opacity-100"
+				onClick={props.onRemove}
+			>
+				<IconCircleXSolid class="h-4 w-4 text-white" />
+			</Button>
+
+			<div class="absolute right-0 bottom-0 left-0 text-center">
+				<span class="block truncate px-1 text-muted-foreground text-xs">
+					{props.attachment.file.name}
+				</span>
+			</div>
+		</div>
+	)
 }

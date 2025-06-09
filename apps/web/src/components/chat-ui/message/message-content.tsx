@@ -85,15 +85,16 @@ export function MessageContent(props: MessageContentProps) {
 								<ChatImage
 									src={imgProps.src!}
 									alt={imgProps.alt!}
+									// TODO: We need to make the new image system work with URL-only images.
 									onClick={() => {
-										setState(
-											"imageDialog",
-											reconcile({
-												open: true,
-												messageId: props.message()._id,
-												selectedImage: imgProps.src!,
-											}),
-										)
+										// setState(
+										// 	"imageDialog",
+										// 	reconcile({
+										// 		open: true,
+										// 		messageId: props.message()._id,
+										// 		selectedImageKey: imgProps.src!,
+										// 	}),
+										// )
 									}}
 									{...rest}
 								/>
@@ -138,7 +139,7 @@ export function MessageContent(props: MessageContentProps) {
 												reconcile({
 													open: true,
 													messageId: props.message()._id,
-													selectedImage: file.url,
+													selectedImageKey: file.key,
 												}),
 											)
 										}}

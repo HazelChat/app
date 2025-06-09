@@ -20,9 +20,18 @@ export const getMessage = userQuery({
 		const messageAuthor = await ctx.db.get(message.authorId)
 		if (!messageAuthor) throw new Error("Message author not found")
 
+		const attachedFiles = await asyncMap(message.attachedFiles, async (file) => {
+			const url = await r2.getUrl(file.key)
+			return {
+				...file,
+				url,
+			}
+		})
+
 		return {
 			...message,
 			author: messageAuthor,
+			attachedFiles: attachedFiles,
 		}
 	},
 })

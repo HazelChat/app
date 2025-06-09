@@ -11,7 +11,7 @@ interface ChatStore extends InputChatStore {
 	imageDialog: {
 		open: boolean
 		messageId: Id<"messages"> | null
-		selectedImage: string | null
+		selectedImageKey: string | null
 	}
 	onlineUserIds: string[]
 	typingUserIds: string[]
@@ -32,7 +32,7 @@ const createChatStore = (props: InputChatStore) => {
 		imageDialog: {
 			open: false,
 			messageId: null,
-			selectedImage: null,
+			selectedImageKey: null,
 		},
 		inputText: "",
 		onlineUserIds: [],
