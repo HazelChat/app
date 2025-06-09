@@ -14,7 +14,6 @@ import { useQuery } from "@tanstack/solid-query"
 import { createMutation, insertAtTop } from "~/lib/convex"
 import { convexQuery } from "~/lib/convex-query"
 import { useChat } from "../chat-state/chat-store"
-import { createPresence } from "../chat-state/create-presence"
 import { setElementAnchorAndFocus } from "../markdown-input/utils"
 
 // Type for individual attachment state
@@ -285,11 +284,12 @@ export function FloatingBar() {
 	const auth = useAuth()
 
 	const { state, setState } = useChat()
-	const { trackTyping } = createPresence()
 
 	const meQuery = useQuery(() => ({
 		...convexQuery(api.me.getUser, { serverId: state.serverId }),
 	}))
+
+	const stopTyping = createMutation(api.typingIndicator.stop)
 
 	const createMessage = createMutation(api.messages.createMessage).withOptimisticUpdate(
 		(localStore, args) => {
@@ -349,6 +349,10 @@ export function FloatingBar() {
 
 		const content = text.trim()
 
+		stopTyping({
+			channelId: state.channelId,
+		})
+
 		createMessage({
 			content: content,
 			replyToMessageId: state.replyToMessageId || undefined,
@@ -360,7 +364,6 @@ export function FloatingBar() {
 		setState("replyToMessageId", null)
 
 		setState("inputText", "")
-		trackTyping(false)
 	}
 
 	return (
@@ -399,7 +402,6 @@ export function FloatingBar() {
 					id="chat-input-editor"
 					value={() => state.inputText}
 					onValueChange={(value) => {
-						trackTyping(true)
 						setState("inputText", value)
 					}}
 					onKeyDown={(e) => {

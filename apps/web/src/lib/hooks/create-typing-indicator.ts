@@ -48,5 +48,5 @@ export function createTypingIndicator(channelId: Accessor<Id<"channels">>, text:
 		return curr ?? []
 	})
 
-	return { typingUsers }
+	return { typingUsers, stopTyping }
 }

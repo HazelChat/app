@@ -1,7 +1,9 @@
 import type { Id } from "@hazel/backend"
 import { api } from "@hazel/backend/api"
+import { useQuery } from "@tanstack/solid-query"
 import { type Accessor, createEffect, createMemo, createSignal, onCleanup } from "solid-js"
-import { createMutation, createQuery, useConvex } from "../convex/client"
+import { convexQuery } from "../convex-query"
+import { createMutation, useConvex } from "../convex/client"
 import { createSingleFlight } from "./create-singleflight"
 
 if (typeof window === "undefined") {
@@ -128,14 +130,14 @@ export default function createPresence(
 		})
 	})
 
-	const presenceList = createQuery(api.presence.list, () =>
-		roomToken() ? [{ roomToken: roomToken()! }] : ["skip"],
+	const presenceListQuery = useQuery(() =>
+		convexQuery(api.presence.list, roomToken() ? { roomToken: roomToken()! } : "skip"),
 	)
 
 	// Memoize the sorted list to prevent re-sorting on every render.
 	// This is also reactive and will update when presenceList or userId changes.
 	const sortedList = createMemo(() => {
-		const list = presenceList()
+		const list = presenceListQuery.data
 		if (!list) {
 			return []
 		}
