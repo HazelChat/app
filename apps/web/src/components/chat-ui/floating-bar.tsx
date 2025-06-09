@@ -141,39 +141,64 @@ export function FloatingBar() {
 	const handleFileChange = async (e: Event) => {
 		const file = (e.target as HTMLInputElement).files?.[0]
 		if (file) {
-			const id = crypto.randomUUID()
-			setSelectedFiles([
-				...selectedFiles(),
-				{
-					id,
-					file,
-					status: "uploading",
-				},
-			])
-			// // Sleep 3 seconds
-			// await new Promise((resolve) => setTimeout(resolve, 500))
+			await processFile(file)
+		}
+	}
 
-			uploadFile(file)
-				.then((key) => {
-					setSelectedFiles(
-						selectedFiles().map((attachment) => {
-							if (attachment.id === id) {
-								return { ...attachment, key, status: "success" }
-							}
-							return attachment
-						}),
-					)
-				})
-				.catch((error) => {
-					setSelectedFiles(
-						selectedFiles().map((attachment) => {
-							if (attachment.id === id) {
-								return { ...attachment, status: "error", error: error.message }
-							}
-							return attachment
-						}),
-					)
-				})
+	const processFile = async (file: File) => {
+		const id = crypto.randomUUID()
+		setSelectedFiles([
+			...selectedFiles(),
+			{
+				id,
+				file,
+				status: "uploading",
+			},
+		])
+
+		uploadFile(file)
+			.then((key) => {
+				setSelectedFiles(
+					selectedFiles().map((attachment) => {
+						if (attachment.id === id) {
+							return { ...attachment, key, status: "success" }
+						}
+						return attachment
+					}),
+				)
+			})
+			.catch((error) => {
+				setSelectedFiles(
+					selectedFiles().map((attachment) => {
+						if (attachment.id === id) {
+							return { ...attachment, status: "error", error: error.message }
+						}
+						return attachment
+					}),
+				)
+			})
+	}
+
+	const handleDragOver = (e: DragEvent) => {
+		e.preventDefault()
+		e.stopPropagation()
+		setIsDragOver(true)
+	}
+
+	const handleDragLeave = (e: DragEvent) => {
+		e.preventDefault()
+		e.stopPropagation()
+		setIsDragOver(false)
+	}
+
+	const handleDrop = async (e: DragEvent) => {
+		e.preventDefault()
+		e.stopPropagation()
+		setIsDragOver(false)
+
+		const files = Array.from(e.dataTransfer?.files || [])
+		for (const file of files) {
+			await processFile(file)
 		}
 	}
 
@@ -208,6 +233,7 @@ export function FloatingBar() {
 
 	const [editorRef, setEditorRef] = createSignal<HTMLDivElement>()
 	const [fileInputRef, setFileInputRef] = createSignal<HTMLInputElement>()
+	const [isDragOver, setIsDragOver] = createSignal(false)
 
 	createGlobalEditorFocus({ editorRef })
 
@@ -266,12 +292,25 @@ export function FloatingBar() {
 			</Show>
 			<div
 				class={twMerge(
-					"group flex w-full items-start rounded-sm border border-border bg-sidebar transition duration-300 ease-in hover:border-muted-foreground/70",
+					"group relative flex w-full items-start rounded-sm border border-border bg-sidebar transition duration-300 ease-in hover:border-muted-foreground/70",
+					isDragOver() && "border-blue-500 bg-blue-50/50",
 				)}
+				onDragOver={handleDragOver}
+				onDragLeave={handleDragLeave}
+				onDrop={handleDrop}
 			>
+				<Show when={isDragOver()}>
+					<div class="absolute inset-0 z-10 flex items-center justify-center rounded-sm bg-blue-500/10 backdrop-blur-sm">
+						<div class="flex flex-col items-center gap-2 text-blue-600">
+							<IconCirclePlusSolid class="h-8 w-8" />
+							<span class="text-sm font-medium">Drop files to attach</span>
+						</div>
+					</div>
+				</Show>
+
 				<Button
 					size="icon"
-					class="my-3 mr-3 ml-2"
+					class="ml-2 mr-3 my-3"
 					intent="icon"
 					onClick={() => {
 						const fileInput = document.querySelector('input[type="file"]')
