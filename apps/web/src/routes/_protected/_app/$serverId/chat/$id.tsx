@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/solid-router"
-import { Show, createMemo } from "solid-js"
+import { Show, Suspense, createMemo } from "solid-js"
 import { ChatTopbar } from "~/components/chat-ui/chat-topbar"
 
 import type { Id } from "@hazel/backend"
@@ -10,7 +10,6 @@ import { ImageViewerModal } from "~/components/chat-ui/image-viewer-modal"
 import { IconX } from "~/components/icons/x"
 import { Button } from "~/components/ui/button"
 import { convexQuery } from "~/lib/convex-query"
-import { ChannelVirtua } from "./-components/channel-virtua"
 import { ChannelWithoutVirtua } from "./-components/channel-without-virtua"
 
 export const Route = createFileRoute("/_protected/_app/$serverId/chat/$id")({
@@ -58,13 +57,15 @@ function RouteComponent() {
 				</div>
 
 				<Show when={openThreadId()}>
-					<ChatProvider channelId={openThreadId} serverId={serverId}>
-						<ThreadChannel
-							channelId={openThreadId()}
-							serverId={serverId()}
-							closeThread={() => setState("openThreadId", null)}
-						/>
-					</ChatProvider>
+					<Suspense>
+						<ChatProvider channelId={openThreadId} serverId={serverId}>
+							<ThreadChannel
+								channelId={openThreadId()}
+								serverId={serverId()}
+								closeThread={() => setState("openThreadId", null)}
+							/>
+						</ChatProvider>
+					</Suspense>
 				</Show>
 			</div>
 			<ChatImageViewerModal />

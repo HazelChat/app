@@ -26,7 +26,7 @@ import type { Message } from "~/lib/types"
 const PAGE_SIZE = 35
 
 // Skeleton component for loading messages
-const MessageSkeleton = (props: { isGroupStart: boolean }) => (
+export const MessageSkeleton = (props: { isGroupStart: boolean }) => (
 	<div class="flex gap-3 px-4 py-2">
 		<Show when={props.isGroupStart}>
 			<div class="h-10 w-10 animate-pulse rounded-full bg-muted" />
@@ -45,8 +45,6 @@ const MessageSkeleton = (props: { isGroupStart: boolean }) => (
 		</div>
 	</div>
 )
-
-const MessagePlaceholder = () => <div class="h-[42px]" />
 
 export function ChannelWithoutVirtua(props: {
 	channelId: Accessor<Id<"channels">>
@@ -70,19 +68,50 @@ export function ChannelWithoutVirtua(props: {
 
 	const [messages, setMessages] = createStore<Message[]>([])
 
+	const [isFetchingUp, setIsFetchingUp] = createSignal(false)
+	const [scrollSnapshot, setScrollSnapshot] = createSignal({ height: 0 })
+
+	let bottomRef: HTMLDivElement | undefined
+	let scrollContainerRef: HTMLDivElement | undefined
+	const [shouldStickToBottom, setShouldStickToBottom] = createSignal(true)
+
 	onMount(() => {
 		setTimeout(() => {
 			bottomRef?.scrollIntoView({ behavior: "auto" })
-
 			setIsInitialRender(false)
-		}, 1000)
+		}, 400)
 	})
 
-	createEffect(() => {
-		setMessages(
-			reconcile(messagesQuery.data?.pages.flatMap((page) => page.page).reverse() ?? [], { key: "_id" }),
-		)
-	})
+	createEffect(
+		on(
+			() => messagesQuery.data,
+			() => {
+				if (!scrollContainerRef) return
+
+				const wasFetchingUp = isFetchingUp()
+
+				// Reconcile new data into our local store
+				setMessages(
+					reconcile(messagesQuery.data?.pages.flatMap((page) => page.page).reverse() ?? [], {
+						key: "_id",
+					}),
+				)
+
+				// If we just finished fetching older messages, preserve scroll
+				if (wasFetchingUp) {
+					// Wait for Solid to update the DOM (new messages rendered, skeletons removed)
+					queueMicrotask(() => {
+						if (scrollContainerRef) {
+							const newHeight = scrollContainerRef.scrollHeight
+							const oldHeight = scrollSnapshot().height
+							scrollContainerRef.scrollTop += newHeight - oldHeight
+						}
+						setIsFetchingUp(false)
+					})
+				}
+			},
+		),
+	)
 
 	const processedMessages = mapArray(
 		() => messages,
@@ -113,23 +142,15 @@ export function ChannelWithoutVirtua(props: {
 		},
 	)
 
-	let bottomRef: HTMLDivElement | undefined
-	let scrollContainerRef: HTMLDivElement | undefined
-	const [shouldStickToBottom, setShouldStickToBottom] = createSignal(true)
-
 	createEffect(
 		on(processedMessages, () => {
-			if (!shouldStickToBottom()) return
-
-			if (isInitialRender()) {
+			if (!shouldStickToBottom() || isInitialRender() || isFetchingUp()) {
 				return
 			}
 
 			if (bottomRef) {
 				queueMicrotask(() => {
-					if (bottomRef) {
-						bottomRef.scrollIntoView({ behavior: "smooth" })
-					}
+					bottomRef?.scrollIntoView({ behavior: "smooth" })
 				})
 			}
 		}),
@@ -139,11 +160,21 @@ export function ChannelWithoutVirtua(props: {
 		const target = e.currentTarget as HTMLDivElement
 		if (!target || isInitialRender()) return
 
-		setShouldStickToBottom(target.scrollHeight - target.scrollTop - target.clientHeight < 120)
+		const isAtBottom = target.scrollHeight - target.scrollTop - target.clientHeight < 120
+		setShouldStickToBottom(isAtBottom && !messagesQuery.hasPreviousPage)
 
-		if (target.scrollTop < 900) {
-			if (messagesQuery.hasNextPage && !messagesQuery.isFetchingNextPage) {
-				messagesQuery.fetchNextPage()
+		// Trigger fetching older messages when scrolling to the top
+		const isAtTop = target.scrollTop < 900
+		if (isAtTop && messagesQuery.hasNextPage && !messagesQuery.isFetchingNextPage && !isFetchingUp()) {
+			// Set fetching state and capture current scroll height
+			setIsFetchingUp(true)
+			setScrollSnapshot({ height: target.scrollHeight })
+			messagesQuery.fetchNextPage()
+		}
+
+		if (isAtBottom) {
+			if (messagesQuery.hasPreviousPage && !messagesQuery.isFetchingPreviousPage) {
+				messagesQuery.fetchPreviousPage()
 			}
 		}
 	}
@@ -154,8 +185,8 @@ export function ChannelWithoutVirtua(props: {
 				<Show
 					when={!messagesQuery.isLoading}
 					fallback={
-						<div class="flex flex-col justify-end p-4">
-							{Array.from({ length: 10 }).map((_, i) => (
+						<div class="flex flex-col-reverse p-4">
+							{Array.from({ length: 15 }).map((_, i) => (
 								<MessageSkeleton isGroupStart={i % 3 === 0} />
 							))}
 						</div>
@@ -163,9 +194,12 @@ export function ChannelWithoutVirtua(props: {
 				>
 					<div class="min-h-0 flex-1" />
 
-					<Show when={messagesQuery.isFetchingNextPage}>
-						<div class="flex justify-center p-4">
-							<MessageSkeleton isGroupStart />
+					{/* Show placeholder skeletons while fetching older messages */}
+					<Show when={isFetchingUp()}>
+						<div class="flex flex-col">
+							{Array.from({ length: PAGE_SIZE }).map((_, i) => (
+								<MessageSkeleton isGroupStart={i % 4 === 0} />
+							))}
 						</div>
 					</Show>
 
@@ -191,46 +225,6 @@ export function ChannelWithoutVirtua(props: {
 				<FloatingBar />
 				<ChatTypingPresence />
 			</div>
-		</div>
-	)
-}
-
-interface LazyRenderProps {
-	placeholder: JSX.Element
-	children: JSX.Element
-}
-
-export const LazyRender: Component<LazyRenderProps> = (props) => {
-	const [isVisible, setIsVisible] = createSignal(true)
-	let elementRef: HTMLDivElement | undefined
-
-	onMount(() => {
-		const observer = new IntersectionObserver(
-			(entries) => {
-				// When the placeholder is visible, update the signal and stop observing
-				if (entries[0].isIntersecting) {
-					setIsVisible(true)
-					observer.unobserve(elementRef!)
-				}
-			},
-			{
-				// You can tweak the rootMargin to load content slightly before it enters the screen
-				rootMargin: "200px",
-			},
-		)
-
-		if (elementRef) {
-			observer.observe(elementRef)
-		}
-
-		onCleanup(() => observer.disconnect())
-	})
-
-	return (
-		<div ref={elementRef}>
-			<Show when={isVisible()} fallback={props.placeholder}>
-				{props.children}
-			</Show>
 		</div>
 	)
 }

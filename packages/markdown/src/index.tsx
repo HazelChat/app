@@ -7,10 +7,9 @@ import { type PluggableList, unified } from "unified"
 import { VFile } from "vfile"
 import type { Options as TransformOptions } from "./types"
 
-import rehypeHighlight from "rehype-highlight"
 import remarkGfm from "remark-gfm"
-
-import "highlight.js/styles/github.css"
+import remarkHtml from "remark-html"
+import { highlight } from "remark-sugar-high"
 
 import type { Root } from "hast"
 import remarkBreaks from "remark-breaks"
@@ -67,9 +66,12 @@ export const Markdown: Component<Partial<SolidMarkdownOptions>> = (opts) => {
 			.use(remarkParse)
 			.use(remarkGfm)
 			.use(remarkBreaks)
+			.use(highlight as any)
+
 			.use(options.remarkPlugins || [])
 			.use(remarkRehype, { allowDangerousHtml: true })
-			.use(rehypeHighlight)
+			.use(remarkHtml, { sanitize: false })
+
 			.use(options.rehypePlugins || [])
 			.use(rehypeFilter, options)
 

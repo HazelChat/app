@@ -7,8 +7,10 @@ import {
 } from "@tanstack/solid-query"
 import { type FunctionReturnType, getFunctionName } from "convex/server"
 import { convexToJson } from "convex/values"
-import { createEffect, createMemo, on, onCleanup } from "solid-js"
+import { createEffect, createMemo, createSignal, on, onCleanup } from "solid-js"
 import { type PaginatedQueryArgs, type PaginatedQueryReference, useConvex } from "../convex"
+
+import { makePersisted } from "@solid-primitives/storage"
 
 export interface ConvexPaginatedQueryOptions {
 	numItems: number
@@ -21,6 +23,11 @@ export const convexInfiniteQuery = <Query extends PaginatedQueryReference>(
 ): SolidInfiniteQueryOptions<InfiniteData<FunctionReturnType<Query>, unknown>, Error> => {
 	const convex = useConvex()
 
+	const [cursorStore, setCursorStore] = makePersisted(createSignal<string[]>([]), {
+		storage: localStorage,
+		name: JSON.stringify(args),
+	})
+
 	const isDisabled = args === "skip"
 	const queryKey = [getFunctionName(query), isDisabled ? {} : JSON.stringify(convexToJson(args as any))]
 
@@ -30,19 +37,36 @@ export const convexInfiniteQuery = <Query extends PaginatedQueryReference>(
 			if (isDisabled) {
 				return { page: [], isDone: true, continueCursor: null }
 			}
-			return await convex.query(query, {
+
+			if (!cursorStore().find((cursor) => cursor === pageParam)) {
+				setCursorStore((prev) => [...prev, pageParam === null ? "firstItem" : pageParam])
+			}
+
+			const data = await convex.query(query, {
 				...(args as object),
 				paginationOpts: {
 					numItems: options.numItems,
-					cursor: pageParam,
+					cursor: pageParam === "firstItem" ? null : pageParam,
 				},
 			})
+
+			return data
 		},
 
 		getNextPageParam: (lastPage) => {
 			return lastPage.isDone ? undefined : lastPage.continueCursor
 		},
-		initialPageParam: null,
+		getPreviousPageParam: (firstPage: any, allPGES: any, pageParam: string) => {
+			// TODO: FIXME
+			const firstPageCursorIndex = cursorStore().findIndex((cursor) => cursor === pageParam)
+
+			const prevCursor = cursorStore()[firstPageCursorIndex - 1]
+
+			return null
+		},
+
+		// maxPages: 3,
+		initialPageParam: "firstItem",
 		enabled: !isDisabled,
 	}
 
@@ -88,7 +112,7 @@ export function useConvexInfiniteQuery<Query extends PaginatedQueryReference>(
 					...(args as object),
 					paginationOpts: {
 						numItems: options.numItems,
-						cursor: pageParam,
+						cursor: pageParam === "firstItem" ? null : pageParam,
 					},
 				}
 

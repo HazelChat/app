@@ -48,6 +48,17 @@
 	--shadow-lg: 0px 6px 12px -3px hsl(0 0% 0% / 0.09), 0px 4px 6px -4px hsl(0 0% 0% / 0.09);
 	--shadow-xl: 0px 6px 12px -3px hsl(0 0% 0% / 0.09), 0px 8px 10px -4px hsl(0 0% 0% / 0.09);
 	--shadow-2xl: 0px 6px 12px -3px hsl(0 0% 0% / 0.22);
+
+
+	--sh-class: #2d5e9d;
+	--sh-identifier: var(--muted-foreground);
+	--sh-sign: var(--muted-foreground);
+	--sh-property: #0550ae;
+	--sh-entity: var(--primary);
+	--sh-jsxliterals: #6266d1;
+	--sh-string: var(--primary);
+	--sh-keyword: var(--primary);
+	--sh-comment: var(--muted-foreground);
 }
 
 .dark {
@@ -95,6 +106,17 @@
 	--shadow-lg: 0px 6px 12px -3px hsl(0 0% 0% / 0.09), 0px 4px 6px -4px hsl(0 0% 0% / 0.09);
 	--shadow-xl: 0px 6px 12px -3px hsl(0 0% 0% / 0.09), 0px 8px 10px -4px hsl(0 0% 0% / 0.09);
 	--shadow-2xl: 0px 6px 12px -3px hsl(0 0% 0% / 0.22);
+
+
+	--sh-class: #2d5e9d;
+	--sh-identifier: var(--muted-foreground);
+	--sh-sign: var(--muted-foreground);
+	--sh-property: #0550ae;
+	--sh-entity: var(--primary);
+	--sh-jsxliterals: #6266d1;
+	--sh-string: var(--primary);
+	--sh-keyword: var(--primary);
+	--sh-comment: var(--muted-foreground);
 }
 
 @theme inline {

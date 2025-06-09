@@ -53,7 +53,7 @@ export const createPresence = <T extends { [key: string]: Value }>(
 	let hearbeatTimer: NodeJS.Timeout | null = null
 	const [data, setData] = createSignal(initialData)
 
-	const presenceQuery = createQuery(api.presence.list, { room: room() })
+	const presenceQuery = createQuery(api.typingIndicator.list, () => [{ room: room() }])
 
 	const filteredPresence = createMemo(() => {
 		const presence = presenceQuery()
@@ -63,8 +63,8 @@ export const createPresence = <T extends { [key: string]: Value }>(
 		return undefined
 	})
 
-	const updatePresenceMutation = createMutation(api.presence.update)
-	const heartbeatMutation = createMutation(api.presence.heartbeat)
+	const updatePresenceMutation = createMutation(api.typingIndicator.update)
+	const heartbeatMutation = createMutation(api.typingIndicator.heartbeat)
 
 	const updatePresence = createSingleFlight(updatePresenceMutation)
 	const heartbeat = createSingleFlight(heartbeatMutation)

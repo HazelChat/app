@@ -1,7 +1,5 @@
-import hljs from "highlight.js"
 import { type Accessor, type JSX, onMount, splitProps } from "solid-js"
 import { MarkdownInput } from "./markdown-input"
-import "highlight.js/styles/github-dark.css"
 
 export interface ChatInputProps extends JSX.HTMLAttributes<HTMLDivElement> {
 	value: Accessor<string>
@@ -26,13 +24,10 @@ export const ChatInput = (props: ChatInputProps) => {
 
 				//
 				codeblock: (token) => {
-					let codeRef: HTMLPreElement | undefined
+					console.log(token)
 
-					return (
-						<pre ref={codeRef} class="overflow-x-auto rounded bg-muted p-2">
-							<code>{token.content}</code>
-						</pre>
-					)
+					// return <code innerHTML={codeHTML} />
+					return <div>WOW</div>
 				},
 				inlinecode: (token) => <span class="rounded-md bg-muted p-0.5">{token.content}</span>,
 				default: (token) => <span>{token.content}</span>,

@@ -35,12 +35,26 @@ describe("utils", () => {
 		expect(props).toEqual({ class: "foo bar" })
 	})
 
-	test("addProperty handles comma separated", () => {
-		const ctx: Context = { options: {} as any, schema: html, listDepth: 0 }
-		const props: Record<string, unknown> = {}
-		addProperty(props, "accept", ["image/png", "image/jpeg"], ctx)
-		expect(props).toEqual({ accept: "image/png, image/jpeg" })
-	})
+        test("addProperty handles comma separated", () => {
+                const ctx: Context = { options: {} as any, schema: html, listDepth: 0 }
+                const props: Record<string, unknown> = {}
+                addProperty(props, "accept", ["image/png", "image/jpeg"], ctx)
+                expect(props).toEqual({ accept: "image/png, image/jpeg" })
+        })
+
+        test("addProperty ignores nullish values", () => {
+                const ctx: Context = { options: {} as any, schema: html, listDepth: 0 }
+                const props: Record<string, unknown> = { existing: true }
+                addProperty(props, "href", undefined, ctx)
+                expect(props).toEqual({ existing: true })
+        })
+
+        test("addProperty falls back to attribute name", () => {
+                const ctx: Context = { options: {} as any, schema: html, listDepth: 0 }
+                const props: Record<string, unknown> = {}
+                addProperty(props, "aria-hidden", "true", ctx)
+                expect(props["aria-hidden"]).toBe("true")
+        })
 
 	test("flattenPosition formats position", () => {
 		const pos = { start: { line: 1, column: 2, offset: 0 }, end: { line: 3, column: 4, offset: 0 } }

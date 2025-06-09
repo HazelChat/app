@@ -51,7 +51,7 @@ export interface MutationOptions<Args extends Record<string, Value>> {
 export interface ConvexSolidClientOptions extends BaseConvexClientOptions {}
 
 export class ConvexSolidClient {
-	private address: string
+	address: string
 	private cachedSync?: BaseConvexClient
 	private listeners: Map<QueryToken, Set<() => void>>
 	private options: ConvexSolidClientOptions
@@ -357,10 +357,16 @@ export type OptionalRestArgsOrSkip<FuncRef extends FunctionReference<any>> = Fun
 
 export function createQuery<Query extends FunctionReference<"query">>(
 	query: Query,
-	...args: OptionalRestArgsOrSkip<Query>
+	args?: Accessor<OptionalRestArgsOrSkip<Query>>,
 ): Accessor<Query["_returnType"] | undefined> {
-	const skip = args[0] === "skip"
-	const argsObject = args[0] === "skip" ? {} : parseArgs(args[0])
+	const options = createMemo(() => {
+		const opts = args?.()[0]
+
+		const skip = opts === "skip"
+		const argsObject = opts === "skip" ? {} : parseArgs(opts)
+
+		return { skip, argsObject }
+	})
 
 	const queryName = getFunctionName(query)
 	const client = useConvex()
@@ -368,10 +374,10 @@ export function createQuery<Query extends FunctionReference<"query">>(
 	const [result, setResult] = createSignal<Query["_returnType"] | undefined>(undefined)
 	const [error, setError] = createSignal<Error | undefined>(undefined)
 
-	const memoizedArgs = createMemo(() => JSON.stringify(convexToJson(argsObject)))
+	const memoizedArgs = createMemo(() => JSON.stringify(convexToJson(options().argsObject)))
 
 	createEffect(() => {
-		if (skip) {
+		if (options().skip) {
 			setResult(undefined)
 			setError(undefined)
 			return
@@ -379,7 +385,7 @@ export function createQuery<Query extends FunctionReference<"query">>(
 
 		memoizedArgs()
 
-		const watch = client.watchQuery(query, argsObject)
+		const watch = client.watchQuery(query, options().argsObject)
 
 		const existingResult = watch.localQueryResult()
 		if (existingResult !== undefined) {

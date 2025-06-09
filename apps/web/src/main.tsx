@@ -6,7 +6,6 @@ import "solid-devtools"
 import { routeTree } from "./routeTree.gen"
 
 import "./styles/root.css"
-import "./styles/code.css"
 import "./styles/toast.css"
 
 import { QueryClient, QueryClientProvider } from "@tanstack/solid-query"

@@ -10,6 +10,7 @@
 	"dependencies": {
 		"@convex-dev/expo-push-notifications": "^0.2.4",
 		"@convex-dev/r2": "^0.6.1",
+		"@convex-dev/presence": "^0.1.0",
 		"convex": "^1.24.8"
 	},
 	"devDependencies": {

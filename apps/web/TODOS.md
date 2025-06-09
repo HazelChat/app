@@ -1,13 +1,13 @@
-- Add isLoading and error state to 
 - Add convex client tests to our sdk
 
 - Move Pinned Message back to separate table
 
 # Features
-- Add Presence (online/offline)
 - File uploads with convex
 - Readd last read message
 - Call Feature
+    - Start call in channel
+    - Show active call in channel + show call history
 
 
 
@@ -17,7 +17,8 @@
 - Improve typing presence todo less calls
 - Move all mutations to tanstack query
 
-- Improve Rerenders of chat
+- Add more presence types (away, busy)
+
 
 
 

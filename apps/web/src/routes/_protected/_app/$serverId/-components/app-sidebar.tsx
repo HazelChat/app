@@ -24,7 +24,9 @@ import type { Id } from "@hazel/backend"
 import { api } from "@hazel/backend/api"
 import { useQuery } from "@tanstack/solid-query"
 import type { FunctionReturnType } from "convex/server"
+import { UserAvatar } from "~/components/ui/user-avatar"
 import { createMutation } from "~/lib/convex"
+import createPresence from "~/lib/convex-presence2"
 import { convexQuery } from "~/lib/convex-query"
 import { cn } from "~/lib/utils"
 import { CreateChannelForm } from "./create-channel-form"
@@ -41,12 +43,18 @@ export const AppSidebar = (props: SidebarProps) => {
 	const params = useParams({ from: "/_protected/_app/$serverId" })
 	const serverId = createMemo(() => params().serverId as Id<"servers">)
 
+	const meQuery = useQuery(() => ({
+		...convexQuery(api.me.getUser, { serverId: serverId() }),
+	}))
+
 	const channelsQuery = useQuery(() => convexQuery(api.channels.getChannels, { serverId: serverId() }))
 
 	const serverChannels = createMemo(() => channelsQuery.data?.serverChannels || [])
 	const dmChannels = createMemo(() => channelsQuery.data?.dmChannels || [])
 
 	const [createChannelModalOpen, setCreateChannelModalOpen] = createSignal(false)
+
+	const presenceState = createPresence(serverId, () => meQuery.data?._id!)
 
 	return (
 		<Sidebar {...props}>
@@ -104,7 +112,13 @@ export const AppSidebar = (props: SidebarProps) => {
 					</Sidebar.GroupAction>
 					<Sidebar.Menu>
 						<Index each={dmChannels()}>
-							{(channel) => <DmChannelLink channel={channel} serverId={serverId} />}
+							{(channel) => (
+								<DmChannelLink
+									userPresence={presenceState}
+									channel={channel}
+									serverId={serverId}
+								/>
+							)}
 						</Index>
 					</Sidebar.Menu>
 				</Sidebar.Group>
@@ -142,7 +156,6 @@ export interface ChannelItemProps {
 }
 
 export const ChannelItem = (props: ChannelItemProps) => {
-	const { userId } = useAuth()
 	const params = createMemo(() => ({
 		serverId: props.serverId(),
 		id: props.channel()._id,
@@ -210,6 +223,13 @@ export const ChannelItem = (props: ChannelItemProps) => {
 interface DmChannelLinkProps {
 	channel: Accessor<FunctionReturnType<typeof api.channels.getChannels>["dmChannels"][0]>
 	serverId: Accessor<Id<"servers">>
+	userPresence: Accessor<
+		{
+			userId: string
+			online: boolean
+			lastDisconnected: number
+		}[]
+	>
 }
 
 const DmChannelLink = (props: DmChannelLinkProps) => {
@@ -241,13 +261,18 @@ const DmChannelLink = (props: DmChannelLinkProps) => {
 					<Switch>
 						<Match when={props.channel().type === "single" && filteredMembers().length === 1}>
 							<div class="flex items-center justify-center gap-3">
-								<div class="inline-block">
-									<Avatar
-										class="size-7"
-										src={filteredMembers()[0].user.avatarUrl}
-										name={filteredMembers()[0].user.displayName}
-									/>
-								</div>
+								<UserAvatar
+									avatarUrl={filteredMembers()[0].user.avatarUrl}
+									displayName={filteredMembers()[0].user.displayName}
+									status={
+										props
+											.userPresence()
+											.find((p) => p.userId === filteredMembers()[0].user._id)?.online
+											? "online"
+											: "offline"
+									}
+								/>
+
 								<p
 									class={cn(
 										"truncate text-muted-foreground group-hover/sidebar-item:text-foreground",

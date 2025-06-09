@@ -1,4 +1,4 @@
-import { type Accessor, For, Show, createMemo, splitProps } from "solid-js"
+import { type Accessor, For, Show, createMemo, createSignal, splitProps } from "solid-js"
 import { reconcile } from "solid-js/store"
 import { twJoin } from "tailwind-merge"
 
@@ -8,6 +8,8 @@ import { ThreadButton } from "./thread-button"
 
 import { Markdown } from "@maki-chat/markdown"
 import { useChat } from "~/components/chat-state/chat-store"
+import { IconCheck } from "~/components/icons/check"
+import { IconCopy } from "~/components/icons/copy"
 import type { Message } from "~/lib/types"
 import { ReactionTags } from "./reaction-tags"
 
@@ -62,12 +64,50 @@ export function MessageContent(props: MessageContentProps) {
 							{...props}
 						/>
 					),
-					pre: (props) => (
-						<pre
-							class={twJoin("bg-muted/50", "border", "font-mono", "rounded", "text-sm")}
-							{...props}
-						/>
-					),
+					pre: (props) => {
+						const [preProps, rest] = splitProps(props, ["class", "children"])
+						const [isCopied, setIsCopied] = createSignal(false)
+						let preRef: HTMLPreElement | undefined
+
+						const handleCopy = async () => {
+							if (preRef?.textContent) {
+								try {
+									await navigator.clipboard.writeText(preRef.textContent)
+									setIsCopied(true)
+									setTimeout(() => setIsCopied(false), 2000)
+								} catch (err) {
+									console.error("Failed to copy text: ", err)
+								}
+							}
+						}
+
+						return (
+							<div class="group relative flex max-w-2xl items-center gap-2 rounded-md border bg-muted/50 px-3 py-1.5 font-mono">
+								<pre
+									ref={preRef}
+									class={twJoin("flex-grow", "text-sm", "overflow-x-auto", preProps.class)}
+									{...rest}
+								>
+									{preProps.children}
+								</pre>
+								<button
+									type="button"
+									onClick={handleCopy}
+									aria-label="Copy code"
+									class={twJoin(
+										"rounded-md p-1.5",
+										"text-muted-foreground/80",
+										"opacity-0 focus:opacity-100 group-hover:opacity-100",
+										"transition-all duration-200",
+										"hover:bg-muted hover:text-muted-foreground",
+										isCopied() && "!opacity-100 bg-emerald-500/20 text-emerald-500",
+									)}
+								>
+									{isCopied() ? <IconCheck class="size-4" /> : <IconCopy class="size-4" />}
+								</button>
+							</div>
+						)
+					},
 					li: (props) => <li class="" {...props} />,
 					ul: (props) => {
 						return (
