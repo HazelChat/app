@@ -303,14 +303,14 @@ export function FloatingBar() {
 					<div class="absolute inset-0 z-10 flex items-center justify-center rounded-sm bg-blue-500/10 backdrop-blur-sm">
 						<div class="flex flex-col items-center gap-2 text-blue-600">
 							<IconCirclePlusSolid class="h-8 w-8" />
-							<span class="text-sm font-medium">Drop files to attach</span>
+							<span class="font-medium text-sm">Drop files to attach</span>
 						</div>
 					</div>
 				</Show>
 
 				<Button
 					size="icon"
-					class="ml-2 mr-3 my-3"
+					class="my-3 mr-3 ml-2"
 					intent="icon"
 					onClick={() => {
 						const fileInput = document.querySelector('input[type="file"]')
