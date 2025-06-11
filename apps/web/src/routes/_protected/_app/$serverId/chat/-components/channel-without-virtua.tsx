@@ -49,7 +49,7 @@ export const MessageSkeleton = (props: { isGroupStart: boolean }) => (
 export function ChannelWithoutVirtua(props: {
 	channelId: Accessor<Id<"channels">>
 	serverId: Accessor<Id<"servers">>
-	isThread: boolean
+	isThread: Accessor<boolean>
 }) {
 	const [isInitialRender, setIsInitialRender] = createSignal(true)
 

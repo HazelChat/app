@@ -56,7 +56,7 @@ type ListItemSkeleton = { type: "skeleton"; id: string; isGroupStart: boolean }
 export function ChannelVirtua(props: {
 	channelId: Accessor<Id<"channels">>
 	serverId: Accessor<Id<"servers">>
-	isThread: boolean
+	isThread: Accessor<boolean>
 }) {
 	const channelQuery = useQuery(() =>
 		convexQuery(api.channels.getChannel, {

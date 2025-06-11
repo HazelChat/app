@@ -23,7 +23,7 @@ interface MessageActionsProps {
 	serverId: Accessor<string>
 	isPinned: Accessor<boolean>
 	isGroupStart: Accessor<boolean>
-	isThread: boolean
+	isThread: Accessor<boolean>
 }
 
 export function MessageActions(props: MessageActionsProps) {

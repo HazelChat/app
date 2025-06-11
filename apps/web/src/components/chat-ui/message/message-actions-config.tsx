@@ -14,7 +14,7 @@ import type { Message } from "~/lib/types"
 
 interface CreateMessageActionsProps {
 	message: Accessor<Message>
-	isThread: boolean
+	isThread: Accessor<boolean>
 	isPinned: Accessor<boolean>
 }
 

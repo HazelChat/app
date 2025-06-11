@@ -53,7 +53,7 @@ function RouteComponent() {
 			<div class="flex flex-1 overflow-hidden">
 				<div class="flex min-w-0 flex-1 flex-col">
 					{/* <ChannelVirtua channelId={channelId} serverId={serverId} isThread={false} /> */}
-					<ChannelWithoutVirtua channelId={channelId} serverId={serverId} isThread={false} />
+					<ChannelWithoutVirtua channelId={channelId} serverId={serverId} isThread={() => false} />
 				</div>
 
 				<Show when={openThreadId()}>
@@ -132,7 +132,7 @@ function ThreadChannel(props: {
 					<IconX class="size-4" />
 				</Button>
 			</div>
-			<ChannelWithoutVirtua channelId={channelId} serverId={serverId} isThread={true} />
+			<ChannelWithoutVirtua channelId={channelId} serverId={serverId} isThread={() => true} />
 		</div>
 	)
 }
