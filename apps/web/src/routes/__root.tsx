@@ -1,7 +1,7 @@
 import type { QueryClient } from "@tanstack/solid-query"
 import { Outlet, createRootRouteWithContext } from "@tanstack/solid-router"
 
-import type { useAuth } from "clerk-solidjs"
+import { SignedIn, type useAuth } from "clerk-solidjs"
 import type { ConvexSolidClient } from "~/lib/convex"
 
 interface RootContext {

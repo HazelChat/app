@@ -23,8 +23,6 @@ export function MessageReply(props: MessageReplyProps) {
 
 	const replyToMessageId = createMemo(() => props.message().replyToMessageId)
 
-	console.log("XDA")
-
 	const replyToMessageQuery = useQuery(() => ({
 		...convexQuery(
 			api.messages.getMessage,

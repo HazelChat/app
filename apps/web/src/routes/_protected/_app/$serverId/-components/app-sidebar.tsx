@@ -1,5 +1,14 @@
 import { Link, useParams } from "@tanstack/solid-router"
-import { type Accessor, Index, Match, Switch, createEffect, createMemo, createSignal } from "solid-js"
+import {
+	type Accessor,
+	Index,
+	Match,
+	Suspense,
+	Switch,
+	createEffect,
+	createMemo,
+	createSignal,
+} from "solid-js"
 import { IconHashtag } from "~/components/icons/hashtag"
 
 import { IconPlusSmall } from "~/components/icons/plus-small"
@@ -25,7 +34,7 @@ import { useQuery } from "@tanstack/solid-query"
 import type { FunctionReturnType } from "convex/server"
 import { UserAvatar } from "~/components/ui/user-avatar"
 import { createMutation } from "~/lib/convex"
-import createPresence from "~/lib/convex-presence"
+import { createPresence } from "~/lib/convex-presence"
 import { convexQuery } from "~/lib/convex-query"
 import { cn } from "~/lib/utils"
 import { CreateChannelForm } from "./create-channel-form"
@@ -54,99 +63,110 @@ export const AppSidebar = (props: SidebarProps) => {
 
 	const presenceState = createPresence(serverId, () => meQuery.data?._id!)
 
-	createEffect(() => {
-		console.log(channelsQuery.data?.serverChannels[0].isMuted)
-	})
-
 	return (
 		<Sidebar {...props}>
 			<Sidebar.Header>
-				<WorkspaceSwitcher />
+				<Suspense fallback={<div class="h-12 w-full animate-pulse rounded-md bg-muted" />}>
+					<WorkspaceSwitcher />
+				</Suspense>
 			</Sidebar.Header>
 			<Sidebar.Content>
-				<Sidebar.Group>
-					<Sidebar.GroupLabel>Text Channels</Sidebar.GroupLabel>
-					<Sidebar.GroupAction>
-						<Dialog
-							open={createChannelModalOpen()}
-							onOpenChange={(details) => setCreateChannelModalOpen(details.open)}
-						>
-							<Dialog.Trigger
-								class="text-muted-foreground"
-								asChild={(props) => (
-									<Button intent="ghost" size="icon" {...props}>
-										<IconPlusSmall />
-									</Button>
-								)}
-							/>
-							<Dialog.Content>
-								<Tabs defaultValue={"join"}>
-									<Tabs.List>
-										<Tabs.Trigger value="join">Join</Tabs.Trigger>
-										<Tabs.Trigger value="create">Create New</Tabs.Trigger>
-									</Tabs.List>
-									<Tabs.Content value="join">
-										<JoinPublicChannel
-											serverId={serverId}
-											onSuccess={() => setCreateChannelModalOpen(false)}
-										/>
-									</Tabs.Content>
-									<Tabs.Content value="create">
-										<CreateChannelForm
-											serverId={serverId}
-											onSuccess={() => setCreateChannelModalOpen(false)}
-										/>
-									</Tabs.Content>
-								</Tabs>
-							</Dialog.Content>
-						</Dialog>
-					</Sidebar.GroupAction>
-					<Sidebar.Menu>
-						<Index each={channelsQuery.data?.serverChannels}>
-							{(channel) => <ChannelItem channel={channel} serverId={serverId} />}
-						</Index>
-					</Sidebar.Menu>
-				</Sidebar.Group>
-				<Sidebar.Group>
-					<Sidebar.GroupLabel>DM's</Sidebar.GroupLabel>
-					<Sidebar.GroupAction>
-						<CreateDmDialog serverId={serverId} />
-					</Sidebar.GroupAction>
-					<Sidebar.Menu>
-						<Index each={dmChannels()}>
-							{(channel) => (
-								<DmChannelLink
-									userPresence={presenceState}
-									channel={channel}
-									serverId={serverId}
+				<Suspense
+					fallback={
+						<div class="flex flex-col gap-2 p-3">
+							<div class="h-4 w-full animate-pulse rounded-md bg-muted" />
+							<div class="h-6 w-full animate-pulse rounded-md bg-muted" />
+							<div class="h-6 w-full animate-pulse rounded-md bg-muted" />
+							<div class="h-6 w-full animate-pulse rounded-md bg-muted" />
+						</div>
+					}
+				>
+					<Sidebar.Group>
+						<Sidebar.GroupLabel>Text Channels</Sidebar.GroupLabel>
+						<Sidebar.GroupAction>
+							<Dialog
+								open={createChannelModalOpen()}
+								onOpenChange={(details) => setCreateChannelModalOpen(details.open)}
+							>
+								<Dialog.Trigger
+									class="text-muted-foreground"
+									asChild={(props) => (
+										<Button intent="ghost" size="icon" {...props}>
+											<IconPlusSmall />
+										</Button>
+									)}
 								/>
-							)}
-						</Index>
-					</Sidebar.Menu>
-				</Sidebar.Group>
-				<Sidebar.Group class="mt-auto">
-					<Sidebar.GroupContent>
+								<Dialog.Content>
+									<Tabs defaultValue={"join"}>
+										<Tabs.List>
+											<Tabs.Trigger value="join">Join</Tabs.Trigger>
+											<Tabs.Trigger value="create">Create New</Tabs.Trigger>
+										</Tabs.List>
+										<Tabs.Content value="join">
+											<JoinPublicChannel
+												serverId={serverId}
+												onSuccess={() => setCreateChannelModalOpen(false)}
+											/>
+										</Tabs.Content>
+										<Tabs.Content value="create">
+											<CreateChannelForm
+												serverId={serverId}
+												onSuccess={() => setCreateChannelModalOpen(false)}
+											/>
+										</Tabs.Content>
+									</Tabs>
+								</Dialog.Content>
+							</Dialog>
+						</Sidebar.GroupAction>
 						<Sidebar.Menu>
-							<Sidebar.MenuItem>
-								<Sidebar.MenuButton>
-									<IconSupport />
-									Support
-								</Sidebar.MenuButton>
-							</Sidebar.MenuItem>
+							<Index each={channelsQuery.data?.serverChannels}>
+								{(channel) => <ChannelItem channel={channel} serverId={serverId} />}
+							</Index>
 						</Sidebar.Menu>
+					</Sidebar.Group>
+					<Sidebar.Group>
+						<Sidebar.GroupLabel>DM's</Sidebar.GroupLabel>
+						<Sidebar.GroupAction>
+							<CreateDmDialog serverId={serverId} />
+						</Sidebar.GroupAction>
 						<Sidebar.Menu>
-							<Sidebar.MenuItem>
-								<Sidebar.MenuButton>
-									<IconPaperPlane />
-									Feedback
-								</Sidebar.MenuButton>
-							</Sidebar.MenuItem>
+							<Index each={dmChannels()}>
+								{(channel) => (
+									<DmChannelLink
+										userPresence={presenceState}
+										channel={channel}
+										serverId={serverId}
+									/>
+								)}
+							</Index>
 						</Sidebar.Menu>
-					</Sidebar.GroupContent>
-				</Sidebar.Group>
+					</Sidebar.Group>
+					<Sidebar.Group class="mt-auto">
+						<Sidebar.GroupContent>
+							<Sidebar.Menu>
+								<Sidebar.MenuItem>
+									<Sidebar.MenuButton>
+										<IconSupport />
+										Support
+									</Sidebar.MenuButton>
+								</Sidebar.MenuItem>
+							</Sidebar.Menu>
+							<Sidebar.Menu>
+								<Sidebar.MenuItem>
+									<Sidebar.MenuButton>
+										<IconPaperPlane />
+										Feedback
+									</Sidebar.MenuButton>
+								</Sidebar.MenuItem>
+							</Sidebar.Menu>
+						</Sidebar.GroupContent>
+					</Sidebar.Group>
+				</Suspense>
 			</Sidebar.Content>
 			<Sidebar.Footer>
-				<NavUser serverId={serverId} />
+				<Suspense fallback={<div class="h-12 w-full animate-pulse rounded-md bg-muted" />}>
+					<NavUser serverId={serverId} />
+				</Suspense>
 			</Sidebar.Footer>
 		</Sidebar>
 	)

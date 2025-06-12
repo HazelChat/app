@@ -15,14 +15,14 @@ import { ChannelWithoutVirtua } from "./-components/channel-without-virtua"
 export const Route = createFileRoute("/_protected/_app/$serverId/chat/$id")({
 	component: Root,
 	loader: async ({ context: { queryClient }, params }) => {
-		await Promise.all([
-			queryClient.ensureQueryData(
+		queryClient
+			.ensureQueryData(
 				convexQuery(api.channels.getChannel, {
 					channelId: params.id as Id<"channels">,
 					serverId: params.serverId as Id<"servers">,
 				}),
-			),
-		])
+			)
+			.catch(() => undefined)
 	},
 })
 
@@ -96,23 +96,25 @@ function ChatImageViewerModal() {
 	const defaultImage = createMemo(() => state.imageDialog.selectedImage!)
 
 	return (
-		<Show when={messageQuery.data && defaultImage()}>
-			<ImageViewerModal
-				availableImages={availableImages}
-				defaultImage={defaultImage}
-				onOpenChange={() =>
-					setState("imageDialog", (prev) => ({
-						...prev,
-						open: false,
-						messageId: null,
-						selectedImage: null,
-					}))
-				}
-				author={messageQuery.data!.author}
-				createdAt={messageQuery.data!._creationTime!}
-				bucketUrl={import.meta.env.VITE_BUCKET_URL}
-			/>
-		</Show>
+		<Suspense>
+			<Show when={messageQuery.data && defaultImage()}>
+				<ImageViewerModal
+					availableImages={availableImages}
+					defaultImage={defaultImage}
+					onOpenChange={() =>
+						setState("imageDialog", (prev) => ({
+							...prev,
+							open: false,
+							messageId: null,
+							selectedImage: null,
+						}))
+					}
+					author={messageQuery.data!.author}
+					createdAt={messageQuery.data!._creationTime!}
+					bucketUrl={import.meta.env.VITE_BUCKET_URL}
+				/>
+			</Show>
+		</Suspense>
 	)
 }
 

@@ -3,7 +3,7 @@ import { api } from "@hazel/backend/api"
 import { useQuery } from "@tanstack/solid-query"
 import { type Accessor, createEffect, createMemo, createSignal, onCleanup } from "solid-js"
 import { convexQuery } from "../convex-query"
-import { createMutation, useConvex } from "../convex/client"
+import { createMutation, createQuery, useConvex } from "../convex/client"
 import { createSingleFlight } from "./create-singleflight"
 
 if (typeof window === "undefined") {
@@ -35,7 +35,7 @@ export interface PresenceState {
  * @param convexUrl - Optional Convex deployment URL.
  * @returns A reactive signal containing the list of present users.
  */
-export default function createPresence(
+export function createPresence(
 	roomId: Accessor<string>,
 	userId: Accessor<Id<"users">>,
 	interval = 10000,
@@ -60,6 +60,7 @@ export default function createPresence(
 		let intervalId: ReturnType<typeof setInterval> | null = null
 
 		const sendHeartbeat = async () => {
+			if (!roomId() || !userId()) return
 			// The `heartbeat` function is single-flighted, so we can call it safely.
 			const result = await heartbeat({ roomId: roomId(), userId: userId(), sessionId, interval })
 			if (result) {
@@ -111,80 +112,16 @@ export default function createPresence(
 		})
 	})
 
-	const presenceListQuery = useQuery(() =>
-		convexQuery(api.presence.list, roomToken() ? { roomToken: roomToken()! } : "skip"),
+	const presenceListQuery = createQuery(
+		api.presence.list,
+		() => [roomToken() ? { roomToken: roomToken()! } : "skip"],
+		// (api.presence.list, roomToken() ? { roomToken: roomToken()! } : "skip"),
 	)
 
 	// Memoize the sorted list to prevent re-sorting on every render.
 	// This is also reactive and will update when presenceList or userId changes.
 	const sortedList = createMemo(() => {
-		const list = presenceListQuery.data
-		if (!list) {
-			return []
-		}
-		// Sort to show the current user first.
-		return list.slice().sort((a, b) => {
-			if ((a.userId as Id<"users">) === userId()) return -1
-			if ((b.userId as Id<"users">) === userId()) return 1
-			return 0
-		})
-	})
-
-	return sortedList
-}
-
-export const createPresenceState = (
-	roomId: Accessor<string>,
-	userId: Accessor<Id<"users">>,
-	interval = 10000,
-	convexUrl?: string,
-) => {
-	const convex = useConvex()
-	const baseUrl = convexUrl ?? convex.address
-
-	// Each session (browser tab etc) has a unique ID.
-	const sessionId = crypto.randomUUID()
-	const [sessionToken, setSessionToken] = createSignal<string | null>(null)
-	const [roomToken, setRoomToken] = createSignal<string | null>(null)
-
-	const heartbeatMutation = createMutation(api.presence.heartbeat)
-	const disconnectMutation = createMutation(api.presence.disconnect)
-
-	// Use single-flight wrappers to prevent redundant concurrent calls.
-	const heartbeat = createSingleFlight(heartbeatMutation)
-	const disconnect = createSingleFlight(disconnectMutation)
-
-	createEffect(() => {
-		let intervalId: ReturnType<typeof setInterval> | null = null
-
-		const sendHeartbeat = async () => {
-			// The `heartbeat` function is single-flighted, so we can call it safely.
-			const result = await heartbeat({ roomId: roomId(), userId: userId(), sessionId, interval })
-			if (result) {
-				setRoomToken(result.roomToken)
-				setSessionToken(result.sessionToken)
-			}
-		}
-
-		sendHeartbeat()
-
-		intervalId = setInterval(sendHeartbeat, interval)
-
-		onCleanup(() => {
-			if (intervalId) {
-				clearInterval(intervalId)
-			}
-		})
-	})
-
-	const presenceListQuery = useQuery(() =>
-		convexQuery(api.presence.list, roomToken() ? { roomToken: roomToken()! } : "skip"),
-	)
-
-	// Memoize the sorted list to prevent re-sorting on every render.
-	// This is also reactive and will update when presenceList or userId changes.
-	const sortedList = createMemo(() => {
-		const list = presenceListQuery.data
+		const list = presenceListQuery()
 		if (!list) {
 			return []
 		}
