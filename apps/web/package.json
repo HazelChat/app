@@ -37,6 +37,7 @@
 		"@tanstack/solid-query-devtools": "^5.80.6",
 		"@tanstack/solid-router": "1.121.3",
 		"@tanstack/solid-router-devtools": "1.121.3",
+		"@tanstack/solid-virtual": "^3.13.10",
 		"arktype": "^2.1.20",
 		"clerk-solidjs": "^2.0.10",
 		"convex": "^1.24.8",

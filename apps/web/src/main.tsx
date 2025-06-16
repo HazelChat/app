@@ -21,8 +21,8 @@ import { ThemeProvider, applyInitialTheme } from "./lib/theme"
 
 import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister"
 
-import { persistQueryClient } from "@tanstack/query-persist-client-core"
-import { createEffect, onCleanup } from "solid-js"
+// import { persistQueryClient } from "@tanstack/query-persist-client-core"
+// import { createEffect, onCleanup } from "solid-js"
 
 import { SolidQueryDevtools } from "@tanstack/solid-query-devtools"
 
@@ -34,8 +34,6 @@ const convexQueryClient = new ConvexQueryClient(convex)
 
 const persister = createSyncStoragePersister({
 	storage: localStorage,
-
-	throttleTime: 1000,
 })
 
 const queryClient = new QueryClient({
@@ -52,7 +50,7 @@ convexQueryClient.connect(queryClient)
 const router = createRouter({
 	routeTree,
 	defaultPreload: "intent",
-	// scrollRestoration: true,
+	scrollRestoration: true,
 	defaultPreloadStaleTime: 0,
 
 	defaultViewTransition: true,
