@@ -18,23 +18,20 @@ export const Route = createFileRoute("/_protected/_app/$serverId/")({
 })
 
 function RouteComponent() {
+	const navigate = Route.useNavigate()
 	const params = Route.useParams()
-	const serverId = createMemo(() => params().serverId as Id<"servers">)
 
 	const [searchQuery, setSearchQuery] = createSignal("")
 
-	const [membersQuery, currentUserQuery] = useQueries(() => ({
-		queries: [
-			convexQuery(api.social.getMembers, {
-				serverId: serverId() as Id<"servers">,
-			}),
-			convexQuery(api.me.get, {}),
-		],
-	}))
+	const membersQuery = useQuery(() =>
+		convexQuery(api.social.getMembers, {
+			serverId: params().serverId as Id<"servers">,
+		}),
+	)
+
+	const currentUserQuery = useQuery(() => convexQuery(api.me.get, {}))
 
 	const createDmChannel = createMutation(api.channels.creatDmChannel)
-
-	const navigate = Route.useNavigate()
 
 	const handleOpenChat = async ({
 		targetUserId,
@@ -89,7 +86,7 @@ function RouteComponent() {
 											onClick={() =>
 												handleOpenChat({
 													targetUserId: member._id,
-													serverId: serverId(),
+													serverId: params().serverId as Id<"servers">,
 												})
 											}
 										>

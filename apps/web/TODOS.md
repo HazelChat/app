@@ -16,7 +16,6 @@
 
 
 # Fixes
-- Some pages like root server not rerednering on sevrer switch
 - Closing Image Dialog rerenders/refetches the whole page
 
 
@@ -25,9 +24,8 @@
 
 
 # Improvements 
+- Add optimsitic updates
 
-
-- Move all mutations to tanstack query
 
 
 
