@@ -19,6 +19,8 @@ import { createStore, reconcile } from "solid-js/store"
 import { ChatTypingPresence } from "~/components/chat-ui/chat-typing-presence"
 import { FloatingBar } from "~/components/chat-ui/floating-bar"
 import { ChatMessage } from "~/components/chat-ui/message/chat-message"
+import { IconChevronDown } from "~/components/icons/chevron-down"
+import { Button } from "~/components/ui/button"
 import { convexQuery } from "~/lib/convex-query"
 import { useConvexInfiniteQuery } from "~/lib/convex-query/infinite"
 import type { Message } from "~/lib/types"
@@ -186,8 +188,8 @@ export function ChannelWithoutVirtua(props: {
 		}
 	}
 
-	return (
-		<div class="flex flex-1 flex-col overflow-hidden">
+        return (
+                <div class="relative flex flex-1 flex-col overflow-hidden">
 			<div class="flex-1 overflow-y-auto" ref={scrollContainerRef} onScroll={handleScroll}>
 				<Show
 					when={!messagesQuery.isLoading}
@@ -225,13 +227,24 @@ export function ChannelWithoutVirtua(props: {
 						)}
 					</For>
 				</Show>
-				<div ref={bottomRef} class="h-[1px] flex-1" />
-			</div>
+                                <div ref={bottomRef} class="h-[1px] flex-1" />
+                        </div>
 
-			<div class="mx-2 flex flex-col gap-1.5">
-				<FloatingBar />
-				<ChatTypingPresence />
-			</div>
-		</div>
-	)
+                        <Show when={!shouldStickToBottom()}>
+                                <Button
+                                        intent="secondary"
+                                        size="icon"
+                                        class="absolute bottom-28 right-4 z-10"
+                                        onClick={() => bottomRef?.scrollIntoView({ behavior: 'smooth' })}
+                                >
+                                        <IconChevronDown />
+                                </Button>
+                        </Show>
+
+                        <div class="mx-2 flex flex-col gap-1.5">
+                                <FloatingBar />
+                                <ChatTypingPresence />
+                        </div>
+                </div>
+        )
 }
