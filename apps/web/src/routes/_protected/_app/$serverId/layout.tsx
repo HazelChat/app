@@ -10,7 +10,7 @@ import { ConvexProvider } from "~/lib/convex"
 import { PresenceProvider } from "~/lib/convex-presence"
 import { convexQuery } from "~/lib/convex-query"
 import { removeCurrentServerId, setCurrentServerId } from "~/lib/helpers/localstorage"
-import { AppSidebar } from "./-components/app-sidebar"
+import { AppSidebar } from "./-components/sidebar/app-sidebar"
 
 export const Route = createFileRoute("/_protected/_app/$serverId")({
 	component: RouteComponent,

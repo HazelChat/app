@@ -5,6 +5,7 @@
 	"scripts": {
 		"dev": "convex dev",
 		"setup": "convex dev --until-success",
+		"typecheck": "tsc --noEmit",
 		"convex:deploy": "npx convex deploy --cmd-url-env-var-name VITE_CONVEX_URL --cmd='cd ../web && bun run build' "
 	},
 	"dependencies": {

@@ -48,6 +48,7 @@ export const confectSchema = defineSchema({
 			serverId: Id.Id("servers"),
 			joinedAt: Schema.Number,
 			lastSeen: Schema.Number,
+			settings: Schema.optional(Schema.Struct({})),
 			deletedAt: Schema.optional(Schema.Number),
 		}),
 	)
@@ -88,6 +89,7 @@ export const confectSchema = defineSchema({
 			channelId: Id.Id("channels"),
 			isHidden: Schema.Boolean,
 			isMuted: Schema.Boolean,
+			isFavorite: Schema.Boolean,
 			lastSeenMessageId: Schema.optional(Id.Id("messages")),
 			notificationCount: Schema.Number,
 			joinedAt: Schema.Number,
