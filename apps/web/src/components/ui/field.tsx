@@ -10,6 +10,7 @@ import {
 import { type JSX, Show, splitProps } from "solid-js"
 import { tv } from "tailwind-variants"
 import { focusStyles } from "~/lib/primitive"
+import { useKeyboardSounds } from "~/lib/keyboard-sounds"
 
 import { twMerge } from "tailwind-merge"
 import { IconChevronDown } from "../icons/chevron-down"
@@ -78,10 +79,19 @@ export const FieldHelperText = (props: FieldHelperTextProps) => {
 
 export const FieldInput = (props: FieldInputProps) => {
 	const [classProps, rest] = splitProps(props, ["class"])
+	const { playSound } = useKeyboardSounds()
+
+	const handleKeyDown = (event: KeyboardEvent) => {
+		const isPrintableKey = event.key.length === 1 && !event.ctrlKey && !event.altKey && !event.metaKey
+		if (isPrintableKey || event.key === "Backspace" || event.key === "Delete") {
+			playSound()
+		}
+	}
 
 	return (
 		<Field.Input
 			{...rest}
+			onKeyDown={handleKeyDown}
 			class={twMerge(
 				"w-full min-w-0 bg-transparent px-2.5 py-2 text-base text-foreground placeholder-muted-foreground outline-hidden focus:outline-hidden sm:text-sm/6 [&::-ms-reveal]:hidden [&::-webkit-search-cancel-button]:hidden",
 				classProps.class,

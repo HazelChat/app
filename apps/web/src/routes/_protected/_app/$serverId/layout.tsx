@@ -17,7 +17,12 @@ export const Route = createFileRoute("/_protected/_app/$serverId")({
 	loader: ({ context: { queryClient }, params }) =>
 		queryClient
 			.ensureQueryData(
-				convexQuery(api.channels.getChannels, { serverId: params.serverId as Id<"servers"> }),
+				convexQuery(api.channels.getChannels, {
+					serverId: params.serverId as Id<"servers">,
+					favoriteFilter: {
+						favorite: false,
+					},
+				}),
 			)
 			.catch(() => undefined),
 })
@@ -44,7 +49,12 @@ function RouteComponent() {
 			),
 			queryClient.prefetchQuery(convexQuery(api.me.get, {})),
 			queryClient.prefetchQuery(
-				convexQuery(api.channels.getChannels, { serverId: params().serverId as Id<"servers"> }),
+				convexQuery(api.channels.getChannels, {
+					serverId: params().serverId as Id<"servers">,
+					favoriteFilter: {
+						favorite: false,
+					},
+				}),
 			),
 		])
 	})

@@ -14,6 +14,7 @@ import { useQuery } from "@tanstack/solid-query"
 import { createMutation, insertAtTop } from "~/lib/convex"
 import { convexQuery } from "~/lib/convex-query"
 import { useHotkey, useLayer } from "~/lib/hotkey-manager"
+import { useKeyboardSounds } from "~/lib/keyboard-sounds"
 import { useChat } from "../chat-state/chat-store"
 import { setElementAnchorAndFocus } from "../markdown-input/utils"
 
@@ -185,6 +186,7 @@ const useFileAttachment = () => {
 
 const createGlobalEditorFocus = (props: {
 	editorRef: () => HTMLDivElement | undefined
+	playSound: () => void
 }) => {
 	const { setState, state } = useChat()
 	const input = createMemo(() => state.inputText)
@@ -256,6 +258,8 @@ const createGlobalEditorFocus = (props: {
 
 			if (isPrintableKey) {
 				event.preventDefault()
+				
+				props.playSound()
 
 				const content = input() + event.key
 
@@ -283,6 +287,7 @@ const createGlobalEditorFocus = (props: {
 
 export function FloatingBar() {
 	const auth = useAuth()
+	const { playSound } = useKeyboardSounds()
 
 	const { state, setState } = useChat()
 
@@ -339,7 +344,7 @@ export function FloatingBar() {
 
 	const [editorRef, setEditorRef] = createSignal<HTMLDivElement>()
 
-	createGlobalEditorFocus({ editorRef })
+	createGlobalEditorFocus({ editorRef, playSound })
 
 	const isUploading = createMemo(() => attachments().some((att) => att.status === "uploading"))
 	const successfulKeys = createMemo(() =>

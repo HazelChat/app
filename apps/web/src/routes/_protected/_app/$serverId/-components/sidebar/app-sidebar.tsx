@@ -42,7 +42,14 @@ export const AppSidebar = () => {
 	const params = useParams({ from: "/_protected/_app/$serverId" })
 	const serverId = createMemo(() => params().serverId as Id<"servers">)
 
-	const channelsQuery = useQuery(() => convexQuery(api.channels.getChannels, { serverId: serverId() }))
+	const channelsQuery = useQuery(() =>
+		convexQuery(api.channels.getChannels, {
+			serverId: serverId(),
+			favoriteFilter: {
+				favorite: false,
+			},
+		}),
+	)
 
 	const dmChannels = createMemo(() => channelsQuery.data?.dmChannels || [])
 

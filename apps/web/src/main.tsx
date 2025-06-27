@@ -13,7 +13,6 @@ import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persist
 import { QueryClient, QueryClientProvider } from "@tanstack/solid-query"
 import { SolidQueryDevtools } from "@tanstack/solid-query-devtools"
 import { ClerkProvider, useAuth } from "clerk-solidjs"
-import { createEffect, onCleanup } from "solid-js"
 import { FpsCounter } from "./components/devtools/fps-counter"
 import { IconLoader } from "./components/icons/loader"
 import { Logo } from "./components/logo"
@@ -22,6 +21,7 @@ import { ConvexSolidClient } from "./lib/convex"
 import { ConvexProviderWithClerk } from "./lib/convex-clerk"
 import { ConvexQueryClient } from "./lib/convex-query"
 import { HotkeyProvider } from "./lib/hotkey-manager"
+import { KeyboardSoundsProvider } from "./lib/keyboard-sounds"
 import { applyInitialTheme, ThemeProvider } from "./lib/theme"
 
 applyInitialTheme()
@@ -121,19 +121,21 @@ function App() {
 		<QueryClientProvider client={queryClient}>
 			<SolidQueryDevtools />
 			<ThemeProvider>
-				<ClerkProvider publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY}>
-					<Suspense fallback={<div>Loading...</div>}>
-						<HotkeyProvider>
-							<ConvexProviderWithClerk client={convex} useAuth={useAuth}>
-								<Toaster />
-								<InnerProviders />
-								<Show when={import.meta.env.DEV}>
-									<FpsCounter />
-								</Show>
-							</ConvexProviderWithClerk>
-						</HotkeyProvider>
-					</Suspense>
-				</ClerkProvider>
+				<KeyboardSoundsProvider>
+					<ClerkProvider publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY}>
+						<Suspense fallback={<div>Loading...</div>}>
+							<HotkeyProvider>
+								<ConvexProviderWithClerk client={convex} useAuth={useAuth}>
+									<Toaster />
+									<InnerProviders />
+									<Show when={import.meta.env.DEV}>
+										<FpsCounter />
+									</Show>
+								</ConvexProviderWithClerk>
+							</HotkeyProvider>
+						</Suspense>
+					</ClerkProvider>
+				</KeyboardSoundsProvider>
 			</ThemeProvider>
 		</QueryClientProvider>
 	)

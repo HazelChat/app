@@ -10,10 +10,10 @@
 	},
 	"dependencies": {
 		"@convex-dev/expo-push-notifications": "^0.2.4",
-		"@convex-dev/presence": "^0.1.4",
+		"@convex-dev/presence": "^0.1.5",
 		"@rjdellecese/confect": "^0.0.26",
 		"convex": "^1.25.0",
-		"effect": "^3.16.9"
+		"effect": "^3.16.10"
 	},
 	"devDependencies": {
 		"convex-test": "^0.0.37",

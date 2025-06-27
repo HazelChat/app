@@ -11,7 +11,9 @@ export const SidebarFavoriteGroup = (props: { serverId: Accessor<Id<"servers">> 
 	const favoritedChannelsQuery = useQuery(() =>
 		convexQuery(api.channels.getChannels, {
 			serverId: props.serverId(),
-			favoritedOnly: true,
+			favoriteFilter: {
+				favorite: true,
+			},
 		}),
 	)
 

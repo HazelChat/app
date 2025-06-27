@@ -7,6 +7,7 @@ import { Card } from "~/components/ui/card"
 import { SelectNative } from "~/components/ui/select-native"
 import { convexQuery } from "~/lib/convex-query"
 import { useTheme } from "~/lib/theme"
+import { useKeyboardSounds } from "~/lib/keyboard-sounds"
 
 export const Route = createFileRoute("/_protected/_app/$serverId/settings")({
 	component: RouteComponent,
@@ -18,6 +19,7 @@ function RouteComponent() {
 	const [videoEnabled, setVideoEnabled] = createSignal(false)
 	const [callingEnabled, setCallingEnabled] = createSignal(false)
 	const { theme, setTheme } = useTheme()
+	const { enabled, soundType, volume, setEnabled, setSoundType, setVolume } = useKeyboardSounds()
 
 	return (
 		<div class="space-y-4 px-4 py-2">
@@ -79,6 +81,49 @@ function RouteComponent() {
 							class="size-4"
 						/>
 					</label>
+				</Card.Content>
+			</Card>
+			<Card>
+				<Card.Header>
+					<Card.Title>Audio</Card.Title>
+				</Card.Header>
+				<Card.Content class="space-y-4">
+					<label class="flex items-center justify-between gap-2">
+						<span>Keyboard Sounds</span>
+						<input
+							type="checkbox"
+							checked={enabled()}
+							onChange={() => setEnabled(!enabled())}
+							class="size-4"
+						/>
+					</label>
+					<Show when={enabled()}>
+						<div class="space-y-2">
+							<SelectNative
+								label="Sound Type"
+								value={soundType()}
+								onInput={(e) => setSoundType(e.currentTarget.value as any)}
+							>
+								<option value="cherry-mx-blue">Cherry MX Blue</option>
+								<option value="cherry-mx-brown">Cherry MX Brown</option>
+								<option value="cherry-mx-red">Cherry MX Red</option>
+								<option value="topre">Topre</option>
+								<option value="alps-blue">Alps Blue</option>
+							</SelectNative>
+							<div class="space-y-1">
+								<label class="text-sm text-muted-foreground">Volume</label>
+								<input
+									type="range"
+									min="0"
+									max="100"
+									value={volume()}
+									onInput={(e) => setVolume(Number(e.currentTarget.value))}
+									class="w-full"
+								/>
+								<div class="text-xs text-muted-foreground text-right">{volume()}%</div>
+							</div>
+						</div>
+					</Show>
 				</Card.Content>
 			</Card>
 			<Card>

@@ -15,6 +15,7 @@ interface BasicHighlightInputProps extends Omit<JSX.HTMLAttributes<HTMLDivElemen
 	value: Accessor<string>
 	onValueChange: (value: string) => void
 	placeholder?: string
+	onKeyDown?: JSX.EventHandlerUnion<HTMLDivElement, KeyboardEvent>
 }
 
 interface MarkdownInputProps<CustomTokenType extends string = never> extends BasicHighlightInputProps {
@@ -31,6 +32,7 @@ export function MarkdownInput<CustomTokenType extends string = never>(
 		"placeholder",
 		"additionalPatterns",
 		"renderers",
+		"onKeyDown",
 	])
 	return (
 		<ContentEditable
@@ -58,6 +60,7 @@ export function MarkdownInput<CustomTokenType extends string = never>(
 				)
 			}}
 			onTextContent={baseProps.onValueChange}
+			onKeyDown={baseProps.onKeyDown}
 			{...divProps}
 		/>
 	)

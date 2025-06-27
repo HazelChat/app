@@ -6,7 +6,7 @@ import { userMutation, userQuery } from "./middleware/withUser"
 export const getChannels = userQuery({
 	args: {
 		serverId: v.id("servers"),
-		favoritedOnly: v.optional(v.boolean()),
+		favoriteFilter: v.optional(v.object({ favorite: v.boolean() })),
 	},
 	handler: async (ctx, args) => {
 		const channels = await ctx.db
@@ -48,7 +48,13 @@ export const getChannels = userQuery({
 
 		const filteredChannels = channelsWithMembers
 			.filter((channel) => channel !== null)
-			.filter((channel) => (args.favoritedOnly ? channel.currentUser?.isFavorite : true))
+			.filter((channel) =>
+				args.favoriteFilter
+					? args.favoriteFilter.favorite
+						? channel.currentUser?.isFavorite
+						: !channel.currentUser?.isFavorite
+					: true,
+			)
 
 		const dmChannels = filteredChannels.filter(
 			(channel) => channel.type !== "private" && channel.type !== "public",
