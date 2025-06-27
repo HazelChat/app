@@ -81,26 +81,28 @@ export function ChatTopbar() {
 									<IconPhone2 />
 								</Button>
 								<PinnedModal />
-								<div class="flex items-center">
-									<div class="flex items-center gap-2 rounded-md border p-1">
-										<div class="-space-x-4 flex items-center justify-center">
-											<Index each={filteredMembers().slice(0, 3)}>
-												{(member) => (
-													<div class="inline-block">
-														<Avatar
-															class="size-6 rounded-sm"
-															src={member().user.avatarUrl}
-															name={member().user.displayName}
-														/>
-													</div>
-												)}
-											</Index>
-										</div>
-										<div class="inline-block pr-1 text-muted-foreground text-sm">
-											{channelQuery.data?.members?.length}
+								<Show when={channel().type !== "single" && channel().members.length > 1}>
+									<div class="flex items-center">
+										<div class="flex items-center gap-2 rounded-md border p-1">
+											<div class="-space-x-4 flex items-center justify-center">
+												<Index each={filteredMembers().slice(0, 3)}>
+													{(member) => (
+														<div class="inline-block">
+															<Avatar
+																class="size-6 rounded-sm"
+																src={member().user.avatarUrl}
+																name={member().user.displayName}
+															/>
+														</div>
+													)}
+												</Index>
+											</div>
+											<div class="inline-block pr-1 text-muted-foreground text-sm">
+												{channelQuery.data?.members?.length}
+											</div>
 										</div>
 									</div>
-								</div>
+								</Show>
 
 								<div>
 									<TextField
