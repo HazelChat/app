@@ -202,7 +202,7 @@ export function ChannelWithoutVirtua(props: {
 							class="mask-size-[110%_90%] mask-linear-to-r mask-from-black mask-to-transparent mask-center mask-no-repeat mask-[url(/images/image-mask.png)] h-full w-full rounded-md bg-center bg-cover bg-no-repeat object-cover"
 						/>
 					</div>
-					<p class="font-bold text-xl">Quiet as an ocean gazing squirrel...</p>
+					<p class="font-bold font-mono text-xl">Quiet as an ocean gazing squirrel...</p>
 				</div>
 			</Show>
 			<div

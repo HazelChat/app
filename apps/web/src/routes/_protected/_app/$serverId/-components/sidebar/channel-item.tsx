@@ -34,7 +34,7 @@ export const ChannelItem = (props: ChannelItemProps) => {
 	}))
 
 	const leaveChannel = createMutation(api.channels.leaveChannel)
-	const updateChannelPreferences = createMutation(api.channels.updateChannelPreferences)
+	const _updateChannelPreferences = createMutation(api.channels.updateChannelPreferences)
 
 	return (
 		<Sidebar.MenuItem>
@@ -63,23 +63,11 @@ export const ChannelItem = (props: ChannelItemProps) => {
 						serverId={props.serverId}
 						isMuted={() => props.channel().isMuted}
 					/>
-					<Menu.Item
-						value="favorite"
-						onSelect={async () => {
-							await updateChannelPreferences({
-								channelId: props.channel()._id,
-								serverId: props.serverId() as Id<"servers">,
-								isFavorite: !props.channel().isFavorite,
-							})
-						}}
-					>
-						{props.channel().isFavorite ? (
-							<IconStar1 class="size-4 text-amber-500" />
-						) : (
-							<IconStar1 class="size-4" />
-						)}
-						{props.channel().isFavorite ? "Unfavorite" : "Favorite"}
-					</Menu.Item>
+					<FavoriteChannelMenuItem
+						channelId={() => props.channel()._id}
+						serverId={props.serverId}
+						isFavorite={() => props.channel().isFavorite}
+					/>
 					<Menu.Item
 						class="flex items-center gap-2 text-destructive"
 						value="close"
@@ -119,6 +107,30 @@ const MuteMenuItem = (props: {
 		>
 			{props.isMuted() ? <IconVolumeOne1 class="size-4" /> : <IconVolumeMute1 class="size-4" />}
 			{props.isMuted() ? "Unmute" : "Mute"}
+		</Menu.Item>
+	)
+}
+
+const FavoriteChannelMenuItem = (props: {
+	channelId: Accessor<string>
+	isFavorite: Accessor<boolean>
+	serverId: Accessor<string>
+}) => {
+	const updateChannelPreferences = createMutation(api.channels.updateChannelPreferences)
+
+	return (
+		<Menu.Item
+			value="mute"
+			onSelect={async () => {
+				await updateChannelPreferences({
+					channelId: props.channelId() as Id<"channels">,
+					serverId: props.serverId() as Id<"servers">,
+					isFavorite: !props.isFavorite(),
+				})
+			}}
+		>
+			{props.isFavorite() ? <IconStar1 class="size-4 text-amber-500" /> : <IconStar1 class="size-4" />}
+			{props.isFavorite() ? "Unfavorite" : "Favorite"}
 		</Menu.Item>
 	)
 }
@@ -225,10 +237,16 @@ export const DmChannelLink = (props: DmChannelLinkProps) => {
 						Call
 					</Menu.Item>
 					<Menu.Separator />
+
 					<MuteMenuItem
 						channelId={() => props.channel()._id}
 						serverId={props.serverId}
 						isMuted={() => props.channel().isMuted}
+					/>
+					<FavoriteChannelMenuItem
+						channelId={() => props.channel()._id}
+						serverId={props.serverId}
+						isFavorite={() => props.channel().isFavorite}
 					/>
 					<Menu.Item
 						class="text-destructive"
