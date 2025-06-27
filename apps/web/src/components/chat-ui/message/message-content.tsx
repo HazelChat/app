@@ -1,25 +1,23 @@
+import { Markdown } from "@maki-chat/markdown"
 import {
 	type Accessor,
+	createMemo,
+	createSignal,
 	ErrorBoundary,
 	For,
 	Show,
 	Suspense,
-	createMemo,
-	createSignal,
 	splitProps,
 } from "solid-js"
 import { reconcile } from "solid-js/store"
 import { twJoin } from "tailwind-merge"
-
-import { cn } from "~/lib/utils"
-import { ChatImage } from "./chat-image"
-import { ThreadButton } from "./thread-button"
-
-import { Markdown } from "@maki-chat/markdown"
 import { useChat } from "~/components/chat-state/chat-store"
 import { IconCheckTickSingleStroke, IconCopyStroke } from "~/components/iconsv2"
 import type { Message } from "~/lib/types"
+import { cn } from "~/lib/utils"
+import { ChatImage } from "./chat-image"
 import { ReactionTags } from "./reaction-tags"
+import { ThreadButton } from "./thread-button"
 
 interface MessageContentProps {
 	message: Accessor<Message>
@@ -97,6 +95,7 @@ export function MessageContent(props: MessageContentProps) {
 											"flex-grow",
 											"text-sm",
 											"overflow-x-auto",
+											"font-code",
 											preProps.class,
 										)}
 										{...rest}
@@ -118,7 +117,10 @@ export function MessageContent(props: MessageContentProps) {
 													"!opacity-100 bg-emerald-500/20 text-emerald-500",
 											)}
 										>
-											<Show when={isCopied()} fallback={<IconCopyStroke class="size-4" />}>
+											<Show
+												when={isCopied()}
+												fallback={<IconCopyStroke class="size-4" />}
+											>
 												<IconCheckTickSingleStroke class="size-4" />
 											</Show>
 										</button>
@@ -137,7 +139,12 @@ export function MessageContent(props: MessageContentProps) {
 							)
 						},
 						code: (props) => {
-							return <code class="rounded-md border bg-muted/50 p-1 text-sm" {...props} />
+							return (
+								<code
+									class="rounded-md border bg-muted/50 p-1 font-code text-sm"
+									{...props}
+								/>
+							)
 						},
 						img: (parentProps) => {
 							const [imgProps, rest] = splitProps(parentProps, ["src", "alt", "onClick"])

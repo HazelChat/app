@@ -8,7 +8,6 @@ import { routeTree } from "./routeTree.gen"
 import "./styles/root.css"
 import "./styles/toast.css"
 
-import { persistQueryClient } from "@tanstack/query-persist-client-core"
 import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister"
 import { QueryClient, QueryClientProvider } from "@tanstack/solid-query"
 import { SolidQueryDevtools } from "@tanstack/solid-query-devtools"
@@ -24,13 +23,16 @@ import { HotkeyProvider } from "./lib/hotkey-manager"
 import { KeyboardSoundsProvider } from "./lib/keyboard-sounds"
 import { applyInitialTheme, ThemeProvider } from "./lib/theme"
 
+import "@fontsource-variable/geist-mono/index.css"
+import "@fontsource-variable/geist/index.css"
+
 applyInitialTheme()
 
 const convex = new ConvexSolidClient(import.meta.env.VITE_CONVEX_URL)
 
 const convexQueryClient = new ConvexQueryClient(convex)
 
-const persister = createSyncStoragePersister({
+const _persister = createSyncStoragePersister({
 	storage: localStorage,
 })
 

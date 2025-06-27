@@ -27,6 +27,8 @@
 		"@100mslive/hms-video-store": "^0.12.35",
 		"@ark-ui/solid": "^5.15.1",
 		"@bigmistqke/solid-contenteditable": "0.0.12",
+		"@fontsource-variable/geist": "^5.2.6",
+		"@fontsource-variable/geist-mono": "^5.2.6",
 		"@hazel/backend": "workspace:*",
 		"@kobalte/core": "^0.13.10",
 		"@solid-primitives/storage": "^4.3.2",
