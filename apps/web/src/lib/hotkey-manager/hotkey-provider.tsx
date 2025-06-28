@@ -1,4 +1,4 @@
-import { type ParentComponent, createContext, createSignal, onCleanup, useContext } from "solid-js"
+import { createContext, createSignal, onCleanup, type ParentComponent, useContext } from "solid-js"
 import { type HotkeyConfig, hotkeyManager } from "./hotkey-manager"
 
 interface HotkeyContextValue {

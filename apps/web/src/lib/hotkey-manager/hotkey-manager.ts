@@ -151,7 +151,6 @@ class HotkeyManager {
 	}
 
 	private notifyListeners() {
-		// biome-ignore lint/complexity/noForEach: <explanation>
 		this.listeners.forEach((callback) => callback())
 	}
 }

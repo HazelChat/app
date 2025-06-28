@@ -17,7 +17,7 @@
 		"@react-navigation/elements": "^2.4.3",
 		"@react-navigation/native": "^7.1.6",
 		"@sentry/react-native": "^6.15.0",
-		"convex": "^1.24.8",
+		"convex": "^1.25.0",
 		"expo": "~53.0.9",
 		"expo-auth-session": "^6.1.5",
 		"expo-blur": "~14.1.4",
