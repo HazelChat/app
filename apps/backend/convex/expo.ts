@@ -31,7 +31,18 @@ export const recordPushNotificationToken = accountMutation({
 
 export const getStatusForUser = accountQuery({
 	args: Schema.Struct({}),
-	returns: Schema.Any,
+	returns: Schema.Struct({
+		registeredTokens: Schema.Array(Schema.Struct({
+			pushToken: Schema.String,
+			deviceData: Schema.optional(Schema.Struct({
+				isDevice: Schema.Boolean,
+				platform: Schema.Union(Schema.Literal("ios"), Schema.Literal("android"), Schema.Literal("web")),
+				brand: Schema.optional(Schema.String),
+				manufacturer: Schema.optional(Schema.String),
+				modelName: Schema.optional(Schema.String)
+			}))
+		}))
+	}),
 	handler: Effect.fn(function* ({ account }) {
 		const ctx = yield* ConfectQueryCtx
 		

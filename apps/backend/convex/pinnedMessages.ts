@@ -1,13 +1,22 @@
 import { Id } from "confect-plus/server"
 import { Effect, Option, Schema } from "effect"
-import { ConfectQueryCtx, ConfectMutationCtx } from "./confect"
+import { ConfectMutationCtx, ConfectQueryCtx } from "./confect"
 import { userMutation, userQuery } from "./middleware/withUserEffect"
+import { confectSchema } from "./schema"
 
 export const getPinnedMessages = userQuery({
 	args: Schema.Struct({
 		channelId: Id.Id("channels"),
 	}),
-	returns: Schema.Array(Schema.Any),
+	returns: Schema.Array(
+		Schema.Struct({
+			messageId: Id.Id("messages"),
+			pinnedAt: Schema.Number,
+			channelId: Id.Id("channels"),
+			messageAuthor: confectSchema.tableSchemas.users.withSystemFields,
+			message: confectSchema.tableSchemas.messages.withSystemFields,
+		}),
+	),
 	handler: Effect.fn(function* ({ channelId, userData, userService }) {
 		const ctx = yield* ConfectQueryCtx
 

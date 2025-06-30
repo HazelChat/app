@@ -3,12 +3,13 @@ import { Effect, Option, Schema } from "effect"
 import type { Id as IdType } from "@hazel/backend"
 import { ConfectMutationCtx } from "./confect"
 import { accountMutation } from "./middleware/withAccountEffect"
+import { confectSchema } from "./schema"
 
 export const acceptInvite = accountMutation({
 	args: Schema.Struct({
 		code: Schema.String,
 	}),
-	returns: Schema.Any,
+	returns: Id.Id("servers"),
 	handler: Effect.fn(function* ({ code, account }) {
 		const ctx = yield* ConfectMutationCtx
 
@@ -57,7 +58,10 @@ export const createInvite = accountMutation({
 		serverId: Id.Id("servers"),
 		expiresInHours: Schema.optional(Schema.Number),
 	}),
-	returns: Schema.Any,
+	returns: Schema.Struct({
+		inviteId: Id.Id("invites"),
+		code: Schema.String,
+	}),
 	handler: Effect.fn(function* ({ serverId, expiresInHours, account }) {
 		const ctx = yield* ConfectMutationCtx
 

@@ -3,14 +3,15 @@ import { Id } from "confect-plus/server"
 import { Effect, Option, Schema } from "effect"
 import { ConfectMutationCtx, ConfectQueryCtx } from "./confect"
 import { userMutation, userQuery } from "./middleware/withUserEffect"
+import { confectSchema } from "./schema"
 
 export const getChannels = userQuery({
 	args: Schema.Struct({
 		favoriteFilter: Schema.optional(Schema.Struct({ favorite: Schema.Boolean })),
 	}),
 	returns: Schema.Struct({
-		dmChannels: Schema.Array(Schema.Any),
-		serverChannels: Schema.Array(Schema.Any),
+		dmChannels: Schema.Array(confectSchema.tableSchemas.channels.withSystemFields),
+		serverChannels: Schema.Array(confectSchema.tableSchemas.channels.withSystemFields),
 	}),
 	handler: Effect.fn(function* ({ favoriteFilter, userData, serverId }) {
 		const ctx = yield* ConfectQueryCtx
@@ -86,7 +87,7 @@ export const getChannel = userQuery({
 	args: Schema.Struct({
 		channelId: Id.Id("channels"),
 	}),
-	returns: Schema.Any,
+	returns: confectSchema.tableSchemas.channels.withSystemFields,
 	handler: Effect.fn(function* ({ channelId, userData, serverId }) {
 		const ctx = yield* ConfectQueryCtx
 
@@ -137,7 +138,7 @@ export const getChannel = userQuery({
 
 export const getPublicChannels = userQuery({
 	args: Schema.Struct({}),
-	returns: Schema.Array(Schema.Any),
+	returns: Schema.Array(confectSchema.tableSchemas.channels.withSystemFields),
 	handler: Effect.fn(function* ({ serverId }) {
 		const ctx = yield* ConfectQueryCtx
 
@@ -153,7 +154,7 @@ export const getPublicChannels = userQuery({
 
 export const getUnjoinedPublicChannels = userQuery({
 	args: Schema.Struct({}),
-	returns: Schema.Array(Schema.Any),
+	returns: Schema.Array(confectSchema.tableSchemas.channels.withSystemFields),
 	handler: Effect.fn(function* ({ serverId, userData }) {
 		const ctx = yield* ConfectQueryCtx
 

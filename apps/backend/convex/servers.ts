@@ -4,12 +4,13 @@ import { Effect, Option, Schema } from "effect"
 import { query } from "./_generated/server"
 import { ConfectQueryCtx, ConfectMutationCtx } from "./confect"
 import { accountMutation, accountQuery } from "./middleware/withAccountEffect"
+import { confectSchema } from "./schema"
 
 export const getServer = accountQuery({
 	args: Schema.Struct({
 		serverId: Id.Id("servers"),
 	}),
-	returns: Schema.Union(Schema.Any, Schema.Null),
+	returns: Schema.Union(confectSchema.tableSchemas.servers.withSystemFields, Schema.Null),
 	handler: Effect.fn(function* ({ serverId }) {
 		const ctx = yield* ConfectQueryCtx
 
@@ -39,7 +40,7 @@ export const getServerForUser = accountQuery({
 	args: Schema.Struct({
 		serverId: Id.Id("servers"),
 	}),
-	returns: Schema.Union(Schema.Any, Schema.Null),
+	returns: Schema.Union(confectSchema.tableSchemas.servers.withSystemFields, Schema.Null),
 	handler: Effect.fn(function* ({ serverId, account }) {
 		const ctx = yield* ConfectQueryCtx
 
@@ -67,7 +68,7 @@ export const getServerForUser = accountQuery({
 
 export const getServersForUser = accountQuery({
 	args: Schema.Struct({}),
-	returns: Schema.Array(Schema.Any),
+	returns: Schema.Array(confectSchema.tableSchemas.servers.withSystemFields),
 	handler: Effect.fn(function* ({ account }) {
 		const ctx = yield* ConfectQueryCtx
 

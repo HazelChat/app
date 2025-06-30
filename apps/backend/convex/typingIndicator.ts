@@ -3,6 +3,7 @@ import { Effect, Option, Schema } from "effect"
 import { internalMutation, query } from "./_generated/server"
 import { ConfectMutationCtx, ConfectQueryCtx } from "./confect"
 import { accountMutation, accountQuery } from "./middleware/withAccountEffect"
+import { confectSchema } from "./schema"
 
 // The duration in milliseconds to consider a user as "still typing".
 // After this timeout, they will be considered to have stopped typing.
@@ -52,7 +53,14 @@ export const list = accountQuery({
 	args: Schema.Struct({
 		channelId: Id.Id("channels"),
 	}),
-	returns: Schema.Array(Schema.Any),
+	returns: Schema.Array(
+		Schema.extend(
+			confectSchema.tableSchemas.typingIndicators.withSystemFields,
+			Schema.Struct({
+				account: confectSchema.tableSchemas.accounts.withSystemFields,
+			}),
+		),
+	),
 	handler: Effect.fn(function* ({ channelId, account }) {
 		const ctx = yield* ConfectQueryCtx
 

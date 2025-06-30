@@ -1,10 +1,11 @@
 import { Effect, Schema } from "effect"
 import { ConfectQueryCtx } from "./confect"
 import { userQuery } from "./middleware/withUserEffect"
+import { confectSchema } from "./schema"
 
 export const getFriends = userQuery({
 	args: Schema.Struct({}),
-	returns: Schema.Array(Schema.Any),
+	returns: Schema.Array(confectSchema.tableSchemas.users.withSystemFields),
 	handler: Effect.fn(function* ({ serverId, userData }) {
 		const ctx = yield* ConfectQueryCtx
 
@@ -19,7 +20,7 @@ export const getFriends = userQuery({
 
 export const getMembers = userQuery({
 	args: Schema.Struct({}),
-	returns: Schema.Array(Schema.Any),
+	returns: Schema.Array(confectSchema.tableSchemas.users.withSystemFields),
 	handler: Effect.fn(function* ({ serverId }) {
 		const ctx = yield* ConfectQueryCtx
 

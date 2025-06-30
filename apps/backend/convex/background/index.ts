@@ -2,6 +2,7 @@ import { Id } from "confect-plus/server"
 import { Effect, Option, Schema } from "effect"
 import { internal } from "../_generated/api"
 import { ConfectMutationCtx, internalMutation } from "../confect"
+import { confectSchema } from "../schema"
 
 const markdownToPlainText = (markdown: string): string => {
 	if (!markdown) return ""
@@ -60,20 +61,20 @@ export const sendNotification = internalMutation({
 		const ctx = yield* ConfectMutationCtx
 
 		const messageOption = yield* ctx.db.get(messageId)
-		if (Option.isNone(messageOption)) return null
+		if (Option.isNone(messageOption)) return
 
 		const message = messageOption.value
 
 		const authorOption = yield* ctx.db.get(message.authorId)
-		if (Option.isNone(authorOption)) return null
+		if (Option.isNone(authorOption)) return
 		const author = authorOption.value
 
 		const channelOption = yield* ctx.db.get(channelId)
-		if (Option.isNone(channelOption)) return null
+		if (Option.isNone(channelOption)) return
 		const channel = channelOption.value
 
 		const serverOption = yield* ctx.db.get(channel.serverId)
-		if (Option.isNone(serverOption)) return null
+		if (Option.isNone(serverOption)) return
 		const server = serverOption.value
 
 		const channelMembers = yield* ctx.db

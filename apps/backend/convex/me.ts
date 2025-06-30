@@ -2,10 +2,11 @@ import { Id } from "confect-plus/server"
 import { Effect, Option, Schema } from "effect"
 import { ConfectQueryCtx } from "./confect"
 import { accountQuery } from "./middleware/withAccountEffect"
+import { confectSchema } from "./schema"
 
 export const get = accountQuery({
 	args: Schema.Struct({}),
-	returns: Schema.Any,
+	returns: confectSchema.tableSchemas.accounts.withoutSystemFields,
 	handler: Effect.fn(function* ({ account }) {
 		return account
 	}),
@@ -15,7 +16,7 @@ export const getUser = accountQuery({
 	args: Schema.Struct({
 		serverId: Id.Id("servers"),
 	}),
-	returns: Schema.Union(Schema.Any, Schema.Null),
+	returns: Schema.Union(confectSchema.tableSchemas.users.withSystemFields, Schema.Null),
 	handler: Effect.fn(function* ({ serverId, account }) {
 		const ctx = yield* ConfectQueryCtx
 
@@ -36,7 +37,7 @@ export const getUser = accountQuery({
 
 export const getLatestNotifcation = accountQuery({
 	args: Schema.Struct({}),
-	returns: Schema.Union(Schema.Any, Schema.Null),
+	returns: Schema.Union(confectSchema.tableSchemas.notifications.withSystemFields, Schema.Null),
 	handler: Effect.fn(function* ({ account }) {
 		const ctx = yield* ConfectQueryCtx
 

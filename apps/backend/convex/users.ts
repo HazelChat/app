@@ -1,12 +1,13 @@
 import { Id } from "confect-plus/server"
 import { Effect, Option, Schema } from "effect"
-import { ConfectQueryCtx, ConfectMutationCtx } from "./confect"
+import { ConfectMutationCtx, ConfectQueryCtx } from "./confect"
 import { accountMutation } from "./middleware/withAccountEffect"
 import { userQuery } from "./middleware/withUserEffect"
+import { confectSchema } from "./schema"
 
 export const getUsers = userQuery({
 	args: Schema.Struct({}),
-	returns: Schema.Array(Schema.Any),
+	returns: Schema.Array(confectSchema.tableSchemas.users.withSystemFields),
 	handler: Effect.fn(function* ({ serverId }) {
 		const ctx = yield* ConfectQueryCtx
 
@@ -21,7 +22,7 @@ export const getUser = userQuery({
 	args: Schema.Struct({
 		userId: Id.Id("users"),
 	}),
-	returns: Schema.Any,
+	returns: confectSchema.tableSchemas.users.withSystemFields,
 	handler: Effect.fn(function* ({ userId, serverId }) {
 		const ctx = yield* ConfectQueryCtx
 

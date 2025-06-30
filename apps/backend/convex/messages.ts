@@ -3,13 +3,19 @@ import { Effect, Option, Schema } from "effect"
 import { internal } from "./_generated/api"
 import { ConfectMutationCtx, ConfectQueryCtx } from "./confect"
 import { userMutation, userQuery } from "./middleware/withUserEffect"
+import { confectSchema } from "./schema"
 
 export const getMessage = userQuery({
 	args: Schema.Struct({
 		channelId: Id.Id("channels"),
 		id: Id.Id("messages"),
 	}),
-	returns: Schema.Any,
+	returns: Schema.extend(
+		confectSchema.tableSchemas.messages.withSystemFields,
+		Schema.Struct({
+			author: confectSchema.tableSchemas.users.withSystemFields,
+		}),
+	),
 	handler: Effect.fn(function* ({ channelId, id, userData, userService }) {
 		const ctx = yield* ConfectQueryCtx
 
@@ -37,9 +43,31 @@ export const getMessage = userQuery({
 export const getMessages = userQuery({
 	args: Schema.Struct({
 		channelId: Id.Id("channels"),
-		paginationOpts: Schema.Any, // TODO: Create proper schema for pagination
+		paginationOpts: Schema.Struct({
+			numItems: Schema.Number,
+			cursor: Schema.Union(Schema.String, Schema.Null),
+		}),
 	}),
-	returns: Schema.Any,
+	returns: Schema.Struct({
+		isDone: Schema.Boolean,
+		continueCursor: Schema.String,
+		page: Schema.Array(
+			Schema.extend(
+				confectSchema.tableSchemas.messages.withSystemFields,
+				Schema.Struct({
+					author: confectSchema.tableSchemas.users.withSystemFields,
+					threadMessages: Schema.Array(
+						Schema.extend(
+							confectSchema.tableSchemas.messages.withSystemFields,
+							Schema.Struct({
+								author: confectSchema.tableSchemas.users.withSystemFields,
+							}),
+						),
+					),
+				}),
+			),
+		),
+	}),
 	handler: Effect.fn(function* ({ channelId, paginationOpts, userData, userService }) {
 		const ctx = yield* ConfectQueryCtx
 
@@ -124,7 +152,7 @@ export const createMessage = userMutation({
 		replyToMessageId: Schema.optional(Id.Id("messages")),
 		attachedFiles: Schema.Array(Schema.String),
 	}),
-	returns: Schema.Any,
+	returns: Id.Id("messages"),
 	handler: Effect.fn(function* ({
 		content,
 		channelId,

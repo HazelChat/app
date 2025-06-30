@@ -1,15 +1,16 @@
 import { Id } from "confect-plus/server"
-import { Effect, Option, Schema } from "effect"
 import { v } from "convex/values"
+import { Effect, Option, Schema } from "effect"
 import { mutation } from "./_generated/server"
 import { ConfectQueryCtx } from "./confect"
 import { accountQuery } from "./middleware/withAccountEffect"
+import { confectSchema } from "./schema"
 
 export const getAccount = accountQuery({
 	args: Schema.Struct({
 		id: Id.Id("accounts"),
 	}),
-	returns: Schema.Union(Schema.Any, Schema.Null),
+	returns: Schema.Union(confectSchema.tableSchemas.accounts.withSystemFields, Schema.Null),
 	handler: Effect.fn(function* ({ id }) {
 		const ctx = yield* ConfectQueryCtx
 
