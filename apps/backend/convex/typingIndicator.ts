@@ -1,6 +1,6 @@
 import { Id } from "confect-plus/server"
 import { Effect, Option, Schema } from "effect"
-import { internalMutation, query } from "./_generated/server"
+import { internalMutation } from "./_generated/server"
 import { ConfectMutationCtx, ConfectQueryCtx } from "./confect"
 import { accountMutation, accountQuery } from "./middleware/withAccountEffect"
 import { confectSchema } from "./schema"

@@ -16,7 +16,7 @@ export const getMessage = userQuery({
 			author: confectSchema.tableSchemas.users.withSystemFields,
 		}),
 	),
-	handler: Effect.fn(function* ({ channelId, id, userData, userService }) {
+	handler: Effect.fnUntraced(function* ({ channelId, id, userData, userService }) {
 		const ctx = yield* ConfectQueryCtx
 
 		yield* userService.validateCanViewChannel(ctx, userData, channelId)
@@ -68,7 +68,7 @@ export const getMessages = userQuery({
 			),
 		),
 	}),
-	handler: Effect.fn(function* ({ channelId, paginationOpts, userData, userService }) {
+	handler: Effect.fnUntraced(function* ({ channelId, paginationOpts, userData, userService }) {
 		const ctx = yield* ConfectQueryCtx
 
 		const channelOption = yield* ctx.db.get(channelId)
@@ -84,18 +84,16 @@ export const getMessages = userQuery({
 			.order("desc")
 			.paginate(paginationOpts)
 
-		const messagesWithThreadMessages = yield* Effect.forEach(
-			messages.page,
-			Effect.fn(function* (message) {
+		const messagesWithThreadMessages = yield* Effect.forEach(messages.page, (message) =>
+			Effect.gen(function* () {
 				if (message.threadChannelId) {
 					const threadMessages = yield* ctx.db
 						.query("messages")
 						.withIndex("by_channelId", (q) => q.eq("channelId", message.threadChannelId!))
 						.collect()
 
-					const threadMessagesWithAuthor = yield* Effect.forEach(
-						threadMessages,
-						Effect.fn(function* (threadMessage) {
+					const threadMessagesWithAuthor = yield* Effect.forEach(threadMessages, (threadMessage) =>
+						Effect.gen(function* () {
 							const messageAuthorOption = yield* ctx.db.get(threadMessage.authorId)
 							if (Option.isNone(messageAuthorOption)) {
 								return yield* Effect.fail(new Error("Message author not found"))
@@ -120,9 +118,8 @@ export const getMessages = userQuery({
 			}),
 		)
 
-		const messagesWithAuthor = yield* Effect.forEach(
-			messagesWithThreadMessages,
-			Effect.fn(function* (message) {
+		const messagesWithAuthor = yield* Effect.forEach(messagesWithThreadMessages, (message) =>
+			Effect.gen(function* () {
 				const messageAuthorOption = yield* ctx.db.get(message.authorId)
 
 				// TODO: This should not happen when user is deleted we should give all messages to a default user
@@ -153,7 +150,7 @@ export const createMessage = userMutation({
 		attachedFiles: Schema.Array(Schema.String),
 	}),
 	returns: Id.Id("messages"),
-	handler: Effect.fn(function* ({
+	handler: ({
 		content,
 		channelId,
 		threadChannelId,
@@ -161,36 +158,37 @@ export const createMessage = userMutation({
 		attachedFiles,
 		userData,
 		userService,
-	}) {
-		const ctx = yield* ConfectMutationCtx
+	}) =>
+		Effect.gen(function* () {
+			const ctx = yield* ConfectMutationCtx
 
-		if (content.trim() === "") {
-			return yield* Effect.fail(new Error("Message content cannot be empty"))
-		}
+			if (content.trim() === "") {
+				return yield* Effect.fail(new Error("Message content cannot be empty"))
+			}
 
-		yield* userService.validateIsMemberOfChannel(ctx, userData, channelId)
+			yield* userService.validateIsMemberOfChannel(ctx, userData, channelId)
 
-		const messageId = yield* ctx.db.insert("messages", {
-			channelId,
-			content,
-			threadChannelId,
-			authorId: userData.user._id,
-			replyToMessageId,
-			attachedFiles,
-			updatedAt: Date.now(),
-			reactions: [],
-		})
+			const messageId = yield* ctx.db.insert("messages", {
+				channelId,
+				content,
+				threadChannelId,
+				authorId: userData.user._id,
+				replyToMessageId,
+				attachedFiles,
+				updatedAt: Date.now(),
+				reactions: [],
+			})
 
-		// TODO: This should be a database trigger
-		yield* ctx.scheduler.runAfter(0, internal.background.index.sendNotification, {
-			channelId,
-			accountId: userData.account._id,
-			messageId,
-			userId: userData.user._id,
-		})
+			// TODO: This should be a database trigger
+			yield* ctx.scheduler.runAfter(0, internal.background.index.sendNotification as any, {
+				channelId,
+				accountId: userData.account._id,
+				messageId,
+				userId: userData.user._id,
+			})
 
-		return messageId
-	}),
+			return messageId
+		}),
 })
 
 export const updateMessage = userMutation({
@@ -199,7 +197,7 @@ export const updateMessage = userMutation({
 		content: Schema.String,
 	}),
 	returns: Schema.Null,
-	handler: Effect.fn(function* ({ id, content, userData, userService }) {
+	handler: Effect.fnUntraced(function* ({ id, content, userData, userService }) {
 		const ctx = yield* ConfectMutationCtx
 
 		yield* userService.validateOwnsMessage(ctx, userData, id)
@@ -217,7 +215,7 @@ export const deleteMessage = userMutation({
 		id: Id.Id("messages"),
 	}),
 	returns: Schema.Null,
-	handler: Effect.fn(function* ({ id, userData, userService }) {
+	handler: Effect.fnUntraced(function* ({ id, userData, userService }) {
 		const ctx = yield* ConfectMutationCtx
 
 		yield* userService.validateOwnsMessage(ctx, userData, id)
@@ -234,7 +232,7 @@ export const createReaction = userMutation({
 		emoji: Schema.String,
 	}),
 	returns: Schema.Null,
-	handler: Effect.fn(function* ({ messageId, emoji, userData, userService }) {
+	handler: Effect.fnUntraced(function* ({ messageId, emoji, userData, userService }) {
 		const ctx = yield* ConfectMutationCtx
 
 		const messageOption = yield* ctx.db.get(messageId)
@@ -272,7 +270,7 @@ export const deleteReaction = userMutation({
 		emoji: Schema.String,
 	}),
 	returns: Schema.Null,
-	handler: Effect.fn(function* ({ id, emoji, userData, userService }) {
+	handler: Effect.fnUntraced(function* ({ id, emoji, userData, userService }) {
 		const ctx = yield* ConfectMutationCtx
 
 		const messageOption = yield* ctx.db.get(id)

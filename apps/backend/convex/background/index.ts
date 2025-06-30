@@ -2,7 +2,6 @@ import { Id } from "confect-plus/server"
 import { Effect, Option, Schema } from "effect"
 import { internal } from "../_generated/api"
 import { ConfectMutationCtx, internalMutation } from "../confect"
-import { confectSchema } from "../schema"
 
 const markdownToPlainText = (markdown: string): string => {
 	if (!markdown) return ""
@@ -61,20 +60,20 @@ export const sendNotification = internalMutation({
 		const ctx = yield* ConfectMutationCtx
 
 		const messageOption = yield* ctx.db.get(messageId)
-		if (Option.isNone(messageOption)) return
+		if (Option.isNone(messageOption)) return null
 
 		const message = messageOption.value
 
 		const authorOption = yield* ctx.db.get(message.authorId)
-		if (Option.isNone(authorOption)) return
+		if (Option.isNone(authorOption)) return null
 		const author = authorOption.value
 
 		const channelOption = yield* ctx.db.get(channelId)
-		if (Option.isNone(channelOption)) return
+		if (Option.isNone(channelOption)) return null
 		const channel = channelOption.value
 
 		const serverOption = yield* ctx.db.get(channel.serverId)
-		if (Option.isNone(serverOption)) return
+		if (Option.isNone(serverOption)) return null
 		const server = serverOption.value
 
 		const channelMembers = yield* ctx.db
@@ -90,11 +89,11 @@ export const sendNotification = internalMutation({
 			filteredChannelMembers,
 			Effect.fn(function* (member) {
 				const userOption = yield* ctx.db.get(member.userId)
-				if (Option.isNone(userOption)) return
+				if (Option.isNone(userOption)) return null
 
 				const user = userOption.value
 				const accountOption = yield* ctx.db.get(user.accountId)
-				if (Option.isNone(accountOption)) return
+				if (Option.isNone(accountOption)) return null
 
 				const account = accountOption.value
 
@@ -122,11 +121,11 @@ export const sendNotification = internalMutation({
 				})
 
 				const userOption = yield* ctx.db.get(member.userId)
-				if (Option.isNone(userOption)) return
+				if (Option.isNone(userOption)) return null
 
 				const user = userOption.value
 				const accountOption = yield* ctx.db.get(user.accountId)
-				if (Option.isNone(accountOption)) return
+				if (Option.isNone(accountOption)) return null
 
 				const account = accountOption.value
 
