@@ -1,3 +1,4 @@
+import { routerWithQueryClient } from "@tanstack/react-router-with-query"
 import type { QueryClient } from "@tanstack/solid-query"
 import { createRootRouteWithContext, Outlet } from "@tanstack/solid-router"
 
