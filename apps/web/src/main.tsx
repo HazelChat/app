@@ -60,7 +60,6 @@ const router = createRouter({
 
 	context: {
 		auth: undefined!,
-		convex: convex,
 		queryClient,
 	},
 	defaultErrorComponent: (err) => {
