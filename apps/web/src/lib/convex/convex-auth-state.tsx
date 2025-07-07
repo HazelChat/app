@@ -1,11 +1,10 @@
 import {
 	type Accessor,
-	type Context,
-	type JSX,
 	createContext,
 	createEffect,
 	createMemo,
 	createSignal,
+	type JSX,
 	onCleanup,
 	useContext,
 } from "solid-js"
@@ -37,9 +36,7 @@ export function ConvexProviderWithAuth(props: {
 	createAuth: () => {
 		isLoading: Accessor<boolean>
 		isAuthenticated: Accessor<boolean>
-		fetchAccessToken: (args: {
-			forceRefreshToken: boolean
-		}) => Promise<string | null>
+		fetchAccessToken: (args: { forceRefreshToken: boolean }) => Promise<string | null>
 	}
 }) {
 	const [isConvexAuthenticated, setIsConvexAuthenticated] = createSignal<boolean | null>(null)

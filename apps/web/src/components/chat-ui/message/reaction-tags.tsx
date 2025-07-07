@@ -1,17 +1,12 @@
 import type { Doc, Id } from "@hazel/backend"
 import { api } from "@hazel/backend/api"
 import { useQuery } from "@tanstack/solid-query"
-import { useAuth } from "clerk-solidjs"
-import { type Accessor, For, Show, Suspense, createMemo, createSignal } from "solid-js"
+import { type Accessor, createMemo, createSignal, For, Show } from "solid-js"
 import { useChat } from "~/components/chat-state/chat-store"
 import { IconEmojiAdd } from "~/components/icons/emoji-add"
 import { Button } from "~/components/ui/button"
 import { Popover } from "~/components/ui/popover"
-import {
-       createMutation,
-       optimisticAddReaction,
-       optimisticRemoveReaction,
-} from "~/lib/convex"
+import { createMutation, optimisticAddReaction, optimisticRemoveReaction } from "~/lib/convex"
 import { convexQuery } from "~/lib/convex-query"
 import { EmojiPicker } from "./emoji-picker"
 
@@ -46,33 +41,29 @@ export function ReactionTags(props: ReactionTagsProps) {
 		return props.message().reactions.filter((reaction) => reaction.userId === meQuery.data?._id)
 	})
 
-       const removeReaction = createMutation(api.messages.deleteReaction).withOptimisticUpdate(
-               (store, args) => {
-                       const userId = meQuery.data?._id
-                       if (!userId) return
-                       optimisticRemoveReaction(store, {
-                               serverId: args.serverId as Id<"servers">,
-                               channelId: props.message().channelId as Id<"channels">,
-                               messageId: args.id as Id<"messages">,
-                               emoji: args.emoji,
-                               userId,
-                       })
-               },
-       )
+	const removeReaction = createMutation(api.messages.deleteReaction).withOptimisticUpdate((store, args) => {
+		const userId = meQuery.data?._id
+		if (!userId) return
+		optimisticRemoveReaction(store, {
+			serverId: args.serverId as Id<"servers">,
+			channelId: props.message().channelId as Id<"channels">,
+			messageId: args.id as Id<"messages">,
+			emoji: args.emoji,
+			userId,
+		})
+	})
 
-       const addReaction = createMutation(api.messages.createReaction).withOptimisticUpdate(
-               (store, args) => {
-                       const userId = meQuery.data?._id
-                       if (!userId) return
-                       optimisticAddReaction(store, {
-                               serverId: args.serverId as Id<"servers">,
-                               channelId: props.message().channelId as Id<"channels">,
-                               messageId: args.messageId as Id<"messages">,
-                               emoji: args.emoji,
-                               userId,
-                       })
-               },
-       )
+	const addReaction = createMutation(api.messages.createReaction).withOptimisticUpdate((store, args) => {
+		const userId = meQuery.data?._id
+		if (!userId) return
+		optimisticAddReaction(store, {
+			serverId: args.serverId as Id<"servers">,
+			channelId: props.message().channelId as Id<"channels">,
+			messageId: args.messageId as Id<"messages">,
+			emoji: args.emoji,
+			userId,
+		})
+	})
 
 	async function createReaction(emoji: string) {
 		if (!meQuery.data) return

@@ -2,7 +2,7 @@ import { api } from "@hazel/backend/api"
 import { createForm } from "@tanstack/solid-form"
 import { useNavigate } from "@tanstack/solid-router"
 import { type } from "arktype"
-import { useUser } from "clerk-solidjs"
+import { useAuth } from "authkit-solidjs"
 import { IconInternet } from "~/components/icons/internet"
 import { Button } from "~/components/ui/button"
 import { TextField } from "~/components/ui/text-field"
@@ -15,12 +15,12 @@ export const Useronboarding = ({ redirectTo }: { redirectTo?: string }) => {
 		from: "/onboarding",
 	})
 
-	const { user } = useUser()
+	const { user } = useAuth()
 
 	const form = createForm(() => ({
 		defaultValues: {
-			displayName: user()?.fullName ?? "",
-			tag: user()?.username?.toLowerCase() ?? "",
+			displayName: user?.firstName ?? "",
+			tag: user?.lastName?.toLowerCase() ?? "",
 		},
 		validators: {
 			onChange: type({

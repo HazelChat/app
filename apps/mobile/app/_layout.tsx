@@ -5,17 +5,12 @@ import { StatusBar } from "expo-status-bar"
 import "react-native-reanimated"
 
 import { ClerkLoaded, ClerkLoading, ClerkProvider, useAuth } from "@clerk/clerk-expo"
-
-import { useColorScheme } from "@/hooks/useColorScheme"
-
-import { ConvexProviderWithClerk } from "convex/react-clerk"
-
 import { tokenCache } from "@clerk/clerk-expo/token-cache"
-
-import { ConvexReactClient } from "convex/react"
-import { Text } from "react-native"
-
 import * as Sentry from "@sentry/react-native"
+import { ConvexReactClient } from "convex/react"
+import { ConvexProviderWithClerk } from "convex/react-clerk"
+import { Text } from "react-native"
+import { useColorScheme } from "@/hooks/useColorScheme"
 
 const convex = new ConvexReactClient(process.env.EXPO_PUBLIC_CONVEX_URL!, {
 	unsavedChangesWarning: false,

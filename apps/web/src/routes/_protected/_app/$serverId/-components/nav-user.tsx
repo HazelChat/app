@@ -1,7 +1,12 @@
 import { Link } from "@tanstack/solid-router"
-import { useAuth, useUser } from "clerk-solidjs"
+import { useAuth } from "authkit-solidjs"
 import type { Accessor } from "solid-js"
-import { IconChevronSortVerticalStroke, IconCreditCardStroke, IconAirplaneStroke, IconSettings01Stroke, IconSupportHeartStroke } from "~/components/iconsv2"
+import {
+	IconAirplaneStroke,
+	IconCreditCardStroke,
+	IconSettings01Stroke,
+	IconSupportHeartStroke,
+} from "~/components/iconsv2"
 import { Avatar } from "~/components/ui/avatar"
 import { Menu } from "~/components/ui/menu"
 import { Sidebar } from "~/components/ui/sidebar"
@@ -12,9 +17,7 @@ interface NavUserProps {
 }
 
 export const NavUser = (props: NavUserProps) => {
-	const { user } = useUser()
-
-	const { signOut } = useAuth()
+	const { user, signOut } = useAuth()
 
 	return (
 		<Sidebar.Menu>
@@ -28,18 +31,20 @@ export const NavUser = (props: NavUserProps) => {
 							</Sidebar.MenuButton>
 						)}
 					>
-						<Avatar size="sm" src={user()?.imageUrl} name={user()?.username!} />
+						<Avatar size="sm" src={user?.profilePictureUrl || ""} name={user?.firstName || ""} />
 					</Menu.Trigger>
 					<Menu.Content>
 						<Menu.ItemGroup>
 							<Menu.Label>
 								<div class="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-									<Avatar size="sm" src={user()?.imageUrl} name={user()?.username!} />
+									<Avatar
+										size="sm"
+										src={user?.profilePictureUrl || ""}
+										name={user?.firstName || ""}
+									/>
 									<div class="grid flex-1 text-left text-sm leading-tight">
-										<span class="truncate font-semibold">{user()?.username}</span>
-										<span class="truncate text-xs">
-											{user()?.primaryEmailAddress?.emailAddress}
-										</span>
+										<span class="truncate font-semibold">{user?.firstName}</span>
+										<span class="truncate text-xs">{user?.email}</span>
 									</div>
 								</div>
 							</Menu.Label>

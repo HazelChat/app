@@ -1,22 +1,21 @@
-import { useAuth } from "clerk-solidjs"
-import { For, type JSX, Show, Suspense, createEffect, createMemo, createSignal, onCleanup } from "solid-js"
-import { twMerge } from "tailwind-merge"
-import { tv } from "tailwind-variants"
-import { IconLoader } from "../icons/loader"
-import { IconCirclePlusSolid } from "../icons/solid/circle-plus-solid"
-import { IconCircleXSolid } from "../icons/solid/circle-x-solid"
-import { ChatInput } from "../markdown-input/chat-input"
-import { Button } from "../ui/button"
-
 import type { Id } from "@hazel/backend"
 import { api } from "@hazel/backend/api"
 import { useQuery } from "@tanstack/solid-query"
+import { useAuth } from "authkit-solidjs"
+import { createEffect, createMemo, createSignal, For, type JSX, onCleanup, Show, Suspense } from "solid-js"
+import { twMerge } from "tailwind-merge"
+import { tv } from "tailwind-variants"
 import { createMutation, insertAtTop } from "~/lib/convex"
 import { convexQuery } from "~/lib/convex-query"
 import { useHotkey, useLayer } from "~/lib/hotkey-manager"
 import { useKeyboardSounds } from "~/lib/keyboard-sounds"
 import { useChat } from "../chat-state/chat-store"
+import { IconLoader } from "../icons/loader"
+import { IconCirclePlusSolid } from "../icons/solid/circle-plus-solid"
+import { IconCircleXSolid } from "../icons/solid/circle-x-solid"
+import { ChatInput } from "../markdown-input/chat-input"
 import { setElementAnchorAndFocus } from "../markdown-input/utils"
+import { Button } from "../ui/button"
 
 // Type for individual attachment state
 type Attachment = {
@@ -258,7 +257,7 @@ const createGlobalEditorFocus = (props: {
 
 			if (isPrintableKey) {
 				event.preventDefault()
-				
+
 				props.playSound()
 
 				const content = input() + event.key
@@ -355,8 +354,7 @@ export function FloatingBar() {
 	const showAttachmentArea = createMemo(() => successfulKeys().length > 0)
 
 	async function handleSubmit(text: string) {
-		const userId = auth.userId()
-		if (!userId) return
+		if (!auth.user?.id) return
 
 		if (isUploading()) {
 			console.warn("Upload in progress. Please wait.")
@@ -469,9 +467,7 @@ function Attachment(props: { attachment: Attachment; removeAttachment: (id: stri
 	)
 }
 
-function ReplyInfo(props: {
-	showAttachmentArea: boolean
-}) {
+function ReplyInfo(props: { showAttachmentArea: boolean }) {
 	const { setState, state } = useChat()
 	const replyToMessageId = createMemo(() => state.replyToMessageId!)
 

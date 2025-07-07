@@ -12,13 +12,11 @@ import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persist
 import { QueryClient, QueryClientProvider } from "@tanstack/solid-query"
 import { SolidQueryDevtools } from "@tanstack/solid-query-devtools"
 import { AuthKitProvider, useAuth } from "authkit-solidjs"
-import { ClerkProvider, useAuth as useAuthClerk } from "clerk-solidjs"
 import { FpsCounter } from "./components/devtools/fps-counter"
 import { IconLoader } from "./components/icons/loader"
 import { Logo } from "./components/logo"
 import { Toaster } from "./components/ui/toaster"
 import { ConvexSolidClient } from "./lib/convex"
-import { ConvexProviderWithClerk } from "./lib/convex-clerk"
 import { ConvexQueryClient } from "./lib/convex-query"
 import { HotkeyProvider } from "./lib/hotkey-manager"
 import { KeyboardSoundsProvider } from "./lib/keyboard-sounds"
@@ -61,7 +59,6 @@ const router = createRouter({
 	defaultViewTransition: true,
 
 	context: {
-		auth: undefined!,
 		convex: convex,
 		queryClient,
 	},
@@ -96,8 +93,6 @@ declare module "@tanstack/solid-router" {
 }
 
 const InnerProviders = () => {
-	const auth = useAuthClerk()
-
 	// createEffect(() => {
 	// 	const [unsubscribe] = persistQueryClient({
 	// 		queryClient,
@@ -110,14 +105,7 @@ const InnerProviders = () => {
 	// 	})
 	// })
 
-	return (
-		<RouterProvider
-			router={router}
-			context={{
-				auth: auth,
-			}}
-		/>
-	)
+	return <RouterProvider router={router} context={{}} />
 }
 
 function App() {
@@ -137,19 +125,15 @@ function App() {
 						}}
 					>
 						<ConvexProviderWithWorkOS client={convex} useAuth={useAuth}>
-							<ClerkProvider publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY}>
-								<Suspense fallback={<div>Loading...</div>}>
-									<HotkeyProvider>
-										<ConvexProviderWithClerk client={convex} useAuth={useAuthClerk}>
-											<Toaster />
-											<InnerProviders />
-											<Show when={import.meta.env.DEV}>
-												<FpsCounter />
-											</Show>
-										</ConvexProviderWithClerk>
-									</HotkeyProvider>
-								</Suspense>
-							</ClerkProvider>
+							<Suspense fallback={<div>Loading...</div>}>
+								<HotkeyProvider>
+									<Toaster />
+									<InnerProviders />
+									<Show when={import.meta.env.DEV}>
+										<FpsCounter />
+									</Show>
+								</HotkeyProvider>
+							</Suspense>
 						</ConvexProviderWithWorkOS>
 					</AuthKitProvider>
 				</KeyboardSoundsProvider>

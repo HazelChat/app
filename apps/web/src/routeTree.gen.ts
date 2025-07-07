@@ -11,7 +11,6 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ProtectedLayoutRouteImport } from './routes/_protected/layout'
 import { Route as AuthLayoutRouteImport } from './routes/_auth/layout'
-import { Route as AuthSignUpRouteImport } from './routes/_auth/sign-up'
 import { Route as AuthSignInRouteImport } from './routes/_auth/sign-in'
 import { Route as ProtectedAppLayoutRouteImport } from './routes/_protected/_app/layout'
 import { Route as ProtectedOnboardingIndexRouteImport } from './routes/_protected/onboarding/index'
@@ -35,11 +34,6 @@ const ProtectedLayoutRoute = ProtectedLayoutRouteImport.update({
 const AuthLayoutRoute = AuthLayoutRouteImport.update({
   id: '/_auth',
   getParentRoute: () => rootRouteImport,
-} as any)
-const AuthSignUpRoute = AuthSignUpRouteImport.update({
-  id: '/sign-up',
-  path: '/sign-up',
-  getParentRoute: () => AuthLayoutRoute,
 } as any)
 const AuthSignInRoute = AuthSignInRouteImport.update({
   id: '/sign-in',
@@ -129,7 +123,6 @@ const ProtectedAppServerIdChatIdRoute =
 
 export interface FileRoutesByFullPath {
   '/sign-in': typeof AuthSignInRoute
-  '/sign-up': typeof AuthSignUpRoute
   '/$serverId': typeof ProtectedAppServerIdLayoutRouteWithChildren
   '/invite/$code': typeof ProtectedInviteCodeRoute
   '/': typeof ProtectedAppIndexRoute
@@ -146,7 +139,6 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/sign-in': typeof AuthSignInRoute
-  '/sign-up': typeof AuthSignUpRoute
   '/invite/$code': typeof ProtectedInviteCodeRoute
   '/': typeof ProtectedAppIndexRoute
   '/onboarding': typeof ProtectedOnboardingIndexRoute
@@ -166,7 +158,6 @@ export interface FileRoutesById {
   '/_protected': typeof ProtectedLayoutRouteWithChildren
   '/_protected/_app': typeof ProtectedAppLayoutRouteWithChildren
   '/_auth/sign-in': typeof AuthSignInRoute
-  '/_auth/sign-up': typeof AuthSignUpRoute
   '/_protected/_app/$serverId': typeof ProtectedAppServerIdLayoutRouteWithChildren
   '/_protected/invite/$code': typeof ProtectedInviteCodeRoute
   '/_protected/_app/': typeof ProtectedAppIndexRoute
@@ -185,7 +176,6 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/sign-in'
-    | '/sign-up'
     | '/$serverId'
     | '/invite/$code'
     | '/'
@@ -202,7 +192,6 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/sign-in'
-    | '/sign-up'
     | '/invite/$code'
     | '/'
     | '/onboarding'
@@ -221,7 +210,6 @@ export interface FileRouteTypes {
     | '/_protected'
     | '/_protected/_app'
     | '/_auth/sign-in'
-    | '/_auth/sign-up'
     | '/_protected/_app/$serverId'
     | '/_protected/invite/$code'
     | '/_protected/_app/'
@@ -257,13 +245,6 @@ declare module '@tanstack/solid-router' {
       fullPath: ''
       preLoaderRoute: typeof AuthLayoutRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/_auth/sign-up': {
-      id: '/_auth/sign-up'
-      path: '/sign-up'
-      fullPath: '/sign-up'
-      preLoaderRoute: typeof AuthSignUpRouteImport
-      parentRoute: typeof AuthLayoutRoute
     }
     '/_auth/sign-in': {
       id: '/_auth/sign-in'
@@ -375,12 +356,10 @@ declare module '@tanstack/solid-router' {
 
 interface AuthLayoutRouteChildren {
   AuthSignInRoute: typeof AuthSignInRoute
-  AuthSignUpRoute: typeof AuthSignUpRoute
 }
 
 const AuthLayoutRouteChildren: AuthLayoutRouteChildren = {
   AuthSignInRoute: AuthSignInRoute,
-  AuthSignUpRoute: AuthSignUpRoute,
 }
 
 const AuthLayoutRouteWithChildren = AuthLayoutRoute._addFileChildren(
