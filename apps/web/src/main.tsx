@@ -11,7 +11,8 @@ import "./styles/toast.css"
 import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister"
 import { QueryClient, QueryClientProvider } from "@tanstack/solid-query"
 import { SolidQueryDevtools } from "@tanstack/solid-query-devtools"
-import { ClerkProvider, useAuth } from "clerk-solidjs"
+import { AuthKitProvider, useAuth } from "authkit-solidjs"
+import { ClerkProvider, useAuth as useAuthClerk } from "clerk-solidjs"
 import { FpsCounter } from "./components/devtools/fps-counter"
 import { IconLoader } from "./components/icons/loader"
 import { Logo } from "./components/logo"
@@ -25,6 +26,7 @@ import { applyInitialTheme, ThemeProvider } from "./lib/theme"
 
 import "@fontsource-variable/geist-mono/index.css"
 import "@fontsource-variable/geist/index.css"
+import { ConvexProviderWithWorkOS } from "./lib/convex-workos"
 
 applyInitialTheme()
 
@@ -94,7 +96,7 @@ declare module "@tanstack/solid-router" {
 }
 
 const InnerProviders = () => {
-	const auth = useAuth()
+	const auth = useAuthClerk()
 
 	// createEffect(() => {
 	// 	const [unsubscribe] = persistQueryClient({
@@ -124,19 +126,32 @@ function App() {
 			<SolidQueryDevtools />
 			<ThemeProvider>
 				<KeyboardSoundsProvider>
-					<ClerkProvider publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY}>
-						<Suspense fallback={<div>Loading...</div>}>
-							<HotkeyProvider>
-								<ConvexProviderWithClerk client={convex} useAuth={useAuth}>
-									<Toaster />
-									<InnerProviders />
-									<Show when={import.meta.env.DEV}>
-										<FpsCounter />
-									</Show>
-								</ConvexProviderWithClerk>
-							</HotkeyProvider>
-						</Suspense>
-					</ClerkProvider>
+					<AuthKitProvider
+						clientId={
+							import.meta.env.VITE_WORKOS_CLIENT_ID || "client_01HGZR2CV5G9VPBYK6XFA8YG17"
+						}
+						onRedirectCallback={({ state }) => {
+							if (state?.returnTo) {
+								router.navigate(state.returnTo)
+							}
+						}}
+					>
+						<ConvexProviderWithWorkOS client={convex} useAuth={useAuth}>
+							<ClerkProvider publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY}>
+								<Suspense fallback={<div>Loading...</div>}>
+									<HotkeyProvider>
+										<ConvexProviderWithClerk client={convex} useAuth={useAuthClerk}>
+											<Toaster />
+											<InnerProviders />
+											<Show when={import.meta.env.DEV}>
+												<FpsCounter />
+											</Show>
+										</ConvexProviderWithClerk>
+									</HotkeyProvider>
+								</Suspense>
+							</ClerkProvider>
+						</ConvexProviderWithWorkOS>
+					</AuthKitProvider>
 				</KeyboardSoundsProvider>
 			</ThemeProvider>
 		</QueryClientProvider>

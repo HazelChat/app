@@ -1,4 +1,4 @@
-import { type Accessor, type JSX, createMemo } from "solid-js"
+import { type Accessor, createMemo, type JSX } from "solid-js"
 import type { ConvexSolidClient } from "../convex/client"
 import { ConvexProviderWithAuth } from "../convex/convex-auth-state"
 
@@ -13,10 +13,7 @@ type UseAuth = () => {
 	orgPermissions: Accessor<string[] | null | undefined>
 	has: (params: any) => boolean
 	signOut: () => void
-	getToken: (options: {
-		template?: "convex"
-		skipCache?: boolean
-	}) => Promise<string | null>
+	getToken: (options: { template?: "convex"; skipCache?: boolean }) => Promise<string | null>
 }
 
 export function ConvexProviderWithClerk(props: {
@@ -38,8 +35,8 @@ function createUseAuthFromClerk(useAuth: UseAuth) {
 		const { isLoaded, isSignedIn, getToken, orgId, orgRole } = useAuth()
 
 		const fetchAccessToken = createMemo(() => {
-			const currentOrgId = orgId()
-			const currentOrgRole = orgRole()
+			const _currentOrgId = orgId()
+			const _currentOrgRole = orgRole()
 
 			return async ({ forceRefreshToken }: { forceRefreshToken: boolean }) => {
 				try {
