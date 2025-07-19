@@ -9,7 +9,6 @@ import tsconfigPaths from "vite-tsconfig-paths"
 export default defineConfig({
 	plugins: [
 		tanstackRouter({ target: "solid", autoCodeSplitting: true, routeToken: "layout" }),
-		// @ts-expect-error
 		solidPlugin(),
 		tailwindcss(),
 		tsconfigPaths(),
