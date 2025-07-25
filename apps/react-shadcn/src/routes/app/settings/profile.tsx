@@ -2,10 +2,12 @@ import { useConvexMutation, useConvexQuery } from "@convex-dev/react-query"
 import { api } from "@hazel/backend/api"
 import { createFileRoute } from "@tanstack/react-router"
 import { Mail01 } from "@untitledui/icons"
+import { useAuth } from "@workos-inc/authkit-react"
 import { type } from "arktype"
-import { useState } from "react"
+import { useEffect } from "react"
 import { toast } from "sonner"
 import { useAppForm } from "~/components/application/modals/new-channel-modal"
+import { IconNotification } from "~/components/application/notifications/notifications"
 import { SectionFooter } from "~/components/application/section-footers/section-footer"
 import { SectionHeader } from "~/components/application/section-headers/section-headers"
 import { SectionLabel } from "~/components/application/section-headers/section-label"
@@ -19,73 +21,52 @@ export const Route = createFileRoute("/app/settings/profile")({
 })
 
 const profileSchema = type({
-	firstName: "string > 2",
-	lastName: "string > 2",
+	firstName: "string > 0",
+	lastName: "string > 0",
 })
 
 type ProfileFormData = typeof profileSchema.infer
 
 function ProfileSettings() {
+	const { user } = useAuth()
 	const currentUser = useConvexQuery(api.me.get)
 	const updateProfileMutation = useConvexMutation(api.me.updateProfile)
 
-	const [isSubmitting, setIsSubmitting] = useState(false)
-	const [errors, setErrors] = useState<{ firstName?: string; lastName?: string }>({})
-
-	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-		e.preventDefault()
-		setErrors({})
-
-		const formData = new FormData(e.currentTarget)
-		const firstName = formData.get("firstName") as string
-		const lastName = formData.get("lastName") as string
-
-		// Validation
-		const newErrors: typeof errors = {}
-		if (!firstName || firstName.trim().length === 0) {
-			newErrors.firstName = "First name is required"
-		}
-		if (!lastName || lastName.trim().length === 0) {
-			newErrors.lastName = "Last name is required"
-		}
-
-		if (Object.keys(newErrors).length > 0) {
-			setErrors(newErrors)
-			return
-		}
-
-		setIsSubmitting(true)
-		try {
-			await updateProfileMutation({ firstName, lastName })
-			toast.success("Profile updated successfully")
-		} catch (error) {
-			console.error("Error updating profile:", error)
-			toast.error("Failed to update profile")
-		} finally {
-			setIsSubmitting(false)
-		}
-	}
-
 	const form = useAppForm({
 		defaultValues: {
-			lastName: currentUser?.lastName || "",
-			firstName: currentUser?.firstName || "",
+			firstName: "",
+			lastName: "",
 		} as ProfileFormData,
 		validators: {
 			onChange: profileSchema,
 		},
 		onSubmit: async ({ value }) => {
 			try {
-				toast.success("Channel created successfully")
-				form.reset()
-			} catch {
-				toast.error("Failed to create channel")
+				await updateProfileMutation(value)
+				toast.success("Profile updated successfully")
+			} catch (error) {
+				console.error("Error updating profile:", error)
+				toast.error("Failed to update profile")
 			}
 		},
 	})
 
+	// Update form values when user data is loaded
+	useEffect(() => {
+		if (currentUser) {
+			form.setFieldValue("firstName", currentUser.firstName || "")
+			form.setFieldValue("lastName", currentUser.lastName || "")
+		}
+	}, [currentUser, form])
+
 	return (
-		<Form className="flex flex-col gap-6 px-4 lg:px-8" onSubmit={handleSubmit}>
+		<Form
+			className="flex flex-col gap-6 px-4 lg:px-8"
+			onSubmit={(e) => {
+				e.preventDefault()
+				form.handleSubmit()
+			}}
+		>
 			<SectionHeader.Root>
 				<SectionHeader.Group>
 					<div className="flex flex-1 flex-col justify-center gap-0.5 self-stretch">
@@ -102,30 +83,48 @@ function ProfileSettings() {
 					<SectionLabel.Root isRequired size="sm" title="Name" className="max-lg:hidden" />
 
 					<div className="grid grid-cols-1 gap-5 lg:grid-cols-2 lg:gap-6">
-						<TextField
-							isRequired
+						<form.AppField
 							name="firstName"
-							defaultValue={currentUser?.firstName || ""}
-							isInvalid={!!errors.firstName}
-						>
-							<Label className="lg:hidden">First name</Label>
-							<InputBase size="md" />
-							{errors.firstName && (
-								<div className="text-destructive text-sm">{errors.firstName}</div>
+							children={(field) => (
+								<field.TextField
+									isRequired
+									name="firstName"
+									value={field.state.value}
+									onChange={(value) => field.handleChange(value)}
+									onBlur={field.handleBlur}
+									isInvalid={!!field.state.meta.errors?.length}
+								>
+									<Label className="lg:hidden">First name</Label>
+									<InputBase size="md" />
+									{field.state.meta.errors?.length > 0 && (
+										<div className="text-destructive text-sm">
+											{field.state.meta.errors[0]?.message || "First name is required"}
+										</div>
+									)}
+								</field.TextField>
 							)}
-						</TextField>
-						<TextField
-							isRequired
+						/>
+						<form.AppField
 							name="lastName"
-							defaultValue={currentUser?.lastName || ""}
-							isInvalid={!!errors.lastName}
-						>
-							<Label className="lg:hidden">Last name</Label>
-							<InputBase size="md" />
-							{errors.lastName && (
-								<div className="text-destructive text-sm">{errors.lastName}</div>
+							children={(field) => (
+								<field.TextField
+									isRequired
+									name="lastName"
+									value={field.state.value}
+									onChange={(value) => field.handleChange(value)}
+									onBlur={field.handleBlur}
+									isInvalid={!!field.state.meta.errors?.length}
+								>
+									<Label className="lg:hidden">Last name</Label>
+									<InputBase size="md" />
+									{field.state.meta.errors?.length > 0 && (
+										<div className="text-destructive text-sm">
+											{field.state.meta.errors[0]?.message || "Last name is required"}
+										</div>
+									)}
+								</field.TextField>
 							)}
-						</TextField>
+						/>
 					</div>
 				</div>
 
@@ -134,7 +133,7 @@ function ProfileSettings() {
 				<div className="grid grid-cols-1 lg:grid-cols-[minmax(200px,280px)_minmax(400px,512px)] lg:gap-8">
 					<SectionLabel.Root size="sm" title="Email address" className="max-lg:hidden" />
 
-					<TextField name="email" type="email" isDisabled defaultValue="user@example.com">
+					<TextField name="email" type="email" isDisabled value={user?.email}>
 						<Label className="lg:hidden">Email address</Label>
 						<InputBase size="md" icon={Mail01} />
 					</TextField>
@@ -142,15 +141,18 @@ function ProfileSettings() {
 
 				<SectionFooter.Root>
 					<SectionFooter.Actions>
-						<Button
-							type="submit"
-							color="primary"
-							size="md"
-							isLoading={isSubmitting}
-							isDisabled={isSubmitting}
-						>
-							Save
-						</Button>
+						<form.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting]}>
+							{([canSubmit, isSubmitting]) => (
+								<Button
+									type="submit"
+									color="primary"
+									size="md"
+									isDisabled={!canSubmit || isSubmitting}
+								>
+									{isSubmitting ? "Saving..." : "Save"}
+								</Button>
+							)}
+						</form.Subscribe>
 					</SectionFooter.Actions>
 				</SectionFooter.Root>
 			</div>
