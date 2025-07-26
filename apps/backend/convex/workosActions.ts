@@ -155,3 +155,33 @@ export const sendInvitation = internalAction({
 		}
 	},
 })
+
+// Create a new organization in WorkOS
+export const createWorkosOrganization = internalAction({
+	args: v.object({
+		name: v.string(),
+		slug: v.string(),
+		creatorUserId: v.string(),
+	}),
+	handler: async (_ctx, { name, slug, creatorUserId }) => {
+		try {
+			// Create the organization in WorkOS
+			const organization = await workos.organizations.createOrganization({
+				name,
+				domains: [],
+			})
+
+			// Add the creator as an owner member
+			await workos.userManagement.createOrganizationMembership({
+				userId: creatorUserId,
+				organizationId: organization.id,
+				roleSlug: "owner",
+			})
+
+			return { success: true, organization }
+		} catch (err: any) {
+			console.error("Error creating WorkOS organization:", err)
+			return { success: false, error: err.message }
+		}
+	},
+})

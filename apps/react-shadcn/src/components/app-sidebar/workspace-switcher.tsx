@@ -5,6 +5,7 @@ import { useAuth } from "@workos-inc/authkit-react"
 import { useState } from "react"
 import { Button as AriaButton } from "react-aria-components"
 import { cx } from "~/utils/cx"
+import { CreateOrganizationModal } from "../application/modals/create-organization-modal"
 import { EmailInviteModal } from "../application/modals/email-invite-modal"
 import { Avatar } from "../base/avatar/avatar"
 import { Dropdown } from "../base/dropdown/dropdown"
@@ -13,6 +14,7 @@ import IconUserPlus1 from "../icons/IconUserPlus1"
 
 export const WorkspaceSwitcher = () => {
 	const [inviteModalOpen, setInviteModalOpen] = useState(false)
+	const [createOrgModalOpen, setCreateOrgModalOpen] = useState(false)
 	const { switchToOrganization } = useAuth()
 
 	// Get current organization
@@ -84,10 +86,7 @@ export const WorkspaceSwitcher = () => {
 							<Dropdown.Item
 								icon={IconPlusStroke}
 								label="Add Organization"
-								onAction={() => {
-									// TODO: Implement create organization flow
-									console.log("Add organization")
-								}}
+								onAction={() => setCreateOrgModalOpen(true)}
 							/>
 							<Dropdown.Item
 								icon={IconUserPlus1}
@@ -99,6 +98,7 @@ export const WorkspaceSwitcher = () => {
 				</Dropdown.Popover>
 			</Dropdown.Root>
 
+			<CreateOrganizationModal isOpen={createOrgModalOpen} onOpenChange={setCreateOrgModalOpen} />
 			<EmailInviteModal isOpen={inviteModalOpen} onOpenChange={setInviteModalOpen} />
 		</>
 	)
