@@ -1,7 +1,6 @@
 import { useConvexMutation } from "@convex-dev/react-query"
 import { api } from "@hazel/backend/api"
-import { createFormHook, createFormHookContexts, useForm } from "@tanstack/react-form"
-import { User01 } from "@untitledui/icons"
+import { createFormHook, createFormHookContexts } from "@tanstack/react-form"
 import { type } from "arktype"
 import { useState } from "react"
 import { DialogTrigger as AriaDialogTrigger, Heading as AriaHeading, Pressable } from "react-aria-components"
@@ -11,7 +10,7 @@ import { Button, IconButton } from "~/components/base/buttons/button"
 import { CloseButton } from "~/components/base/buttons/close-button"
 import { Input, TextField } from "~/components/base/input/input"
 import { Select } from "~/components/base/select/select"
-import { IconDoorOpen, IconHashtagStroke, IconPlusStroke } from "~/components/icons"
+import { IconHashtagStroke, IconPlusStroke } from "~/components/icons"
 
 const channelSchema = type({
 	name: "string > 2",
@@ -113,7 +112,6 @@ export const NewProjectModal = () => {
 											<fiield.Select
 												label="Channel Type"
 												size="sm"
-												placeholderIcon={User01}
 												selectedKey={fiield.state.value}
 												onSelectionChange={(key) =>
 													fiield.handleChange(key as "public" | "private")
@@ -124,22 +122,16 @@ export const NewProjectModal = () => {
 													{
 														id: "public",
 														label: "Public",
-														icon: IconDoorOpen,
-														avatarUrl:
-															"https://www.untitledui.com/logos/images/Ephemeral.jpg",
 													},
 													{
 														id: "private",
 														label: "Private",
-														avatarUrl:
-															"https://www.untitledui.com/logos/images/Watchtower.jpg",
 													},
 												]}
 											>
 												{(item) => (
 													<Select.Item
 														id={item.id}
-														avatarUrl={item.avatarUrl}
 														supportingText={item.supportingText}
 													>
 														{item.label}

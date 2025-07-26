@@ -232,29 +232,34 @@ export const DmChannelLink = ({ channel, userPresence }: DmChannelLinkProps) => 
 								onAction={() => {
 									console.log("TODO: Implement call")
 								}}
+								icon={IconPhone2}
 							>
-								<IconPhone2 className="size-4" />
 								Call
 							</Dropdown.Item>
 							<Dropdown.Separator />
-							<Dropdown.Item onAction={handleToggleMute}>
-								{channel.isMuted ? (
-									<IconVolumeOne1 className="size-4" />
-								) : (
-									<IconVolumeMute1 className="size-4" />
-								)}
+							<Dropdown.Item
+								onAction={handleToggleMute}
+								icon={channel.isMuted ? IconVolumeOne1 : IconVolumeMute1}
+							>
 								{channel.isMuted ? "Unmute" : "Mute"}
 							</Dropdown.Item>
-							<Dropdown.Item onAction={handleToggleFavorite}>
-								{channel.isFavorite ? (
-									<IconStar1 className="size-4 text-amber-500" />
-								) : (
-									<IconStar1 className="size-4" />
-								)}
+							<Dropdown.Item
+								onAction={handleToggleFavorite}
+								icon={({ className }) =>
+									channel.isFavorite ? (
+										<IconStar1 className={cx(className, "text-amber-500")} />
+									) : (
+										<IconStar1 className={className} />
+									)
+								}
+							>
 								{channel.isFavorite ? "Unfavorite" : "Favorite"}
 							</Dropdown.Item>
-							<Dropdown.Item className="text-destructive" onAction={handleClose}>
-								<IconMultipleCrossCancelStroke className="size-4" />
+							<Dropdown.Item
+								className="text-destructive"
+								onAction={handleClose}
+								icon={IconMultipleCrossCancelStroke}
+							>
 								Close
 							</Dropdown.Item>
 						</Dropdown.Section>

@@ -2,7 +2,8 @@ import { convexQuery } from "@convex-dev/react-query"
 import { api } from "@hazel/backend/api"
 import { useQuery } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo } from "react"
+import { CreateDmButton } from "../application/modals/create-dm-modal"
 import { NewProjectModal } from "../application/modals/new-channel-modal"
 import IconChatChatting1 from "../icons/IconChatChatting1"
 import IconGridDashboard01DuoSolid from "../icons/IconGridDashboard01DuoSolid"
@@ -121,7 +122,9 @@ export const AppSidebar = () => {
 					</SidebarGroup>
 					<SidebarGroup>
 						<SidebarGroupLabel>Direct Messages</SidebarGroupLabel>
-						<SidebarGroupAction>{/* <CreateDmDialog /> */}</SidebarGroupAction>
+						<SidebarGroupAction>
+							<CreateDmButton />
+						</SidebarGroupAction>
 						<SidebarMenu>
 							{dmChannels.map((channel) => (
 								<DmChannelLink
