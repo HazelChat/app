@@ -97,6 +97,7 @@ export const getChannelsForOrganization = organizationServerQuery({
 
 		const filteredChannels = channelsWithMembers
 			.filter((channel) => channel !== null)
+			.filter((channel) => !channel.isHidden)
 			.filter((channel) => {
 				if (args.favoriteFilter?.favorite !== undefined) {
 					return channel.isFavorite === args.favoriteFilter.favorite
@@ -410,6 +411,21 @@ export const createDmChannel = organizationServerMutation({
 			.collect()
 
 		if (existingChannel.length > 0) {
+			// Check if the current user has the channel hidden
+			const currentUserMember = await ctx.db
+				.query("channelMembers")
+				.withIndex("by_channelIdAndUserId", (q) =>
+					q.eq("channelId", existingChannel[0]._id).eq("userId", user._id),
+				)
+				.first()
+
+			// If the channel is hidden for the user, unhide it
+			if (currentUserMember?.isHidden) {
+				await ctx.db.patch(currentUserMember._id, {
+					isHidden: false,
+				})
+			}
+
 			return existingChannel[0]._id
 		}
 
@@ -462,6 +478,21 @@ export const creatDmChannel = userMutation({
 			.first()
 
 		if (existingChannel) {
+			// Check if the current user has the channel hidden
+			const currentUserMember = await ctx.db
+				.query("channelMembers")
+				.withIndex("by_channelIdAndUserId", (q) =>
+					q.eq("channelId", existingChannel._id).eq("userId", ctx.user.id),
+				)
+				.first()
+
+			// If the channel is hidden for the user, unhide it
+			if (currentUserMember?.isHidden) {
+				await ctx.db.patch(currentUserMember._id, {
+					isHidden: false,
+				})
+			}
+
 			return existingChannel._id
 		}
 
@@ -589,7 +620,9 @@ export const joinChannel = userMutation({
 			)
 			.first()
 
-		if (channelMember) throw new Error("You are already a member of this channel")
+		if (channelMember) {
+			throw new Error("You are already a member of this channel")
+		}
 
 		await ctx.db.insert("channelMembers", {
 			userId: ctx.user.id,
