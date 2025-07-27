@@ -116,6 +116,26 @@ export const processWorkosEvents = internalMutation({
 						joinedAt: Date.now(),
 					})
 
+					// Check if there's a pending invitation for this user and mark it as accepted
+					const pendingInvitation = await ctx.db
+						.query("invitations")
+						.withIndex("by_organizationId", (q) => q.eq("organizationId", organization._id))
+						.filter((q) => 
+							q.and(
+								q.eq(q.field("email"), account.email),
+								q.eq(q.field("status"), "pending")
+							)
+						)
+						.first()
+
+					if (pendingInvitation) {
+						await ctx.db.patch(pendingInvitation._id, {
+							status: "accepted",
+							acceptedAt: Date.now(),
+							acceptedBy: account._id,
+						})
+					}
+
 					break
 				}
 				case "organization_membership.updated": {
@@ -185,96 +205,41 @@ export const processWorkosEvents = internalMutation({
 
 					break
 				}
-				// Handle invitation events - cast as any since WorkOS types don't include these yet
-				case "invitation.created" as any: {
-					const eventData = typedEvent.data as any
-					const organization = await ctx.db
-						.query("organizations")
-						.withIndex("by_workosId", (q) => q.eq("workosId", eventData.organizationId))
-						.first()
-
-					if (!organization) {
-						throw new Error(`Organization ${eventData.organizationId} not found`)
-					}
-
-					let invitedBy: any = undefined
-					if (eventData.inviterUserId) {
-						const inviter = await ctx.db
-							.query("users")
-							.withIndex("by_externalId", (q) =>
-								q.eq("externalId", eventData.inviterUserId as string),
-							)
+				default: {
+					// Handle invitation.created event which isn't in the WorkOS TypeScript types yet
+					if (typedEvent.event === "invitation.created") {
+						const eventData = event.data
+						const organization = await ctx.db
+							.query("organizations")
+							.withIndex("by_workosId", (q) => q.eq("workosId", eventData.organizationId))
 							.first()
-						if (inviter) {
-							invitedBy = inviter._id
+
+						if (!organization) {
+							throw new Error(`Organization ${eventData.organizationId} not found`)
 						}
-					}
 
-					await ctx.db.insert("invitations", {
-						workosInvitationId: eventData.id,
-						organizationId: organization._id,
-						email: eventData.email,
-						role: eventData.role?.slug || "member",
-						invitedBy,
-						invitedAt: new Date(eventData.createdAt).getTime(),
-						expiresAt: new Date(eventData.expiresAt).getTime(),
-						status: "pending",
-					})
-					break
-				}
-				case "invitation.accepted" as any: {
-					const eventData = typedEvent.data as any
-					const invitation = await ctx.db
-						.query("invitations")
-						.withIndex("by_workosInvitationId", (q) =>
-							q.eq("workosInvitationId", eventData.id),
-						)
-						.first()
+						let invitedBy = undefined
+						if (eventData.inviterUserId) {
+							const inviter = await ctx.db
+								.query("users")
+								.withIndex("by_externalId", (q) =>
+									q.eq("externalId", eventData.inviterUserId),
+								)
+								.first()
+							if (inviter) {
+								invitedBy = inviter._id
+							}
+						}
 
-					if (invitation) {
-						const acceptedByUser = await ctx.db
-							.query("users")
-							.withIndex("by_externalId", (q) =>
-								q.eq("externalId", eventData.acceptedByUserId),
-							)
-							.first()
-
-						await ctx.db.patch(invitation._id, {
-							status: "accepted",
-							acceptedAt: Date.now(),
-							acceptedBy: acceptedByUser?._id,
-						})
-					}
-					break
-				}
-				case "invitation.expired" as any: {
-					const eventData = typedEvent.data as any
-					const invitation = await ctx.db
-						.query("invitations")
-						.withIndex("by_workosInvitationId", (q) =>
-							q.eq("workosInvitationId", eventData.id),
-						)
-						.first()
-
-					if (invitation) {
-						await ctx.db.patch(invitation._id, {
-							status: "expired",
-						})
-					}
-					break
-				}
-				case "invitation.revoked" as any: {
-					const eventData = typedEvent.data as any
-					const invitation = await ctx.db
-						.query("invitations")
-						.withIndex("by_workosInvitationId", (q) =>
-							q.eq("workosInvitationId", eventData.id),
-						)
-						.first()
-
-					if (invitation) {
-						await ctx.db.patch(invitation._id, {
-							status: "revoked",
+						await ctx.db.insert("invitations", {
+							workosInvitationId: eventData.id,
+							organizationId: organization._id,
+							email: eventData.email,
+							role: eventData.role?.slug || "member",
+							invitedBy,
+							invitedAt: new Date(eventData.createdAt).getTime(),
+							expiresAt: new Date(eventData.expiresAt).getTime(),
+							status: "pending",
 						})
 					}
 					break
@@ -625,10 +590,9 @@ export const syncInvitations = internalMutation({
 				}
 			}
 
-			// Mark invitations as expired if they're not in WorkOS anymore and are still pending
+			// Mark invitations as expired if they are past expiration date
 			for (const existingInvitation of existingInvitations) {
 				if (
-					!seenInvitationIds.has(existingInvitation.workosInvitationId) &&
 					existingInvitation.status === "pending" &&
 					Date.now() > existingInvitation.expiresAt
 				) {

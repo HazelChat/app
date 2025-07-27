@@ -5,10 +5,11 @@ import { Form } from "~/components/base/form/form"
 
 import "@workos-inc/widgets/styles.css"
 
+import type { Id } from "@hazel/backend"
 import { Edit01, Plus, RefreshCcw02, Trash01, XClose } from "@untitledui/icons"
-
 import { useState } from "react"
 import type { SortDescriptor } from "react-aria-components"
+import { toast } from "sonner"
 import { EmailInviteModal } from "~/components/application/modals/email-invite-modal"
 import { PaginationCardDefault } from "~/components/application/pagination/pagination"
 import { Table, TableCard } from "~/components/application/table/table"
@@ -16,7 +17,6 @@ import { Avatar } from "~/components/base/avatar/avatar"
 import { Badge, type BadgeColor, BadgeWithDot } from "~/components/base/badges/badges"
 import { Button } from "~/components/base/buttons/button"
 import { ButtonUtility } from "~/components/base/buttons/button-utility"
-import { toast } from "~/hooks/use-toast"
 
 export const Route = createFileRoute("/app/settings/team")({
 	component: RouteComponent,
@@ -37,7 +37,7 @@ function RouteComponent() {
 	const invitationsQuery = useConvexQuery(api.invitations.getInvitations, {})
 	const resendInvitationMutation = useConvexMutation(api.invitations.resendInvitation)
 	const revokeInvitationMutation = useConvexMutation(api.invitations.revokeInvitation)
-	
+
 	const isLoading = teamMembersQuery === undefined
 	const isInvitationsLoading = invitationsQuery === undefined
 
@@ -66,10 +66,10 @@ function RouteComponent() {
 
 	const formatTimeRemaining = (milliseconds: number) => {
 		if (milliseconds <= 0) return "Expired"
-		
+
 		const days = Math.floor(milliseconds / (1000 * 60 * 60 * 24))
 		const hours = Math.floor((milliseconds % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
-		
+
 		if (days > 0) {
 			return `Expires in ${days} day${days > 1 ? "s" : ""}`
 		}
@@ -79,34 +79,28 @@ function RouteComponent() {
 		return "Expires soon"
 	}
 
-	const handleResendInvitation = async (invitationId: string) => {
+	const handleResendInvitation = async (invitationId: Id<"invitations">) => {
 		try {
-			await resendInvitationMutation.mutateAsync({ invitationId })
-			toast({
-				title: "Invitation resent",
+			await resendInvitationMutation({ invitationId: invitationId })
+			toast.info("Invitation resent", {
 				description: "The invitation has been resent successfully.",
 			})
 		} catch (error) {
-			toast({
-				title: "Failed to resend invitation",
+			toast.error("Failed to resend invitation", {
 				description: error instanceof Error ? error.message : "An error occurred",
-				variant: "destructive",
 			})
 		}
 	}
 
-	const handleRevokeInvitation = async (invitationId: string) => {
+	const handleRevokeInvitation = async (invitationId: Id<"invitations">) => {
 		try {
-			await revokeInvitationMutation.mutateAsync({ invitationId })
-			toast({
-				title: "Invitation revoked",
+			await revokeInvitationMutation({ invitationId })
+			toast.info("Invitation revoked", {
 				description: "The invitation has been revoked successfully.",
 			})
 		} catch (error) {
-			toast({
-				title: "Failed to revoke invitation",
+			toast.error("Failed to revoke invitation", {
 				description: error instanceof Error ? error.message : "An error occurred",
-				variant: "destructive",
 			})
 		}
 	}
@@ -253,7 +247,13 @@ function RouteComponent() {
 						className="bg-primary"
 					>
 						<Table.Header className="bg-primary">
-							<Table.Head id="email" isRowHeader label="Email" allowsSorting className="w-full" />
+							<Table.Head
+								id="email"
+								isRowHeader
+								label="Email"
+								allowsSorting
+								className="w-full"
+							/>
 							<Table.Head id="role" label="Role" allowsSorting />
 							<Table.Head id="invitedBy" label="Invited by" allowsSorting />
 							<Table.Head id="status" label="Status" />
@@ -276,7 +276,8 @@ function RouteComponent() {
 											type="pill-color"
 											size="sm"
 										>
-											{invitation.role.charAt(0).toUpperCase() + invitation.role.slice(1)}
+											{invitation.role.charAt(0).toUpperCase() +
+												invitation.role.slice(1)}
 										</Badge>
 									</Table.Cell>
 									<Table.Cell>
