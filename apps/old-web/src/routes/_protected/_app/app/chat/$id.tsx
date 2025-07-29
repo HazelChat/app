@@ -18,7 +18,7 @@ export const Route = createFileRoute("/_protected/_app/app/chat/$id")({
 function Root() {
 	const params = Route.useParams()
 
-	const serverQuery = useQuery(() => convexQuery(api.servers.getCurrentServer, {}))
+	const serverQuery = useQuery(() => convexQuery(api.getCurrentServer, {}))
 
 	const serverId = createMemo(() => serverQuery.data?._id as Id<"servers">)
 	const channelId = createMemo(() => params().id as Id<"channels">)

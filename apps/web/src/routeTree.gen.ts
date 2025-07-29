@@ -14,9 +14,9 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app/index'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
 import { Route as AppNotificationsRouteImport } from './routes/app/notifications'
-import { Route as AppChatRouteImport } from './routes/app/chat'
 import { Route as AppSettingsLayoutRouteImport } from './routes/app/settings/layout'
 import { Route as AppSettingsIndexRouteImport } from './routes/app/settings/index'
+import { Route as AppChatIndexRouteImport } from './routes/app/chat/index'
 import { Route as AppSettingsTeamRouteImport } from './routes/app/settings/team'
 import { Route as AppSettingsProfileRouteImport } from './routes/app/settings/profile'
 import { Route as AppSettingsNotificationsRouteImport } from './routes/app/settings/notifications'
@@ -51,11 +51,6 @@ const AppNotificationsRoute = AppNotificationsRouteImport.update({
   path: '/notifications',
   getParentRoute: () => AppLayoutRoute,
 } as any)
-const AppChatRoute = AppChatRouteImport.update({
-  id: '/chat',
-  path: '/chat',
-  getParentRoute: () => AppLayoutRoute,
-} as any)
 const AppSettingsLayoutRoute = AppSettingsLayoutRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -65,6 +60,11 @@ const AppSettingsIndexRoute = AppSettingsIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AppSettingsLayoutRoute,
+} as any)
+const AppChatIndexRoute = AppChatIndexRouteImport.update({
+  id: '/chat/',
+  path: '/chat/',
+  getParentRoute: () => AppLayoutRoute,
 } as any)
 const AppSettingsTeamRoute = AppSettingsTeamRouteImport.update({
   id: '/team',
@@ -103,16 +103,15 @@ const AppSettingsBillingRoute = AppSettingsBillingRouteImport.update({
   getParentRoute: () => AppSettingsLayoutRoute,
 } as any)
 const AppChatIdRoute = AppChatIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => AppChatRoute,
+  id: '/chat/$id',
+  path: '/chat/$id',
+  getParentRoute: () => AppLayoutRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppLayoutRouteWithChildren
   '/app/settings': typeof AppSettingsLayoutRouteWithChildren
-  '/app/chat': typeof AppChatRouteWithChildren
   '/app/notifications': typeof AppNotificationsRoute
   '/auth/login': typeof AuthLoginRoute
   '/app/': typeof AppIndexRoute
@@ -124,11 +123,11 @@ export interface FileRoutesByFullPath {
   '/app/settings/notifications': typeof AppSettingsNotificationsRoute
   '/app/settings/profile': typeof AppSettingsProfileRoute
   '/app/settings/team': typeof AppSettingsTeamRoute
+  '/app/chat': typeof AppChatIndexRoute
   '/app/settings/': typeof AppSettingsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/app/chat': typeof AppChatRouteWithChildren
   '/app/notifications': typeof AppNotificationsRoute
   '/auth/login': typeof AuthLoginRoute
   '/app': typeof AppIndexRoute
@@ -140,6 +139,7 @@ export interface FileRoutesByTo {
   '/app/settings/notifications': typeof AppSettingsNotificationsRoute
   '/app/settings/profile': typeof AppSettingsProfileRoute
   '/app/settings/team': typeof AppSettingsTeamRoute
+  '/app/chat': typeof AppChatIndexRoute
   '/app/settings': typeof AppSettingsIndexRoute
 }
 export interface FileRoutesById {
@@ -147,7 +147,6 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/app': typeof AppLayoutRouteWithChildren
   '/app/settings': typeof AppSettingsLayoutRouteWithChildren
-  '/app/chat': typeof AppChatRouteWithChildren
   '/app/notifications': typeof AppNotificationsRoute
   '/auth/login': typeof AuthLoginRoute
   '/app/': typeof AppIndexRoute
@@ -159,6 +158,7 @@ export interface FileRoutesById {
   '/app/settings/notifications': typeof AppSettingsNotificationsRoute
   '/app/settings/profile': typeof AppSettingsProfileRoute
   '/app/settings/team': typeof AppSettingsTeamRoute
+  '/app/chat/': typeof AppChatIndexRoute
   '/app/settings/': typeof AppSettingsIndexRoute
 }
 export interface FileRouteTypes {
@@ -167,7 +167,6 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/app/settings'
-    | '/app/chat'
     | '/app/notifications'
     | '/auth/login'
     | '/app/'
@@ -179,11 +178,11 @@ export interface FileRouteTypes {
     | '/app/settings/notifications'
     | '/app/settings/profile'
     | '/app/settings/team'
+    | '/app/chat'
     | '/app/settings/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/app/chat'
     | '/app/notifications'
     | '/auth/login'
     | '/app'
@@ -195,13 +194,13 @@ export interface FileRouteTypes {
     | '/app/settings/notifications'
     | '/app/settings/profile'
     | '/app/settings/team'
+    | '/app/chat'
     | '/app/settings'
   id:
     | '__root__'
     | '/'
     | '/app'
     | '/app/settings'
-    | '/app/chat'
     | '/app/notifications'
     | '/auth/login'
     | '/app/'
@@ -213,6 +212,7 @@ export interface FileRouteTypes {
     | '/app/settings/notifications'
     | '/app/settings/profile'
     | '/app/settings/team'
+    | '/app/chat/'
     | '/app/settings/'
   fileRoutesById: FileRoutesById
 }
@@ -259,13 +259,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppNotificationsRouteImport
       parentRoute: typeof AppLayoutRoute
     }
-    '/app/chat': {
-      id: '/app/chat'
-      path: '/chat'
-      fullPath: '/app/chat'
-      preLoaderRoute: typeof AppChatRouteImport
-      parentRoute: typeof AppLayoutRoute
-    }
     '/app/settings': {
       id: '/app/settings'
       path: '/settings'
@@ -279,6 +272,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/app/settings/'
       preLoaderRoute: typeof AppSettingsIndexRouteImport
       parentRoute: typeof AppSettingsLayoutRoute
+    }
+    '/app/chat/': {
+      id: '/app/chat/'
+      path: '/chat'
+      fullPath: '/app/chat'
+      preLoaderRoute: typeof AppChatIndexRouteImport
+      parentRoute: typeof AppLayoutRoute
     }
     '/app/settings/team': {
       id: '/app/settings/team'
@@ -331,10 +331,10 @@ declare module '@tanstack/react-router' {
     }
     '/app/chat/$id': {
       id: '/app/chat/$id'
-      path: '/$id'
+      path: '/chat/$id'
       fullPath: '/app/chat/$id'
       preLoaderRoute: typeof AppChatIdRouteImport
-      parentRoute: typeof AppChatRoute
+      parentRoute: typeof AppLayoutRoute
     }
   }
 }
@@ -364,29 +364,20 @@ const AppSettingsLayoutRouteChildren: AppSettingsLayoutRouteChildren = {
 const AppSettingsLayoutRouteWithChildren =
   AppSettingsLayoutRoute._addFileChildren(AppSettingsLayoutRouteChildren)
 
-interface AppChatRouteChildren {
-  AppChatIdRoute: typeof AppChatIdRoute
-}
-
-const AppChatRouteChildren: AppChatRouteChildren = {
-  AppChatIdRoute: AppChatIdRoute,
-}
-
-const AppChatRouteWithChildren =
-  AppChatRoute._addFileChildren(AppChatRouteChildren)
-
 interface AppLayoutRouteChildren {
   AppSettingsLayoutRoute: typeof AppSettingsLayoutRouteWithChildren
-  AppChatRoute: typeof AppChatRouteWithChildren
   AppNotificationsRoute: typeof AppNotificationsRoute
   AppIndexRoute: typeof AppIndexRoute
+  AppChatIdRoute: typeof AppChatIdRoute
+  AppChatIndexRoute: typeof AppChatIndexRoute
 }
 
 const AppLayoutRouteChildren: AppLayoutRouteChildren = {
   AppSettingsLayoutRoute: AppSettingsLayoutRouteWithChildren,
-  AppChatRoute: AppChatRouteWithChildren,
   AppNotificationsRoute: AppNotificationsRoute,
   AppIndexRoute: AppIndexRoute,
+  AppChatIdRoute: AppChatIdRoute,
+  AppChatIndexRoute: AppChatIndexRoute,
 }
 
 const AppLayoutRouteWithChildren = AppLayoutRoute._addFileChildren(

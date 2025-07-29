@@ -8,7 +8,7 @@ import { toast } from "sonner"
 import { Button } from "~/components/base/buttons/button"
 import { CloseButton } from "~/components/base/buttons/close-button"
 import { Label } from "~/components/base/input/label"
-import { RadioGroup, RadioButton } from "~/components/base/radio-buttons/radio-buttons"
+import { RadioButton, RadioGroup } from "~/components/base/radio-buttons/radio-buttons"
 import { FeaturedIcon } from "~/components/foundations/featured-icon/featured-icons"
 import { Dialog, Modal, ModalOverlay } from "./modal"
 
@@ -101,7 +101,11 @@ export function ChangeRoleModal({
 							<div className="flex flex-col gap-4 px-4 pb-5 sm:px-6 sm:pb-6">
 								<div>
 									<Label>Role</Label>
-									<RadioGroup value={selectedRole} onChange={setSelectedRole} className="mt-2">
+									<RadioGroup
+										value={selectedRole}
+										onChange={setSelectedRole}
+										className="mt-2"
+									>
 										{roleOptions.map((option) => (
 											<RadioButton
 												key={option.value}

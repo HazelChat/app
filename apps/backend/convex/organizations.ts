@@ -166,7 +166,10 @@ export const updateMemberRole = accountMutation({
 			)
 			.first()
 
-		if (!currentUserMembership || (currentUserMembership.role !== "admin" && currentUserMembership.role !== "owner")) {
+		if (
+			!currentUserMembership ||
+			(currentUserMembership.role !== "admin" && currentUserMembership.role !== "owner")
+		) {
 			throw new Error("Only organization admins and owners can update member roles")
 		}
 
@@ -183,12 +186,18 @@ export const updateMemberRole = accountMutation({
 		}
 
 		// Only owners can promote/demote other owners or promote to owner
-		if ((memberToUpdate.role === "owner" || args.newRole === "owner") && currentUserMembership.role !== "owner") {
+		if (
+			(memberToUpdate.role === "owner" || args.newRole === "owner") &&
+			currentUserMembership.role !== "owner"
+		) {
 			throw new Error("Only owners can manage owner roles")
 		}
 
 		// Don't allow demoting the last admin/owner
-		if ((memberToUpdate.role === "admin" || memberToUpdate.role === "owner") && args.newRole === "member") {
+		if (
+			(memberToUpdate.role === "admin" || memberToUpdate.role === "owner") &&
+			args.newRole === "member"
+		) {
 			const adminAndOwnerCount = await ctx.db
 				.query("organizationMembers")
 				.withIndex("by_organizationId", (q) => q.eq("organizationId", args.organizationId))
@@ -224,7 +233,10 @@ export const removeMember = accountMutation({
 			)
 			.first()
 
-		if (!currentUserMembership || (currentUserMembership.role !== "admin" && currentUserMembership.role !== "owner")) {
+		if (
+			!currentUserMembership ||
+			(currentUserMembership.role !== "admin" && currentUserMembership.role !== "owner")
+		) {
 			throw new Error("Only organization admins and owners can remove members")
 		}
 
@@ -241,7 +253,10 @@ export const removeMember = accountMutation({
 		}
 
 		// Only owners can remove other admins/owners
-		if ((memberToRemove.role === "admin" || memberToRemove.role === "owner") && currentUserMembership.role !== "owner") {
+		if (
+			(memberToRemove.role === "admin" || memberToRemove.role === "owner") &&
+			currentUserMembership.role !== "owner"
+		) {
 			throw new Error("Only owners can remove admins and other owners")
 		}
 
