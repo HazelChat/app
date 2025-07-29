@@ -1,9 +1,10 @@
+import type { Editor } from "@tiptap/react"
 import { Attachment01, FaceSmile, Recording02 } from "@untitledui/icons"
 import { useEffect, useRef, useState } from "react"
 import { Button } from "~/components/base/buttons/button"
 import { ButtonUtility } from "~/components/base/buttons/button-utility"
-import { TextAreaBase } from "~/components/base/textarea/textarea"
 import { useChat } from "~/providers/chat-provider"
+import { TextEditor, useEditorContext } from "../base/text-editor/text-editor"
 
 export const MessageComposer = () => {
 	const { sendMessage, startTyping, stopTyping } = useChat()
@@ -11,16 +12,8 @@ export const MessageComposer = () => {
 	const [content, setContent] = useState("")
 	const [isTyping, setIsTyping] = useState(false)
 
-	const textareaRef = useRef<HTMLTextAreaElement>(null)
+	const textareaRef = useRef<HTMLDivElement>(null)
 	const typingTimeoutRef = useRef<NodeJS.Timeout>(undefined)
-
-	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
-	useEffect(() => {
-		if (textareaRef.current) {
-			textareaRef.current.style.height = "auto"
-			textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 340)}px`
-		}
-	}, [content])
 
 	useEffect(() => {
 		if (content && !isTyping) {
@@ -46,8 +39,7 @@ export const MessageComposer = () => {
 		}
 	}, [content, isTyping, startTyping, stopTyping])
 
-	const handleSubmit = (e: React.FormEvent) => {
-		e.preventDefault()
+	const handleSubmit = async (editor: Editor) => {
 		if (!content.trim()) return
 
 		sendMessage(content.trim())
@@ -62,38 +54,61 @@ export const MessageComposer = () => {
 		}
 
 		textareaRef.current?.focus()
+		editor.commands.clearContent()
 	}
 
-	const handleKeyDown = (e: React.KeyboardEvent) => {
+	const handleKeyDown = (e: React.KeyboardEvent, editor: Editor) => {
 		if (e.key === "Enter" && !e.shiftKey) {
 			e.preventDefault()
-			handleSubmit(e)
+			handleSubmit(editor)
 		}
 	}
 
 	return (
-		<form className={"relative flex h-max items-center gap-3"} onSubmit={handleSubmit}>
-			<TextAreaBase
-				aria-label="Message"
-				ref={textareaRef}
-				value={content}
-				onChange={(e) => setContent(e.target.value)}
-				onKeyDown={handleKeyDown}
-				placeholder="Type a message..."
-				name="message"
-				className={"h-32 w-full resize-none"}
-			/>
+		<div className={"relative flex h-max items-center gap-3"}>
+			<TextEditor.Root
+				className="relative w-full gap-2"
+				content={content}
+				onUpdate={({ editor }) => setContent(editor.getHTML())}
+				inputClassName="p-4"
+			>
+				{(editor) => (
+					<>
+						<TextEditor.Tooltip />
 
-			<div className="absolute right-3.5 bottom-2 flex items-center gap-2">
-				<div className="flex items-center gap-0.5">
-					<ButtonUtility icon={Attachment01} size="xs" color="tertiary" />
-					<ButtonUtility icon={FaceSmile} size="xs" color="tertiary" />
-				</div>
+						<div className="flex flex-col gap-2 relative">
+							<TextEditor.Content
+								ref={textareaRef}
+								onKeyDown={(e) => handleKeyDown(e, editor)}
+							/>
+							<MessageActions onSubmit={handleSubmit} />
+						</div>
+					</>
+				)}
+			</TextEditor.Root>
+		</div>
+	)
+}
 
-				<Button size="sm" color="link-color" type="submit">
-					Send
-				</Button>
+const MessageActions = ({ onSubmit }: { onSubmit?: (editor: Editor) => Promise<void> }) => {
+	const editor = useEditorContext()
+
+	return (
+		<div className="absolute right-3.5 bottom-2 flex items-center gap-2">
+			<div className="flex items-center gap-0.5">
+				<ButtonUtility icon={Attachment01} size="xs" color="tertiary" />
+				<ButtonUtility icon={FaceSmile} size="xs" color="tertiary" />
 			</div>
-		</form>
+
+			<Button
+				size="sm"
+				color="link-color"
+				onClick={async () => {
+					await onSubmit?.(editor.editor)
+				}}
+			>
+				Send
+			</Button>
+		</div>
 	)
 }

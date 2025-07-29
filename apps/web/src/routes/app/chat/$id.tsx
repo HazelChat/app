@@ -20,7 +20,7 @@ function RouteComponent() {
 				<div className="flex-1 overflow-hidden">
 					<MessageList />
 				</div>
-				<div className="border-t border-border bg-sidebar px-4 pb-4 pt-2">
+				<div className="px-4 pb-4 pt-2">
 					<MessageComposer />
 					<TypingIndicator />
 				</div>
