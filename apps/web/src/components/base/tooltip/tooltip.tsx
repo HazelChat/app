@@ -83,7 +83,7 @@ export const Tooltip = ({
                 offset={offset}
                 placement={placement}
                 crossOffset={crossOffset ?? calculatedCrossOffset}
-                className={({ isEntering, isExiting }) => cx(isEntering && "ease-out animate-in", isExiting && "ease-in animate-out")}
+                className={({ isEntering, isExiting }) => cx(isEntering && "animate-in ease-out", isExiting && "animate-out ease-in")}
             >
                 {({ isEntering, isExiting }) => (
                     <div
@@ -95,20 +95,20 @@ export const Tooltip = ({
                             transformOrigins[placement],
 
                             isEntering &&
-                                "ease-out animate-in fade-in zoom-in-95 in-placement-left:slide-in-from-right-0.5 in-placement-right:slide-in-from-left-0.5 in-placement-top:slide-in-from-bottom-0.5 in-placement-bottom:slide-in-from-top-0.5",
+                                "fade-in zoom-in-95 in-placement-left:slide-in-from-right-0.5 in-placement-right:slide-in-from-left-0.5 in-placement-top:slide-in-from-bottom-0.5 in-placement-bottom:slide-in-from-top-0.5 animate-in ease-out",
                             isExiting &&
-                                "ease-in animate-out fade-out zoom-out-95 in-placement-left:slide-out-to-right-0.5 in-placement-right:slide-out-to-left-0.5 in-placement-top:slide-out-to-bottom-0.5 in-placement-bottom:slide-out-to-top-0.5",
+                                "fade-out zoom-out-95 in-placement-left:slide-out-to-right-0.5 in-placement-right:slide-out-to-left-0.5 in-placement-top:slide-out-to-bottom-0.5 in-placement-bottom:slide-out-to-top-0.5 animate-out ease-in",
                         )}
                     >
-                        <span className="text-xs font-semibold text-white">{title}</span>
+                        <span className="font-semibold text-white text-xs">{title}</span>
 
-                        {description && <span className="text-xs font-medium text-tooltip-supporting-text">{description}</span>}
+                        {description && <span className="font-medium text-tooltip-supporting-text text-xs">{description}</span>}
 
                         {arrow && (
                             <AriaOverlayArrow>
                                 <svg
                                     viewBox="0 0 100 100"
-                                    className="size-2.5 fill-bg-primary-solid in-placement-left:-rotate-90 in-placement-right:rotate-90 in-placement-top:rotate-0 in-placement-bottom:rotate-180"
+                                    className="in-placement-left:-rotate-90 size-2.5 in-placement-bottom:rotate-180 in-placement-right:rotate-90 in-placement-top:rotate-0 fill-bg-primary-solid"
                                 >
                                     <path d="M0,0 L35.858,35.858 Q50,50 64.142,35.858 L100,0 Z" />
                                 </svg>

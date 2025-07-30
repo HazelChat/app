@@ -1,4 +1,4 @@
-import { type RefAttributes } from "react";
+import type { RefAttributes } from "react";
 import { Tooltip } from "~/components/base/tooltip/tooltip";
 import { cx } from "~/utils/cx";
 import {

@@ -452,7 +452,7 @@ export const TextEditorColor = ({ className }: { className?: string }) => {
                 editor.chain().focus().setColor(value).run();
             }
         },
-        [editor, setColor],
+        [editor],
     );
 
     return (
@@ -464,13 +464,13 @@ export const TextEditorColor = ({ className }: { className?: string }) => {
                             outlineColor: selectionColor || colorSwatches[0],
                             backgroundColor: selectionColor || colorSwatches[0],
                         }}
-                        className="size-4 rounded-full ring-1 ring-black/10 ring-inset in-pressed:outline-[1.5px] in-pressed:outline-offset-2"
+                        className="size-4 rounded-full in-pressed:outline-[1.5px] in-pressed:outline-offset-2 ring-1 ring-black/10 ring-inset"
                     />
                 </EditorButton>
             </Tooltip>
 
             <Popover>
-                <Dialog className="rounded-xl bg-primary_alt p-3 shadow-lg ring-1 ring-secondary_alt outline-none">
+                <Dialog className="rounded-xl bg-primary_alt p-3 shadow-lg outline-none ring-1 ring-secondary_alt">
                     <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
                         <RadioGroup className="flex flex-col items-start gap-2" value={color?.toString("hex")} onChange={handleColorChange}>
                             <div className="grid grid-cols-8 gap-1">
@@ -492,7 +492,7 @@ export const TextEditorColor = ({ className }: { className?: string }) => {
                                 ))}
                             </div>
                             <div className="flex w-full shrink-0 items-center">
-                                <Label className="mr-3 text-sm font-semibold text-primary">Custom</Label>
+                                <Label className="mr-3 font-semibold text-primary text-sm">Custom</Label>
                                 <Radio value={customColor.toString("hex")}>
                                     {({ isSelected, isFocused }) => (
                                         <>

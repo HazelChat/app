@@ -1,7 +1,8 @@
 import { useEffect, useRef } from "react"
 import { useChat } from "~/hooks/use-chat"
-import { cn } from "~/lib/utils"
+
 import { MessageItem } from "./message-item"
+import { MessageItem2 } from "./message-itemv2"
 
 export function MessageList() {
 	const { messages, isLoadingMessages, hasMoreMessages, loadMoreMessages } = useChat()
@@ -84,7 +85,7 @@ export function MessageList() {
 										: undefined
 								}
 							>
-								<MessageItem message={message} />
+								<MessageItem2 message={message} />
 							</div>
 						))}
 					</div>

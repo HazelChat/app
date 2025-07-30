@@ -9,41 +9,37 @@ import { TextEditor, useEditorContext } from "../base/text-editor/text-editor"
 export const MessageComposer = () => {
 	const { sendMessage, startTyping, stopTyping } = useChat()
 
-	const [content, setContent] = useState("")
 	const [isTyping, setIsTyping] = useState(false)
 
 	const textareaRef = useRef<HTMLDivElement>(null)
 	const typingTimeoutRef = useRef<NodeJS.Timeout>(undefined)
 
-	useEffect(() => {
-		if (content && !isTyping) {
-			setIsTyping(true)
-			startTyping()
-		}
+	// useEffect(() => {
+	// 	if (content && !isTyping) {
+	// 		setIsTyping(true)
+	// 		startTyping()
+	// 	}
 
-		if (isTyping) {
-			if (typingTimeoutRef.current) {
-				clearTimeout(typingTimeoutRef.current)
-			}
+	// 	if (isTyping) {
+	// 		if (typingTimeoutRef.current) {
+	// 			clearTimeout(typingTimeoutRef.current)
+	// 		}
 
-			typingTimeoutRef.current = setTimeout(() => {
-				setIsTyping(false)
-				stopTyping()
-			}, 3000)
-		}
+	// 		typingTimeoutRef.current = setTimeout(() => {
+	// 			setIsTyping(false)
+	// 			stopTyping()
+	// 		}, 3000)
+	// 	}
 
-		return () => {
-			if (typingTimeoutRef.current) {
-				clearTimeout(typingTimeoutRef.current)
-			}
-		}
-	}, [content, isTyping, startTyping, stopTyping])
+	// 	return () => {
+	// 		if (typingTimeoutRef.current) {
+	// 			clearTimeout(typingTimeoutRef.current)
+	// 		}
+	// 	}
+	// }, [content, isTyping, startTyping, stopTyping])
 
 	const handleSubmit = async (editor: Editor) => {
-		if (!content.trim()) return
-
-		sendMessage(content.trim())
-		setContent("")
+		sendMessage({ jsonContent: editor.getJSON(), content: editor.getText() })
 
 		if (isTyping) {
 			setIsTyping(false)
@@ -57,29 +53,16 @@ export const MessageComposer = () => {
 		editor.commands.clearContent()
 	}
 
-	const handleKeyDown = (e: React.KeyboardEvent, editor: Editor) => {
-		if (e.key === "Enter" && !e.shiftKey) {
-			e.preventDefault()
-			handleSubmit(editor)
-		}
-	}
-
 	return (
 		<div className={"relative flex h-max items-center gap-3"}>
-			<TextEditor.Root
-				className="relative w-full gap-2"
-				content={content}
-				onUpdate={({ editor }) => setContent(editor.getHTML())}
-				inputClassName="p-4"
-			>
+			<TextEditor.Root className="relative w-full gap-2" inputClassName="p-4" onSubmit={handleSubmit}>
 				{(editor) => (
 					<>
 						<TextEditor.Tooltip />
 
-						<div className="flex flex-col gap-2 relative">
+						<div className="relative flex flex-col gap-2">
 							<TextEditor.Content
 								ref={textareaRef}
-								onKeyDown={(e) => handleKeyDown(e, editor)}
 							/>
 							<MessageActions onSubmit={handleSubmit} />
 						</div>

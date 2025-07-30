@@ -24,7 +24,7 @@ interface ChatContextValue {
 	loadMoreMessages: () => void
 	hasMoreMessages: boolean
 	isLoadingMessages: boolean
-	sendMessage: (content: string, attachments?: string[]) => void
+	sendMessage: (props: { content: string; attachments?: string[]; jsonContent: any }) => void
 	editMessage: (messageId: Id<"messages">, content: string) => void
 	deleteMessage: (messageId: Id<"messages">) => void
 	addReaction: (messageId: Id<"messages">, emoji: string) => void
@@ -86,12 +86,21 @@ export function ChatProvider({ channelId, children }: ChatProviderProps) {
 	const removeReactionMutation = useConvexMutation(api.messages.deleteReaction)
 
 	// Message operations
-	const sendMessage = (content: string, attachments?: string[]) => {
+	const sendMessage = ({
+		content,
+		attachments,
+		jsonContent,
+	}: {
+		content: string
+		attachments?: string[]
+		jsonContent: any
+	}) => {
 		if (!organizationId) return
 		sendMessageMutation({
 			channelId,
 			organizationId,
 			content,
+			jsonContent,
 			attachedFiles: attachments || [],
 		})
 	}

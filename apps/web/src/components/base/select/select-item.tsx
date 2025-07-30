@@ -19,7 +19,7 @@ export const SelectItem = ({ label, id, value, avatarUrl, supportingText, isDisa
     const { size } = useContext(SelectContext);
 
     const labelOrChildren = label || (typeof children === "string" ? children : "");
-    const textValue = supportingText ? labelOrChildren + " " + supportingText : labelOrChildren;
+    const textValue = supportingText ? `${labelOrChildren} ${supportingText}` : labelOrChildren;
 
     return (
         <AriaListBoxItem
@@ -42,7 +42,7 @@ export const SelectItem = ({ label, id, value, avatarUrl, supportingText, isDisa
             {(state) => (
                 <div
                     className={cx(
-                        "flex cursor-pointer items-center gap-2 rounded-md outline-hidden select-none",
+                        "flex cursor-pointer select-none items-center gap-2 rounded-md outline-hidden",
                         state.isSelected && "bg-active",
                         state.isDisabled && "cursor-not-allowed",
                         state.isFocused && "bg-primary_hover",
@@ -66,13 +66,13 @@ export const SelectItem = ({ label, id, value, avatarUrl, supportingText, isDisa
                     <div className="flex w-full min-w-0 flex-1 flex-wrap gap-x-2">
                         <AriaText
                             slot="label"
-                            className={cx("truncate text-md font-medium whitespace-nowrap text-primary", state.isDisabled && "text-disabled")}
+                            className={cx("truncate whitespace-nowrap font-medium text-md text-primary", state.isDisabled && "text-disabled")}
                         >
                             {label || (typeof children === "function" ? children(state) : children)}
                         </AriaText>
 
                         {supportingText && (
-                            <AriaText slot="description" className={cx("text-md whitespace-nowrap text-tertiary", state.isDisabled && "text-disabled")}>
+                            <AriaText slot="description" className={cx("whitespace-nowrap text-md text-tertiary", state.isDisabled && "text-disabled")}>
                                 {supportingText}
                             </AriaText>
                         )}

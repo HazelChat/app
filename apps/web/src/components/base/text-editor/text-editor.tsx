@@ -46,6 +46,7 @@ interface TextEditorRootProps extends Partial<EditorOptions> {
 	children?: ReactNode | ((item: Editor) => ReactNode)
 	inputClassName?: string
 	ref?: Ref<HTMLDivElement>
+	onSubmit?: (editor: Editor) => void | Promise<void>
 }
 
 const TextEditorRoot = ({
@@ -56,6 +57,7 @@ const TextEditorRoot = ({
 	isDisabled,
 	limit,
 	placeholder = "Write something...",
+	onSubmit,
 	...editorOptions
 }: TextEditorRootProps) => {
 	const id = useId()
@@ -64,7 +66,7 @@ const TextEditorRoot = ({
 	const editor = useEditor({
 		...editorOptions,
 		editable: !isDisabled,
-		immediatelyRender: false,
+		immediatelyRender: true,
 		extensions: [
 			StarterKit.configure({
 				blockquote: {
@@ -114,8 +116,8 @@ const TextEditorRoot = ({
 		editorProps: {
 			attributes: {
 				id: editorId,
-				["aria-labelledby"]: `${editorId}-label`,
-				["aria-describedby"]: `${editorId}-hint`,
+				"aria-labelledby": `${editorId}-label`,
+				"aria-describedby": `${editorId}-hint`,
 				style: `
                     --resize-handle-bg: ${getResizeHandleBg("#D5D7DA")};
                     --resize-handle-bg-dark: ${getResizeHandleBg("#373A41")};
@@ -127,6 +129,16 @@ const TextEditorRoot = ({
 					isInvalid && "ring-error_subtle focus:ring-2 focus:ring-error",
 					inputClassName,
 				),
+			},
+			handleDOMEvents: {
+				keydown: (view, event) => {
+					if (onSubmit && event.key === "Enter" && !event.shiftKey) {
+						event.preventDefault()
+						onSubmit(editor!)
+						return true
+					}
+					return false
+				},
 			},
 		},
 	})

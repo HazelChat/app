@@ -82,11 +82,13 @@ export const confectSchema = defineSchema({
 	messages: defineTable(
 		Schema.Struct({
 			attachedFiles: Schema.Array(Schema.String),
-			content: Schema.String,
 			authorId: Id.Id("users"),
 			channelId: Id.Id("channels"),
 			replyToMessageId: Schema.optional(Id.Id("messages")),
 			threadChannelId: Schema.optional(Id.Id("channels")),
+
+			content: Schema.String,
+			jsonContent: Schema.Any,
 			reactions: Schema.Array(
 				Schema.Struct({
 					userId: Id.Id("users"),

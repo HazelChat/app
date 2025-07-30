@@ -9,6 +9,7 @@ import { Avatar } from "~/components/base/avatar/avatar"
 import { Dropdown } from "~/components/base/dropdown/dropdown"
 import { useChat } from "~/hooks/use-chat"
 import { cn } from "~/lib/utils"
+import { TextEditor } from "../base/text-editor/text-editor"
 
 type Message = FunctionReturnType<typeof api.messages.getMessages>["page"][0]
 
@@ -105,7 +106,9 @@ export function MessageItem({ message }: MessageItemProps) {
 						</div>
 					</div>
 				) : (
-					<p className="mt-1 whitespace-pre-wrap break-words text-sm">{message.content}</p>
+					<TextEditor.Root content={message.jsonContent}>
+						<TextEditor.Content readOnly></TextEditor.Content>
+					</TextEditor.Root>
 				)}
 
 				{/* Reactions */}
@@ -157,8 +160,6 @@ export function MessageItem({ message }: MessageItemProps) {
 					</button>
 				)}
 			</div>
-
-			{/* Message actions */}
 			<div className="absolute top-1 right-2 opacity-0 transition-opacity group-hover:opacity-100">
 				<div className="flex items-center gap-1 rounded border border-border bg-background shadow-sm">
 					{commonEmojis.slice(0, 3).map((emoji) => (

@@ -173,51 +173,10 @@ export const getMessages = userQuery({
 	},
 })
 
-export const createMessageForOrganization = organizationServerMutation({
-	args: {
-		content: v.string(),
-		channelId: v.id("channels"),
-		threadChannelId: v.optional(v.id("channels")),
-		replyToMessageId: v.optional(v.id("messages")),
-		attachedFiles: v.array(v.string()),
-	},
-	handler: async (ctx, args) => {
-		if (args.content.trim() === "") {
-			throw new Error("Message content cannot be empty")
-		}
-
-		// Validate channel belongs to this organization
-		const channel = await ctx.db.get(args.channelId)
-		if (!channel) throw new Error("Channel not found")
-		if (channel.organizationId !== ctx.organizationId) throw new Error("Channel not in this organization")
-
-		// TODO: Add proper channel membership validation
-
-		const messageId = await ctx.db.insert("messages", {
-			channelId: args.channelId,
-			content: args.content,
-			threadChannelId: args.threadChannelId,
-			authorId: ctx.account.doc._id,
-			replyToMessageId: args.replyToMessageId,
-			attachedFiles: args.attachedFiles,
-			updatedAt: Date.now(),
-			reactions: [],
-		})
-
-		// TODO: This should be a database trigger
-		await ctx.scheduler.runAfter(0, internal.background.index.sendNotification, {
-			channelId: args.channelId,
-			messageId: messageId,
-			userId: ctx.account.doc._id,
-		})
-
-		return messageId
-	},
-})
-
 export const createMessage = userMutation({
 	args: {
 		content: v.string(),
+		jsonContent: v.any(),
 		channelId: v.id("channels"),
 		threadChannelId: v.optional(v.id("channels")),
 		replyToMessageId: v.optional(v.id("messages")),
@@ -233,6 +192,7 @@ export const createMessage = userMutation({
 		const messageId = await ctx.db.insert("messages", {
 			channelId: args.channelId,
 			content: args.content,
+			jsonContent: args.jsonContent,
 			threadChannelId: args.threadChannelId,
 			authorId: ctx.user.id,
 			replyToMessageId: args.replyToMessageId,

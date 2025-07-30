@@ -14,7 +14,7 @@ export const TextEditorTooltip = ({ className }: TextEditorTooltipProps) => {
         <BubbleMenu
             editor={editor}
             className={cx(
-                "dark-mode z-10 flex origin-bottom flex-wrap gap-0.5 rounded-xl bg-primary p-1.5 shadow-lg ring-1 ring-secondary duration-100 animate-in fade-in ring-inset slide-in-from-bottom-0.5 zoom-in-95 md:flex-nowrap",
+                "dark-mode fade-in slide-in-from-bottom-0.5 zoom-in-95 z-10 flex origin-bottom animate-in flex-wrap gap-0.5 rounded-xl bg-primary p-1.5 shadow-lg ring-1 ring-secondary ring-inset duration-100 md:flex-nowrap",
                 className,
             )}
         >

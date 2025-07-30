@@ -56,7 +56,7 @@ const SelectValue = ({ isOpen, isFocused, isDisabled, size, placeholder, placeho
         <AriaButton
             ref={ref}
             className={cx(
-                "relative flex w-full cursor-pointer items-center rounded-lg bg-primary shadow-xs ring-1 ring-primary outline-hidden transition duration-100 ease-linear ring-inset",
+                "relative flex w-full cursor-pointer items-center rounded-lg bg-primary shadow-xs outline-hidden ring-1 ring-primary ring-inset transition duration-100 ease-linear",
                 (isFocused || isOpen) && "ring-2 ring-brand",
                 isDisabled && "cursor-not-allowed bg-disabled_subtle text-disabled",
             )}
@@ -85,7 +85,7 @@ const SelectValue = ({ isOpen, isFocused, isDisabled, size, placeholder, placeho
 
                             {state.selectedItem ? (
                                 <section className="flex w-full gap-2 truncate">
-                                    <p className="truncate text-md font-medium text-primary">{state.selectedItem?.label}</p>
+                                    <p className="truncate font-medium text-md text-primary">{state.selectedItem?.label}</p>
                                     {state.selectedItem?.supportingText && <p className="text-md text-tertiary">{state.selectedItem?.supportingText}</p>}
                                 </section>
                             ) : (
