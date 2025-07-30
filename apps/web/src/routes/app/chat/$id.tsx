@@ -15,12 +15,12 @@ function RouteComponent() {
 
 	return (
 		<ChatProvider channelId={id as Id<"channels">}>
-			<div className="flex h-full flex-col">
+			<div className="flex h-screen flex-col">
 				<ChatHeader />
 				<div className="flex-1 overflow-hidden">
 					<MessageList />
 				</div>
-				<div className="mx-2 flex flex-col gap-1.5">
+				<div className="px-4 pb-4 pt-2">
 					<MessageComposer />
 					<TypingIndicator />
 				</div>
