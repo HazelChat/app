@@ -31,7 +31,7 @@ export function MessageItem({
 	isFirstNewMessage = false,
 	isPinned = false,
 }: MessageItemProps) {
-	const { editMessage, deleteMessage, addReaction, removeReaction } = useChat()
+	const { editMessage, deleteMessage, addReaction, removeReaction, setReplyToMessageId } = useChat()
 	const [isEditing, setIsEditing] = useState(false)
 	const [editContent, setEditContent] = useState(message.content)
 
@@ -285,8 +285,7 @@ export function MessageItem({
 				onDelete={handleDelete}
 				onCopy={handleCopy}
 				onReply={() => {
-					// TODO: Implement reply in thread
-					console.log("Reply in thread")
+					setReplyToMessageId(message._id)
 				}}
 				onForward={() => {
 					// TODO: Implement forward message

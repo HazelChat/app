@@ -118,6 +118,18 @@ export function MessageToolbar({
 					<Copy01 className="size-3.5" />
 				</Button>
 
+				{onReply && (
+					<Button
+						size="sm"
+						color="tertiary"
+						onClick={onReply}
+						aria-label="Reply to message"
+						className="!p-1.5 hover:bg-secondary"
+					>
+						<MessageSquare02 className="size-3.5" />
+					</Button>
+				)}
+
 				{isOwnMessage && (
 					<>
 						<Button

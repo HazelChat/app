@@ -4,9 +4,10 @@ import { useRef, useState } from "react"
 import { useChat } from "~/providers/chat-provider"
 import { TextEditor } from "../base/text-editor/text-editor"
 import { MessageComposerActions } from "./message-composer-actions"
+import { ReplyIndicator } from "./reply-indicator"
 
 export const MessageComposer = () => {
-	const { sendMessage, startTyping, stopTyping } = useChat()
+	const { sendMessage, startTyping, stopTyping, replyToMessageId, setReplyToMessageId } = useChat()
 
 	const [isTyping, setIsTyping] = useState(false)
 
@@ -54,18 +55,30 @@ export const MessageComposer = () => {
 
 	return (
 		<div className={"relative flex h-max items-center gap-3"}>
-			<TextEditor.Root className="relative w-full gap-2" inputClassName="p-4" onSubmit={handleSubmit}>
-				{(_editor) => (
-					<>
-						<TextEditor.Tooltip />
-
-						<div className="relative flex flex-col gap-2">
-							<TextEditor.Content ref={textareaRef} />
-							<MessageComposerActions onSubmit={handleSubmit} />
-						</div>
-					</>
+			<div className="w-full">
+				{replyToMessageId && (
+					<ReplyIndicator
+						replyToMessageId={replyToMessageId}
+						onClose={() => setReplyToMessageId(null)}
+					/>
 				)}
-			</TextEditor.Root>
+				<TextEditor.Root
+					className="relative w-full gap-2"
+					inputClassName="p-4"
+					onSubmit={handleSubmit}
+				>
+					{(_editor) => (
+						<>
+							<TextEditor.Tooltip />
+
+							<div className="relative flex flex-col gap-2">
+								<TextEditor.Content ref={textareaRef} />
+								<MessageComposerActions onSubmit={handleSubmit} />
+							</div>
+						</>
+					)}
+				</TextEditor.Root>
+			</div>
 		</div>
 	)
 }

@@ -3,7 +3,7 @@ import type { Doc, Id } from "@hazel/backend"
 import { api } from "@hazel/backend/api"
 import { useQuery } from "@tanstack/react-query"
 import type { FunctionReturnType } from "convex/server"
-import { createContext, type ReactNode, useContext, useMemo } from "react"
+import { createContext, type ReactNode, useContext, useMemo, useState } from "react"
 
 type MessagesResponse = FunctionReturnType<typeof api.messages.getMessages>
 type Message = MessagesResponse["page"][0]
@@ -33,6 +33,8 @@ interface ChatContextValue {
 	stopTyping: () => void
 	typingUsers: TypingUsers
 	createThread: (messageId: Id<"messages">) => void
+	replyToMessageId: Id<"messages"> | null
+	setReplyToMessageId: (messageId: Id<"messages"> | null) => void
 }
 
 const ChatContext = createContext<ChatContextValue | undefined>(undefined)
@@ -55,6 +57,9 @@ export function ChatProvider({ channelId, children }: ChatProviderProps) {
 	const organizationQuery = useQuery(convexQuery(api.me.getOrganization, {}))
 	const organizationId =
 		organizationQuery.data?.directive === "success" ? organizationQuery.data.data._id : undefined
+
+	// Reply state
+	const [replyToMessageId, setReplyToMessageId] = useState<Id<"messages"> | null>(null)
 
 	// Fetch channel data
 	const channelQuery = useQuery(
@@ -102,7 +107,10 @@ export function ChatProvider({ channelId, children }: ChatProviderProps) {
 			content,
 			jsonContent,
 			attachedFiles: attachments || [],
+			replyToMessageId: replyToMessageId || undefined,
 		})
+		// Clear reply state after sending
+		setReplyToMessageId(null)
 	}
 
 	const editMessage = (messageId: Id<"messages">, content: string) => {
@@ -160,7 +168,7 @@ export function ChatProvider({ channelId, children }: ChatProviderProps) {
 		console.log("Loading more messages")
 	}
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+	// biome-ignore lint/correctness/useExhaustiveDependencies: Dependencies are correctly managed
 	const contextValue = useMemo<ChatContextValue>(
 		() => ({
 			channelId,
@@ -178,6 +186,8 @@ export function ChatProvider({ channelId, children }: ChatProviderProps) {
 			stopTyping,
 			typingUsers,
 			createThread,
+			replyToMessageId,
+			setReplyToMessageId,
 		}),
 		[
 			channelId,
@@ -186,6 +196,7 @@ export function ChatProvider({ channelId, children }: ChatProviderProps) {
 			messagesQuery.isLoading,
 			typingUsers,
 			organizationId,
+			replyToMessageId,
 		],
 	)
 
