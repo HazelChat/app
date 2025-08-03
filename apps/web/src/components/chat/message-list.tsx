@@ -12,7 +12,6 @@ export function MessageList() {
 	const [isAtBottom, setIsAtBottom] = useState(true)
 	const prevMessageCountRef = useRef(messages.length)
 
-	// Intersection observers for infinite scroll
 	const [topSentinelRef, isTopVisible] = useIntersectionObserver({
 		rootMargin: "100px",
 		enabled: !isLoadingNext && !isLoadingMessages && !!loadNext,
@@ -24,7 +23,6 @@ export function MessageList() {
 
 	const processedMessages = useMemo(() => {
 		const timeThreshold = 5 * 60 * 1000
-		// Messages are already in DESC order from backend, we want oldest first
 		const chronologicalMessages = [...messages].reverse()
 
 		return chronologicalMessages.map((message, index) => {
@@ -125,6 +123,7 @@ export function MessageList() {
 			if (scrollContainerRef.current) {
 				prevScrollHeightRef.current = scrollContainerRef.current.scrollHeight
 			}
+			console.log("Loading next")
 			lastLoadTimeRef.current = now
 			loadNext()
 		}
@@ -137,6 +136,7 @@ export function MessageList() {
 
 		if (isBottomVisible && loadPrev && !isLoadingPrev && !isLoadingMessages && timeSinceLastLoad > 500) {
 			lastLoadTimeRef.current = now
+			console.log("Loading prev")
 			loadPrev()
 		}
 	}, [isBottomVisible, loadPrev, isLoadingPrev, isLoadingMessages])
