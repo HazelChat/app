@@ -7,6 +7,7 @@ export function MessageList() {
 	const { messages, isLoadingMessages, isLoadingNext, isLoadingPrev, loadNext, loadPrev } = useChat()
 	const scrollContainerRef = useRef<HTMLDivElement>(null)
 	const lastMessageRef = useRef<HTMLDivElement>(null)
+	const loadingRef = useRef(false)
 
 	const processedMessages = useMemo(() => {
 		const timeThreshold = 5 * 60 * 1000
@@ -62,6 +63,32 @@ export function MessageList() {
 		}
 	}, [])
 
+	const handleScroll = () => {
+		const container = scrollContainerRef.current
+		if (!container || loadingRef.current) return
+
+		// Since we're using flex-col-reverse, the scroll logic is inverted
+		// scrollTop === 0 means we're at the newest messages (bottom visually)
+		// scrollTop at max means we're at the oldest messages (top visually)
+		
+		const isAtTop = Math.abs(container.scrollHeight - container.clientHeight - container.scrollTop) < 10
+		const isAtBottom = container.scrollTop < 10
+
+		// Load older messages when scrolled to top (which is visually at the top)
+		if (isAtTop && loadPrev && !isLoadingPrev) {
+			loadingRef.current = true
+			loadPrev()
+			setTimeout(() => { loadingRef.current = false }, 1000)
+		}
+
+		// Load newer messages when scrolled to bottom (which is visually at the bottom)
+		if (isAtBottom && loadNext && !isLoadingNext) {
+			loadingRef.current = true
+			loadNext()
+			setTimeout(() => { loadingRef.current = false }, 1000)
+		}
+	}
+
 	if (isLoadingMessages && messages.length === 0) {
 		return (
 			<div className="flex h-full items-center justify-center">
@@ -86,17 +113,14 @@ export function MessageList() {
 	}
 
 	return (
-		<div ref={scrollContainerRef} className="flex h-full flex-col-reverse overflow-y-auto py-2 pr-4">
-			{loadNext && (
+		<div 
+			ref={scrollContainerRef} 
+			onScroll={handleScroll}
+			className="flex h-full flex-col-reverse overflow-y-auto py-2 pr-4"
+		>
+			{isLoadingNext && (
 				<div className="py-2 text-center">
-					<button
-						type="button"
-						onClick={loadNext}
-						className="text-muted-foreground text-xs hover:text-foreground"
-						disabled={isLoadingNext}
-					>
-						{isLoadingNext ? "Loading..." : "Load newer messages"}
-					</button>
+					<span className="text-muted-foreground text-xs">Loading newer messages...</span>
 				</div>
 			)}
 			{Object.entries(groupedMessages)
@@ -130,16 +154,9 @@ export function MessageList() {
 						))}
 					</div>
 				))}
-			{loadPrev && (
+			{isLoadingPrev && (
 				<div className="py-2 text-center">
-					<button
-						type="button"
-						onClick={loadPrev}
-						className="text-muted-foreground text-xs hover:text-foreground"
-						disabled={isLoadingPrev}
-					>
-						{isLoadingPrev ? "Loading..." : "Load older messages"}
-					</button>
+					<span className="text-muted-foreground text-xs">Loading older messages...</span>
 				</div>
 			)}
 		</div>
