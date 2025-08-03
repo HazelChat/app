@@ -1,9 +1,9 @@
 import { convexQuery, useConvexMutation } from "@convex-dev/react-query"
-import type { Doc, Id } from "@hazel/backend"
+import type { Id } from "@hazel/backend"
 import { api } from "@hazel/backend/api"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import type { FunctionReturnType } from "convex/server"
-import { createContext, type ReactNode, useContext, useMemo, useState, useCallback } from "react"
+import { createContext, type ReactNode, useCallback, useContext, useMemo, useState } from "react"
 
 type MessagesResponse = FunctionReturnType<typeof api.messages.getMessages>
 type Message = MessagesResponse["page"][0]
@@ -184,21 +184,18 @@ export function ChatProvider({ channelId, children }: ChatProviderProps) {
 
 		setIsLoadingMore(true)
 
-		// Use convex query to load more messages
-		const queryKey = convexQuery(api.messages.getMessages, {
-			channelId,
-			organizationId,
-			paginationOpts: { numItems: 50, cursor: nextCursor },
-		}).queryKey
-
 		try {
+			// Create the convex query configuration
+			const query = convexQuery(api.messages.getMessages, {
+				channelId,
+				organizationId,
+				paginationOpts: { numItems: 50, cursor: nextCursor },
+			})
+
+			// Fetch using the query configuration
 			const data = await queryClient.fetchQuery({
-				queryKey,
-				queryFn: convexQuery(api.messages.getMessages, {
-					channelId,
-					organizationId,
-					paginationOpts: { numItems: 50, cursor: nextCursor },
-				}).queryFn,
+				queryKey: query.queryKey,
+				queryFn: query.queryFn,
 			})
 
 			if (data?.page) {
