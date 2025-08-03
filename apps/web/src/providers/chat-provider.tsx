@@ -4,6 +4,7 @@ import { api } from "@hazel/backend/api"
 import { useQuery } from "@tanstack/react-query"
 import type { FunctionReturnType } from "convex/server"
 import { createContext, type ReactNode, useContext, useMemo, useState } from "react"
+import { useNextPrevPaginatedQuery } from "convex-use-next-prev-paginated-query"
 
 type MessagesResponse = FunctionReturnType<typeof api.messages.getMessages>
 type Message = MessagesResponse["page"][0]
@@ -22,7 +23,9 @@ interface ChatContextValue {
 	channel: Channel | undefined
 	messages: Message[]
 	loadMoreMessages: () => void
+	loadNewerMessages: () => void
 	hasMoreMessages: boolean
+	hasNewerMessages: boolean
 	isLoadingMessages: boolean
 	sendMessage: (props: { content: string; attachments?: string[]; jsonContent: any }) => void
 	editMessage: (messageId: Id<"messages">, content: string, jsonContent: any) => Promise<void>
@@ -67,17 +70,10 @@ export function ChatProvider({ channelId, children }: ChatProviderProps) {
 	)
 
 	// Fetch messages with pagination
-	const messagesQuery = useQuery(
-		convexQuery(
-			api.messages.getMessages,
-			organizationId
-				? {
-						channelId,
-						organizationId,
-						paginationOpts: { numItems: 50, cursor: null },
-					}
-				: "skip",
-		),
+	const messagesResult = useNextPrevPaginatedQuery(
+		api.messages.getMessages,
+		organizationId ? { channelId, organizationId } : "skip",
+		{ initialNumItems: 50 },
 	)
 
 	// Fetch typing users - TODO: Implement when API is available
@@ -165,19 +161,37 @@ export function ChatProvider({ channelId, children }: ChatProviderProps) {
 	}
 
 	const loadMoreMessages = () => {
-		// TODO: Implement pagination
-		console.log("Loading more messages")
+		if (messagesResult._tag === "Loaded" && messagesResult.loadNext) {
+			messagesResult.loadNext()
+		}
 	}
+
+	const loadNewerMessages = () => {
+		if (messagesResult._tag === "Loaded" && messagesResult.loadPrev) {
+			messagesResult.loadPrev()
+		}
+	}
+
+	// Extract messages and loading state from paginated result
+	const messages = messagesResult._tag === "Loaded" ? messagesResult.page : []
+	const isLoadingMessages =
+		messagesResult._tag === "Loading" ||
+		messagesResult._tag === "LoadingNextPage" ||
+		messagesResult._tag === "LoadingPrevPage"
+	const hasMoreMessages = messagesResult._tag === "Loaded" && messagesResult.loadNext !== undefined
+	const hasNewerMessages = messagesResult._tag === "Loaded" && messagesResult.loadPrev !== undefined
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: Dependencies are correctly managed
 	const contextValue = useMemo<ChatContextValue>(
 		() => ({
 			channelId,
 			channel: channelQuery.data,
-			messages: messagesQuery.data?.page || [],
+			messages,
 			loadMoreMessages,
-			hasMoreMessages: messagesQuery.data?.continueCursor !== undefined,
-			isLoadingMessages: messagesQuery.isLoading,
+			loadNewerMessages,
+			hasMoreMessages,
+			hasNewerMessages,
+			isLoadingMessages,
 			sendMessage,
 			editMessage,
 			deleteMessage,
@@ -193,8 +207,10 @@ export function ChatProvider({ channelId, children }: ChatProviderProps) {
 		[
 			channelId,
 			channelQuery.data,
-			messagesQuery.data,
-			messagesQuery.isLoading,
+			messages,
+			isLoadingMessages,
+			hasMoreMessages,
+			hasNewerMessages,
 			typingUsers,
 			organizationId,
 			replyToMessageId,

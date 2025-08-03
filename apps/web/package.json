@@ -49,6 +49,7 @@
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",
 		"convex": "^1.25.4",
+		"convex-use-next-prev-paginated-query": "^1.2.0",
 		"date-fns": "^4.1.0",
 		"frimousse": "^0.3.0",
 		"lucide-react": "^0.535.0",
@@ -63,7 +64,8 @@
 		"tailwind-merge": "^3.3.1",
 		"tailwindcss": "^4.1.11",
 		"tailwindcss-animate": "^1.0.7",
-		"tailwindcss-react-aria-components": "^2.0.0"
+		"tailwindcss-react-aria-components": "^2.0.0",
+		"virtua": "^0.41.5"
 	},
 	"devDependencies": {
 		"@react-types/overlays": "^3.9.0",
