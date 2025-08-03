@@ -1,13 +1,12 @@
-import { useEffect, useMemo, useRef, useCallback } from "react"
+import { useEffect, useMemo, useRef } from "react"
 import { useChat } from "~/hooks/use-chat"
-import { VList, type VListHandle } from "virtua"
 
 import { MessageItem } from "./message-item"
 
 export function MessageList() {
-	const { messages, isLoadingMessages, hasMoreMessages, loadMoreMessages } = useChat()
-	const vlistRef = useRef<VListHandle>(null)
-	const lastScrollTop = useRef<number>(0)
+	const { messages, isLoadingMessages, hasMoreMessages, loadMoreMessages, isLoadingMore } = useChat()
+	const scrollContainerRef = useRef<HTMLDivElement>(null)
+	const lastMessageRef = useRef<HTMLDivElement>(null)
 
 	const processedMessages = useMemo(() => {
 		const timeThreshold = 5 * 60 * 1000
@@ -59,43 +58,21 @@ export function MessageList() {
 
 	// Scroll to bottom on initial load
 	useEffect(() => {
-		if (vlistRef.current && messages.length > 0) {
-			vlistRef.current.scrollToIndex(messages.length - 1, { align: "end" })
+		if (lastMessageRef.current && messages.length > 0) {
+			lastMessageRef.current.scrollIntoView({ behavior: "smooth" })
 		}
 	}, [messages.length])
 
 	// Handle scroll events for loading more messages
-	const handleScroll = useCallback(() => {
-		if (!vlistRef.current || isLoadingMessages) return
+	const handleScroll = () => {
+		const container = scrollContainerRef.current
+		if (!container || isLoadingMore || !hasMoreMessages) return
 
-		const scrollTop = vlistRef.current.scrollOffset
-		const scrollDirection = scrollTop < lastScrollTop.current ? "up" : "down"
-		lastScrollTop.current = scrollTop
-
-		// Load more messages when scrolling near the top
-		if (scrollDirection === "up" && scrollTop < 100 && hasMoreMessages) {
+		// Load more when scrolled near the top
+		if (container.scrollTop < 100) {
 			loadMoreMessages()
 		}
-	}, [hasMoreMessages, isLoadingMessages, loadMoreMessages])
-
-	// Flatten messages for virtual list - must be declared before any returns
-	const flattenedItems = useMemo(() => {
-		const items: Array<{ type: "date" | "message" | "loadMore"; data: any }> = []
-
-		// Add load more button at the top if there are more messages
-		if (hasMoreMessages) {
-			items.push({ type: "loadMore", data: null })
-		}
-
-		Object.entries(groupedMessages).forEach(([date, dateMessages]) => {
-			items.push({ type: "date", data: date })
-			dateMessages.forEach((processedMessage) => {
-				items.push({ type: "message", data: processedMessage })
-			})
-		})
-
-		return items
-	}, [groupedMessages, hasMoreMessages])
+	}
 
 	if (isLoadingMessages) {
 		return (
@@ -121,50 +98,52 @@ export function MessageList() {
 	}
 
 	return (
-		<VList ref={vlistRef} style={{ height: "100%", width: "100%" }} onScroll={handleScroll} overscan={5}>
-			{flattenedItems.map((item, index) => {
-				if (item.type === "loadMore") {
-					return (
-						<div key="loadMore" className="py-2 text-center">
-							<button
-								type="button"
-								onClick={loadMoreMessages}
-								disabled={isLoadingMessages}
-								className="text-muted-foreground text-xs hover:text-foreground disabled:opacity-50"
-							>
-								{isLoadingMessages ? "Loading..." : "Load more messages"}
-							</button>
-						</div>
-					)
-				}
+		<div
+			ref={scrollContainerRef}
+			onScroll={handleScroll}
+			className="flex h-full flex-col overflow-y-auto py-2 px-4"
+		>
+			{hasMoreMessages && (
+				<div className="py-2 text-center">
+					<button
+						type="button"
+						onClick={loadMoreMessages}
+						disabled={isLoadingMore}
+						className="text-muted-foreground text-xs hover:text-foreground disabled:opacity-50"
+					>
+						{isLoadingMore ? "Loading..." : "Load more messages"}
+					</button>
+				</div>
+			)}
 
-				if (item.type === "date") {
-					return (
-						<div
-							key={`date-${item.data}`}
-							className="sticky top-0 z-10 my-4 flex items-center justify-center"
-						>
-							<span className="rounded-full bg-muted px-3 py-1 font-mono text-secondary text-xs">
-								{item.data}
-							</span>
-						</div>
-					)
-				}
-
-				// type === "message"
-				const processedMessage = item.data
-				return (
-					<div key={processedMessage.message._id} className="px-4">
-						<MessageItem
-							message={processedMessage.message}
-							isGroupStart={processedMessage.isGroupStart}
-							isGroupEnd={processedMessage.isGroupEnd}
-							isFirstNewMessage={processedMessage.isFirstNewMessage}
-							isPinned={processedMessage.isPinned}
-						/>
+			{Object.entries(groupedMessages).map(([date, dateMessages]) => (
+				<div key={date}>
+					<div className="sticky top-0 z-10 my-4 flex items-center justify-center">
+						<span className="rounded-full bg-muted px-3 py-1 font-mono text-secondary text-xs">
+							{date}
+						</span>
 					</div>
-				)
-			})}
-		</VList>
+					{dateMessages.map((processedMessage, index) => (
+						<div
+							key={processedMessage.message._id}
+							ref={
+								index === dateMessages.length - 1 &&
+								date === Object.keys(groupedMessages)[Object.keys(groupedMessages).length - 1]
+									? lastMessageRef
+									: undefined
+							}
+						>
+							<MessageItem
+								message={processedMessage.message}
+								isGroupStart={processedMessage.isGroupStart}
+								isGroupEnd={processedMessage.isGroupEnd}
+								isFirstNewMessage={processedMessage.isFirstNewMessage}
+								isPinned={processedMessage.isPinned}
+							/>
+						</div>
+					))}
+				</div>
+			))}
+		</div>
 	)
 }
