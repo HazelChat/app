@@ -66,6 +66,9 @@ export function ChatProvider({ channelId, children }: ChatProviderProps) {
 	
 	// Keep track of previous messages to show during loading
 	const previousMessagesRef = useRef<Message[]>([])
+	// Keep track of pagination functions to avoid losing them during loading
+	const loadNextRef = useRef<(() => void) | undefined>(undefined)
+	const loadPrevRef = useRef<(() => void) | undefined>(undefined)
 
 	// Fetch channel data
 	const channelQuery = useQuery(
@@ -179,8 +182,15 @@ export function ChatProvider({ channelId, children }: ChatProviderProps) {
 	// Use previous messages during loading states to prevent flashing
 	const messages = currentMessages.length > 0 ? currentMessages : previousMessagesRef.current
 	
-	const loadNext = messagesResult._tag === "Loaded" ? (messagesResult.loadNext ?? undefined) : undefined
-	const loadPrev = messagesResult._tag === "Loaded" ? (messagesResult.loadPrev ?? undefined) : undefined
+	// Update pagination function refs when available
+	if (messagesResult._tag === "Loaded") {
+		loadNextRef.current = messagesResult.loadNext ?? undefined
+		loadPrevRef.current = messagesResult.loadPrev ?? undefined
+	}
+	
+	// Use stored functions during loading states
+	const loadNext = loadNextRef.current
+	const loadPrev = loadPrevRef.current
 	const isLoadingMessages = messagesResult._tag === "LoadingInitialResults"
 	const isLoadingNext = messagesResult._tag === "LoadingNextResults"
 	const isLoadingPrev = messagesResult._tag === "LoadingPrevResults"
