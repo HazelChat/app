@@ -1,12 +1,20 @@
 import { useEffect, useMemo, useRef } from "react"
+import { VList, type VListHandle } from "virtua"
 import { useChat } from "~/hooks/use-chat"
 
 import { MessageItem } from "./message-item"
 
 export function MessageList() {
-	const { messages, isLoadingMessages, hasMoreMessages, loadMoreMessages, isLoadingMore } = useChat()
-	const scrollContainerRef = useRef<HTMLDivElement>(null)
-	const lastMessageRef = useRef<HTMLDivElement>(null)
+	const { messages, isLoadingMessages, hasMoreMessages, loadMoreMessages, isLoadingMore, channelId } =
+		useChat()
+	const vlistRef = useRef<VListHandle>(null)
+	const isInitialLoad = useRef(true)
+	const shouldPreservePosition = useRef(false)
+
+	// Reset initial load flag when channel changes
+	useEffect(() => {
+		isInitialLoad.current = true
+	}, [channelId])
 
 	const processedMessages = useMemo(() => {
 		const timeThreshold = 5 * 60 * 1000
@@ -58,21 +66,61 @@ export function MessageList() {
 
 	// Scroll to bottom on initial load
 	useEffect(() => {
-		if (lastMessageRef.current && messages.length > 0) {
-			lastMessageRef.current.scrollIntoView({ behavior: "smooth" })
+		if (isInitialLoad.current && messages.length > 0 && vlistRef.current) {
+			// Scroll to the bottom (first item in reverse layout)
+			setTimeout(() => {
+				vlistRef.current?.scrollToIndex(0, { align: "end" })
+			}, 100)
+			isInitialLoad.current = false
 		}
 	}, [messages.length])
 
+	// Reset shift flag after messages update
+	useEffect(() => {
+		if (shouldPreservePosition.current) {
+			shouldPreservePosition.current = false
+		}
+	}, [messages])
+
 	// Handle scroll events for loading more messages
 	const handleScroll = () => {
-		const container = scrollContainerRef.current
-		if (!container || isLoadingMore || !hasMoreMessages) return
+		if (isLoadingMore || !hasMoreMessages || !vlistRef.current) return
 
-		// Load more when scrolled near the top
-		if (container.scrollTop < 100) {
+		const scrollOffset = vlistRef.current.scrollOffset
+
+		// In column-reverse layout, scrollOffset starts high and decreases as you scroll up
+		// Load more when scrolled to the top (high scrollOffset value)
+		if (scrollOffset > vlistRef.current.scrollSize - vlistRef.current.viewportSize - 100) {
+			shouldPreservePosition.current = true
 			loadMoreMessages()
 		}
 	}
+
+	// Flatten messages with date separators for virtualization
+	const flattenedItems = useMemo(() => {
+		const items: Array<{ type: "date" | "message"; key: string; data: any }> = []
+
+		Object.entries(groupedMessages).forEach(([date, dateMessages]) => {
+			// Add date separator
+			items.push({
+				type: "date",
+				key: `date-${date}`,
+				data: { date },
+			})
+
+			// Add messages
+			dateMessages.forEach((processedMessage) => {
+				items.push({
+					type: "message",
+					key: processedMessage.message._id,
+					data: processedMessage,
+				})
+			})
+		})
+
+		// Don't reverse - flex-direction handles the reversal
+		return items
+	}, [groupedMessages])
 
 	if (isLoadingMessages) {
 		return (
@@ -98,52 +146,56 @@ export function MessageList() {
 	}
 
 	return (
-		<div
-			ref={scrollContainerRef}
-			onScroll={handleScroll}
-			className="flex h-full flex-col overflow-y-auto py-2 px-4"
-		>
-			{hasMoreMessages && (
-				<div className="py-2 text-center">
-					<button
-						type="button"
-						onClick={loadMoreMessages}
-						disabled={isLoadingMore}
-						className="text-muted-foreground text-xs hover:text-foreground disabled:opacity-50"
-					>
-						{isLoadingMore ? "Loading..." : "Load more messages"}
-					</button>
-				</div>
-			)}
+		<div className="flex h-full flex-col-reverse overflow-hidden">
+			<VList
+				ref={vlistRef}
+				style={{
+					height: "100%",
+				}}
+				reverse
+				onScroll={handleScroll}
+				shift={shouldPreservePosition.current}
+				className="px-4 py-2"
+			>
+				{flattenedItems.map((item) => {
+					if (item.type === "date") {
+						return (
+							<div
+								key={item.key}
+								className="sticky bottom-0 z-10 my-4 flex items-center justify-center"
+							>
+								<span className="rounded-full bg-muted px-3 py-1 font-mono text-secondary text-xs">
+									{item.data.date}
+								</span>
+							</div>
+						)
+					}
 
-			{Object.entries(groupedMessages).map(([date, dateMessages]) => (
-				<div key={date}>
-					<div className="sticky top-0 z-10 my-4 flex items-center justify-center">
-						<span className="rounded-full bg-muted px-3 py-1 font-mono text-secondary text-xs">
-							{date}
-						</span>
-					</div>
-					{dateMessages.map((processedMessage, index) => (
-						<div
-							key={processedMessage.message._id}
-							ref={
-								index === dateMessages.length - 1 &&
-								date === Object.keys(groupedMessages)[Object.keys(groupedMessages).length - 1]
-									? lastMessageRef
-									: undefined
-							}
+					return (
+						<MessageItem
+							key={item.key}
+							message={item.data.message}
+							isGroupStart={item.data.isGroupStart}
+							isGroupEnd={item.data.isGroupEnd}
+							isFirstNewMessage={item.data.isFirstNewMessage}
+							isPinned={item.data.isPinned}
+						/>
+					)
+				})}
+
+				{hasMoreMessages && (
+					<div className="py-2 text-center">
+						<button
+							type="button"
+							onClick={loadMoreMessages}
+							disabled={isLoadingMore}
+							className="text-muted-foreground text-xs hover:text-foreground disabled:opacity-50"
 						>
-							<MessageItem
-								message={processedMessage.message}
-								isGroupStart={processedMessage.isGroupStart}
-								isGroupEnd={processedMessage.isGroupEnd}
-								isFirstNewMessage={processedMessage.isFirstNewMessage}
-								isPinned={processedMessage.isPinned}
-							/>
-						</div>
-					))}
-				</div>
-			))}
+							{isLoadingMore ? "Loading..." : "Load more messages"}
+						</button>
+					</div>
+				)}
+			</VList>
 		</div>
 	)
 }
