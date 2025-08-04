@@ -64,19 +64,18 @@ function RouteComponent() {
 			<div className="flex flex-col gap-6">
 				<div className="w-full">
 					<h1 className="mb-2 font-semibold text-2xl">Members</h1>
-					<p className="text-muted-foreground">
-						Browse and connect with members in your organization
-					</p>
+					<p className="text-secondary">Browse and connect with members in your organization</p>
 				</div>
 
-				<div className="max-w-2xl">
+				<div className="w-full">
 					<Input
+						autoFocus
 						value={searchQuery}
 						onChange={(value) => setSearchQuery(value)}
 						placeholder="Search members..."
 						className="w-full"
 						icon={IconSearchStroke}
-						iconClassName="size-5 text-muted-foreground"
+						iconClassName="size-5 text-secondary"
 					/>
 				</div>
 
@@ -86,7 +85,7 @@ function RouteComponent() {
 							<div className="h-8 w-8 animate-spin rounded-full border-primary border-b-2"></div>
 						</div>
 					) : filteredMembers.length === 0 ? (
-						<div className="py-8 text-center text-muted-foreground">
+						<div className="py-8 text-center text-secondary">
 							{searchQuery
 								? "No members found matching your search"
 								: "No members in this organization"}
@@ -103,9 +102,9 @@ function RouteComponent() {
 										<Avatar src={member.avatarUrl} alt={fullName || "User"} size="md" />
 										<div>
 											<p className="font-medium">{fullName || "Unknown User"}</p>
-											<p className="text-muted-foreground text-sm">{member.email}</p>
+											<p className="text-secondary text-sm">{member.email}</p>
 											{member.role && (
-												<p className="text-muted-foreground text-xs capitalize">
+												<p className="text-brand-primary text-xs capitalize">
 													{member.role}
 												</p>
 											)}

@@ -1,53 +1,78 @@
 import { describe, expect, test } from "vitest"
 import { api } from "../convex/_generated/api"
-import { convexTest, createAccount, randomIdentity } from "./utils/data-generator"
+import { convexTest, createAccount, createOrganization, randomIdentity } from "./utils/data-generator"
 
-describe("accounts", () => {
-	test("creating and retrieving accounts works", async () => {
+describe("users and organizations", () => {
+	test("creating users works", async () => {
 		const t = randomIdentity(convexTest())
-		const account = await createAccount(t)
+		const userId = await createAccount(t)
 
-		const createdAccount = await t.query(api.accounts.getAccount, { id: account })
-
-		expect(createdAccount?._id).toEqual(account)
+		// Check user was created
+		const user = await t.run(async (ctx) => ctx.db.get(userId))
+		expect(user).toBeDefined()
+		expect(user?.externalId).toBeDefined()
 	})
 
-	test("creating accounts multiple times returns the same id", async () => {
+	test("creating users multiple times returns the same id", async () => {
 		const t = randomIdentity(convexTest())
 		const id = await createAccount(t)
 		const id2 = await createAccount(t)
 		expect(id).toEqual(id2)
 	})
 
-	test("creating accounts without authentication fails", async () => {
+	test("creating users without authentication fails", async () => {
 		const t = convexTest()
-		await expect(createAccount(t)).rejects.toThrow()
+		await expect(createAccount(t)).rejects.toThrow("No identity found")
 	})
 
-	test("cannot be retrieved if not authenticated", async () => {
-		const t = convexTest()
-
-		const authenticatedT = t.withIdentity({ tokenIdentifier: "test" })
-		const id = await createAccount(authenticatedT)
-
-		await expect(t.query(api.accounts.getAccount, { id })).rejects.toThrow()
-	})
-
-	test("cannot retrieve accounts from other users when not having an account", async () => {
+	test("users can join organizations", async () => {
 		const ct = convexTest()
-		const t1 = randomIdentity(ct)
-		const id = await createAccount(t1)
+		const t = randomIdentity(ct)
+		const userId = await createAccount(t)
+		const organizationId = await createOrganization(t)
 
-		const t2 = randomIdentity(ct)
-		await expect(t2.query(api.accounts.getAccount, { id })).rejects.toThrow()
+		// Add user to organization
+		const membershipId = await t.mutation(api.users.addToOrganization, {
+			organizationId,
+			role: "member",
+		})
+
+		// Check membership was created
+		const membership = await t.run(async (ctx) => ctx.db.get(membershipId))
+		expect(membership).toBeDefined()
+		expect(membership?.userId).toEqual(userId)
+		expect(membership?.organizationId).toEqual(organizationId)
+		expect(membership?.role).toEqual("member")
 	})
 
-	test("cannot retrieve accounts from other users when having an account", async () => {
+	test("users cannot join organization twice", async () => {
 		const ct = convexTest()
-		const t1 = randomIdentity(ct)
-		const id = await createAccount(t1)
+		const t = randomIdentity(ct)
+		await createAccount(t)
+		const organizationId = await createOrganization(t)
 
-		const t2 = randomIdentity(ct)
-		await expect(t2.query(api.accounts.getAccount, { id })).rejects.toThrow()
+		// Add user to organization
+		await t.mutation(api.users.addToOrganization, {
+			organizationId,
+			role: "member",
+		})
+
+		// Try to add again
+		await expect(
+			t.mutation(api.users.addToOrganization, {
+				organizationId,
+				role: "member",
+			}),
+		).rejects.toThrow("User is already a member of this organization")
+	})
+
+	test("users can retrieve their information", async () => {
+		const ct = convexTest()
+		const t = randomIdentity(ct)
+		const userId = await createAccount(t)
+
+		// Get user info via me.get
+		const me = await t.query(api.me.get, {})
+		expect(me._id).toEqual(userId)
 	})
 })

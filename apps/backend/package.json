@@ -11,6 +11,7 @@
 	"dependencies": {
 		"@convex-dev/expo-push-notifications": "^0.2.4",
 		"@convex-dev/presence": "^0.1.5",
+		"@edge-runtime/vm": "^5.0.0",
 		"@rjdellecese/confect": "^0.0.26",
 		"@workos-inc/node": "^7.57.0",
 		"convex": "^1.25.4",
@@ -18,7 +19,7 @@
 		"effect": "^3.16.10"
 	},
 	"devDependencies": {
-		"convex-test": "^0.0.37",
+		"convex-test": "^0.0.38",
 		"typescript": "5.9.2",
 		"vitest": "^3.2.4"
 	},

@@ -3,6 +3,9 @@
   "workspaces": {
     "": {
       "name": "maki-chat",
+      "dependencies": {
+        "vitest": "^3.2.4",
+      },
       "devDependencies": {
         "@biomejs/biome": "^2.1.2",
         "@vitest/coverage-v8": "3.2.4",
@@ -15,6 +18,7 @@
       "dependencies": {
         "@convex-dev/expo-push-notifications": "^0.2.4",
         "@convex-dev/presence": "^0.1.5",
+        "@edge-runtime/vm": "^5.0.0",
         "@rjdellecese/confect": "^0.0.26",
         "@workos-inc/node": "^7.57.0",
         "convex": "^1.25.4",
@@ -22,7 +26,7 @@
         "effect": "^3.16.10",
       },
       "devDependencies": {
-        "convex-test": "^0.0.37",
+        "convex-test": "^0.0.38",
         "typescript": "5.9.2",
         "vitest": "^3.2.4",
       },
@@ -2207,7 +2211,7 @@
 
     "convex-helpers": ["convex-helpers@0.1.100", "", { "peerDependencies": { "@standard-schema/spec": "^1.0.0", "convex": "^1.13.0", "hono": "^4.0.5", "react": "^17.0.2 || ^18.0.0 || ^19.0.0", "typescript": "^5.5", "zod": "^3.22.4" }, "optionalPeers": ["@standard-schema/spec", "hono", "react", "typescript", "zod"], "bin": { "convex-helpers": "bin.cjs" } }, "sha512-In5VPKKlQdnv9WHpIKLXnLEKyHxaJYI0BXWTDJ27Ao6XUfpeiGPDGhOdqZ8y0DqTcQlDgmtSTmmttUv1fPWbdg=="],
 
-    "convex-test": ["convex-test@0.0.37", "", { "peerDependencies": { "convex": "^1.16.4" } }, "sha512-gC2ReAGgPAlCCWKNHAjJnEr/IMi1oo5ux9g5cLL68m401Ne1xXc43TfVAD+m/FiGDztmsHtfPr61EWn51mCRjw=="],
+    "convex-test": ["convex-test@0.0.38", "", { "peerDependencies": { "convex": "^1.16.4" } }, "sha512-1o/3GvUR9gMLjiqq7SxchI/0OYQaWwbQC4INmB1SNt1WLBjUgEM8+brgpqrZwJ+Vb1DdGZokCVeihwT5IPk49w=="],
 
     "convex-use-next-prev-paginated-query": ["convex-use-next-prev-paginated-query@1.2.0", "", { "peerDependencies": { "convex": ">=1.0.0 <2.0.0", "react": ">=18.0.0 <20.0.0" } }, "sha512-CXJ+lXoFQgxackkgysJXLF5iEz3ZKM1mVZpZUm1PaukmPvl/2KKbospykjnd5rlXfaCokOugmMzxk6FeCDi5Nw=="],
 

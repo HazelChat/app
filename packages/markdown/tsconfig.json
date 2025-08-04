@@ -1,9 +1,0 @@
-{
-	"compilerOptions": {
-		"jsxImportSource": "solid-js",
-		"jsx": "preserve",
-		"lib": ["ES2022", "DOM", "DOM.Iterable"]
-	},
-	"extends": "@total-typescript/tsconfig/bundler/dom/library",
-	"include": ["src"]
-}

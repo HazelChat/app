@@ -12,7 +12,7 @@
 		"dev": "turbo dev",
 		"build": "turbo build typecheck",
 		"typecheck": "turbo build typecheck",
-		"format:fix": "biome check --write",
+		"format:fix": "biome check --write --unsafe",
 		"test": "vitest",
 		"test:once": "vitest run",
 		"test:debug": "vitest --inspect-brk --no-file-parallelism",
@@ -24,5 +24,7 @@
 		"turbo": "^2.5.5"
 	},
 	"trustedDependencies": [],
-	"dependencies": {}
+	"dependencies": {
+		"vitest": "^3.2.4"
+	}
 }
