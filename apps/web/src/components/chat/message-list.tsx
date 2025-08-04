@@ -1,28 +1,38 @@
-import { useEffect, useMemo, useRef } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useChat } from "~/hooks/use-chat"
-import { useIntersectionObserver } from "~/hooks/use-intersection-observer"
+import { useDebouncedIntersection } from "~/hooks/use-debounced-intersection"
+import { useLoadingState } from "~/hooks/use-loading-state"
+import { useScrollRestoration } from "~/hooks/use-scroll-restoration"
 
 import { MessageItem } from "./message-item"
 
 export function MessageList() {
 	const { messages, isLoadingMessages, isLoadingNext, isLoadingPrev, loadNext, loadPrev } = useChat()
 	const scrollContainerRef = useRef<HTMLDivElement>(null)
-	const prevScrollHeightRef = useRef<number>(0)
-	const lastLoadTimeRef = useRef<number>(0)
+	const { saveScrollState, restoreScrollPosition } = useScrollRestoration()
+	const { canLoadTop, canLoadBottom, startLoadingTop, startLoadingBottom, finishLoading } =
+		useLoadingState()
+	const [isAtBottom, setIsAtBottom] = useState(true)
+	const prevMessageCountRef = useRef(messages.length)
+	const isUserScrollingRef = useRef(false)
+	const scrollTimeoutRef = useRef<NodeJS.Timeout | undefined>()
+	const loadingDirectionRef = useRef<"top" | "bottom" | null>(null)
 
-	// Intersection observers for infinite scroll
-	const [topSentinelRef, isTopVisible] = useIntersectionObserver({
-		rootMargin: "100px",
-		enabled: !isLoadingNext && !isLoadingMessages && !!loadNext,
+	const [topSentinelRef, isTopVisible] = useDebouncedIntersection({
+		rootMargin: "50px",
+		threshold: [0, 0.1, 0.5, 1],
+		enabled: canLoadTop && !isLoadingMessages && !!loadNext,
+		debounceMs: 400,
 	})
-	const [bottomSentinelRef, isBottomVisible] = useIntersectionObserver({
-		rootMargin: "100px",
-		enabled: !isLoadingPrev && !isLoadingMessages && !!loadPrev,
+	const [bottomSentinelRef, isBottomVisible] = useDebouncedIntersection({
+		rootMargin: "50px",
+		threshold: [0, 0.1, 0.5, 1],
+		enabled: canLoadBottom && !isLoadingMessages && !!loadPrev,
+		debounceMs: 400,
 	})
 
 	const processedMessages = useMemo(() => {
 		const timeThreshold = 5 * 60 * 1000
-		// Messages are already in DESC order from backend, we want oldest first
 		const chronologicalMessages = [...messages].reverse()
 
 		return chronologicalMessages.map((message, index) => {
@@ -71,6 +81,32 @@ export function MessageList() {
 		)
 	}, [processedMessages])
 
+	// Check if user is at bottom of scroll container
+	const checkIfAtBottom = useCallback(() => {
+		const container = scrollContainerRef.current
+		if (!container) return false
+
+		// Consider user at bottom if within 50px of the bottom
+		const threshold = 50
+		const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < threshold
+		return isNearBottom
+	}, [])
+
+	// Handle scroll events to track if user is at bottom
+	const handleScroll = useCallback(() => {
+		const container = scrollContainerRef.current
+		if (!container) return
+
+		// Track that user is actively scrolling
+		isUserScrollingRef.current = true
+		clearTimeout(scrollTimeoutRef.current)
+		scrollTimeoutRef.current = setTimeout(() => {
+			isUserScrollingRef.current = false
+		}, 150)
+
+		setIsAtBottom(checkIfAtBottom())
+	}, [checkIfAtBottom])
+
 	// Auto-scroll to bottom on initial load
 	// biome-ignore lint/correctness/useExhaustiveDependencies: We only want to scroll on initial load>
 	useEffect(() => {
@@ -79,44 +115,73 @@ export function MessageList() {
 		}
 	}, [isLoadingMessages])
 
+	// Auto-scroll to bottom when new messages arrive if user was at bottom
+	useEffect(() => {
+		const container = scrollContainerRef.current
+		if (!container) return
+
+		// Check if new messages were added (not from pagination)
+		const messageCountIncreased = messages.length > prevMessageCountRef.current
+		const notLoadingOlder = !isLoadingNext && !isLoadingPrev
+
+		if (messageCountIncreased && notLoadingOlder && isAtBottom) {
+			// Scroll to bottom to show new messages
+			container.scrollTop = container.scrollHeight
+		}
+
+		// Update previous message count
+		prevMessageCountRef.current = messages.length
+	}, [messages.length, isAtBottom, isLoadingNext, isLoadingPrev])
+
 	// Load older messages when top sentinel is visible
 	useEffect(() => {
-		const now = Date.now()
-		const timeSinceLastLoad = now - lastLoadTimeRef.current
-
-		if (isTopVisible && loadNext && !isLoadingNext && !isLoadingMessages && timeSinceLastLoad > 500) {
-			// Save current scroll position before loading
-			if (scrollContainerRef.current) {
-				prevScrollHeightRef.current = scrollContainerRef.current.scrollHeight
+		if (isTopVisible && loadNext && canLoadTop && !isLoadingMessages) {
+			// Try to start loading
+			if (startLoadingTop()) {
+				// Save current scroll position before loading
+				if (scrollContainerRef.current) {
+					saveScrollState(scrollContainerRef.current)
+					loadingDirectionRef.current = "top"
+				}
+				console.log("Loading older messages")
+				loadNext()
 			}
-			lastLoadTimeRef.current = now
-			loadNext()
 		}
-	}, [isTopVisible, loadNext, isLoadingNext, isLoadingMessages])
+	}, [isTopVisible, loadNext, canLoadTop, isLoadingMessages, saveScrollState, startLoadingTop])
 
 	// Load newer messages when bottom sentinel is visible
 	useEffect(() => {
-		const now = Date.now()
-		const timeSinceLastLoad = now - lastLoadTimeRef.current
-
-		if (isBottomVisible && loadPrev && !isLoadingPrev && !isLoadingMessages && timeSinceLastLoad > 500) {
-			lastLoadTimeRef.current = now
-			loadPrev()
-		}
-	}, [isBottomVisible, loadPrev, isLoadingPrev, isLoadingMessages])
-
-	// Restore scroll position after loading older messages
-	// biome-ignore lint/correctness/useExhaustiveDependencies: Save
-	useEffect(() => {
-		if (scrollContainerRef.current && prevScrollHeightRef.current > 0 && !isLoadingNext) {
-			const newScrollHeight = scrollContainerRef.current.scrollHeight
-			const scrollDiff = newScrollHeight - prevScrollHeightRef.current
-			if (scrollDiff > 0) {
-				scrollContainerRef.current.scrollTop = scrollDiff
-				prevScrollHeightRef.current = 0
+		if (isBottomVisible && loadPrev && canLoadBottom && !isLoadingMessages) {
+			// Try to start loading
+			if (startLoadingBottom()) {
+				// Save current scroll state before loading
+				if (scrollContainerRef.current) {
+					saveScrollState(scrollContainerRef.current)
+					loadingDirectionRef.current = "bottom"
+				}
+				console.log("Loading newer messages")
+				loadPrev()
 			}
 		}
-	}, [isLoadingNext, messages.length])
+	}, [isBottomVisible, loadPrev, canLoadBottom, isLoadingMessages, saveScrollState, startLoadingBottom])
+
+	// Restore scroll position after loading messages
+	// biome-ignore lint/correctness/useExhaustiveDependencies: Complex scroll restoration
+	useEffect(() => {
+		const container = scrollContainerRef.current
+		if (!container || loadingDirectionRef.current === null) return
+
+		// Only restore if we're done loading in the expected direction
+		if (loadingDirectionRef.current === "top" && !isLoadingNext) {
+			restoreScrollPosition(container, "top")
+			loadingDirectionRef.current = null
+			finishLoading()
+		} else if (loadingDirectionRef.current === "bottom" && !isLoadingPrev) {
+			restoreScrollPosition(container, "bottom")
+			loadingDirectionRef.current = null
+			finishLoading()
+		}
+	}, [isLoadingNext, isLoadingPrev, messages.length, restoreScrollPosition, finishLoading])
 
 	if (isLoadingMessages && messages.length === 0) {
 		return (
@@ -142,7 +207,15 @@ export function MessageList() {
 	}
 
 	return (
-		<div ref={scrollContainerRef} className="flex h-full flex-col overflow-y-auto py-2 pr-4">
+		<div
+			ref={scrollContainerRef}
+			onScroll={handleScroll}
+			className="flex h-full flex-col overflow-y-auto py-2 pr-4"
+			style={{
+				overflowAnchor: "auto",
+				scrollBehavior: "auto",
+			}}
+		>
 			{/* Top sentinel for loading older messages */}
 			<div ref={topSentinelRef} className="h-1" />
 
@@ -160,7 +233,11 @@ export function MessageList() {
 						</span>
 					</div>
 					{dateMessages.map((processedMessage) => (
-						<div key={processedMessage.message._id}>
+						<div
+							key={processedMessage.message._id}
+							style={{ overflowAnchor: "none" }}
+							data-message-id={processedMessage.message._id}
+						>
 							<MessageItem
 								message={processedMessage.message}
 								isGroupStart={processedMessage.isGroupStart}

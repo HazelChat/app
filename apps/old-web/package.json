@@ -34,7 +34,7 @@
 		"@solid-primitives/storage": "^4.3.3",
 		"@tanstack/query-persist-client-core": "^5.83.0",
 		"@tanstack/query-sync-storage-persister": "^5.83.0",
-		"@tanstack/router-plugin": "^1.130.9",
+		"@tanstack/router-plugin": "^1.130.15",
 		"@tanstack/solid-form": "^1.14.0",
 		"@tanstack/solid-query": "^5.83.0",
 		"@tanstack/solid-query-devtools": "^5.83.0",

@@ -63,19 +63,17 @@ export function ChatProvider({ channelId, children }: ChatProviderProps) {
 
 	// Reply state
 	const [replyToMessageId, setReplyToMessageId] = useState<Id<"messages"> | null>(null)
-	
+
 	// Keep track of previous messages to show during loading
 	const previousMessagesRef = useRef<Message[]>([])
 	// Keep track of pagination functions to avoid losing them during loading
 	const loadNextRef = useRef<(() => void) | undefined>(undefined)
 	const loadPrevRef = useRef<(() => void) | undefined>(undefined)
 
-	// Fetch channel data
 	const channelQuery = useQuery(
 		convexQuery(api.channels.getChannel, organizationId ? { channelId, organizationId } : "skip"),
 	)
 
-	// Fetch messages with pagination
 	const messagesResult = useNextPrevPaginatedQuery(
 		api.messages.getMessages,
 		organizationId
@@ -173,21 +171,21 @@ export function ChatProvider({ channelId, children }: ChatProviderProps) {
 
 	// Extract messages and pagination functions based on result state
 	const currentMessages = messagesResult._tag === "Loaded" ? messagesResult.page : []
-	
+
 	// Update previous messages when we have new data
 	if (currentMessages.length > 0) {
 		previousMessagesRef.current = currentMessages
 	}
-	
+
 	// Use previous messages during loading states to prevent flashing
 	const messages = currentMessages.length > 0 ? currentMessages : previousMessagesRef.current
-	
+
 	// Update pagination function refs when available
 	if (messagesResult._tag === "Loaded") {
 		loadNextRef.current = messagesResult.loadNext ?? undefined
 		loadPrevRef.current = messagesResult.loadPrev ?? undefined
 	}
-	
+
 	// Use stored functions during loading states
 	const loadNext = loadNextRef.current
 	const loadPrev = loadPrevRef.current
