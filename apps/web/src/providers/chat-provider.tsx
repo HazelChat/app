@@ -9,6 +9,7 @@ import { createContext, type ReactNode, useContext, useMemo, useRef, useState } 
 type MessagesResponse = FunctionReturnType<typeof api.messages.getMessages>
 type Message = MessagesResponse["page"][0]
 type Channel = FunctionReturnType<typeof api.channels.getChannel>
+type PinnedMessage = FunctionReturnType<typeof api.pinnedMessages.getPinnedMessages>[0]
 interface TypingUser {
 	userId: string
 	user: {
@@ -22,6 +23,7 @@ interface ChatContextValue {
 	channelId: Id<"channels">
 	channel: Channel | undefined
 	messages: Message[]
+	pinnedMessages: PinnedMessage[] | undefined
 	loadNext: (() => void) | undefined
 	loadPrev: (() => void) | undefined
 	isLoadingMessages: boolean
@@ -32,6 +34,8 @@ interface ChatContextValue {
 	deleteMessage: (messageId: Id<"messages">) => void
 	addReaction: (messageId: Id<"messages">, emoji: string) => void
 	removeReaction: (messageId: Id<"messages">, emoji: string) => void
+	pinMessage: (messageId: Id<"messages">) => void
+	unpinMessage: (messageId: Id<"messages">) => void
 	startTyping: () => void
 	stopTyping: () => void
 	typingUsers: TypingUsers
@@ -85,6 +89,11 @@ export function ChatProvider({ channelId, children }: ChatProviderProps) {
 		{ initialNumItems: 50 },
 	)
 
+	// Fetch pinned messages
+	const pinnedMessagesQuery = useQuery(
+		convexQuery(api.pinnedMessages.getPinnedMessages, organizationId ? { channelId, organizationId } : "skip"),
+	)
+
 	// Fetch typing users - TODO: Implement when API is available
 	const typingUsers: TypingUsers = []
 
@@ -94,6 +103,8 @@ export function ChatProvider({ channelId, children }: ChatProviderProps) {
 	const deleteMessageMutation = useConvexMutation(api.messages.deleteMessage)
 	const addReactionMutation = useConvexMutation(api.messages.createReaction)
 	const removeReactionMutation = useConvexMutation(api.messages.deleteReaction)
+	const pinMessageMutation = useConvexMutation(api.pinnedMessages.createPinnedMessage)
+	const unpinMessageMutation = useConvexMutation(api.pinnedMessages.deletePinnedMessage)
 
 	// Message operations
 	const sendMessage = ({
@@ -154,6 +165,24 @@ export function ChatProvider({ channelId, children }: ChatProviderProps) {
 		})
 	}
 
+	const pinMessage = (messageId: Id<"messages">) => {
+		if (!organizationId) return
+		pinMessageMutation({
+			organizationId,
+			messageId,
+			channelId,
+		})
+	}
+
+	const unpinMessage = (messageId: Id<"messages">) => {
+		if (!organizationId) return
+		unpinMessageMutation({
+			organizationId,
+			messageId,
+			channelId,
+		})
+	}
+
 	const startTyping = () => {
 		// TODO: Implement when typing API is available
 		console.log("Start typing")
@@ -199,6 +228,7 @@ export function ChatProvider({ channelId, children }: ChatProviderProps) {
 			channelId,
 			channel: channelQuery.data,
 			messages,
+			pinnedMessages: pinnedMessagesQuery.data,
 			loadNext,
 			loadPrev,
 			isLoadingMessages,
@@ -209,6 +239,8 @@ export function ChatProvider({ channelId, children }: ChatProviderProps) {
 			deleteMessage,
 			addReaction,
 			removeReaction,
+			pinMessage,
+			unpinMessage,
 			startTyping,
 			stopTyping,
 			typingUsers,
@@ -220,6 +252,7 @@ export function ChatProvider({ channelId, children }: ChatProviderProps) {
 			channelId,
 			channelQuery.data,
 			messages,
+			pinnedMessagesQuery.data,
 			loadNext,
 			loadPrev,
 			isLoadingMessages,

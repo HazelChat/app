@@ -35,7 +35,7 @@ export function MessageItem({
 	isFirstNewMessage = false,
 	isPinned = false,
 }: MessageItemProps) {
-	const { editMessage, deleteMessage, addReaction, removeReaction, setReplyToMessageId } = useChat()
+	const { editMessage, deleteMessage, addReaction, removeReaction, setReplyToMessageId, pinMessage, unpinMessage, pinnedMessages } = useChat()
 	const [isEditing, setIsEditing] = useState(false)
 
 	const { data: currentUser } = useQuery(convexQuery(api.me.getCurrentUser, {}))
@@ -43,6 +43,7 @@ export function MessageItem({
 
 	const showAvatar = isGroupStart || !!message.replyToMessageId
 	const isRepliedTo = !!message.replyToMessageId
+	const isMessagePinned = pinnedMessages?.some(p => p.messageId === message._id) || false
 
 	const handleReaction = (emoji: string) => {
 		const existingReaction = message.reactions?.find(
@@ -108,7 +109,7 @@ export function MessageItem({
 				isFirstNewMessage
 					? "border-emerald-500 border-l-2 bg-emerald-500/20 hover:bg-emerald-500/15"
 					: "",
-				isPinned ? "border-primary border-l-2 bg-primary/20 hover:bg-primary/15" : "",
+				isMessagePinned ? "border-amber-500 border-l-2 bg-amber-500/10 hover:bg-amber-500/15" : "",
 			)}
 			data-id={message._id}
 		>
@@ -292,6 +293,7 @@ export function MessageItem({
 			<MessageToolbar
 				message={message}
 				isOwnMessage={isOwnMessage}
+				isPinned={isMessagePinned}
 				onReaction={handleReaction}
 				onEdit={() => setIsEditing(true)}
 				onDelete={handleDelete}
@@ -308,8 +310,11 @@ export function MessageItem({
 					console.log("Mark as unread")
 				}}
 				onPin={() => {
-					// TODO: Implement pin message
-					console.log("Pin message")
+					if (isMessagePinned) {
+						unpinMessage(message._id)
+					} else {
+						pinMessage(message._id)
+					}
 				}}
 				onReport={() => {
 					// TODO: Implement report message

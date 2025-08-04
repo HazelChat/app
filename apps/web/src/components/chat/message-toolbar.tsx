@@ -30,6 +30,7 @@ type Message = FunctionReturnType<typeof api.messages.getMessages>["page"][0]
 interface MessageToolbarProps {
 	message: Message
 	isOwnMessage: boolean
+	isPinned?: boolean
 	onReaction: (emoji: string) => void
 	onEdit: () => void
 	onDelete: () => void
@@ -45,6 +46,7 @@ interface MessageToolbarProps {
 export function MessageToolbar({
 	message,
 	isOwnMessage,
+	isPinned = false,
 	onReaction,
 	onEdit,
 	onDelete,
@@ -186,7 +188,7 @@ export function MessageToolbar({
 							{onMarkUnread && (
 								<Dropdown.Item onAction={onMarkUnread} icon={Mail01} label="Mark as unread" />
 							)}
-							{onPin && <Dropdown.Item onAction={onPin} icon={Stars02} label="Pin message" />}
+							{onPin && <Dropdown.Item onAction={onPin} icon={Stars02} label={isPinned ? "Unpin message" : "Pin message"} />}
 
 							<Dropdown.Separator />
 

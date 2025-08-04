@@ -2,6 +2,7 @@ import { Avatar } from "~/components/base/avatar/avatar"
 import IconHashtagStroke from "~/components/icons/IconHashtagStroke"
 import { usePresence } from "~/components/presence/presence-provider"
 import { useChat } from "~/hooks/use-chat"
+import { PinnedMessagesModal } from "./pinned-messages-modal"
 
 export function ChatHeader() {
 	const { channel } = useChat()
@@ -50,7 +51,10 @@ export function ChatHeader() {
 				)}
 			</div>
 
-			<div className="flex items-center gap-2">{/* Add channel actions here */}</div>
+			<div className="flex items-center gap-2">
+				<PinnedMessagesModal />
+				{/* Add other channel actions here */}
+			</div>
 		</div>
 	)
 }
