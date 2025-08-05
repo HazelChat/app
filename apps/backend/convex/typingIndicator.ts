@@ -18,24 +18,31 @@ const TYPING_TIMEOUT = 5000 // 5 seconds
 export const update = userMutation({
 	args: {
 		channelId: v.id("channels"),
+		organizationId: v.id("organizations"),
 	},
 	handler: async (ctx, { channelId }) => {
 		const membership = ctx.user.membership
 		if (!membership) throw new Error("User not a member of this organization")
+
+		console.log(`[DEBUG] Updating typing indicator for member ${membership._id} in channel ${channelId}`)
 
 		const existing = await ctx.db
 			.query("typingIndicators")
 			.withIndex("by_memberId", (q) => q.eq("channelId", channelId).eq("memberId", membership._id))
 			.unique()
 
+		const now = Date.now()
 		if (existing) {
-			await ctx.db.patch(existing._id, { lastTyped: Date.now() })
+			console.log(`[DEBUG] Updating existing typing indicator ${existing._id}`)
+			await ctx.db.patch(existing._id, { lastTyped: now })
 		} else {
-			await ctx.db.insert("typingIndicators", {
+			console.log(`[DEBUG] Creating new typing indicator for member ${membership._id}`)
+			const id = await ctx.db.insert("typingIndicators", {
 				channelId,
 				memberId: membership._id,
-				lastTyped: Date.now(),
+				lastTyped: now,
 			})
+			console.log(`[DEBUG] Created typing indicator with id ${id}`)
 		}
 	},
 })
@@ -48,40 +55,61 @@ export const update = userMutation({
 export const list = userQuery({
 	args: {
 		channelId: v.id("channels"),
+		organizationId: v.id("organizations"),
 	},
 	handler: async (ctx, { channelId }) => {
 		const threshold = Date.now() - TYPING_TIMEOUT
 		const membership = ctx.user.membership
+
+		console.log(`[DEBUG] Listing typing indicators for channel ${channelId}, current time: ${Date.now()}, threshold: ${threshold}, time window: ${TYPING_TIMEOUT}ms`)
 
 		const typingIndicators = await ctx.db
 			.query("typingIndicators")
 			.withIndex("by_channel_timestamp", (q) => q.eq("channelId", channelId).gt("lastTyped", threshold))
 			.collect()
 
+		console.log(`[DEBUG] Found ${typingIndicators.length} typing indicators in DB`)
+
 		const typingIndicatorsWithUsers = await asyncMap(typingIndicators, async (indicator) => {
-			if (membership && indicator.memberId === membership._id) return null
+			console.log(`[DEBUG] Processing indicator for member ${indicator.memberId}, lastTyped: ${new Date(indicator.lastTyped).toISOString()}`)
+			
+			if (membership && indicator.memberId === membership._id) {
+				console.log(`[DEBUG] Filtering out current user ${membership._id}`)
+				return null
+			}
 
 			// Get member details
 			const orgMember = await ctx.db.get(indicator.memberId)
-			if (!orgMember) return null
+			if (!orgMember) {
+				console.log(`[DEBUG] Member ${indicator.memberId} not found`)
+				return null
+			}
 
 			// Get user details
 			const user = await ctx.db.get(orgMember.userId)
-			if (!user) return null
+			if (!user) {
+				console.log(`[DEBUG] User ${orgMember.userId} not found`)
+				return null
+			}
 
+			console.log(`[DEBUG] Including user ${user.firstName} ${user.lastName} in typing list`)
 			return {
 				...indicator,
 				user,
 			}
 		})
 
-		return typingIndicatorsWithUsers.filter((indicator) => indicator !== null)
+		const result = typingIndicatorsWithUsers.filter((indicator) => indicator !== null)
+		console.log(`[DEBUG] Returning ${result.length} typing users`)
+		
+		return result
 	},
 })
 
 export const stop = userMutation({
 	args: {
 		channelId: v.id("channels"),
+		organizationId: v.id("organizations"),
 	},
 	handler: async (ctx, { channelId }) => {
 		const membership = ctx.user.membership

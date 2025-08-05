@@ -1,5 +1,5 @@
 import type { Editor } from "@tiptap/react"
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 import { useChat } from "~/providers/chat-provider"
 import { cx } from "~/utils/cx"
@@ -15,29 +15,54 @@ export const MessageComposer = () => {
 	const textareaRef = useRef<HTMLDivElement>(null)
 	const typingTimeoutRef = useRef<NodeJS.Timeout>(undefined)
 
-	// useEffect(() => {
-	// 	if (content && !isTyping) {
-	// 		setIsTyping(true)
-	// 		startTyping()
-	// 	}
+	const handleEditorUpdate = (editor: Editor) => {
+		const content = editor.getText().trim()
+		
+		// Debug log for current user typing
+		console.log("[DEBUG] User typing, content length:", content.length)
+		
+		if (content && !isTyping) {
+			console.log("[DEBUG] User started typing")
+			setIsTyping(true)
+			startTyping()
+		}
 
-	// 	if (isTyping) {
-	// 		if (typingTimeoutRef.current) {
-	// 			clearTimeout(typingTimeoutRef.current)
-	// 		}
+		if (content && isTyping) {
+			// Reset the typing timeout
+			if (typingTimeoutRef.current) {
+				clearTimeout(typingTimeoutRef.current)
+			}
 
-	// 		typingTimeoutRef.current = setTimeout(() => {
-	// 			setIsTyping(false)
-	// 			stopTyping()
-	// 		}, 3000)
-	// 	}
-
-	// 	return () => {
-	// 		if (typingTimeoutRef.current) {
-	// 			clearTimeout(typingTimeoutRef.current)
-	// 		}
-	// 	}
-	// }, [content, isTyping, startTyping, stopTyping])
+			// Set a new timeout to stop typing after 3 seconds of inactivity
+			typingTimeoutRef.current = setTimeout(() => {
+				console.log("[DEBUG] User stopped typing due to inactivity")
+				setIsTyping(false)
+				stopTyping()
+			}, 3000)
+		}
+		
+		// If content is empty and user was typing, stop typing
+		if (!content && isTyping) {
+			console.log("[DEBUG] User stopped typing (empty content)")
+			setIsTyping(false)
+			stopTyping()
+			if (typingTimeoutRef.current) {
+				clearTimeout(typingTimeoutRef.current)
+			}
+		}
+	}
+	
+	// Cleanup on unmount
+	useEffect(() => {
+		return () => {
+			if (typingTimeoutRef.current) {
+				clearTimeout(typingTimeoutRef.current)
+			}
+			if (isTyping) {
+				stopTyping()
+			}
+		}
+	}, [isTyping, stopTyping])
 
 	const handleSubmit = async (editor: Editor) => {
 		sendMessage({ jsonContent: editor.getJSON(), content: editor.getText() })
@@ -67,6 +92,7 @@ export const MessageComposer = () => {
 					className="relative w-full gap-2"
 					inputClassName={cx("p-4", replyToMessageId && "rounded-t-none")}
 					onSubmit={handleSubmit}
+					onUpdate={handleEditorUpdate}
 				>
 					{(_editor) => (
 						<>

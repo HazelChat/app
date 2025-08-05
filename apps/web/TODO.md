@@ -4,11 +4,7 @@
 - Webhook for invitation.created failing
 
 
-# After this make sure the baseline code is good and test work again
+- Typing indicator
 
-
-After
-- Add Chat 
-- Add Start page
 - Add Command Palette
 - Make Presence Work better and add Away Status

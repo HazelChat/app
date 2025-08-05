@@ -37,7 +37,7 @@ const useEditorContext = () => {
 	return context
 }
 
-interface TextEditorRootProps extends Partial<EditorOptions> {
+interface TextEditorRootProps extends Partial<Omit<EditorOptions, 'onUpdate'>> {
 	className?: string
 	isDisabled?: boolean
 	limit?: number
@@ -47,6 +47,7 @@ interface TextEditorRootProps extends Partial<EditorOptions> {
 	inputClassName?: string
 	ref?: Ref<HTMLDivElement>
 	onSubmit?: (editor: Editor) => void | Promise<void>
+	onUpdate?: (editor: Editor) => void
 }
 
 const TextEditorRoot = ({
@@ -58,6 +59,7 @@ const TextEditorRoot = ({
 	limit,
 	placeholder = "Write something...",
 	onSubmit,
+	onUpdate,
 	...editorOptions
 }: TextEditorRootProps) => {
 	const id = useId()
@@ -67,6 +69,11 @@ const TextEditorRoot = ({
 		...editorOptions,
 		editable: !isDisabled,
 		immediatelyRender: true,
+		onUpdate: ({ editor }) => {
+			if (onUpdate) {
+				onUpdate(editor)
+			}
+		},
 		extensions: [
 			StarterKit.configure({
 				blockquote: {
