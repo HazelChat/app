@@ -75,6 +75,7 @@
 		"@types/react": "^19.1.8",
 		"@types/react-dom": "^19.1.6",
 		"@vitejs/plugin-react": "^4.7.0",
+		"babel-plugin-react-compiler": "^19.1.0-rc.2",
 		"jsdom": "^26.1.0",
 		"postcss": "^8.5.6",
 		"typescript": "5.9.2",

@@ -8,7 +8,11 @@ export default defineConfig({
 	plugins: [
 		tanstackRouter({ target: "react", autoCodeSplitting: true, routeToken: "layout" }),
 
-		viteReact(),
+		viteReact({
+			babel: {
+				plugins: ["babel-plugin-react-compiler"],
+			},
+		}),
 		tailwindcss(),
 	],
 	resolve: {
