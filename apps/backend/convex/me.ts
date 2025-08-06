@@ -35,7 +35,7 @@ export const getOrganization = accountQuery({
 		if (!organization) {
 			return {
 				directive: "redirect",
-				to: "/onboarding",
+				to: "/auth/login",
 			} as const
 		}
 
@@ -50,7 +50,7 @@ export const getOrganization = accountQuery({
 		if (!membership) {
 			return {
 				directive: "redirect",
-				to: "/sign-in",
+				to: "/auth/login",
 			} as const
 		}
 

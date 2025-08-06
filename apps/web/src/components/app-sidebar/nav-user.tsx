@@ -1,4 +1,8 @@
-import { useNavigate } from "@tanstack/react-router"
+import { useNavigate, useParams } from "@tanstack/react-router"
+import { convexQuery } from "@convex-dev/react-query"
+import type { Id } from "@hazel/backend"
+import { api } from "@hazel/backend/api"
+import { useQuery } from "@tanstack/react-query"
 import { Container, HelpCircle, LayersTwo01, LogOut01, Settings01, User01 } from "@untitledui/icons"
 import { useAuth } from "@workos-inc/authkit-react"
 import { Button as AriaButton } from "react-aria-components"
@@ -9,8 +13,21 @@ import { cx } from "~/utils/cx"
 
 export const NavUser = () => {
 	const { user, signOut } = useAuth()
-
 	const navigate = useNavigate()
+	
+	// Try to get orgId from route params
+	const params = useParams({ from: "/app/$orgId", strict: false })
+	const orgIdFromRoute = params?.orgId as Id<"organizations"> | undefined
+	
+	// Fall back to getting organization from session if not in route
+	const organizationQuery = useQuery(
+		convexQuery(api.me.getOrganization, orgIdFromRoute ? "skip" : {})
+	)
+	const orgIdFromSession = organizationQuery.data?.directive === "success" 
+		? organizationQuery.data.data._id 
+		: undefined
+	
+	const organizationId = orgIdFromRoute || orgIdFromSession
 
 	return (
 		<Dropdown.Root>
@@ -47,9 +64,12 @@ export const NavUser = () => {
 						<Dropdown.Item
 							addon="⌘S"
 							onAction={() => {
-								navigate({
-									to: "/app/settings",
-								})
+								if (organizationId) {
+									navigate({
+										to: "/app/$orgId/settings",
+										params: { orgId: organizationId },
+									})
+								}
 							}}
 							icon={Settings01}
 						>

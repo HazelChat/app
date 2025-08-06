@@ -31,27 +31,27 @@ import { WorkspaceSwitcher } from "./workspace-switcher"
 
 export const AppSidebar = () => {
 	// Try to get orgId from route params
-	const params = useParams({ from: "/app/$orgId", strict: false })
+	const params = useParams({ from: "/app/$orgId" })
 	const orgIdFromRoute = params?.orgId as Id<"organizations"> | undefined
-	
+
 	// Fall back to getting organization from session if not in route
-	const organizationQuery = useQuery(
-		convexQuery(api.me.getOrganization, orgIdFromRoute ? "skip" : {})
-	)
-	const orgIdFromSession = organizationQuery.data?.directive === "success" 
-		? organizationQuery.data.data._id 
-		: undefined
-	
+	const organizationQuery = useQuery(convexQuery(api.me.getOrganization, orgIdFromRoute ? "skip" : {}))
+	const orgIdFromSession =
+		organizationQuery.data?.directive === "success" ? organizationQuery.data.data._id : undefined
+
 	const organizationId = orgIdFromRoute || orgIdFromSession
-	
+
 	const channelsQuery = useQuery(
-		convexQuery(api.channels.getChannelsForOrganization, 
-			organizationId ? {
-				organizationId,
-				favoriteFilter: {
-					favorite: false,
-				},
-			} : "skip"
+		convexQuery(
+			api.channels.getChannelsForOrganization,
+			organizationId
+				? {
+						organizationId,
+						favoriteFilter: {
+							favorite: false,
+						},
+					}
+				: "skip",
 		),
 	)
 

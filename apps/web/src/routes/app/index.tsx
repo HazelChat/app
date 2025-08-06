@@ -28,7 +28,11 @@ function RouteComponent() {
 	
 	// Handle redirect to onboarding or login
 	if (organizationQuery.data?.directive === "redirect") {
-		return <Navigate to={organizationQuery.data.to} />
+		if (organizationQuery.data.to === "/auth/login") {
+			return <Navigate to="/auth/login" search={{ returnTo: "/app" }} />
+		}
+		// For any other redirects, just navigate to the path
+		return <Navigate to={organizationQuery.data.to as any} />
 	}
 	
 	// No organization found
