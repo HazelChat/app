@@ -15,7 +15,7 @@ import { InputBase, TextField } from "~/components/base/input/input"
 import { Label } from "~/components/base/input/label"
 import { useAppForm } from "~/hooks/use-app-form"
 
-export const Route = createFileRoute("/app/settings/profile")({
+export const Route = createFileRoute("/app/$orgId/settings/profile")({
 	component: ProfileSettings,
 })
 

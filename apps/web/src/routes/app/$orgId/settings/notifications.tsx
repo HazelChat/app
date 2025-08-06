@@ -11,7 +11,7 @@ import {
 import { SectionHeader } from "~/components/application/section-headers/section-headers"
 import { Form } from "~/components/base/form/form"
 
-export const Route = createFileRoute("/app/settings/notifications")({
+export const Route = createFileRoute("/app/$orgId/settings/notifications")({
 	component: NotificationsSettings,
 })
 

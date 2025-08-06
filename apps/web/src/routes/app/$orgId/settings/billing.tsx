@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router"
 import { SectionHeader } from "~/components/application/section-headers/section-headers"
 import { Form } from "~/components/base/form/form"
 
-export const Route = createFileRoute("/app/settings/billing")({
+export const Route = createFileRoute("/app/$orgId/settings/billing")({
 	component: BillingSettings,
 })
 

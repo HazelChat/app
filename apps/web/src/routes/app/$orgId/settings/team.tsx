@@ -24,7 +24,7 @@ import { Dropdown } from "~/components/base/dropdown/dropdown"
 import { FeaturedIcon } from "~/components/foundations/featured-icon/featured-icons"
 import { usePresence } from "~/components/presence/presence-provider"
 
-export const Route = createFileRoute("/app/settings/team")({
+export const Route = createFileRoute("/app/$orgId/settings/team")({
 	component: RouteComponent,
 })
 

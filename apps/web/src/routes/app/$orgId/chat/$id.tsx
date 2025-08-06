@@ -7,12 +7,13 @@ import { MessageList } from "~/components/chat/message-list"
 import { TypingIndicator } from "~/components/chat/typing-indicator"
 import { ChatProvider } from "~/providers/chat-provider"
 
-export const Route = createFileRoute("/app/chat/$id")({
+export const Route = createFileRoute("/app/$orgId/chat/$id")({
 	component: RouteComponent,
 })
 
 function RouteComponent() {
-	const { id } = Route.useParams()
+	const { orgId, id } = Route.useParams()
+	const organizationId = orgId as Id<"organizations">
 	const messageComposerRef = useRef<MessageComposerRef>(null)
 
 	useEffect(() => {
@@ -80,7 +81,7 @@ function RouteComponent() {
 	}, [])
 
 	return (
-		<ChatProvider channelId={id as Id<"channels">}>
+		<ChatProvider channelId={id as Id<"channels">} organizationId={organizationId}>
 			<div className="flex h-screen flex-col">
 				<ChatHeader />
 				<div className="flex-1 overflow-hidden">

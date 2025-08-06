@@ -2,11 +2,11 @@ import { createFileRoute } from "@tanstack/react-router"
 import { SectionHeader } from "~/components/application/section-headers/section-headers"
 import { Form } from "~/components/base/form/form"
 
-export const Route = createFileRoute("/app/settings/email")({
-	component: EmailSettings,
+export const Route = createFileRoute("/app/$orgId/settings/integrations")({
+	component: IntegrationsSettings,
 })
 
-function EmailSettings() {
+function IntegrationsSettings() {
 	return (
 		<Form
 			className="flex flex-col gap-6 px-4 lg:px-8"
@@ -19,16 +19,16 @@ function EmailSettings() {
 			<SectionHeader.Root>
 				<SectionHeader.Group>
 					<div className="flex flex-1 flex-col justify-center gap-0.5 self-stretch">
-						<SectionHeader.Heading>Email</SectionHeader.Heading>
+						<SectionHeader.Heading>Integrations</SectionHeader.Heading>
 						<SectionHeader.Subheading>
-							Manage your email preferences and notifications.
+							Connect and manage third-party services.
 						</SectionHeader.Subheading>
 					</div>
 				</SectionHeader.Group>
 			</SectionHeader.Root>
 
 			<div className="flex flex-col gap-5">
-				<p className="text-secondary">Email settings coming soon...</p>
+				<p className="text-secondary">Integration settings coming soon...</p>
 			</div>
 		</Form>
 	)

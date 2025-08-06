@@ -17,7 +17,7 @@ import { Badge, BadgeWithDot } from "~/components/base/badges/badges"
 import { Button } from "~/components/base/buttons/button"
 import { ButtonUtility } from "~/components/base/buttons/button-utility"
 
-export const Route = createFileRoute("/app/settings/invitations")({
+export const Route = createFileRoute("/app/$orgId/settings/invitations")({
 	component: RouteComponent,
 })
 

@@ -1,7 +1,8 @@
 import { convexQuery } from "@convex-dev/react-query"
+import type { Id } from "@hazel/backend"
 import { api } from "@hazel/backend/api"
 import { useQuery } from "@tanstack/react-query"
-import { createFileRoute, Link } from "@tanstack/react-router"
+import { createFileRoute, Link, useParams } from "@tanstack/react-router"
 import { useMemo } from "react"
 import { Avatar } from "~/components/base/avatar/avatar"
 import IconHashtagStroke from "~/components/icons/IconHashtagStroke"
@@ -9,13 +10,15 @@ import IconLockCloseStroke from "~/components/icons/IconLockCloseStroke"
 import { usePresence } from "~/components/presence/presence-provider"
 import { cn } from "~/lib/utils"
 
-export const Route = createFileRoute("/app/chat/")({
+export const Route = createFileRoute("/app/$orgId/chat/")({
 	component: RouteComponent,
 })
 
 function RouteComponent() {
-	const channelsQuery = useQuery(convexQuery(api.channels.getChannelsForOrganization, {}))
-	const { data: me } = useQuery(convexQuery(api.me.getCurrentUser, {}))
+	const { orgId } = useParams({ from: "/app/$orgId" })
+	const organizationId = orgId as Id<"organizations">
+	const channelsQuery = useQuery(convexQuery(api.channels.getChannelsForOrganization, { organizationId }))
+	const { data: me } = useQuery(convexQuery(api.me.getCurrentUser, { organizationId }))
 	const { presenceList } = usePresence()
 
 	const publicChannels = useMemo(
@@ -95,10 +98,11 @@ function RouteComponent() {
 }
 
 function ChannelCard({ channel, isPrivate = false }: { channel: any; isPrivate?: boolean }) {
+	const { orgId } = useParams({ from: "/app/$orgId" })
 	return (
 		<Link
-			to="/app/chat/$id"
-			params={{ id: channel._id }}
+			to="/app/$orgId/chat/$id"
+			params={{ orgId, id: channel._id }}
 			className="flex items-center justify-between gap-4 rounded-lg px-4 py-3 transition-colors hover:bg-quaternary/40"
 		>
 			<div className="flex items-center gap-3">
@@ -141,6 +145,7 @@ function DmCard({
 	currentUserId?: string
 	presenceList: any[]
 }) {
+	const { orgId } = useParams({ from: "/app/$orgId" })
 	const otherMembers = channel.members.filter((member: any) => member.userId !== currentUserId)
 
 	if (channel.type === "single" && otherMembers.length === 1) {
@@ -149,8 +154,8 @@ function DmCard({
 
 		return (
 			<Link
-				to="/app/chat/$id"
-				params={{ id: channel._id }}
+				to="/app/$orgId/chat/$id"
+				params={{ orgId, id: channel._id }}
 				className="flex items-center justify-between gap-4 rounded-lg px-4 py-3 transition-colors hover:bg-quaternary/40"
 			>
 				<div className="flex items-center gap-3">
@@ -178,8 +183,8 @@ function DmCard({
 
 	return (
 		<Link
-			to="/app/chat/$id"
-			params={{ id: channel._id }}
+			to="/app/$orgId/chat/$id"
+			params={{ orgId, id: channel._id }}
 			className="flex items-center justify-between gap-4 rounded-lg px-4 py-3 transition-colors hover:bg-muted/40"
 		>
 			<div className="flex items-center gap-3">

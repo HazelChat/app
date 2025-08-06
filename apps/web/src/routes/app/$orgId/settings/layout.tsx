@@ -1,11 +1,11 @@
-import { createFileRoute, Outlet, useLocation, useNavigate } from "@tanstack/react-router"
+import { createFileRoute, Outlet, useLocation, useNavigate, useParams } from "@tanstack/react-router"
 import { SearchLg } from "@untitledui/icons"
 import { useEffect, useState } from "react"
 import { TabList, Tabs } from "~/components/application/tabs/tabs"
 import { Input } from "~/components/base/input/input"
 import { NativeSelect } from "~/components/base/select/select-native"
 
-export const Route = createFileRoute("/app/settings")({
+export const Route = createFileRoute("/app/$orgId/settings")({
 	component: RouteComponent,
 })
 
@@ -22,6 +22,7 @@ const tabs = [
 function RouteComponent() {
 	const location = useLocation()
 	const navigate = useNavigate()
+	const { orgId } = useParams({ from: "/app/$orgId" })
 
 	// Extract the current tab from the pathname
 	const pathSegments = location.pathname.split("/")
@@ -68,7 +69,8 @@ function RouteComponent() {
 							onChange={(event) => {
 								const tabId = event.target.value
 								navigate({
-									to: tabId === "appearance" ? "/app/settings" : `/app/settings/${tabId}`,
+									to: tabId === "appearance" ? "/app/$orgId/settings" : `/app/$orgId/settings/${tabId}`,
+									params: { orgId },
 								})
 							}}
 							options={tabs.map((tab) => ({ label: tab.label, value: tab.id }))}
@@ -82,7 +84,8 @@ function RouteComponent() {
 							onSelectionChange={(value) => {
 								const tabId = value as string
 								navigate({
-									to: tabId === "appearance" ? "/app/settings" : `/app/settings/${tabId}`,
+									to: tabId === "appearance" ? "/app/$orgId/settings" : `/app/$orgId/settings/${tabId}`,
+									params: { orgId },
 								})
 							}}
 						>

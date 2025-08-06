@@ -8,10 +8,10 @@ export const Route = createFileRoute("/app/")({
 })
 
 function RouteComponent() {
-	// Get current organization from session
 	const organizationQuery = useQuery(convexQuery(api.me.getOrganization, {}))
-	
-	// Loading state
+
+	console.log("Organization query:", organizationQuery)
+
 	if (organizationQuery.isLoading) {
 		return (
 			<div className="flex h-full items-center justify-center">
@@ -19,13 +19,12 @@ function RouteComponent() {
 			</div>
 		)
 	}
-	
-	// Handle redirect
+
 	if (organizationQuery.data?.directive === "success") {
 		const orgId = organizationQuery.data.data._id
 		return <Navigate to="/app/$orgId" params={{ orgId }} />
 	}
-	
+
 	// Handle redirect to onboarding or login
 	if (organizationQuery.data?.directive === "redirect") {
 		if (organizationQuery.data.to === "/auth/login") {
@@ -34,7 +33,7 @@ function RouteComponent() {
 		// For any other redirects, just navigate to the path
 		return <Navigate to={organizationQuery.data.to as any} />
 	}
-	
+
 	// No organization found
 	return (
 		<div className="flex h-full items-center justify-center">

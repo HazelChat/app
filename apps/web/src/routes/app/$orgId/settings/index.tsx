@@ -17,7 +17,7 @@ import { type Theme, useTheme } from "~/components/theme-provider"
 
 import { cx } from "~/utils/cx"
 
-export const Route = createFileRoute("/app/settings/")({
+export const Route = createFileRoute("/app/$orgId/settings/")({
 	component: AppearanceSettings,
 })
 
@@ -155,7 +155,7 @@ function AppearanceSettings() {
 									>
 										{({ isSelected, isFocused }) => (
 											<ColorSwatch
-												id={`color-${swatch.hex}`}
+												id={"color-${swatch.hex}"}
 												color={swatch.hex}
 												className={cx(
 													"-outline-offset-1 size-7 cursor-pointer rounded-full outline-1 outline-black/10",
