@@ -513,6 +513,90 @@ export const createDmChannel = organizationServerMutation({
 	},
 })
 
+export const createGroupDmChannel = organizationServerMutation({
+	args: {
+		userIds: v.array(v.id("users")),
+	},
+	handler: async (ctx, args) => {
+		const user = ctx.account.doc
+		
+		// Include current user in the participant list
+		const allUserIds = [...args.userIds, user._id]
+		const uniqueUserIds = [...new Set(allUserIds)]
+		
+		// Validate we have at least 2 users (including current user)
+		if (uniqueUserIds.length < 2) {
+			throw new Error("Group DM requires at least 2 participants")
+		}
+		
+		const participantHash = createParticipantHash(uniqueUserIds)
+		
+		// Check if a channel with these participants already exists
+		const existingChannel = await ctx.db
+			.query("channels")
+			.withIndex("by_organizationId_and_participantHash", (q) =>
+				q.eq("organizationId", ctx.organizationId).eq("participantHash", participantHash),
+			)
+			.first()
+		
+		if (existingChannel) {
+			// Check if the current user has the channel hidden
+			const currentUserMember = await ctx.db
+				.query("channelMembers")
+				.withIndex("by_channelIdAndUserId", (q) =>
+					q.eq("channelId", existingChannel._id).eq("userId", user._id),
+				)
+				.first()
+			
+			// If the channel is hidden for the user, unhide it
+			if (currentUserMember?.isHidden) {
+				await ctx.db.patch(currentUserMember._id, {
+					isHidden: false,
+				})
+			}
+			
+			return existingChannel._id
+		}
+		
+		// Get user details for channel name
+		const users = await asyncMap(args.userIds, async (userId) => {
+			return await ctx.db.get(userId)
+		})
+		
+		// Create a name from the first few users
+		const channelName = users
+			.filter(u => u !== null)
+			.slice(0, 3)
+			.map(u => `${u.firstName} ${u.lastName}`)
+			.join(", ") + (users.length > 3 ? ` +${users.length - 3}` : "")
+		
+		// Create the channel
+		const channelId = await ctx.db.insert("channels", {
+			organizationId: ctx.organizationId,
+			name: channelName,
+			type: uniqueUserIds.length === 2 ? "single" : "direct",
+			participantHash,
+			updatedAt: Date.now(),
+			pinnedMessages: [],
+		})
+		
+		// Add all users as members
+		await asyncMap(uniqueUserIds, async (userId) => {
+			await ctx.db.insert("channelMembers", {
+				channelId,
+				userId,
+				joinedAt: Date.now(),
+				isHidden: false,
+				isMuted: false,
+				isFavorite: false,
+				notificationCount: 0,
+			})
+		})
+		
+		return channelId
+	},
+})
+
 export const creatDmChannel = userMutation({
 	args: {
 		userId: v.id("users"),
