@@ -42,19 +42,22 @@ function RouteComponent() {
 	} | null>(null)
 	const [removeUserId, setRemoveUserId] = useState<Id<"users"> | null>(null)
 
+	const organizationId = orgId as Id<"organizations">
+	
 	const teamMembersQuery = useConvexQuery(api.users.getUsers, {
-		organizationId: orgId as Id<"organizations">,
+		organizationId,
 	})
 	const removeMemberMutation = useConvexMutation(api.organizations.removeMember)
 	const currentUserQuery = useConvexQuery(api.me.get)
-	const organizationQuery = useConvexQuery(api.me.getOrganization)
+	const organizationQuery = useConvexQuery(api.organizations.getOrganizationById, {
+		organizationId,
+	})
 
 	const { isUserOnline } = usePresence()
 
 	const isLoading = teamMembersQuery === undefined
 	const currentUser = currentUserQuery
-	const organization = organizationQuery?.directive === "success" ? organizationQuery.data : null
-	const organizationId = organization?._id
+	const organization = organizationQuery
 
 	const teamMembers =
 		teamMembersQuery?.map((user) => ({
@@ -78,8 +81,6 @@ function RouteComponent() {
 	}
 
 	const handleRemoveUser = async (userId: Id<"users">) => {
-		if (!organizationId) return
-
 		try {
 			await removeMemberMutation({ organizationId, userId })
 			toast.success("Member removed", {
@@ -239,7 +240,7 @@ function RouteComponent() {
 
 			<EmailInviteModal isOpen={showInviteModal} onOpenChange={setShowInviteModal} />
 
-			{changeRoleUser && organizationId && currentUser && (
+			{changeRoleUser && currentUser && (
 				<ChangeRoleModal
 					isOpen={!!changeRoleUser}
 					onOpenChange={(open) => !open && setChangeRoleUser(null)}

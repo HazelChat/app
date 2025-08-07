@@ -15,6 +15,7 @@ type TypingUsers = TypingUser[]
 
 interface ChatContextValue {
 	channelId: Id<"channels">
+	organizationId: Id<"organizations">
 	channel: Channel | undefined
 	messages: Message[]
 	pinnedMessages: PinnedMessage[] | undefined
@@ -242,6 +243,7 @@ export function ChatProvider({ channelId, organizationId, children }: ChatProvid
 	const contextValue = useMemo<ChatContextValue>(
 		() => ({
 			channelId,
+			organizationId,
 			channel: channelQuery.data,
 			messages,
 			pinnedMessages: pinnedMessagesQuery.data,

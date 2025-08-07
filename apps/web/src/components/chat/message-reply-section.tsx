@@ -7,24 +7,17 @@ import { Avatar } from "../base/avatar/avatar"
 interface MessageReplySectionProps {
 	replyToMessageId: Id<"messages">
 	channelId: Id<"channels">
+	organizationId: Id<"organizations">
 	onClick?: () => void
 }
 
-export function MessageReplySection({ replyToMessageId, channelId, onClick }: MessageReplySectionProps) {
-	const { data: organization } = useQuery(convexQuery(api.me.getOrganization, {}))
-	const organizationId = organization?.directive === "success" ? organization.data._id : undefined
-
+export function MessageReplySection({ replyToMessageId, channelId, organizationId, onClick }: MessageReplySectionProps) {
 	const { data: replyMessage, isLoading } = useQuery(
-		convexQuery(
-			api.messages.getMessage,
-			organizationId
-				? {
-						id: replyToMessageId,
-						channelId,
-						organizationId,
-					}
-				: "skip",
-		),
+		convexQuery(api.messages.getMessage, {
+			id: replyToMessageId,
+			channelId,
+			organizationId,
+		}),
 	)
 
 	return (

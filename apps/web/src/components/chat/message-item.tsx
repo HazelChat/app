@@ -134,6 +134,7 @@ export function MessageItem({
 				<MessageReplySection
 					replyToMessageId={message.replyToMessageId}
 					channelId={message.channelId}
+					organizationId={orgId as Id<"organizations">}
 					onClick={() => {
 						const replyElement = document.getElementById(`message-${message.replyToMessageId}`)
 						if (replyElement) {

@@ -12,22 +12,14 @@ interface ReplyIndicatorProps {
 }
 
 export function ReplyIndicator({ replyToMessageId, onClose }: ReplyIndicatorProps) {
-	const { channelId } = useChat()
-
-	const { data: organization } = useQuery(convexQuery(api.me.getOrganization, {}))
-	const organizationId = organization?.directive === "success" ? organization.data._id : undefined
+	const { channelId, organizationId } = useChat()
 
 	const { data: message, isLoading } = useQuery(
-		convexQuery(
-			api.messages.getMessage,
-			organizationId
-				? {
-						id: replyToMessageId,
-						channelId,
-						organizationId,
-					}
-				: "skip",
-		),
+		convexQuery(api.messages.getMessage, {
+			id: replyToMessageId,
+			channelId,
+			organizationId,
+		}),
 	)
 
 	if (isLoading) {
