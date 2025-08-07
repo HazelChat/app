@@ -6,7 +6,7 @@ import { useParams } from "@tanstack/react-router"
 import type { Editor } from "@tiptap/react"
 import type { FunctionReturnType } from "convex/server"
 import { format } from "date-fns"
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { Button } from "react-aria-components"
 import { toast } from "sonner"
 import { useChat } from "~/hooks/use-chat"
@@ -49,6 +49,8 @@ export function MessageItem({
 		pinnedMessages,
 	} = useChat()
 	const [isEditing, setIsEditing] = useState(false)
+	const [hasBeenHovered, setHasBeenHovered] = useState(false)
+	const hoverTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
 
 	const { data: currentUser } = useQuery(
 		convexQuery(api.me.getCurrentUser, {
@@ -115,6 +117,24 @@ export function MessageItem({
 		))
 	}
 
+	const handleMouseEnter = () => {
+		// Clear any existing timeout
+		if (hoverTimeoutRef.current) {
+			clearTimeout(hoverTimeoutRef.current)
+		}
+		// Set a small delay to prevent toolbar flash during quick scrolling
+		hoverTimeoutRef.current = setTimeout(() => {
+			setHasBeenHovered(true)
+		}, 100)
+	}
+
+	const handleMouseLeave = () => {
+		// Clear the timeout if mouse leaves before toolbar shows
+		if (hoverTimeoutRef.current) {
+			clearTimeout(hoverTimeoutRef.current)
+		}
+	}
+
 	return (
 		<div
 			id={`message-${message._id}`}
@@ -128,6 +148,8 @@ export function MessageItem({
 				isMessagePinned ? "border-amber-500 border-l-2 bg-amber-500/10 hover:bg-amber-500/15" : "",
 			)}
 			data-id={message._id}
+			onMouseEnter={handleMouseEnter}
+			onMouseLeave={handleMouseLeave}
 		>
 			{/* Reply Section */}
 			{isRepliedTo && message.replyToMessageId && (
@@ -306,42 +328,44 @@ export function MessageItem({
 				</div>
 			</div>
 
-			{/* Message Toolbar */}
-			<MessageToolbar
-				message={message}
-				isOwnMessage={isOwnMessage}
-				isPinned={isMessagePinned}
-				onReaction={handleReaction}
-				onEdit={() => setIsEditing(true)}
-				onDelete={handleDelete}
-				onCopy={handleCopy}
-				onReply={() => {
-					setReplyToMessageId(message._id)
-				}}
-				onForward={() => {
-					// TODO: Implement forward message
-					console.log("Forward message")
-				}}
-				onMarkUnread={() => {
-					// TODO: Implement mark as unread
-					console.log("Mark as unread")
-				}}
-				onPin={() => {
-					if (isMessagePinned) {
-						unpinMessage(message._id)
-					} else {
-						pinMessage(message._id)
-					}
-				}}
-				onReport={() => {
-					// TODO: Implement report message
-					console.log("Report message")
-				}}
-				onViewDetails={() => {
-					// TODO: Implement view details
-					console.log("View details")
-				}}
-			/>
+			{/* Message Toolbar - Only render when hovered to improve performance */}
+			{hasBeenHovered && (
+				<MessageToolbar
+					message={message}
+					isOwnMessage={isOwnMessage}
+					isPinned={isMessagePinned}
+					onReaction={handleReaction}
+					onEdit={() => setIsEditing(true)}
+					onDelete={handleDelete}
+					onCopy={handleCopy}
+					onReply={() => {
+						setReplyToMessageId(message._id)
+					}}
+					onForward={() => {
+						// TODO: Implement forward message
+						console.log("Forward message")
+					}}
+					onMarkUnread={() => {
+						// TODO: Implement mark as unread
+						console.log("Mark as unread")
+					}}
+					onPin={() => {
+						if (isMessagePinned) {
+							unpinMessage(message._id)
+						} else {
+							pinMessage(message._id)
+						}
+					}}
+					onReport={() => {
+						// TODO: Implement report message
+						console.log("Report message")
+					}}
+					onViewDetails={() => {
+						// TODO: Implement view details
+						console.log("View details")
+					}}
+				/>
+			)}
 		</div>
 	)
 }
