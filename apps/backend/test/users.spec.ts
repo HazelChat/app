@@ -107,12 +107,12 @@ describe("user", () => {
 		const userId2 = await createUser(t2, { organizationId: org2 })
 
 		// Get users for org1 (uses organizationServerQuery which gets org from identity)
-		const users1 = await t1.query(api.users.getUsers, {})
+		const users1 = await t1.query(api.users.getUsers, { organizationId: org1 })
 		expect(users1).toHaveLength(2) // Owner + new user
 		expect(users1.find((u) => u._id === userId1)).toBeDefined()
 
 		// Get users for org2 (uses organizationServerQuery which gets org from identity)
-		const users2 = await t2.query(api.users.getUsers, {})
+		const users2 = await t2.query(api.users.getUsers, { organizationId: org2 })
 		expect(users2).toHaveLength(2) // Owner + new user
 		expect(users2.find((u) => u._id === userId2)).toBeDefined()
 	})

@@ -172,7 +172,7 @@ describe("messages", () => {
 		const { organization, user1Id, user2Id, channelId, t1, t2 } = await setupMultipleUsers(ct)
 
 		// User 2 joins the channel
-		await t2.mutation(api.channels.joinChannel, {
+		await t2.mutation(api.channels.joinChannelForOrganization, {
 			organizationId: organization,
 			channelId,
 		})
@@ -190,6 +190,10 @@ describe("messages", () => {
 				organizationId: organization,
 				id: messageId,
 				content: "Hacked content",
+				jsonContent: {
+					type: "doc",
+					content: [{ type: "paragraph", content: [{ type: "text", text: "Hacked content" }] }],
+				},
 			}),
 		).rejects.toThrow()
 	})
@@ -223,7 +227,7 @@ describe("messages", () => {
 		const { organization, user1Id, user2Id, channelId, t1, t2 } = await setupMultipleUsers(ct)
 
 		// User 2 joins the channel
-		await t2.mutation(api.channels.joinChannel, {
+		await t2.mutation(api.channels.joinChannelForOrganization, {
 			organizationId: organization,
 			channelId,
 		})
@@ -399,7 +403,7 @@ describe("messages", () => {
 		const { organization, user1Id, user2Id, channelId, t1, t2 } = await setupMultipleUsers(ct)
 
 		// User 2 joins the channel
-		await t2.mutation(api.channels.joinChannel, {
+		await t2.mutation(api.channels.joinChannelForOrganization, {
 			organizationId: organization,
 			channelId,
 		})
@@ -576,7 +580,7 @@ describe("reactions", () => {
 		const { organization, user1Id, user2Id, channelId, t1, t2 } = await setupMultipleUsers(ct)
 
 		// User 2 joins the channel
-		await t2.mutation(api.channels.joinChannel, {
+		await t2.mutation(api.channels.joinChannelForOrganization, {
 			organizationId: organization,
 			channelId,
 		})
@@ -617,7 +621,7 @@ describe("reactions", () => {
 		const { organization, user1Id, user2Id, channelId, t1, t2 } = await setupMultipleUsers(ct)
 
 		// User 2 joins the channel
-		await t2.mutation(api.channels.joinChannel, {
+		await t2.mutation(api.channels.joinChannelForOrganization, {
 			organizationId: organization,
 			channelId,
 		})

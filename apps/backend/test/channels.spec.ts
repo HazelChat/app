@@ -71,7 +71,7 @@ describe("channel", () => {
 		const { organization, userId, t } = await setupOrganizationAndUser(ct)
 
 		const channelId = await createChannel(t, { organizationId: organization })
-		const channels = await t.query(api.channels.getChannelsForOrganization, {})
+		const channels = await t.query(api.channels.getChannelsForOrganization, { organizationId: organization })
 		expect(channels.dmChannels).toHaveLength(0)
 		expect(channels.organizationChannels).toHaveLength(1)
 		expect(channels.organizationChannels[0]?._id).toEqual(channelId)
@@ -83,12 +83,14 @@ describe("channel", () => {
 
 		// Create public channel
 		const publicChannelId = await t.mutation(api.channels.createChannelForOrganization, {
+			organizationId: organization,
 			name: "Public Channel",
 			type: "public",
 		})
 
 		// Create private channel
 		const privateChannelId = await t.mutation(api.channels.createChannelForOrganization, {
+			organizationId: organization,
 			name: "Private Channel",
 			type: "private",
 		})
@@ -100,7 +102,7 @@ describe("channel", () => {
 			type: "direct" as any,
 		})
 
-		const channels = await t.query(api.channels.getChannelsForOrganization, {})
+		const channels = await t.query(api.channels.getChannelsForOrganization, { organizationId: organization })
 
 		// Public and private channels should be in serverChannels
 		expect(channels.organizationChannels).toHaveLength(2)
@@ -126,13 +128,14 @@ describe("channel", () => {
 
 		// Create thread channel
 		const _threadChannelId = await t.mutation(api.channels.createChannelForOrganization, {
+			organizationId: organization,
 			name: "Thread Channel",
 			type: "thread",
 			parentChannelId,
 			threadMessageId: messageId,
 		})
 
-		const channels = await t.query(api.channels.getChannelsForOrganization, {})
+		const channels = await t.query(api.channels.getChannelsForOrganization, { organizationId: organization })
 
 		// Should not return thread channel
 		expect(channels.organizationChannels).toHaveLength(1)
@@ -145,7 +148,7 @@ describe("channel", () => {
 		const { organization, userId, t } = await setupOrganizationAndUser(ct)
 
 		const _channelId = await createChannel(t, { organizationId: organization })
-		const channels = await t.query(api.channels.getChannelsForOrganization, {})
+		const channels = await t.query(api.channels.getChannelsForOrganization, { organizationId: organization })
 
 		const channel = channels?.organizationChannels?.[0]
 		expect(channel?.members).toHaveLength(1)
@@ -164,16 +167,17 @@ describe("channel", () => {
 
 		// User 2 joins the channel
 		await t2.mutation(api.channels.joinChannelForOrganization, {
+			organizationId: organization,
 			channelId,
 		})
 
 		// Check from user 1's perspective
-		const channels1 = await t1.query(api.channels.getChannelsForOrganization, {})
+		const channels1 = await t1.query(api.channels.getChannelsForOrganization, { organizationId: organization })
 		const channel1 = channels1.organizationChannels[0]
 		expect(channel1?.members).toHaveLength(2)
 
 		// Check from user 2's perspective
-		const channels2 = await t2.query(api.channels.getChannelsForOrganization, {})
+		const channels2 = await t2.query(api.channels.getChannelsForOrganization, { organizationId: organization })
 		const channel2 = channels2.organizationChannels[0]
 		expect(channel2?.members).toHaveLength(2)
 		expect(channel2?.currentUser?.userId).toEqual(user2Id)
@@ -188,6 +192,7 @@ describe("channel", () => {
 		// Try to join again
 		await expect(
 			t.mutation(api.channels.joinChannelForOrganization, {
+				organizationId: organization,
 				channelId,
 			}),
 		).rejects.toThrow("Already a member of this channel")
@@ -202,21 +207,23 @@ describe("channel", () => {
 
 		// User 2 joins the channel
 		await t2.mutation(api.channels.joinChannelForOrganization, {
+			organizationId: organization,
 			channelId,
 		})
 
 		// User 2 leaves the channel
 		await t2.mutation(api.channels.leaveChannelForOrganization, {
+			organizationId: organization,
 			channelId,
 		})
 
 		// Check from user 1's perspective - should still see the channel with 1 member
-		const channels1 = await t1.query(api.channels.getChannelsForOrganization, {})
+		const channels1 = await t1.query(api.channels.getChannelsForOrganization, { organizationId: organization })
 		expect(channels1.organizationChannels).toHaveLength(1)
 		expect(channels1.organizationChannels[0]?.members).toHaveLength(1)
 
 		// Check from user 2's perspective - should not see the channel
-		const channels2 = await t2.query(api.channels.getChannelsForOrganization, {})
+		const channels2 = await t2.query(api.channels.getChannelsForOrganization, { organizationId: organization })
 		expect(channels2.organizationChannels).toHaveLength(0)
 	})
 
@@ -230,6 +237,7 @@ describe("channel", () => {
 		// User 2 tries to leave without joining
 		await expect(
 			t2.mutation(api.channels.leaveChannelForOrganization, {
+				organizationId: organization,
 				channelId,
 			}),
 		).rejects.toThrow("You are not a member of this channel")
@@ -243,12 +251,13 @@ describe("channel", () => {
 
 		// Update preferences
 		await t.mutation(api.channels.updateChannelPreferencesForOrganization, {
+			organizationId: organization,
 			channelId,
 			isMuted: true,
 			isFavorite: true,
 		})
 
-		const channels = await t.query(api.channels.getChannelsForOrganization, {})
+		const channels = await t.query(api.channels.getChannelsForOrganization, { organizationId: organization })
 		const channel = channels?.organizationChannels?.[0]
 
 		expect(channel?.isMuted).toBe(true)
@@ -265,11 +274,12 @@ describe("channel", () => {
 
 		// Update only muted status
 		await t.mutation(api.channels.updateChannelPreferencesForOrganization, {
+			organizationId: organization,
 			channelId,
 			isMuted: true,
 		})
 
-		const channels = await t.query(api.channels.getChannelsForOrganization, {})
+		const channels = await t.query(api.channels.getChannelsForOrganization, { organizationId: organization })
 		const channel = channels?.organizationChannels?.[0]
 
 		expect(channel?.isMuted).toBe(true)
@@ -286,6 +296,7 @@ describe("channel", () => {
 		// User 2 tries to update preferences without being a member
 		await expect(
 			t2.mutation(api.channels.updateChannelPreferencesForOrganization, {
+				organizationId: organization,
 				channelId,
 				isMuted: true,
 			}),
@@ -300,11 +311,11 @@ describe("channel", () => {
 		const _channelId = await createChannel(t1, { organizationId: organization })
 
 		// User 1 should see the channel
-		const channels1 = await t1.query(api.channels.getChannelsForOrganization, {})
+		const channels1 = await t1.query(api.channels.getChannelsForOrganization, { organizationId: organization })
 		expect(channels1.organizationChannels).toHaveLength(1)
 
 		// User 2 should not see the channel
-		const channels2 = await t2.query(api.channels.getChannelsForOrganization, {})
+		const channels2 = await t2.query(api.channels.getChannelsForOrganization, { organizationId: organization })
 		expect(channels2.organizationChannels).toHaveLength(0)
 	})
 
@@ -314,11 +325,13 @@ describe("channel", () => {
 
 		// Create various channel types
 		await t.mutation(api.channels.createChannelForOrganization, {
+			organizationId: organization,
 			name: "Public Channel",
 			type: "public",
 		})
 
 		await t.mutation(api.channels.createChannelForOrganization, {
+			organizationId: organization,
 			name: "Private Channel",
 			type: "private",
 		})
@@ -335,7 +348,7 @@ describe("channel", () => {
 		// 	type: "single",
 		// })
 
-		const channels = await t.query(api.channels.getChannelsForOrganization, {})
+		const channels = await t.query(api.channels.getChannelsForOrganization, { organizationId: organization })
 
 		// Public, private, and thread should be in serverChannels
 		expect(channels.organizationChannels).toHaveLength(2)
@@ -352,11 +365,12 @@ describe("channel", () => {
 
 		// Hide the channel
 		await t.mutation(api.channels.updateChannelPreferencesForOrganization, {
+			organizationId: organization,
 			channelId,
 			isHidden: true,
 		})
 
-		const channels = await t.query(api.channels.getChannelsForOrganization, {})
+		const channels = await t.query(api.channels.getChannelsForOrganization, { organizationId: organization })
 
 		// Channel should still be returned
 		expect(channels.organizationChannels).toHaveLength(1)
@@ -372,23 +386,26 @@ describe("channel", () => {
 
 		// User 2 joins the channel
 		await t2.mutation(api.channels.joinChannelForOrganization, {
+			organizationId: organization,
 			channelId,
 		})
 
 		// User 1 mutes the channel
 		await t1.mutation(api.channels.updateChannelPreferencesForOrganization, {
+			organizationId: organization,
 			channelId,
 			isMuted: true,
 		})
 
 		// User 2 sets as favorite
 		await t2.mutation(api.channels.updateChannelPreferencesForOrganization, {
+			organizationId: organization,
 			channelId,
 			isFavorite: true,
 		})
 
 		// Check user 1's perspective
-		const channels1 = await t1.query(api.channels.getChannelsForOrganization, {})
+		const channels1 = await t1.query(api.channels.getChannelsForOrganization, { organizationId: organization })
 		const channel1 = channels1.organizationChannels[0]
 		expect(channel1?.isMuted).toBe(true)
 		expect(channel1?.isFavorite).toBe(false)
@@ -396,7 +413,7 @@ describe("channel", () => {
 		expect(channel1?.currentUser?.isFavorite).toBe(false)
 
 		// Check user 2's perspective
-		const channels2 = await t2.query(api.channels.getChannelsForOrganization, {})
+		const channels2 = await t2.query(api.channels.getChannelsForOrganization, { organizationId: organization })
 		const channel2 = channels2.organizationChannels[0]
 		expect(channel2?.isMuted).toBe(false)
 		expect(channel2?.isFavorite).toBe(true)

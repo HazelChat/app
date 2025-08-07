@@ -30,7 +30,7 @@ describe("organizations", () => {
 
 		// Try to get users without auth
 		const unauthenticatedT = convexTest()
-		await expect(unauthenticatedT.query(api.users.getUsers, {})).rejects.toThrow("Not authenticated")
+		await expect(unauthenticatedT.query(api.users.getUsers, { organizationId: organization })).rejects.toThrow("Not authenticated")
 	})
 
 	test("can retrieve users with authentication and membership", async () => {
@@ -56,7 +56,7 @@ describe("organizations", () => {
 			})
 		})
 
-		const users = await t.query(api.users.getUsers, {})
+		const users = await t.query(api.users.getUsers, { organizationId: org })
 		expect(users.length).toEqual(1)
 		expect(users[0]?.role).toEqual("owner")
 	})
@@ -101,11 +101,11 @@ describe("organizations", () => {
 		})
 
 		// User 1 can see their own org users
-		const users1 = await t1.query(api.users.getUsers, {})
+		const users1 = await t1.query(api.users.getUsers, { organizationId: org1 })
 		expect(users1.length).toEqual(1)
 
 		// User 2 can see their own org users
-		const users2 = await t2.query(api.users.getUsers, {})
+		const users2 = await t2.query(api.users.getUsers, { organizationId: org2 })
 		expect(users2.length).toEqual(1)
 
 		// They should see different users
