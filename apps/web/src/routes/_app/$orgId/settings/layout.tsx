@@ -71,8 +71,8 @@ function RouteComponent() {
 								navigate({
 									to:
 										tabId === "appearance"
-											? "/_app/$orgId/settings"
-											: `/_app/$orgId/settings/${tabId}`,
+											? "/$orgId/settings"
+											: `/$orgId/settings/${tabId}`,
 									params: { orgId },
 								})
 							}}
@@ -89,8 +89,8 @@ function RouteComponent() {
 								navigate({
 									to:
 										tabId === "appearance"
-											? "/_app/$orgId/settings"
-											: `/_app/$orgId/settings/${tabId}`,
+											? "/$orgId/settings"
+											: `/$orgId/settings/${tabId}`,
 									params: { orgId },
 								})
 							}}

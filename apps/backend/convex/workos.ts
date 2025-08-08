@@ -646,7 +646,6 @@ export const syncWorkosData = internalAction({
 				results.users.errors.push(usersResult.error || "Unknown error fetching users")
 			}
 
-			// Step 2: Sync all organizations
 			console.log("Fetching organizations from WorkOS...")
 			const orgsResult = await ctx.runAction(internal.workosActions.fetchWorkosOrganizations, {})
 			if (orgsResult.success) {
