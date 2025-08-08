@@ -42,20 +42,20 @@ function ThreadContent({
 	)
 
 	return (
-		<div className="flex h-full flex-col border-l bg-background">
+		<div className="flex h-full flex-col border-secondary border-l bg-primary">
 			{/* Thread Header */}
-			<div className="flex items-center justify-between border-b px-4 py-3">
+			<div className="flex items-center justify-between border-secondary border-b px-4 py-3">
 				<div className="flex items-center gap-2">
 					<h2 className="font-semibold">Thread</h2>
 					{threadChannel && (
-						<span className="text-secondary text-sm">
+						<span className="text-tertiary text-sm">
 							{threadChannel.members?.length || 0} participants
 						</span>
 					)}
 				</div>
 				<Button
 					onPress={onClose}
-					className="rounded p-1 hover:bg-secondary"
+					className="rounded p-1 hover:bg-tertiary"
 					aria-label="Close thread"
 				>
 					<svg
@@ -76,7 +76,7 @@ function ThreadContent({
 
 			{/* Original Message */}
 			{originalMessage && (
-				<div className="border-b bg-muted/30 px-4 py-3">
+				<div className="border-secondary border-b bg-secondary px-4 py-3">
 					<div className="flex gap-3">
 						<Avatar
 							size="sm"
@@ -88,7 +88,7 @@ function ThreadContent({
 								<span className="font-medium text-sm">
 									{originalMessage.author.firstName} {originalMessage.author.lastName}
 								</span>
-								<span className="text-secondary text-xs">
+								<span className="text-tertiary text-xs">
 									{format(originalMessage._creationTime, "MMM d, HH:mm")}
 								</span>
 							</div>
@@ -108,7 +108,7 @@ function ThreadContent({
 			</div>
 
 			{/* Thread Composer */}
-			<div className="border-t px-4 py-3">
+			<div className="border-secondary border-t px-4 py-3">
 				<MessageComposer placeholder="Reply in thread..." />
 				<TypingIndicator />
 			</div>

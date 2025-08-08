@@ -84,7 +84,7 @@ function ChatContent() {
 	return (
 		<div className="flex h-screen">
 			{/* Main Chat Area */}
-			<div className={`flex flex-1 flex-col ${activeThreadChannelId ? "border-r" : ""}`}>
+			<div className="flex flex-1 flex-col">
 				<ChatHeader />
 				<div className="flex-1 overflow-hidden">
 					<MessageList />
