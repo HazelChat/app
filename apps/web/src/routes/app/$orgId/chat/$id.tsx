@@ -4,16 +4,17 @@ import { useEffect, useRef } from "react"
 import { ChatHeader } from "~/components/chat/chat-header"
 import { MessageComposer, type MessageComposerRef } from "~/components/chat/message-composer"
 import { MessageList } from "~/components/chat/message-list"
+import { ThreadPanel } from "~/components/chat/thread-panel"
 import { TypingIndicator } from "~/components/chat/typing-indicator"
+import { useChat } from "~/hooks/use-chat"
 import { ChatProvider } from "~/providers/chat-provider"
 
 export const Route = createFileRoute("/app/$orgId/chat/$id")({
 	component: RouteComponent,
 })
 
-function RouteComponent() {
-	const { orgId, id } = Route.useParams()
-	const organizationId = orgId as Id<"organizations">
+function ChatContent() {
+	const { activeThreadChannelId, activeThreadMessageId, closeThread, organizationId } = useChat()
 	const messageComposerRef = useRef<MessageComposerRef>(null)
 
 	useEffect(() => {
@@ -81,8 +82,9 @@ function RouteComponent() {
 	}, [])
 
 	return (
-		<ChatProvider channelId={id as Id<"channels">} organizationId={organizationId}>
-			<div className="flex h-screen flex-col">
+		<div className="flex h-screen">
+			{/* Main Chat Area */}
+			<div className="flex flex-1 flex-col">
 				<ChatHeader />
 				<div className="flex-1 overflow-hidden">
 					<MessageList />
@@ -92,6 +94,29 @@ function RouteComponent() {
 					<TypingIndicator />
 				</div>
 			</div>
+
+			{/* Thread Panel - Slide in from right */}
+			{activeThreadChannelId && activeThreadMessageId && (
+				<div className="w-[480px] animate-in slide-in-from-right duration-200">
+					<ThreadPanel
+						threadChannelId={activeThreadChannelId}
+						originalMessageId={activeThreadMessageId}
+						organizationId={organizationId}
+						onClose={closeThread}
+					/>
+				</div>
+			)}
+		</div>
+	)
+}
+
+function RouteComponent() {
+	const { orgId, id } = Route.useParams()
+	const organizationId = orgId as Id<"organizations">
+
+	return (
+		<ChatProvider channelId={id as Id<"channels">} organizationId={organizationId}>
+			<ChatContent />
 		</ChatProvider>
 	)
 }

@@ -16,6 +16,7 @@ import { Avatar } from "../base/avatar/avatar"
 import { Badge } from "../base/badges/badges"
 import { Button as StyledButton } from "../base/buttons/button"
 import { TextEditor as EditableTextEditor } from "../base/text-editor/text-editor"
+import { IconThread } from "../temp-icons/thread"
 import { MessageReplySection } from "./message-reply-section"
 import { MessageToolbar } from "./message-toolbar"
 import { TextEditor } from "./read-only-message"
@@ -47,6 +48,8 @@ export function MessageItem({
 		pinMessage,
 		unpinMessage,
 		pinnedMessages,
+		createThread,
+		openThread,
 	} = useChat()
 	const [isEditing, setIsEditing] = useState(false)
 	const [hasBeenHovered, setHasBeenHovered] = useState(false)
@@ -137,6 +140,7 @@ export function MessageItem({
 	}
 
 	return (
+		// biome-ignore lint/a11y/noStaticElementInteractions: <explanation>
 		<div
 			id={`message-${message._id}`}
 			className={cx(
@@ -316,14 +320,22 @@ export function MessageItem({
 						</div>
 					)}
 
-					{/* Thread Button Placeholder */}
-					{message.threadChannelId && (
+					{/* Thread Button */}
+					{(message.threadChannelId || (message.threadMessages && message.threadMessages.length > 0)) && (
 						<button
 							type="button"
-							className="mt-2 flex items-center gap-2 text-secondary text-sm hover:text-primary"
+							onClick={() => {
+								if (message.threadChannelId) {
+									openThread(message.threadChannelId, message._id)
+								}
+							}}
+							className="mt-2 flex items-center gap-2 text-secondary text-sm transition-colors hover:text-primary"
 						>
-							<div className="size-4 rounded bg-muted-foreground/20" />
-							<span>Thread replies</span>
+							<IconThread className="size-4" />
+							<span>
+								{message.threadMessages?.length || 0}{" "}
+								{message.threadMessages?.length === 1 ? "reply" : "replies"}
+							</span>
 						</button>
 					)}
 				</div>
@@ -341,6 +353,9 @@ export function MessageItem({
 					onCopy={handleCopy}
 					onReply={() => {
 						setReplyToMessageId(message._id)
+					}}
+					onThread={() => {
+						createThread(message._id)
 					}}
 					onForward={() => {
 						// TODO: Implement forward message

@@ -41,6 +41,7 @@ interface MessageToolbarProps {
 	onDelete: () => void
 	onCopy: () => void
 	onReply?: () => void
+	onThread?: () => void
 	onForward?: () => void
 	onMarkUnread?: () => void
 	onPin?: () => void
@@ -58,6 +59,7 @@ export function MessageToolbar({
 	onDelete,
 	onCopy,
 	onReply,
+	onThread,
 	onForward,
 	onMarkUnread,
 	onPin,
@@ -193,8 +195,8 @@ export function MessageToolbar({
 					</MenuTrigger>
 					<Dropdown.Popover placement="bottom end">
 						<Dropdown.Menu>
-							{onReply && (
-								<Dropdown.Item onAction={onReply} icon={IconThread} label="Reply in thread" />
+							{onThread && (
+								<Dropdown.Item onAction={onThread} icon={IconThread} label="Reply in thread" />
 							)}
 							{onForward && (
 								<Dropdown.Item onAction={onForward} icon={Share06} label="Forward message" />

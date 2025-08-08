@@ -13,9 +13,12 @@ export interface MessageComposerRef {
 
 interface MessageComposerProps {
 	ref?: React.Ref<MessageComposerRef>
+	placeholder?: string
+	channelId?: string
+	organizationId?: string
 }
 
-export const MessageComposer = ({ ref }: MessageComposerProps) => {
+export const MessageComposer = ({ ref, placeholder = "Type a message..." }: MessageComposerProps) => {
 	const { sendMessage, startTyping, stopTyping, replyToMessageId, setReplyToMessageId } = useChat()
 	const editorRef = useRef<Editor | null>(null)
 

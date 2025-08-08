@@ -34,7 +34,11 @@ interface ChatContextValue {
 	startTyping: () => void
 	stopTyping: () => void
 	typingUsers: TypingUsers
-	createThread: (messageId: Id<"messages">) => void
+	createThread: (messageId: Id<"messages">) => Promise<void>
+	openThread: (threadChannelId: Id<"channels">, originalMessageId: Id<"messages">) => void
+	closeThread: () => void
+	activeThreadChannelId: Id<"channels"> | null
+	activeThreadMessageId: Id<"messages"> | null
 	replyToMessageId: Id<"messages"> | null
 	setReplyToMessageId: (messageId: Id<"messages"> | null) => void
 }
@@ -58,6 +62,9 @@ interface ChatProviderProps {
 export function ChatProvider({ channelId, organizationId, children }: ChatProviderProps) {
 	// Reply state
 	const [replyToMessageId, setReplyToMessageId] = useState<Id<"messages"> | null>(null)
+	// Thread state
+	const [activeThreadChannelId, setActiveThreadChannelId] = useState<Id<"channels"> | null>(null)
+	const [activeThreadMessageId, setActiveThreadMessageId] = useState<Id<"messages"> | null>(null)
 
 	// Keep track of previous messages to show during loading
 	const previousMessagesRef = useRef<Message[]>([])
@@ -115,6 +122,7 @@ export function ChatProvider({ channelId, organizationId, children }: ChatProvid
 	const unpinMessageMutation = useConvexMutation(api.pinnedMessages.deletePinnedMessage)
 	const updateTypingMutation = useConvexMutation(api.typingIndicator.update)
 	const stopTypingMutation = useConvexMutation(api.typingIndicator.stop)
+	const createChannelMutation = useConvexMutation(api.channels.createChannel)
 
 	// Message operations
 	const sendMessage = ({
@@ -202,9 +210,43 @@ export function ChatProvider({ channelId, organizationId, children }: ChatProvid
 		})
 	}
 
-	const createThread = (messageId: Id<"messages">) => {
-		// TODO: Implement thread creation
-		console.log("Creating thread for message:", messageId)
+	const createThread = async (messageId: Id<"messages">) => {
+		// Find the message to create thread for
+		const message = messages.find((m) => m._id === messageId)
+		if (!message) {
+			console.error("Message not found for thread creation")
+			return
+		}
+
+		// Check if thread already exists
+		if (message.threadChannelId) {
+			// Open existing thread
+			setActiveThreadChannelId(message.threadChannelId)
+			setActiveThreadMessageId(messageId)
+		} else {
+			// Create new thread channel
+			const threadChannelId = await createChannelMutation({
+				organizationId,
+				name: "Thread",
+				type: "thread" as const,
+				parentChannelId: channelId,
+				threadMessageId: messageId,
+			})
+			
+			// Open the newly created thread
+			setActiveThreadChannelId(threadChannelId)
+			setActiveThreadMessageId(messageId)
+		}
+	}
+
+	const openThread = (threadChannelId: Id<"channels">, originalMessageId: Id<"messages">) => {
+		setActiveThreadChannelId(threadChannelId)
+		setActiveThreadMessageId(originalMessageId)
+	}
+
+	const closeThread = () => {
+		setActiveThreadChannelId(null)
+		setActiveThreadMessageId(null)
 	}
 
 	// Extract messages and pagination functions based on result state
@@ -255,6 +297,10 @@ export function ChatProvider({ channelId, organizationId, children }: ChatProvid
 			stopTyping,
 			typingUsers,
 			createThread,
+			openThread,
+			closeThread,
+			activeThreadChannelId,
+			activeThreadMessageId,
 			replyToMessageId,
 			setReplyToMessageId,
 		}),
@@ -270,6 +316,8 @@ export function ChatProvider({ channelId, organizationId, children }: ChatProvid
 			isLoadingPrev,
 			typingUsers,
 			organizationId,
+			activeThreadChannelId,
+			activeThreadMessageId,
 			replyToMessageId,
 		],
 	)
