@@ -8,15 +8,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `bun dev` - Start all applications in development mode (backend, web, mobile) using Turborepo
 - `bun build` - Build and typecheck all apps and packages  
 - `bun test` - Run all tests across the monorepo in watch mode
+- `bun test:once` - Run tests once without watch mode
 - `bun test:coverage` - Generate test coverage reports with text output
-- `bun format:fix` - Format and fix code issues with Biome
+- `bun format:fix` - Format and fix code issues with Biome (required before commits)
+- `biome check` - Check code without making changes
+- `bun typecheck` - Run TypeScript type checking across all apps
 
 ### Application-Specific Commands
-- `cd apps/backend && bun run dev` - Start Convex backend only
-- `cd apps/web && bun run dev` - Start web app only (port 3000)
+- `cd apps/web && bun dev` - Start web app only (port 3000)
+- `cd apps/backend && bun dev` - Start Convex backend only
+- `cd apps/backend && bun setup` - Setup Convex backend (run once)
 - `cd apps/mobile && bun start` - Start Expo mobile app
-- `cd apps/backend && bun run setup` - Setup Convex backend (run once)
-- `cd apps/backend && bun run convex:deploy` - Deploy Convex backend to production (never do this)
+- `cd apps/backend && bun convex:deploy` - Deploy Convex backend to production (never do this)
 
 ### Testing Commands
 - `bun test:once` - Run tests once without watch mode
@@ -24,11 +27,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `bun test path/to/file.test.ts` - Run specific test file
 - `cd apps/backend && bun test` - Run backend tests only
 - Backend tests use `convex-test` with edge-runtime environment
-
-### Code Quality Commands
-- `biome check` - Check code without making changes
-- `bun format:fix` - Format and fix code issues
-- `bun typecheck` - Run TypeScript type checking across all apps
 
 ## Architecture Overview
 
@@ -109,10 +107,11 @@ export const myFunction = userMutation({
 - Mobile app shares same backend APIs with React Native UI
 
 #### Frontend Architecture
-- Routes defined in `src/routes/` directory
+- Routes defined in `src/routes/` directory structure
 - Global providers in `src/routes/__root.tsx`
 - WorkOS AuthKit provider wraps the app for authentication
 - Theme provider manages light/dark mode
+- Convex provider with AuthKit integration in `components/convex-provider-with-authkit.tsx`
 
 ### Testing Strategy
 - **Backend Tests**: Integration tests with realistic data scenarios
@@ -145,8 +144,33 @@ export const myFunction = userMutation({
 - All queries/mutations require `organizationId` parameter
 - Organization context is injected via middleware
 
+#### Working with Real-time Features
+- Presence managed via `@convex-dev/presence` component
+- Typing indicators use dedicated Convex functions
+- Push notifications through `@convex-dev/expo-push-notifications`
+- WebSocket subscriptions handle live updates automatically
+
 #### Debugging Tips
 - Backend logs appear in the Convex dashboard
 - Use `console.log` in backend functions for debugging
 - Frontend React DevTools and TanStack DevTools available
 - Check Network tab for Convex WebSocket connections
+
+## Important Implementation Notes
+
+### File Organization
+- **Backend**: All Convex functions in `apps/backend/convex/`
+- **Web UI**: React components in `apps/web/src/`
+- **Mobile**: React Native components in `apps/mobile/app/`
+- **Shared Types**: Exported from backend via package exports
+
+### Error Handling
+- Backend uses Effect.js for type-safe error handling
+- Custom functions wrap standard Convex functions with Effect patterns
+- Frontend errors displayed via toast notifications (Sonner library)
+
+### Performance Considerations
+- Use React 19 compiler optimizations (babel-plugin-react-compiler)
+- Implement virtualization for long lists
+- Leverage TanStack Query caching for Convex subscriptions
+- Code splitting handled by Vite bundler
