@@ -261,6 +261,7 @@ const TableHead = ({ className, tooltip, label, children, ...props }: TableHeadP
 }
 TableHead.displayName = "TableHead"
 
+// @ts-expect-error
 interface TableRowProps<T extends object>
 	extends AriaRowProps<T>,
 		Omit<ComponentPropsWithRef<"tr">, "children" | "className" | "slot" | "style" | "id"> {

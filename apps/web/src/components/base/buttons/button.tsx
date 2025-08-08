@@ -304,6 +304,7 @@ export const IconButton = ({
 	const Comp = asChild ? Slot : AriaButton
 
 	return (
+		// @ts-expect-error
 		<Comp
 			{...props}
 			className={cx(
