@@ -38,7 +38,15 @@ export class User {
 		return new User(user, membership)
 	}
 
-	public async isMemberOfChannel(args: { ctx: GenericContext; channelId: Id<"channels"> }) {
+	public async isMemberOfChannel(args: { ctx: GenericContext; channelId: Id<"channels"> }): Promise<boolean> {
+		const channel = await args.ctx.db.get(args.channelId)
+		if (!channel) return false
+
+		// For thread channels, check membership of parent channel
+		if (channel.type === "thread" && channel.parentChannelId) {
+			return await this.isMemberOfChannel({ ctx: args.ctx, channelId: channel.parentChannelId })
+		}
+
 		const channelMember = await args.ctx.db
 			.query("channelMembers")
 			.filter((q) => q.eq(q.field("userId"), this.user._id))
@@ -53,9 +61,14 @@ export class User {
 		}
 	}
 
-	public async canViewChannel({ ctx, channelId }: { ctx: GenericContext; channelId: Id<"channels"> }) {
+	public async canViewChannel({ ctx, channelId }: { ctx: GenericContext; channelId: Id<"channels"> }): Promise<boolean> {
 		const channel = await ctx.db.get(channelId)
 		if (!channel) throw new Error("Channel not found")
+
+		// For thread channels, check if user can view the parent channel
+		if (channel.type === "thread" && channel.parentChannelId) {
+			return await this.canViewChannel({ ctx, channelId: channel.parentChannelId })
+		}
 
 		return channel.type === "public" || (await this.isMemberOfChannel({ ctx, channelId }))
 	}
