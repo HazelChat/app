@@ -3,7 +3,6 @@
 - Webhook for invitation.created failing
 
 
-- Update Convex to use WorkOS new docs https://docs.convex.dev/auth/authkit
 
 
 - Typing indicator
@@ -15,5 +14,4 @@
 
 # Fixes 
 - Message Edit not showing up in chat 
-- Threads cant be opened by other users that didnt create them
 - App getting unresponsive after 60sec of inactivity
