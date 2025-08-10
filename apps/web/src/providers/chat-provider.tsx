@@ -26,7 +26,7 @@ interface ChatContextValue {
 	isLoadingMessages: boolean
 	isLoadingNext: boolean
 	isLoadingPrev: boolean
-	sendMessage: (props: { content: string; attachments?: string[]; jsonContent: any }) => void
+	sendMessage: (props: { content: string; attachments?: Id<"attachments">[]; jsonContent: any }) => void
 	editMessage: (messageId: Id<"messages">, content: string, jsonContent: any) => Promise<void>
 	deleteMessage: (messageId: Id<"messages">) => void
 	addReaction: (messageId: Id<"messages">, emoji: string) => void
@@ -133,7 +133,7 @@ export function ChatProvider({ channelId, organizationId, children }: ChatProvid
 		jsonContent,
 	}: {
 		content: string
-		attachments?: string[]
+		attachments?: Id<"attachments">[]
 		jsonContent: any
 	}) => {
 		sendMessageMutation({

@@ -17,6 +17,7 @@ import { Badge } from "../base/badges/badges"
 import { Button as StyledButton } from "../base/buttons/button"
 import { TextEditor as EditableTextEditor } from "../base/text-editor/text-editor"
 import { IconThread } from "../temp-icons/thread"
+import { MessageAttachments } from "./message-attachments"
 import { MessageReplySection } from "./message-reply-section"
 import { MessageToolbar } from "./message-toolbar"
 import { TextEditor } from "./read-only-message"
@@ -260,31 +261,12 @@ export function MessageItem({
 						</TextEditor.Root>
 					)}
 
-					{/* Attachments Grid Placeholder */}
-					{message.attachedFiles && message.attachedFiles.length > 0 && (
-						<div
-							className={`mt-2 grid max-w-lg gap-1${message.attachedFiles.length === 1 ? "grid-cols-1" : "grid-cols-2"}
-							${message.attachedFiles.length === 3 ? "grid-cols-3" : ""}
-						`}
-						>
-							{message.attachedFiles.slice(0, 4).map((file, index) => (
-								<div
-									key={file}
-									className={`relative aspect-square cursor-pointer overflow-hidden rounded transition-opacity hover:opacity-90${message.attachedFiles!.length === 1 ? "col-span-2 aspect-auto max-w-[400px]" : ""}
-										${message.attachedFiles!.length === 3 && index === 0 ? "col-span-2 row-span-2" : ""}
-									`}
-								>
-									<div className="h-full w-full bg-muted" />
-									{message.attachedFiles!.length > 4 && index === 3 && (
-										<div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/60">
-											<span className="font-semibold text-lg text-white">
-												+{message.attachedFiles!.length - 4}
-											</span>
-										</div>
-									)}
-								</div>
-							))}
-						</div>
+					{/* Attachments */}
+					{message.attachments && message.attachments.length > 0 && (
+						<MessageAttachments
+							attachments={message.attachments}
+							organizationId={orgId as Id<"organizations">}
+						/>
 					)}
 
 					{/* Reactions */}

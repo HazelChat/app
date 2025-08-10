@@ -81,7 +81,7 @@ export const confectSchema = defineSchema({
 	).index("by_organizationId_and_participantHash", ["organizationId", "participantHash"]),
 	messages: defineTable(
 		Schema.Struct({
-			attachedFiles: Schema.Array(Schema.String),
+			attachedFiles: Schema.Array(Id.Id("attachments")),
 			authorId: Id.Id("users"),
 			channelId: Id.Id("channels"),
 			replyToMessageId: Schema.optional(Id.Id("messages")),
@@ -143,6 +143,28 @@ export const confectSchema = defineSchema({
 		.index("by_memberId", ["channelId", "memberId"])
 		.index("by_channel_timestamp", ["channelId", "lastTyped"])
 		.index("by_timestamp", ["lastTyped"]),
+	attachments: defineTable(
+		Schema.Struct({
+			organizationId: Id.Id("organizations"),
+			messageId: Schema.optional(Id.Id("messages")),
+			fileName: Schema.String,
+			fileSize: Schema.Number,
+			mimeType: Schema.String,
+			r2Key: Schema.String,
+			uploadedBy: Id.Id("users"),
+			uploadedAt: Schema.Number,
+			status: Schema.Union(
+				Schema.Literal("uploading"),
+				Schema.Literal("complete"),
+				Schema.Literal("failed"),
+			),
+			deletedAt: Schema.optional(Schema.Number),
+		}),
+	)
+		.index("by_messageId", ["messageId"])
+		.index("by_organizationId", ["organizationId"])
+		.index("by_uploadedBy", ["uploadedBy"])
+		.index("by_status", ["status"]),
 })
 
 export default confectSchema.convexSchemaDefinition

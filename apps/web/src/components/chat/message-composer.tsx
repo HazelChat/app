@@ -1,4 +1,5 @@
 import type { Editor } from "@tiptap/react"
+import type { Id } from "@hazel/backend"
 import { useEffect, useImperativeHandle, useRef, useState } from "react"
 
 import { useChat } from "~/providers/chat-provider"
@@ -88,8 +89,12 @@ export const MessageComposer = ({ ref, placeholder = "Type a message..." }: Mess
 		}
 	}, [isTyping, stopTyping])
 
-	const handleSubmit = async (editor: Editor) => {
-		sendMessage({ jsonContent: editor.getJSON(), content: editor.getText() })
+	const handleSubmit = async (editor: Editor, attachmentIds: Id<"attachments">[] = []) => {
+		sendMessage({ 
+			jsonContent: editor.getJSON(), 
+			content: editor.getText(),
+			attachments: attachmentIds
+		})
 
 		if (isTyping) {
 			setIsTyping(false)

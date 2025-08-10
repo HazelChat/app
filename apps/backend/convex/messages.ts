@@ -96,9 +96,21 @@ export const getMessagesForOrganization = organizationServerQuery({
 			const author = await ctx.db.get(message.authorId)
 			if (!author) throw new Error("Message author not found")
 
+			// Fetch attachments for the message
+			const attachments = await Promise.all(
+				message.attachedFiles.map(async (attachmentId) => {
+					const attachment = await ctx.db.get(attachmentId)
+					if (!attachment || attachment.deletedAt) {
+						return null
+					}
+					return attachment
+				}),
+			)
+
 			return {
 				...message,
 				author,
+				attachments: attachments.filter(Boolean),
 			}
 		})
 
@@ -160,9 +172,21 @@ export const getMessages = userQuery({
 			// TODO: This should not happen when user is deleted we should give all messages to a default user
 			if (!messageAuthor) throw new Error("Message author not found")
 
+			// Fetch attachments for the message
+			const attachments = await Promise.all(
+				message.attachedFiles.map(async (attachmentId) => {
+					const attachment = await ctx.db.get(attachmentId)
+					if (!attachment || attachment.deletedAt) {
+						return null
+					}
+					return attachment
+				}),
+			)
+
 			return {
 				...message,
 				author: messageAuthor,
+				attachments: attachments.filter(Boolean),
 			}
 		})
 
@@ -180,14 +204,29 @@ export const createMessage = userMutation({
 		channelId: v.id("channels"),
 		threadChannelId: v.optional(v.id("channels")),
 		replyToMessageId: v.optional(v.id("messages")),
-		attachedFiles: v.array(v.string()),
+		attachedFiles: v.array(v.id("attachments")),
 	},
 	handler: async (ctx, args) => {
-		if (args.content.trim() === "") {
-			throw new Error("Message content cannot be empty")
+		// Allow empty content if there are attachments
+		if (args.content.trim() === "" && args.attachedFiles.length === 0) {
+			throw new Error("Message must have content or attachments")
 		}
 
 		await ctx.user.validateIsMemberOfChannel({ ctx, channelId: args.channelId })
+
+		// Validate all attachments exist and are complete
+		for (const attachmentId of args.attachedFiles) {
+			const attachment = await ctx.db.get(attachmentId)
+			if (!attachment) {
+				throw new Error(`Attachment ${attachmentId} not found`)
+			}
+			if (attachment.status !== "complete") {
+				throw new Error(`Attachment ${attachmentId} is not fully uploaded`)
+			}
+			if (attachment.uploadedBy !== ctx.user.id) {
+				throw new Error(`You don't have permission to use attachment ${attachmentId}`)
+			}
+		}
 
 		const messageId = await ctx.db.insert("messages", {
 			channelId: args.channelId,
@@ -199,6 +238,11 @@ export const createMessage = userMutation({
 			attachedFiles: args.attachedFiles,
 			reactions: [],
 		})
+
+		// Update attachments with messageId
+		for (const attachmentId of args.attachedFiles) {
+			await ctx.db.patch(attachmentId, { messageId })
+		}
 
 		// TODO: This should be a database trigger
 		await ctx.scheduler.runAfter(0, internal.background.index.sendNotification, {
