@@ -3,16 +3,13 @@ import type { Id } from "@hazel/backend"
 import { api } from "@hazel/backend/api"
 import { useParams } from "@tanstack/react-router"
 import { type } from "arktype"
-import { useState } from "react"
 import { DialogTrigger as AriaDialogTrigger, Heading as AriaHeading } from "react-aria-components"
 import { toast } from "sonner"
 import { Dialog, Modal, ModalOverlay } from "~/components/application/modals/modal"
 import { Button } from "~/components/base/buttons/button"
-import { ButtonUtility } from "~/components/base/buttons/button-utility"
 import { CloseButton } from "~/components/base/buttons/close-button"
 import { Select } from "~/components/base/select/select"
 import IconHashtagStroke from "~/components/icons/IconHashtagStroke"
-import IconPlusStroke from "~/components/icons/IconPlusStroke"
 import { useAppForm } from "~/hooks/use-app-form"
 
 const channelSchema = type({
@@ -22,8 +19,12 @@ const channelSchema = type({
 
 type ChannelFormData = typeof channelSchema.infer
 
-export const NewChannelModal = () => {
-	const [isOpen, setIsOpen] = useState(false)
+interface NewChannelModalWrapperProps {
+	isOpen: boolean
+	setIsOpen: (isOpen: boolean) => void
+}
+
+export const NewChannelModalWrapper = ({ isOpen, setIsOpen }: NewChannelModalWrapperProps) => {
 	const { orgId } = useParams({ from: "/_app/$orgId" })
 	const organizationId = orgId as Id<"organizations">
 
@@ -51,14 +52,7 @@ export const NewChannelModal = () => {
 
 	return (
 		<AriaDialogTrigger isOpen={isOpen} onOpenChange={setIsOpen}>
-			<ButtonUtility
-				className="p-1 text-primary hover:text-secondary"
-				size="xs"
-				color="tertiary"
-				icon={IconPlusStroke}
-				tooltip="New channel"
-			/>
-
+			<span />
 			<ModalOverlay isDismissable>
 				<Modal>
 					<Dialog>
