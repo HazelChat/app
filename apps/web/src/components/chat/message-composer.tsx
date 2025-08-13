@@ -157,8 +157,8 @@ export const MessageComposer = ({ ref, placeholder = "Type a message..." }: Mess
 				{attachmentIds.length > 0 && (
 					<div
 						className={cx(
-							"px-3 py-2 border-primary border rounded-t-md",
-							replyToMessageId && "border-primary border-x border-t rounded-none",
+							"rounded-t-md border border-primary px-3 py-2",
+							replyToMessageId && "rounded-none border-primary border-x border-t",
 						)}
 					>
 						<div className="flex flex-wrap gap-2">

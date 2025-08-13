@@ -52,7 +52,11 @@ export const getAttachmentsByIds = userQuery({
 			args.attachmentIds.map(async (id) => {
 				const attachment = await ctx.db.get(id)
 				// Verify the attachment belongs to the organization and is not deleted
-				if (!attachment || attachment.deletedAt || attachment.organizationId !== args.organizationId) {
+				if (
+					!attachment ||
+					attachment.deletedAt ||
+					attachment.organizationId !== args.organizationId
+				) {
 					return null
 				}
 				return {
@@ -60,7 +64,7 @@ export const getAttachmentsByIds = userQuery({
 					fileName: attachment.fileName,
 					r2Key: attachment.r2Key,
 				}
-			})
+			}),
 		)
 		return attachments.filter((a) => a !== null)
 	},
