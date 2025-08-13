@@ -4,6 +4,7 @@ import { Dialog, DialogTrigger, Popover } from "react-aria-components"
 import { useChat } from "~/hooks/use-chat"
 import { Avatar } from "../base/avatar/avatar"
 import { Button } from "../base/buttons/button"
+import { ButtonUtility } from "../base/buttons/button-utility"
 import { IconPinSlant } from "../icons/IconPinSlant"
 
 export function PinnedMessagesModal() {
@@ -26,9 +27,8 @@ export function PinnedMessagesModal() {
 
 	return (
 		<DialogTrigger>
-			<Button size="sm" color="tertiary" aria-label="View pinned messages" className="!p-2">
-				<IconPinSlant className="size-4" />
-			</Button>
+			<ButtonUtility size="sm" color="tertiary" tooltip="View pinned messages" icon={IconPinSlant} />
+
 			<Popover placement="bottom end" className="w-96">
 				<Dialog className="p-0">
 					<div className="rounded-lg border border-primary bg-primary shadow-lg">

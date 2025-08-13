@@ -1,7 +1,11 @@
+import { Link } from "@tanstack/react-router"
 import { Avatar } from "~/components/base/avatar/avatar"
 import IconHashtagStroke from "~/components/icons/IconHashtagStroke"
 import { usePresence } from "~/components/presence/presence-provider"
 import { useChat } from "~/hooks/use-chat"
+import { ButtonUtility } from "../base/buttons/button-utility"
+import IconPhone from "../icons/IconPhone"
+import IconPhoneDuoSolid from "../icons/IconPhoneDuoSolid"
 import { PinnedMessagesModal } from "./pinned-messages-modal"
 
 export function ChatHeader() {
@@ -17,8 +21,6 @@ export function ChatHeader() {
 	}
 
 	const isDirectMessage = channel.type === "direct" || channel.type === "single"
-	const _memberCount = channel.members?.length || 0
-	const _onlineCount = channel.members?.filter((member) => isUserOnline(member.userId)).length || 0
 
 	return (
 		<div className="flex h-14 flex-shrink-0 items-center justify-between border-sidebar-border border-b bg-sidebar px-4">
@@ -52,8 +54,16 @@ export function ChatHeader() {
 			</div>
 
 			<div className="flex items-center gap-2">
+				<Link
+					to="/$orgId/call"
+					params={{
+						orgId: channel.organizationId,
+					}}
+				>
+					<ButtonUtility size="sm" color="tertiary" tooltip="Call" icon={IconPhone} />
+				</Link>
+
 				<PinnedMessagesModal />
-				{/* Add other channel actions here */}
 			</div>
 		</div>
 	)
