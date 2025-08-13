@@ -1,9 +1,18 @@
-import type { AnchorHTMLAttributes, ButtonHTMLAttributes, DetailedHTMLProps, FC, ReactNode } from "react"
+import type { LinkProps } from "@tanstack/react-router"
+import type {
+	AnchorHTMLAttributes,
+	ButtonHTMLAttributes,
+	ComponentProps,
+	DetailedHTMLProps,
+	FC,
+	ReactNode,
+} from "react"
 import { isValidElement } from "react"
 import type { Placement } from "react-aria"
 import type { ButtonProps as AriaButtonProps } from "react-aria-components"
 import { Button as AriaButton, Link as AriaLink } from "react-aria-components"
 import { Tooltip } from "~/components/base/tooltip/tooltip"
+import { CustomAriaLink } from "~/components/custom-link"
 import { cx } from "~/utils/cx"
 import { isReactComponent } from "~/utils/is-react-component"
 
@@ -47,12 +56,16 @@ export interface ButtonProps
 /**
  * Props for the link variant (anchor tag)
  */
-interface LinkProps
-	extends CommonProps,
-		DetailedHTMLProps<Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "color">, HTMLAnchorElement> {}
+interface ButtonLinkProps
+	extends Omit<LinkProps, "target">,
+		CommonProps,
+		DetailedHTMLProps<
+			Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "color" | "children">,
+			HTMLAnchorElement
+		> {}
 
 /** Union type of button and link props */
-export type Props = ButtonProps | LinkProps
+export type Props = ButtonProps | ButtonLinkProps
 
 export const ButtonUtility = ({
 	tooltip,
@@ -64,16 +77,16 @@ export const ButtonUtility = ({
 	tooltipPlacement = "top",
 	...otherProps
 }: Props) => {
-	const href = "href" in otherProps ? otherProps.href : undefined
-	const Component = href ? AriaLink : AriaButton
+	const to = "to" in otherProps ? otherProps.to : undefined
+	const Component = to ? CustomAriaLink : AriaButton
 
-	let props = {}
+	let props = {} as { to?: string } & Record<string, any>
 
-	if (href) {
+	if (to) {
 		props = {
 			...otherProps,
 
-			href: isDisabled ? undefined : href,
+			to: isDisabled ? undefined : to,
 
 			// Since anchor elements do not support the `disabled` attribute and state,
 			// we need to specify `data-rac` and `data-disabled` in order to be able

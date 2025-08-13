@@ -54,14 +54,16 @@ export function ChatHeader() {
 			</div>
 
 			<div className="flex items-center gap-2">
-				<Link
+				<ButtonUtility
 					to="/$orgId/call"
 					params={{
 						orgId: channel.organizationId,
 					}}
-				>
-					<ButtonUtility size="sm" color="tertiary" tooltip="Call" icon={IconPhone} />
-				</Link>
+					size="sm"
+					color="tertiary"
+					tooltip="Call"
+					icon={IconPhone}
+				/>
 
 				<PinnedMessagesModal />
 			</div>

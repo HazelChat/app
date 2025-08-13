@@ -6,7 +6,10 @@ import {
 } from "@cloudflare/realtimekit-react"
 import {
 	RtkButton,
+	RtkControlbar,
 	RtkDialogManager,
+	RtkEndedScreen,
+	RtkHeader,
 	RtkMeeting,
 	RtkNotifications,
 	RtkParticipantsAudio,
@@ -55,15 +58,24 @@ function MyMeeting() {
 				<RtkNotifications />
 				<RtkDialogManager />
 
-				{/*
+				{roomState === "joined" && (
+					<RtkMeeting mode="fill" meeting={meeting} showSetupScreen={false} />
 
-        For the sake of simplicty, the next couple of pages
-          will only talk about CustomMeetingPreview
+					// <div className="flex h-full w-full flex-col">
+					// 	<header>
+					// 		<RtkHeader meeting={meeting} />
+					// 	</header>
 
-        {roomState === 'joined' && <CustomInMeetingUI />}
-        {roomState === 'ended' && <CustomPostMeetingUI />)}
+					// 	        <RtkMeeting mode="fill" meeting={meeting} showSetupScreen={false} />
 
-        */}
+					// 	<RtkDialogManager meeting={meeting} />
+
+					// 	<footer className="flex w-full overflow-visible">
+					// 		<RtkControlbar meeting={meeting} />
+					// 	</footer>
+					// </div>
+				)}
+				{roomState === "ended" && <RtkEndedScreen meeting={meeting} />}
 			</div>
 		</RtkUiProvider>
 	)
