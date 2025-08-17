@@ -1,10 +1,18 @@
-import { Image } from "@tiptap/extension-image"
-import { Placeholder } from "@tiptap/extension-placeholder"
-import { TextAlign } from "@tiptap/extension-text-align"
-import { TextStyleKit } from "@tiptap/extension-text-style"
-import type { Editor, EditorContentProps, EditorOptions } from "@tiptap/react"
-import { EditorContent, useEditor } from "@tiptap/react"
-import { StarterKit } from "@tiptap/starter-kit"
+import {
+	BlockquotePlugin,
+	BoldPlugin,
+	CodePlugin,
+	H1Plugin,
+	H2Plugin,
+	H3Plugin,
+	ItalicPlugin,
+	LinkPlugin,
+	ListPlugin,
+	ParagraphPlugin,
+	StrikethroughPlugin,
+	UnderlinePlugin,
+} from "platejs"
+import { Plate, PlateContent, usePlateEditor } from "platejs/react"
 import type { ComponentProps, HTMLAttributes, ReactNode, Ref } from "react"
 import { createContext, useContext, useEffect, useId } from "react"
 import { HintText } from "~/components/base/input/hint-text"
@@ -12,7 +20,7 @@ import { Label } from "~/components/base/input/label"
 import { cx } from "~/utils/cx"
 
 type EditorContextType = {
-	editor: Editor
+	editor: any
 	editorId: string
 	isDisabled?: boolean
 	limit?: number
@@ -29,133 +37,102 @@ const useEditorContext = () => {
 	return context
 }
 
-interface TextEditorRootProps extends Partial<EditorOptions> {
+interface TextEditorRootProps {
 	className?: string
 	limit?: number
 	placeholder?: string
-	children?: ReactNode | ((item: Editor) => ReactNode)
+	children?: ReactNode | ((item: any) => ReactNode)
 	inputClassName?: string
 	ref?: Ref<HTMLDivElement>
+	content?: any
+	editable?: boolean
+	onCreate?: (editor: any) => void
+	onUpdate?: (editor: any) => void
 }
 
 const TextEditorRoot = ({
 	className,
-	inputClassName,
 	children,
 	limit,
 	placeholder = "Write something...",
-	...editorOptions
+	content,
+	editable = false,
+	onCreate,
+	onUpdate,
 }: TextEditorRootProps) => {
 	const id = useId()
 	const editorId = `editor-${id}`
 
-	const editor = useEditor({
-		...editorOptions,
-		editable: false,
-		immediatelyRender: true,
-		extensions: [
-			StarterKit.configure({
-				blockquote: {
-					HTMLAttributes: {
-						class: "my-3.5 border-l-4 border-secondary pl-4",
-					},
-				},
-				bulletList: {
-					HTMLAttributes: {
-						class: "list-disc ml-7",
-					},
-				},
-				orderedList: {
-					HTMLAttributes: {
-						class: "list-decimal ml-7",
-					},
-				},
-				link: {
-					openOnClick: false,
-					autolink: true,
-					defaultProtocol: "https",
-					HTMLAttributes: {
-						class: "text-primary underline",
-					},
-				},
-			}),
-			TextStyleKit,
-			TextAlign.configure({
-				types: ["heading", "paragraph"],
-			}),
-			Image.configure({
-				HTMLAttributes: {
-					class: "my-3",
-				},
-			}),
-			Placeholder.configure({
-				placeholder: ({ node }) => {
-					if (node.type.name === "bulletList" || node.type.name === "orderedList") return ""
-					return placeholder
-				},
-				emptyEditorClass:
-					"first:before:text-placeholder first:before:float-left first:before:content-[attr(data-placeholder)] first:before:pointer-events-none first:before:absolute",
-			}),
-		],
-
-		editorProps: {
-			attributes: {
-				id: editorId,
-				"aria-labelledby": `${editorId}-label`,
-				"aria-describedby": `${editorId}-hint`,
-
-				class: cx(
-					"w-full overflow-y-auto text-md leading-[1.5] text-primary caret-fg-brand-primary shadow-xs transition duration-100 ease-linear ring-inset selection:bg-fg-brand-primary/10 placeholder:text-placeholder autofill:rounded-lg autofill:text-primary focus:ring-2 focus:ring-brand focus:outline-hidden",
-
-					inputClassName,
-				),
+	const editor = usePlateEditor(
+		{
+			editor: {
+				editable,
 			},
+			value: content,
+			plugins: [
+				ParagraphPlugin,
+				BoldPlugin,
+				ItalicPlugin,
+				UnderlinePlugin,
+				StrikethroughPlugin,
+				CodePlugin,
+				BlockquotePlugin.configure({
+					node: {
+						props: {
+							className: "my-3.5 border-l-4 border-secondary pl-4",
+						},
+					},
+				}),
+				H1Plugin,
+				H2Plugin,
+				H3Plugin,
+				ListPlugin.configure({
+					options: {
+						bulletList: {
+							props: {
+								className: "list-disc ml-7",
+							},
+						},
+						orderedList: {
+							props: {
+								className: "list-decimal ml-7",
+							},
+						},
+					},
+				}),
+				LinkPlugin.configure({
+					node: {
+						props: {
+							className: "text-primary underline cursor-pointer",
+						},
+					},
+				}),
+			],
 		},
-	})
+		[content],
+	)
 
 	// Update editor content when the content prop changes
 	useEffect(() => {
-		if (editor && editorOptions.content) {
-			editor.commands.setContent(editorOptions.content)
+		if (editor && content) {
+			editor.tf.reset()
+			editor.children = content
 		}
-	}, [editor, editorOptions.content])
+	}, [editor, content])
 
+	// Call onCreate when editor is ready
 	useEffect(() => {
-		const setLink = () => {
-			if (!editor) return
-
-			const previousUrl = editor.getAttributes("link").href
-			const url = window.prompt("Please enter a link", previousUrl)
-
-			// Cancelled.
-			if (url === null) {
-				return
-			}
-
-			// If empty, remove link.
-			if (url === "") {
-				editor.chain().focus().extendMarkRange("link").unsetLink().run()
-
-				return
-			}
-
-			// Update link.
-			editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run()
+		if (editor && onCreate) {
+			onCreate(editor)
 		}
+	}, [editor, onCreate])
 
-		// Add a keyboard shortcut listener to handle link clicks
-		const handleKeyDown = (event: KeyboardEvent) => {
-			if (event.metaKey && event.key === "k") {
-				setLink()
-			}
+	// Call onUpdate when editor changes
+	useEffect(() => {
+		if (editor && onUpdate) {
+			onUpdate(editor)
 		}
-
-		document.addEventListener("keydown", handleKeyDown)
-
-		return () => {
-			document.removeEventListener("keydown", handleKeyDown)
-		}
-	}, [editor])
+	}, [editor, onUpdate])
 
 	if (!editor) {
 		return null
@@ -164,19 +141,29 @@ const TextEditorRoot = ({
 	return (
 		<EditorContext.Provider value={{ editor, limit, editorId }}>
 			<div className={cx("flex w-full flex-col gap-3", className)}>
-				{typeof children === "function" ? children(editor) : children}
+				<Plate editor={editor}>{typeof children === "function" ? children(editor) : children}</Plate>
 			</div>
 		</EditorContext.Provider>
 	)
 }
 
-interface TextEditorContentProps extends Omit<EditorContentProps, "editor"> {
+interface TextEditorContentProps {
 	ref?: Ref<HTMLDivElement>
+	className?: string
 }
 
-const TextEditorContent = ({ ...props }: TextEditorContentProps) => {
-	const { editor, isDisabled } = useEditorContext()
-	return <EditorContent disabled={isDisabled} {...props} editor={editor} />
+const TextEditorContent = ({ className, ...props }: TextEditorContentProps) => {
+	const { isDisabled } = useEditorContext()
+	return (
+		<PlateContent
+			{...props}
+			className={cx(
+				"w-full overflow-y-auto text-md text-primary leading-[1.5] caret-fg-brand-primary shadow-xs ring-inset transition duration-100 ease-linear selection:bg-fg-brand-primary/10 placeholder:text-placeholder autofill:rounded-lg autofill:text-primary focus:outline-hidden focus:ring-2 focus:ring-brand",
+				className,
+			)}
+			disabled={isDisabled}
+		/>
+	)
 }
 
 interface TextEditorLabelProps extends ComponentProps<typeof Label> {}
@@ -189,7 +176,9 @@ const TextEditorLabel = ({ children, ...props }: TextEditorLabelProps) => {
 			{...props}
 			id={`${editorId}-label`}
 			onClick={() => {
-				editor.chain().focus().run()
+				if (editor) {
+					editor.tf.focus()
+				}
 			}}
 		>
 			{children}
@@ -200,12 +189,12 @@ const TextEditorLabel = ({ children, ...props }: TextEditorLabelProps) => {
 interface TextEditorHintTextProps extends HTMLAttributes<HTMLElement> {}
 
 const TextEditorHintText = ({ children, ...props }: TextEditorHintTextProps) => {
-	const { editor, editorId, limit, isInvalid } = useEditorContext()
+	const { editorId, limit, isInvalid } = useEditorContext()
 
 	if (!children && !limit) return null
 
-	const charactersLeft =
-		typeof limit === "number" ? limit - editor.storage?.characterCount?.characters() : 0
+	// For now, we don't have character count in Plate, so default to 0
+	const charactersLeft = typeof limit === "number" ? limit : 0
 	const exceedsLimit = charactersLeft < 0
 
 	return (

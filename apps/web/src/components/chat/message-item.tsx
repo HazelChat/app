@@ -3,7 +3,6 @@ import type { Id } from "@hazel/backend"
 import { api } from "@hazel/backend/api"
 import { useQuery } from "@tanstack/react-query"
 import { useParams } from "@tanstack/react-router"
-import type { Editor } from "@tiptap/react"
 import type { FunctionReturnType } from "convex/server"
 import { format } from "date-fns"
 import { useRef, useState } from "react"
@@ -15,7 +14,6 @@ import { IconNotification } from "../application/notifications/notifications"
 import { Avatar } from "../base/avatar/avatar"
 import { Badge } from "../base/badges/badges"
 import { Button as StyledButton } from "../base/buttons/button"
-import { TextEditor as EditableTextEditor } from "../base/text-editor/text-editor"
 import { IconThread } from "../temp-icons/thread"
 import { MessageAttachments } from "./message-attachments"
 import { MessageReplySection } from "./message-reply-section"
@@ -56,6 +54,7 @@ export function MessageItem({
 	const [hasBeenHovered, setHasBeenHovered] = useState(false)
 	const [isMenuOpen, setIsMenuOpen] = useState(false)
 	const hoverTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
+	const editorRef = useRef<any>(null)
 
 	const { data: currentUser } = useQuery(
 		convexQuery(api.me.getCurrentUser, {
@@ -80,9 +79,12 @@ export function MessageItem({
 		}
 	}
 
-	const handleEdit = async (editor: Editor) => {
-		const content = editor.getText()
-		const jsonContent = editor.getJSON()
+	const handleEdit = async (editor: any) => {
+		// For Plate editor, we need to extract text differently
+		const content = editor.children
+			.map((node: any) => node.children?.map((child: any) => child.text || "").join("") || "")
+			.join("\n")
+		const jsonContent = editor.children
 		if (
 			content.trim() &&
 			(content !== message.content ||
@@ -212,31 +214,53 @@ export function MessageItem({
 					{/* Message Content */}
 					{isEditing ? (
 						<div className="mt-1">
-							<EditableTextEditor.Root
+							<TextEditor.Root
 								content={message.jsonContent}
+								editable={true}
 								className="gap-0"
-								inputClassName="min-h-[2rem] p-2 text-sm"
-								onSubmit={handleEdit}
-								editorProps={{
-									handleDOMEvents: {
-										keydown: (_view: any, event: KeyboardEvent) => {
-											if (event.key === "Escape") {
-												setIsEditing(false)
-												return true
-											}
-											return false
-										},
-									},
+								onCreate={(editor) => {
+									// Store editor reference for save/cancel buttons
+									editorRef.current = editor
+
+									// Add keyboard handler for Escape key
+									const handleKeyDown = (event: Event) => {
+										const keyboardEvent = event as KeyboardEvent
+										if (keyboardEvent.key === "Escape") {
+											setIsEditing(false)
+											keyboardEvent.preventDefault()
+										} else if (keyboardEvent.key === "Enter" && !keyboardEvent.shiftKey) {
+											keyboardEvent.preventDefault()
+											handleEdit(editor)
+										}
+									}
+
+									const editorElement = document.querySelector('[data-slate-editor="true"]')
+									if (editorElement) {
+										editorElement.addEventListener("keydown", handleKeyDown)
+										// Store cleanup function
+										;(editor as any).cleanup = () => {
+											editorElement.removeEventListener("keydown", handleKeyDown)
+										}
+									}
+								}}
+								onUpdate={(editor) => {
+									editorRef.current = editor
 								}}
 							>
-								{(editor) => (
+								{(_editor) => (
 									<>
-										<EditableTextEditor.Content />
+										<div className="rounded border border-secondary p-2">
+											<TextEditor.Content className="min-h-[2rem] text-sm" />
+										</div>
 										<div className="mt-2 flex gap-2">
 											<StyledButton
 												size="sm"
 												color="primary"
-												onClick={async () => await handleEdit(editor)}
+												onClick={async () => {
+													if (editorRef.current) {
+														await handleEdit(editorRef.current)
+													}
+												}}
 											>
 												Save
 											</StyledButton>
@@ -245,7 +269,14 @@ export function MessageItem({
 												color="secondary"
 												onClick={() => {
 													setIsEditing(false)
-													editor.commands.setContent(message.jsonContent)
+													if (editorRef.current) {
+														// Cleanup event listeners
+														if ((editorRef.current as any).cleanup) {
+															;(editorRef.current as any).cleanup()
+														}
+														editorRef.current.tf.reset()
+														editorRef.current.children = message.jsonContent
+													}
 												}}
 											>
 												Cancel
@@ -253,11 +284,11 @@ export function MessageItem({
 										</div>
 									</>
 								)}
-							</EditableTextEditor.Root>
+							</TextEditor.Root>
 						</div>
 					) : (
 						<TextEditor.Root content={message.jsonContent}>
-							<TextEditor.Content readOnly />
+							<TextEditor.Content />
 						</TextEditor.Root>
 					)}
 
