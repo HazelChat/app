@@ -7,9 +7,9 @@ import { format } from "date-fns"
 import { Button } from "react-aria-components"
 import { ChatProvider } from "~/providers/chat-provider"
 import { Avatar } from "../base/avatar/avatar"
+import { MarkdownReadonly } from "../markdown-readonly"
 import { MessageComposer } from "./message-composer"
 import { MessageList } from "./message-list"
-import { TextEditor } from "./read-only-message"
 import { TypingIndicator } from "./typing-indicator"
 
 interface ThreadPanelProps {
@@ -73,9 +73,7 @@ function ThreadContent({ threadChannelId, originalMessageId, organizationId, onC
 								</span>
 							</div>
 							<div className="mt-1">
-								<TextEditor.Root content={originalMessage.jsonContent}>
-									<TextEditor.Content readOnly />
-								</TextEditor.Root>
+								<MarkdownReadonly value={originalMessage.jsonContent}></MarkdownReadonly>
 							</div>
 						</div>
 					</div>

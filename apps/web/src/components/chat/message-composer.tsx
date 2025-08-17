@@ -3,7 +3,6 @@ import type { Id } from "@hazel/backend"
 import { api } from "@hazel/backend/api"
 import { useQuery } from "@tanstack/react-query"
 import { useParams } from "@tanstack/react-router"
-import type { Editor } from "@tiptap/react"
 import { Attachment01, Loading03, XClose } from "@untitledui/icons"
 import { useEffect, useImperativeHandle, useRef, useState } from "react"
 
@@ -11,9 +10,7 @@ import { useFileUpload } from "~/hooks/use-file-upload"
 import { useChat } from "~/providers/chat-provider"
 import { cx } from "~/utils/cx"
 import { ButtonUtility } from "../base/buttons/button-utility"
-import { TextEditor } from "../base/text-editor/text-editor"
-import { PreviewMdDemo } from "../preview-markdown-demo"
-import { MessageComposerActions } from "./message-composer-actions"
+import { MarkdownEditor, type MarkdownEditorRef } from "../markdown-editor"
 import { ReplyIndicator } from "./reply-indicator"
 
 export interface MessageComposerRef {
@@ -30,11 +27,22 @@ interface MessageComposerProps {
 export const MessageComposer = ({ ref, placeholder = "Type a message..." }: MessageComposerProps) => {
 	const { orgId } = useParams({ from: "/_app/$orgId" })
 	const { sendMessage, startTyping, stopTyping, replyToMessageId, setReplyToMessageId } = useChat()
-	const editorRef = useRef<Editor | null>(null)
+	const editorRef = useRef<MarkdownEditorRef | null>(null)
 
 	const [isTyping, setIsTyping] = useState(false)
 	const [attachmentIds, setAttachmentIds] = useState<Id<"attachments">[]>([])
-	const actionsRef = useRef<{ cleanup: () => void } | null>(null)
+	const typingTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
+
+	// Expose the focusAndInsertText method to parent component
+	useImperativeHandle(
+		ref,
+		() => ({
+			focusAndInsertText: (text: string) => {
+				editorRef.current?.focusAndInsertText(text)
+			},
+		}),
+		[],
+	)
 
 	const { uploads } = useFileUpload({
 		organizationId: orgId as Id<"organizations">,
@@ -49,28 +57,11 @@ export const MessageComposer = ({ ref, placeholder = "Type a message..." }: Mess
 		}),
 	)
 
-	const textareaRef = useRef<HTMLDivElement>(null)
-	const typingTimeoutRef = useRef<NodeJS.Timeout>(undefined)
-
 	const handleRemoveAttachment = (attachmentId: Id<"attachments">) => {
 		setAttachmentIds(attachmentIds.filter((id) => id !== attachmentId))
 	}
 
-	useImperativeHandle(
-		ref,
-		() => ({
-			focusAndInsertText: (text: string) => {
-				if (editorRef.current) {
-					editorRef.current.chain().focus().insertContent(text).run()
-				}
-			},
-		}),
-		[],
-	)
-
-	const handleEditorUpdate = (editor: Editor) => {
-		const content = editor.getText().trim()
-
+	const handleEditorUpdate = (content: string) => {
 		// Debug log for current user typing
 		console.log("[DEBUG] User typing, content length:", content.length)
 
@@ -117,10 +108,10 @@ export const MessageComposer = ({ ref, placeholder = "Type a message..." }: Mess
 		}
 	}, [isTyping, stopTyping])
 
-	const handleSubmit = async (editor: Editor) => {
+	const handleSubmit = async (content: string, jsonContent: any) => {
 		sendMessage({
-			jsonContent: editor.getJSON(),
-			content: editor.getText(),
+			jsonContent,
+			content,
 			attachments: attachmentIds,
 		})
 
@@ -134,13 +125,8 @@ export const MessageComposer = ({ ref, placeholder = "Type a message..." }: Mess
 
 		// Clear attachments after sending
 		setAttachmentIds([])
-		// Trigger cleanup in child component
-		if (actionsRef.current) {
-			actionsRef.current.cleanup()
-		}
 
-		textareaRef.current?.focus()
-		editor.commands.clearContent()
+		// Note: Editor content is cleared and refocused automatically by MarkdownEditor's handleSubmit
 	}
 
 	return (
@@ -199,39 +185,19 @@ export const MessageComposer = ({ ref, placeholder = "Type a message..." }: Mess
 						</div>
 					</div>
 				)}
-				<PreviewMdDemo></PreviewMdDemo>
-				<TextEditor.Root
-					className="relative w-full gap-2"
-					inputClassName={cx(
-						"p-4",
-						(replyToMessageId || attachmentIds.length > 0) && "rounded-t-none",
+				<MarkdownEditor
+					ref={editorRef}
+					placeholder={placeholder}
+					className={cx(
+						"w-full",
+						(replyToMessageId || attachmentIds.length > 0) && "[&_.editor]:rounded-t-none",
 					)}
 					onSubmit={handleSubmit}
 					onUpdate={handleEditorUpdate}
-				>
-					{(editor) => {
-						editorRef.current = editor
-						return (
-							<>
-								<TextEditor.Tooltip />
-
-								<div className="relative flex flex-col gap-2">
-									<TextEditor.Content className="rounded-none" ref={textareaRef} />
-									<MessageComposerActions
-										ref={actionsRef}
-										attachmentIds={attachmentIds}
-										setAttachmentIds={setAttachmentIds}
-										uploads={uploads}
-										onSubmit={() => handleSubmit(editor)}
-										onEmojiSelect={(emoji) => {
-											editor.chain().focus().insertContent(emoji).run()
-										}}
-									/>
-								</div>
-							</>
-						)
-					}}
-				</TextEditor.Root>
+					attachmentIds={attachmentIds}
+					setAttachmentIds={setAttachmentIds}
+					uploads={uploads}
+				/>
 			</div>
 		</div>
 	)

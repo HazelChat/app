@@ -72,12 +72,4 @@ input[type="search"]::-webkit-search-cancel-button {
     --color-highlight: var(--highlight);
 }
 
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-    }
-  body {
-    @apply bg-background text-foreground;
-    }
-}
 

@@ -50,8 +50,8 @@ const editorVariants = cva(
 	cn(
 		"group/editor",
 		"relative w-full cursor-text overflow-x-hidden break-words whitespace-pre-wrap select-text",
-		"rounded-md ring-offset-primary focus-visible:outline-none",
-		"placeholder:text-tertiary/80 **:data-slate-placeholder:!top-1/2 **:data-slate-placeholder:-translate-y-1/2 **:data-slate-placeholder:text-tertiary/80 **:data-slate-placeholder:opacity-100!",
+		"rounded-md ring-offset-primary focus-visible:outline-none caret-fg-brand-primary",
+		"placeholder:text-tertiary **:data-slate-placeholder:!top-1/2 **:data-slate-placeholder:-translate-y-1/2 **:data-slate-placeholder:text-tertiary/80 **:data-slate-placeholder:opacity-100!",
 		"[&_strong]:font-bold",
 	),
 	{
@@ -68,7 +68,7 @@ const editorVariants = cva(
 			variant: {
 				ai: "w-full px-0 text-base md:text-sm",
 				aiChat: "max-h-[min(70vh,320px)] w-full max-w-[700px] overflow-y-auto px-3 py-2 text-base md:text-sm",
-				chat: "w-full overflow-y-auto px-3 py-2 text-base md:text-sm",
+				chat: "w-full overflow-y-auto px-3 py-2 text-base md:text-sm focus:border-brand focus:outline-hidden",
 				comment: cn("rounded-none border-none bg-transparent text-sm"),
 				default: "size-full px-16 pt-4 pb-72 text-base sm:px-[max(64px,calc(50%-350px))]",
 				demo: "size-full px-16 pt-4 pb-72 text-base sm:px-[max(64px,calc(50%-350px))]",

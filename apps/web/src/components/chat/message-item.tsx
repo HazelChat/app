@@ -14,11 +14,11 @@ import { IconNotification } from "../application/notifications/notifications"
 import { Avatar } from "../base/avatar/avatar"
 import { Badge } from "../base/badges/badges"
 import { Button as StyledButton } from "../base/buttons/button"
+import { MarkdownReadonly } from "../markdown-readonly"
 import { IconThread } from "../temp-icons/thread"
 import { MessageAttachments } from "./message-attachments"
 import { MessageReplySection } from "./message-reply-section"
 import { MessageToolbar } from "./message-toolbar"
-import { TextEditor } from "./read-only-message"
 
 type Message = FunctionReturnType<typeof api.messages.getMessages>["page"][0]
 
@@ -214,7 +214,7 @@ export function MessageItem({
 					{/* Message Content */}
 					{isEditing ? (
 						<div className="mt-1">
-							<TextEditor.Root
+							{/* <TextEditor.Root
 								content={message.jsonContent}
 								editable={true}
 								className="gap-0"
@@ -284,12 +284,10 @@ export function MessageItem({
 										</div>
 									</>
 								)}
-							</TextEditor.Root>
+							</TextEditor.Root> */}
 						</div>
 					) : (
-						<TextEditor.Root content={message.jsonContent}>
-							<TextEditor.Content />
-						</TextEditor.Root>
+						<MarkdownReadonly value={message.jsonContent}></MarkdownReadonly>
 					)}
 
 					{/* Attachments */}
