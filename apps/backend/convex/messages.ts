@@ -201,7 +201,6 @@ export const getMessages = userQuery({
 export const createMessage = userMutation({
 	args: {
 		content: v.string(),
-		jsonContent: v.any(),
 		channelId: v.id("channels"),
 		threadChannelId: v.optional(v.id("channels")),
 		replyToMessageId: v.optional(v.id("messages")),
@@ -229,7 +228,6 @@ export const createMessage = userMutation({
 		const messageId = await ctx.db.insert("messages", {
 			channelId: args.channelId,
 			content: args.content,
-			jsonContent: args.jsonContent,
 			threadChannelId: args.threadChannelId,
 			authorId: ctx.user.id,
 			replyToMessageId: args.replyToMessageId,
@@ -260,14 +258,12 @@ export const updateMessage = userMutation({
 	args: {
 		id: v.id("messages"),
 		content: v.string(),
-		jsonContent: v.any(),
 	},
 	handler: async (ctx, args) => {
 		await ctx.user.validateOwnsMessage({ ctx, messageId: args.id })
 
 		await ctx.db.patch(args.id, {
 			content: args.content,
-			jsonContent: args.jsonContent,
 			updatedAt: Date.now(),
 		})
 

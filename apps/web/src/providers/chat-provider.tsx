@@ -26,8 +26,8 @@ interface ChatContextValue {
 	isLoadingMessages: boolean
 	isLoadingNext: boolean
 	isLoadingPrev: boolean
-	sendMessage: (props: { content: string; attachments?: Id<"attachments">[]; jsonContent: any }) => void
-	editMessage: (messageId: Id<"messages">, content: string, jsonContent: any) => Promise<void>
+	sendMessage: (props: { content: string; attachments?: Id<"attachments">[] }) => void
+	editMessage: (messageId: Id<"messages">, content: string) => Promise<void>
 	deleteMessage: (messageId: Id<"messages">) => void
 	addReaction: (messageId: Id<"messages">, emoji: string) => void
 	removeReaction: (messageId: Id<"messages">, emoji: string) => void
@@ -82,7 +82,6 @@ export function ChatProvider({ channelId, organizationId, children }: ChatProvid
 	const prevMessageCountRef = useRef<number>(0)
 
 	// Clear previous messages when channel changes
-	// biome-ignore lint/correctness/useExhaustiveDependencies: We only want to run this when channelId changes
 	useEffect(() => {
 		if (previousChannelIdRef.current && previousChannelIdRef.current !== channelId) {
 			// Channel has changed, clear previous messages to prevent stale data
@@ -130,17 +129,14 @@ export function ChatProvider({ channelId, organizationId, children }: ChatProvid
 	const sendMessage = ({
 		content,
 		attachments,
-		jsonContent,
 	}: {
 		content: string
 		attachments?: Id<"attachments">[]
-		jsonContent: any
 	}) => {
 		sendMessageMutation({
 			channelId,
 			organizationId,
 			content,
-			jsonContent,
 			attachedFiles: attachments || [],
 			replyToMessageId: replyToMessageId || undefined,
 		})
@@ -148,12 +144,11 @@ export function ChatProvider({ channelId, organizationId, children }: ChatProvid
 		setReplyToMessageId(null)
 	}
 
-	const editMessage = async (messageId: Id<"messages">, content: string, jsonContent: any) => {
+	const editMessage = async (messageId: Id<"messages">, content: string) => {
 		await editMessageMutation({
 			organizationId,
 			id: messageId,
 			content,
-			jsonContent,
 		})
 	}
 

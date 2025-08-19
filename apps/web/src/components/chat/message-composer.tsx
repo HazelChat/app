@@ -108,9 +108,8 @@ export const MessageComposer = ({ ref, placeholder = "Type a message..." }: Mess
 		}
 	}, [isTyping, stopTyping])
 
-	const handleSubmit = async (content: string, jsonContent: any) => {
+	const handleSubmit = async (content: string) => {
 		sendMessage({
-			jsonContent,
 			content,
 			attachments: attachmentIds,
 		})

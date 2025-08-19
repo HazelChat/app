@@ -78,36 +78,6 @@ export function MessageItem({
 		}
 	}
 
-	const _handleEdit = async (editor: any) => {
-		// For Plate editor, we need to extract text differently
-		const content = editor.children
-			.map((node: any) => node.children?.map((child: any) => child.text || "").join("") || "")
-			.join("\n")
-		const jsonContent = editor.children
-		if (
-			content.trim() &&
-			(content !== message.content ||
-				JSON.stringify(jsonContent) !== JSON.stringify(message.jsonContent))
-		) {
-			try {
-				await editMessage(message._id, content, jsonContent)
-				setIsEditing(false)
-			} catch (error) {
-				console.error("Failed to edit message:", error)
-				toast.custom((t) => (
-					<IconNotification
-						title="Failed to edit message"
-						description="Please try again later."
-						color="error"
-						onClose={() => toast.dismiss(t)}
-					/>
-				))
-			}
-		} else {
-			setIsEditing(false)
-		}
-	}
-
 	const handleDelete = () => {
 		deleteMessage(message._id)
 	}
@@ -286,7 +256,7 @@ export function MessageItem({
 							</TextEditor.Root> */}
 						</div>
 					) : (
-						<MarkdownReadonly value={message.jsonContent}></MarkdownReadonly>
+						<MarkdownReadonly content={message.content}></MarkdownReadonly>
 					)}
 
 					{/* Attachments */}

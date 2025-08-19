@@ -13,6 +13,8 @@ import { MessageComposerActions } from "./chat/message-composer-actions"
 
 import "prismjs/components/prism-markdown.js"
 import { cx } from "~/utils/cx"
+import { MarkdownKit } from "./editor/plugins/markdown-kit"
+import { MentionKit } from "./editor/plugins/mention-kit"
 
 /** Decorate texts with markdown preview. */
 const decoratePreview: Decorate = ({ entry: [node, path] }) => {
@@ -146,7 +148,7 @@ export interface MarkdownEditorRef {
 interface MarkdownEditorProps {
 	placeholder?: string
 	className?: string
-	onSubmit?: (content: string, jsonContent: any) => void | Promise<void>
+	onSubmit?: (content: string) => void | Promise<void>
 	onUpdate?: (content: string) => void
 	attachmentIds?: Id<"attachments">[]
 	setAttachmentIds?: (ids: Id<"attachments">[]) => void
@@ -178,6 +180,8 @@ export const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>
 			{
 				plugins: [
 					...BasicNodesKit,
+					...MarkdownKit,
+					// ...MentionKit,
 					createSlatePlugin({
 						key: "preview-markdown",
 						decorate: decoratePreview,
@@ -221,8 +225,8 @@ export const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>
 			if (!onSubmit) return
 
 			const textContent = Node.string(editor)
-			const jsonContent = editor.children
-			await onSubmit(textContent, jsonContent)
+
+			await onSubmit(textContent)
 
 			setAttachmentIds?.([])
 			actionsRef.current?.cleanup()

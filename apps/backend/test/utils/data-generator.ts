@@ -269,15 +269,6 @@ export async function createMessage(
 		return await ctx.db.insert("messages", {
 			channelId: props.channelId,
 			content: props.content ?? "Test message content",
-			jsonContent: {
-				type: "doc",
-				content: [
-					{
-						type: "paragraph",
-						content: [{ type: "text", text: props.content ?? "Test message content" }],
-					},
-				],
-			},
 			authorId: user._id,
 			replyToMessageId: props.replyToMessageId,
 			threadChannelId: props.threadChannelId,

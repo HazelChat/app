@@ -88,7 +88,6 @@ export const confectSchema = defineSchema({
 			threadChannelId: Schema.optional(Id.Id("channels")),
 
 			content: Schema.String,
-			jsonContent: Schema.Any,
 			reactions: Schema.Array(
 				Schema.Struct({
 					userId: Id.Id("users"),
