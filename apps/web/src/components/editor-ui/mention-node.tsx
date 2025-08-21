@@ -83,7 +83,8 @@ export function MentionInputElement(props: PlateElementProps<TComboboxInputEleme
 				showTrigger={false}
 				trigger="@"
 			>
-				<span className="inline-block rounded-md bg-secondary px-1.5 py-0.5 align-baseline text-sm ring-brand focus-within:ring-2">
+				<span>
+					@
 					<InlineComboboxInput />
 				</span>
 
@@ -103,7 +104,6 @@ export function MentionInputElement(props: PlateElementProps<TComboboxInputEleme
 					</InlineComboboxGroup>
 				</InlineComboboxContent>
 			</InlineCombobox>
-
 			{props.children}
 		</PlateElement>
 	)
