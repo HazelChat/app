@@ -1,11 +1,7 @@
 import { useConvexMutation, useConvexQuery } from "@convex-dev/react-query"
+import type { Id } from "@hazel/backend"
 import { api } from "@hazel/backend/api"
 import { createFileRoute } from "@tanstack/react-router"
-import { Form } from "~/components/base/form/form"
-
-import "@workos-inc/widgets/styles.css"
-
-import type { Id } from "@hazel/backend"
 import { Plus, RefreshCcw02, XClose } from "@untitledui/icons"
 import { useState } from "react"
 import type { SortDescriptor } from "react-aria-components"
@@ -116,7 +112,6 @@ function RouteComponent() {
 				) : (
 					<Table
 						aria-label="Pending invitations"
-						selectionMode="multiple"
 						sortDescriptor={invitationsSortDescriptor}
 						onSortChange={setInvitationsSortDescriptor}
 						className="bg-primary"
