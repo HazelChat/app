@@ -26,13 +26,13 @@ export const ChannelActionsDropdown = () => {
 					<Dropdown.Menu>
 						<Dropdown.Item
 							onAction={() => setModalType("create")}
-							icon={IconPlusSquareStroke}
-							label="Create New Channel"
+							icon={IconPlusStroke}
+							label="Create new channel"
 						/>
 						<Dropdown.Item
 							onAction={() => setModalType("join")}
 							icon={IconHashtagStroke}
-							label="Join Existing Channel"
+							label="Join existing channel"
 						/>
 					</Dropdown.Menu>
 				</Dropdown.Popover>

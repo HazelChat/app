@@ -193,7 +193,7 @@ export function MessageToolbar({
 							<DotsVertical className="size-3.5" />
 						</Button>
 					</MenuTrigger>
-					<Dropdown.Popover placement="bottom end">
+					<Dropdown.Popover placement="bottom end" className='w-44'>
 						<Dropdown.Menu>
 							{onThread && (
 								<Dropdown.Item

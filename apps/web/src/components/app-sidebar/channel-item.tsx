@@ -5,7 +5,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link, useParams } from "@tanstack/react-router"
 import type { FunctionReturnType } from "convex/server"
 import { useCallback } from "react"
-import { Pressable } from "react-aria"
+import { Pressable } from "react-aria-components"
 import { cn } from "~/lib/utils"
 import { cx } from "~/utils/cx"
 import { Avatar } from "../base/avatar/avatar"
@@ -18,6 +18,10 @@ import IconThreeDotsMenuHorizontalStroke from "../icons/IconThreeDotsMenuHorizon
 import IconVolumeMute1 from "../icons/IconVolumeMute1"
 import IconVolumeOne1 from "../icons/IconVolumeOne1"
 import { SidebarMenuAction, SidebarMenuButton, SidebarMenuItem } from "../ui/sidebar"
+import IconPencilEdit from "~/components/icons/IconPencilEdit";
+import IconTruckTrash from "~/components/icons/IconTruckTrash";
+import IconDeleteBackwardLeft from "~/components/icons/IconDeleteBackwardLeft";
+import IconDeleteDustbin011 from "~/components/icons/IconDeleteDustbin011";
 
 type ChannelsResponse = FunctionReturnType<typeof api.channels.getChannelsForOrganization>
 
@@ -122,6 +126,14 @@ export const ChannelItem = ({ channel }: ChannelItemProps) => {
 						>
 							{channel.isFavorite ? "Unfavorite" : "Favorite"}
 						</Dropdown.Item>
+            <Dropdown.Separator/>
+            <Dropdown.Item icon={(props) => <IconPencilEdit className={cx("text-amber-500", props.className)}/>}>
+              Rename
+            </Dropdown.Item>
+            <Dropdown.Item icon={(props) => <IconDeleteDustbin011 className={cx("text-amber-500", props.className)}/>}>
+              Delete
+            </Dropdown.Item>
+            <Dropdown.Separator/>
 						<Dropdown.Item
 							className="text-destructive"
 							icon={(props) => (
@@ -144,7 +156,7 @@ export const ChannelItem = ({ channel }: ChannelItemProps) => {
 							)}
 							onAction={handleLeaveChannel}
 						>
-							Leave Channel
+							Leave
 						</Dropdown.Item>
 					</Dropdown.Menu>
 				</Dropdown.Popover>
