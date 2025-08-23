@@ -78,7 +78,7 @@ const DropdownItem = ({ label, children, addon, icon: Icon, unstyled, ...props }
 					{addon && (
 						<span
 							className={cx(
-								"ml-3 shrink-0 rounded px-1 py-px font-medium text-xs ring ring-secondary ring-inset",
+								"ml-3 shrink-0 rounded px-1 py-px font-medium text-xs inset-ring inset-ring-secondary",
 								state.isDisabled ? "text-disabled" : "text-quaternary",
 							)}
 						>

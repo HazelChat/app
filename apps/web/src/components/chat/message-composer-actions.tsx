@@ -78,7 +78,7 @@ export const MessageComposerActions = forwardRef<MessageComposerActionsRef, Mess
 				{/* Upload Progress */}
 				{showUploadProgress && uploads.length > 0 && (
 					<div className="absolute right-0 bottom-full left-0 mx-3 mb-2">
-						<div className="rounded-lg bg-primary p-2 ring ring-secondary ring-inset">
+						<div className="rounded-lg bg-primary p-2 inset-ring inset-ring-secondary">
 							<div className="mb-1 flex items-center justify-between">
 								<span className="font-medium text-secondary text-xs">Uploading files...</span>
 								<ButtonUtility

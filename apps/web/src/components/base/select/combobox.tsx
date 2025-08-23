@@ -116,7 +116,7 @@ const ComboBoxValue = ({
 						>
 							<span
 								className={cx(
-									"pointer-events-none select-none rounded px-1 py-px font-medium text-quaternary text-xs ring ring-secondary ring-inset",
+									"pointer-events-none select-none rounded px-1 py-px font-medium text-quaternary text-xs inset-ring inset-ring-secondary",
 									isDisabled && "bg-transparent text-disabled",
 								)}
 								aria-hidden="true"

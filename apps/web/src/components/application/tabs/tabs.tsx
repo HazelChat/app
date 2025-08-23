@@ -84,7 +84,7 @@ const getHorizontalStyles = ({ size, fullwidth }: { size?: "sm" | "md"; fullwidt
 	"button-brand": "gap-1",
 	"button-gray": "gap-1",
 	"button-border": cx(
-		"gap-1 rounded-[10px] bg-secondary_alt p-1 ring ring-secondary ring-inset",
+		"gap-1 rounded-[10px] bg-secondary_alt p-1 inset-ring inset-ring-secondary",
 		size === "md" && "rounded-xl p-1.5",
 	),
 	"button-minimal": "gap-0.5 rounded-lg bg-secondary_alt ring ring-inset ring-secondary",

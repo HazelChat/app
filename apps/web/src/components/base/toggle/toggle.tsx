@@ -56,7 +56,7 @@ export const ToggleBase = ({
 				isDisabled && "cursor-not-allowed bg-disabled",
 				isFocusVisible && "outline-2 outline-offset-2",
 
-				slim && "ring ring-secondary ring-inset",
+				slim && "inset-ring inset-ring-secondary",
 				slim && isSelected && "ring-transparent",
 				classes.root,
 				className,

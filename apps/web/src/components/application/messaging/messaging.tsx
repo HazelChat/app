@@ -184,14 +184,14 @@ export const MessageItem = ({ msg, showUserLabel = true, ...props }: MessageItem
 				{msg.text ? (
 					<div
 						className={cx(
-							"group/msg relative rounded-lg px-3 py-2 text-md text-primary ring ring-secondary ring-inset",
+							"group/msg relative rounded-lg px-3 py-2 text-md text-primary inset-ring inset-ring-secondary",
 							msg.user?.me ? "rounded-tr-none bg-primary pr-4" : "rounded-tl-none bg-secondary",
 							// Link styles
 							"[&_a]:rounded-sm [&_a]:text-brand-secondary [&_a]:underline [&_a]:underline-offset-2 [&_a]:outline-focus-ring [&_a]:transition [&_a]:duration-100 [&_a]:ease-linear [&_a]:hover:text-brand-secondary_hover [&_a]:focus-visible:outline-2 [&_a]:focus-visible:outline-offset-2",
 						)}
 					>
 						{msg.reply && (
-							<blockquote className="relative mb-1.5 rounded-lg bg-primary px-3 py-2 text-sm text-tertiary ring ring-secondary ring-inset before:pointer-events-none before:absolute before:inset-0 before:rounded-[inherit] before:border-brand before:border-l-[3px]">
+							<blockquote className="relative mb-1.5 rounded-lg bg-primary px-3 py-2 text-sm text-tertiary inset-ring inset-ring-secondary before:pointer-events-none before:absolute before:inset-0 before:rounded-[inherit] before:border-brand before:border-l-[3px]">
 								{msg.reply.text}
 							</blockquote>
 						)}
@@ -207,7 +207,7 @@ export const MessageItem = ({ msg, showUserLabel = true, ...props }: MessageItem
 						)}
 
 						{msg.urlPreview && (
-							<aside className="mt-1 mb-1.5 flex items-start gap-1.5 rounded-lg bg-primary p-2 pr-3 ring ring-secondary ring-inset">
+							<aside className="mt-1 mb-1.5 flex items-start gap-1.5 rounded-lg bg-primary p-2 pr-3 inset-ring inset-ring-secondary">
 								<Link03 className="mt-0.5 size-4 shrink-0 text-fg-quaternary" />
 								<div className="min-w-0 flex-1">
 									<p className="w-full truncate font-medium text-secondary text-sm">
@@ -306,7 +306,7 @@ export const MessageItem = ({ msg, showUserLabel = true, ...props }: MessageItem
 						{msg.reactions?.map((reaction) => (
 							<li
 								key={reaction.content}
-								className="flex h-6 items-center gap-1 rounded-2xl bg-secondary px-2 py-0.5 ring ring-secondary ring-inset"
+								className="flex h-6 items-center gap-1 rounded-2xl bg-secondary px-2 py-0.5 inset-ring inset-ring-secondary"
 							>
 								{reaction.content}
 
@@ -322,7 +322,7 @@ export const MessageItem = ({ msg, showUserLabel = true, ...props }: MessageItem
 
 				{/* Typing status indicator */}
 				{msg.typing && (
-					<div className="flex h-7 w-10 items-center justify-center gap-1 self-start rounded-lg rounded-tl-none bg-secondary text-md text-primary ring ring-secondary ring-inset">
+					<div className="flex h-7 w-10 items-center justify-center gap-1 self-start rounded-lg rounded-tl-none bg-secondary text-md text-primary inset-ring inset-ring-secondary">
 						<div className="size-1 animate-bounce rounded-full bg-fg-tertiary [animation-delay:-0.3s]" />
 						<div className="size-1 animate-bounce rounded-full bg-fg-quaternary [animation-delay:-0.15s]" />
 						<div className="size-1 animate-bounce rounded-full bg-fg-tertiary" />
