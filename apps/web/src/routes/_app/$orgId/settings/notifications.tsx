@@ -11,6 +11,7 @@ import { RadioGroupCheckbox } from "~/components/base/radio-groups/radio-group-c
 import { Toggle } from "~/components/base/toggle/toggle"
 import { useNotificationSound } from "~/hooks/use-notification-sound"
 import { cx } from "~/utils/cx";
+import { Separator } from "~/components/ui/separator";
 
 export const Route = createFileRoute("/_app/$orgId/settings/notifications")({
 	component: NotificationsSettings,
@@ -78,7 +79,7 @@ function NotificationsSettings() {
 					/>
 				</NotificationSection>
 
-				<hr className="h-px w-full border-none bg-border-secondary my-4" />
+				<Separator className='my-3'/>
 
 				{/* Sound Settings */}
 				<NotificationSection>
@@ -173,7 +174,7 @@ function NotificationsSettings() {
 					</div>
 				</NotificationSection>
 
-				<hr className="h-px w-full border-none bg-border-secondary my-4" />
+				<Separator className='my-3'/>
 
 				{/* Message Preferences */}
 				<NotificationSection>
@@ -214,7 +215,7 @@ function NotificationsSettings() {
 					/>
 				</NotificationSection>
 
-				<hr className="h-px w-full border-none bg-border-secondary my-4" />
+				<Separator className='my-3'/>
 
 				{/* Email Notifications */}
 				<NotificationSection>
@@ -270,7 +271,7 @@ function NotificationsSettings() {
 					</div>
 				</NotificationSection>
 
-				<hr className="h-px w-full border-none bg-border-secondary my-4" />
+				<Separator className='my-3'/>
 
 				{/* Quiet Hours */}
 				<NotificationSection>
