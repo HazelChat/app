@@ -9,6 +9,7 @@ import { SectionLabel } from "~/components/application/section-headers/section-l
 import { Button } from "~/components/base/buttons/button"
 import { Form } from "~/components/base/form/form"
 import { RadioGroupCheckbox } from "~/components/base/radio-groups/radio-group-checkbox"
+import { Slider } from "~/components/base/slider/slider"
 import { Toggle } from "~/components/base/toggle/toggle"
 import { useNotificationSound } from "~/hooks/use-notification-sound"
 
@@ -156,15 +157,14 @@ function NotificationsSettings() {
 										) : (
 											<VolumeMax className="size-4 text-tertiary" />
 										)}
-										<input
-											type="range"
-											min="0"
-											max="100"
+										<Slider
+											minValue={0}
+											maxValue={100}
 											value={settings.volume * 100}
 											onChange={(e) =>
-												updateSettings({ volume: Number(e.target.value) / 100 })
+												updateSettings({ volume: Array.isArray(e) ? e[0] : e })
 											}
-											className="flex-1 accent-brand-solid"
+											labelPosition="top-floating"
 										/>
 									</div>
 								</div>

@@ -310,7 +310,10 @@ export const generateMockData = userMutation({
 
 			// Create 2-5 thread replies
 			const replyCount = Math.floor(Math.random() * 3) + 2
-			const threadUserIds = threadParticipants.map((m) => m.userId)
+			// Use thread participants if available, otherwise fallback to parent message author
+			const threadUserIds = threadParticipants.length > 0 
+				? threadParticipants.map((m) => m.userId)
+				: [parentMessage.authorId]
 
 			for (let i = 0; i < replyCount; i++) {
 				const authorId = threadUserIds[Math.floor(Math.random() * threadUserIds.length)]
