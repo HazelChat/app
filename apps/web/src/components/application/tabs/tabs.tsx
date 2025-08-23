@@ -46,7 +46,7 @@ const getTabStyles = ({ isFocusVisible, isSelected, isHovered }: AriaTabRenderPr
 		"rounded-lg outline-focus-ring",
 		isHovered && "text-secondary",
 		isFocusVisible && "outline-2 -outline-offset-2",
-		isSelected && "bg-primary_alt text-secondary shadow-xs ring-1 ring-primary ring-inset",
+		isSelected && "bg-primary_alt text-secondary shadow-xs ring ring-primary ring-inset",
 	),
 	underline: cx(
 		"rounded-none border-b-2 border-transparent outline-focus-ring",
@@ -84,10 +84,10 @@ const getHorizontalStyles = ({ size, fullwidth }: { size?: "sm" | "md"; fullwidt
 	"button-brand": "gap-1",
 	"button-gray": "gap-1",
 	"button-border": cx(
-		"gap-1 rounded-[10px] bg-secondary_alt p-1 ring-1 ring-secondary ring-inset",
+		"gap-1 rounded-[10px] bg-secondary_alt p-1 ring ring-secondary ring-inset",
 		size === "md" && "rounded-xl p-1.5",
 	),
-	"button-minimal": "gap-0.5 rounded-lg bg-secondary_alt ring-1 ring-inset ring-secondary",
+	"button-minimal": "gap-0.5 rounded-lg bg-secondary_alt ring ring-inset ring-secondary",
 	underline: cx("gap-3", fullwidth && "w-full gap-4"),
 	line: "gap-2",
 })
@@ -194,7 +194,7 @@ export const Tab = (props: TabComponentProps) => {
 			{...otherProps}
 			className={(prop) =>
 				cx(
-					"z-10 flex h-max cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-md text-quaternary transition duration-100 ease-linear",
+					"z-10 flex h-max cursor-pointer selected:inset-ring-tertiary items-center inset-ring inset-ring-transparent justify-center gap-2 whitespace-nowrap rounded-md text-quaternary transition duration-100 ease-linear",
 					"group-orientation-vertical:justify-start",
 					fullwidth && "w-full flex-1",
 					sizes[size][type],

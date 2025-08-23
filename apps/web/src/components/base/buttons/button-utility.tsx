@@ -1,16 +1,9 @@
 import type { LinkProps } from "@tanstack/react-router"
-import type {
-	AnchorHTMLAttributes,
-	ButtonHTMLAttributes,
-	ComponentProps,
-	DetailedHTMLProps,
-	FC,
-	ReactNode,
-} from "react"
+import type { AnchorHTMLAttributes, ButtonHTMLAttributes, DetailedHTMLProps, FC, ReactNode, } from "react"
 import { isValidElement } from "react"
 import type { Placement } from "react-aria"
 import type { ButtonProps as AriaButtonProps } from "react-aria-components"
-import { Button as AriaButton, Link as AriaLink } from "react-aria-components"
+import { Button as AriaButton } from "react-aria-components"
 import { Tooltip } from "~/components/base/tooltip/tooltip"
 import { CustomAriaLink } from "~/components/custom-link"
 import { cx } from "~/utils/cx"
@@ -18,7 +11,7 @@ import { isReactComponent } from "~/utils/is-react-component"
 
 export const styles = {
 	secondary:
-		"bg-primary text-fg-quaternary shadow-xs-skeumorphic ring-1 ring-primary ring-inset hover:bg-primary_hover hover:text-fg-quaternary_hover disabled:shadow-xs disabled:ring-disabled_subtle",
+		"bg-primary text-fg-quaternary shadow-xs-skeumorphic ring ring-primary ring-inset hover:bg-primary_hover hover:text-fg-quaternary_hover disabled:shadow-xs disabled:ring-disabled_subtle",
 	tertiary: "text-fg-quaternary hover:bg-primary_hover hover:text-fg-quaternary_hover",
 }
 

@@ -8,7 +8,7 @@ import { type } from "arktype"
 import { useMemo, useState } from "react"
 import { DialogTrigger as AriaDialogTrigger, Heading as AriaHeading } from "react-aria-components"
 import { toast } from "sonner"
-import { Dialog, Modal, ModalOverlay } from "~/components/application/modals/modal"
+import { Dialog, Modal, ModalFooter, ModalOverlay } from "~/components/application/modals/modal"
 import { Avatar } from "~/components/base/avatar/avatar"
 import { Button } from "~/components/base/buttons/button"
 import { ButtonUtility } from "~/components/base/buttons/button-utility"
@@ -226,7 +226,7 @@ export const CreateDmModal = ({ isOpen, onOpenChange }: CreateDmModalProps) => {
 													className={cx(
 														"flex w-full items-center justify-between rounded-lg p-3 text-left transition-colors hover:bg-secondary",
 														selectedUsers.some((u) => u._id === user?._id) &&
-															"bg-secondary ring-1 ring-border-brand ring-inset",
+															"bg-secondary ring ring-border-brand ring-inset",
 													)}
 												>
 													<div className="flex items-center gap-3">
@@ -261,7 +261,7 @@ export const CreateDmModal = ({ isOpen, onOpenChange }: CreateDmModalProps) => {
 									)}
 								</div>
 							</div>
-							<div className="z-10 flex flex-1 flex-col-reverse gap-3 p-4 pt-6 *:grow sm:grid sm:grid-cols-2 sm:px-6 sm:pt-8 sm:pb-6">
+							<ModalFooter>
 								<Button
 									color="secondary"
 									size="lg"
@@ -288,7 +288,7 @@ export const CreateDmModal = ({ isOpen, onOpenChange }: CreateDmModalProps) => {
 										</Button>
 									)}
 								</form.Subscribe>
-							</div>
+							</ModalFooter>
 						</div>
 					</Dialog>
 				</Modal>

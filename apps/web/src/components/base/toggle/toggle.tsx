@@ -56,7 +56,7 @@ export const ToggleBase = ({
 				isDisabled && "cursor-not-allowed bg-disabled",
 				isFocusVisible && "outline-2 outline-offset-2",
 
-				slim && "ring-1 ring-secondary ring-inset",
+				slim && "ring ring-secondary ring-inset",
 				slim && isSelected && "ring-transparent",
 				classes.root,
 				className,
@@ -131,7 +131,7 @@ export const Toggle = ({ label, hint, className, size = "sm", slim, ...ariaSwitc
 					/>
 
 					{(label || hint) && (
-						<div className={cx("flex flex-col", sizes[size].textWrapper)}>
+						<div className={cx("flex min-w-0 flex-col", sizes[size].textWrapper)}>
 							{label && (
 								<p className={cx("select-none text-secondary", sizes[size].label)}>{label}</p>
 							)}

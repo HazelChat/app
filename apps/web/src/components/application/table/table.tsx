@@ -65,7 +65,7 @@ const TableCardRoot = ({
 			<div
 				{...props}
 				className={cx(
-					"overflow-hidden rounded-xl bg-primary shadow-xs ring-1 ring-secondary",
+					"overflow-hidden rounded-xl bg-primary shadow-xs ring ring-secondary",
 					className,
 				)}
 			>

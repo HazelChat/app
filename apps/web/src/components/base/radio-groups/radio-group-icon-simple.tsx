@@ -45,7 +45,7 @@ export const RadioGroupIconSimple = ({
 					className={({ isDisabled, isSelected, isFocusVisible }) =>
 						cx(
 							"relative flex cursor-pointer items-start gap-1 rounded-xl bg-primary p-4 outline-focus-ring ring-inset",
-							isSelected ? "ring-2 ring-brand" : "ring-1 ring-secondary",
+							isSelected ? "ring-2 ring-brand" : "ring ring-secondary",
 							isDisabled && "cursor-not-allowed bg-disabled_subtle ring-disabled",
 							isFocusVisible && "outline-2 outline-offset-2",
 						)

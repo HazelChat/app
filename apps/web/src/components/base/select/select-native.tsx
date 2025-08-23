@@ -38,7 +38,7 @@ export const NativeSelect = ({
 					aria-describedby={hintId}
 					aria-labelledby={selectId}
 					className={cx(
-						"appearance-none rounded-lg bg-primary px-3.5 py-2.5 font-medium text-md text-primary shadow-xs outline-hidden ring-1 ring-primary ring-inset transition duration-100 ease-linear placeholder:text-fg-quaternary focus-visible:ring-2 focus-visible:ring-brand disabled:cursor-not-allowed disabled:bg-disabled_subtle disabled:text-disabled",
+						"appearance-none rounded-lg bg-primary px-3.5 py-2.5 font-medium text-md text-primary shadow-xs outline-hidden ring ring-primary ring-inset transition duration-100 ease-linear placeholder:text-fg-quaternary focus-visible:ring-2 focus-visible:ring-brand disabled:cursor-not-allowed disabled:bg-disabled_subtle disabled:text-disabled",
 						// Styles when the select is within an `InputGroup`
 						"in-data-input-wrapper:flex in-data-input-wrapper:h-full in-data-input-wrapper:gap-1 in-data-input-wrapper:bg-inherit in-data-input-wrapper:px-3 in-data-input-wrapper:py-2 in-data-input-wrapper:font-normal in-data-input-wrapper:text-tertiary in-data-input-wrapper:shadow-none in-data-input-wrapper:ring-transparent",
 						// Styles for the select when `TextField` is disabled

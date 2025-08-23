@@ -48,3 +48,9 @@ export const Dialog = (props: AriaDialogProps) => (
 		className={cx("flex w-full items-center justify-center outline-hidden", props.className)}
 	/>
 )
+
+export const ModalFooter = ({ className, ...props }: React.ComponentProps<'div'>)=> {
+  return (
+    <div className={cx("z-10 flex flex-col-reverse gap-3 p-4 pt-6 sm:flex-row sm:justify-end sm:px-6 sm:pt-8 sm:pb-6", className)} {...props}/>
+  )
+}

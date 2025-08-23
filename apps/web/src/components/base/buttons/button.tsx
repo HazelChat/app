@@ -49,7 +49,7 @@ export const styles = sortCx({
 	colors: {
 		primary: {
 			root: [
-				"bg-brand-solid text-white shadow-xs-skeumorphic ring-1 ring-transparent ring-inset hover:bg-brand-solid_hover data-loading:bg-brand-solid_hover",
+				"bg-brand-solid text-white shadow-xs-skeumorphic ring ring-transparent ring-inset hover:bg-brand-solid_hover data-loading:bg-brand-solid_hover",
 				// Inner border gradient
 				"before:absolute before:inset-px before:border before:border-white/12 before:mask-b-from-0%",
 				// Disabled styles
@@ -60,7 +60,7 @@ export const styles = sortCx({
 		},
 		secondary: {
 			root: [
-				"bg-primary text-secondary shadow-xs-skeumorphic ring-1 ring-primary ring-inset hover:bg-primary_hover hover:text-secondary_hover data-loading:bg-primary_hover",
+				"bg-primary text-secondary shadow-xs-skeumorphic ring ring-primary ring-inset hover:bg-primary_hover hover:text-secondary_hover data-loading:bg-primary_hover",
 				// Disabled styles
 				"disabled:shadow-xs disabled:ring-disabled_subtle",
 				// Icon styles
@@ -94,7 +94,7 @@ export const styles = sortCx({
 		},
 		"primary-destructive": {
 			root: [
-				"bg-error-solid text-white shadow-xs-skeumorphic ring-1 ring-transparent outline-error ring-inset",
+				"bg-error-solid text-white shadow-xs-skeumorphic ring ring-transparent outline-error ring-inset",
 				// Inner border gradient
 				"before:absolute before:inset-px before:border before:border-white/12 before:mask-b-from-0%",
 				// Disabled styles
@@ -105,7 +105,7 @@ export const styles = sortCx({
 		},
 		"secondary-destructive": {
 			root: [
-				"bg-primary text-error-primary shadow-xs-skeumorphic ring-1 ring-error_subtle outline-error ring-inset hover:bg-error-primary hover:text-error-primary_hover data-loading:bg-error-primary",
+				"bg-primary text-error-primary shadow-xs-skeumorphic ring ring-error_subtle outline-error ring-inset hover:bg-error-primary hover:text-error-primary_hover data-loading:bg-error-primary",
 				// Disabled styles
 				"disabled:bg-primary disabled:shadow-xs disabled:ring-disabled_subtle",
 				// Icon styles

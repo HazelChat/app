@@ -3,16 +3,16 @@ import type { FocusEventHandler, KeyboardEvent, PointerEventHandler, RefAttribut
 import { createContext, useCallback, useContext, useRef, useState } from "react"
 import { FocusScope, useFilter, useFocusManager } from "react-aria"
 import type {
-	ComboBoxProps as AriaComboBoxProps,
-	GroupProps as AriaGroupProps,
-	ListBoxProps as AriaListBoxProps,
-	Key,
+  ComboBoxProps as AriaComboBoxProps,
+  GroupProps as AriaGroupProps,
+  Key,
+  ListBoxProps as AriaListBoxProps,
 } from "react-aria-components"
 import {
-	ComboBox as AriaComboBox,
-	Group as AriaGroup,
-	Input as AriaInput,
-	ListBox as AriaListBox,
+  ComboBox as AriaComboBox,
+  Group as AriaGroup,
+  Input as AriaInput,
+  ListBox as AriaListBox,
 } from "react-aria-components"
 import type { ListData } from "react-stately"
 import { useListData } from "react-stately"
@@ -290,7 +290,7 @@ const InnerMultiSelect = ({
 				selectContext?.selectedItems?.items?.map((value) => (
 					<span
 						key={value.id}
-						className="flex items-center rounded-md bg-primary py-0.5 pr-1 pl-1.25 ring-1 ring-primary ring-inset"
+						className="flex items-center rounded-md bg-primary py-0.5 pr-1 pl-1.25 inset-ring inset-ring-primary"
 					>
 						<Avatar size="xxs" alt={value?.label} src={value?.avatarUrl} />
 
@@ -332,7 +332,7 @@ const InnerMultiSelect = ({
 					>
 						<span
 							className={cx(
-								"pointer-events-none select-none rounded px-1 py-px font-medium text-quaternary text-xs ring-1 ring-secondary ring-inset",
+								"pointer-events-none select-none rounded px-1 py-px font-medium text-quaternary text-xs inset-ring ring-secondary",
 								isDisabled && "bg-transparent text-disabled",
 							)}
 						>
@@ -360,9 +360,9 @@ export const MultiSelectTagsValue = ({
 			{...otherProps}
 			className={({ isFocusWithin, isDisabled }) =>
 				cx(
-					"relative flex w-full items-center gap-2 rounded-lg bg-primary shadow-xs outline-hidden ring-1 ring-primary ring-inset transition duration-100 ease-linear",
+					"relative flex w-full items-center gap-2 rounded-lg bg-primary shadow-xs outline-hidden inset-ring inset-ring-primary transition duration-100 ease-linear",
 					isDisabled && "cursor-not-allowed bg-disabled_subtle",
-					isFocusWithin && "ring-2 ring-brand",
+					isFocusWithin && "inset-ring-brand",
 					sizes[size].root,
 				)
 			}

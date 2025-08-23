@@ -3,10 +3,10 @@ import type { FC, ReactNode, Ref, RefAttributes } from "react"
 import { createContext, isValidElement } from "react"
 import type { SelectProps as AriaSelectProps } from "react-aria-components"
 import {
-	Button as AriaButton,
-	ListBox as AriaListBox,
-	Select as AriaSelect,
-	SelectValue as AriaSelectValue,
+  Button as AriaButton,
+  ListBox as AriaListBox,
+  Select as AriaSelect,
+  SelectValue as AriaSelectValue,
 } from "react-aria-components"
 import { Avatar } from "~/components/base/avatar/avatar"
 import { HintText } from "~/components/base/input/hint-text"
@@ -72,8 +72,8 @@ const SelectValue = ({
 		<AriaButton
 			ref={ref}
 			className={cx(
-				"relative flex w-full cursor-pointer items-center rounded-lg bg-primary shadow-xs outline-hidden ring-1 ring-primary ring-inset transition duration-100 ease-linear",
-				(isFocused || isOpen) && "ring-2 ring-brand",
+				"relative flex w-full cursor-pointer items-center rounded-lg bg-primary shadow-xs outline-hidden inset-ring inset-ring-primary transition duration-100 ease-linear",
+				(isFocused || isOpen) && "inset-ring inset-ring-brand",
 				isDisabled && "cursor-not-allowed bg-disabled_subtle text-disabled",
 			)}
 		>

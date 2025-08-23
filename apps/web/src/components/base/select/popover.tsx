@@ -16,7 +16,7 @@ export const Popover = (props: PopoverProps) => {
 			{...props}
 			className={(state) =>
 				cx(
-					"max-h-64! w-(--trigger-width) overflow-y-auto overflow-x-hidden rounded-lg bg-primary py-1 shadow-lg outline-hidden ring-1 ring-secondary_alt will-change-transform",
+					"max-h-64! w-(--trigger-width) overflow-y-auto overflow-x-hidden rounded-lg bg-primary py-1 shadow-lg outline-hidden ring ring-secondary_alt will-change-transform",
 
 					state.isEntering &&
 						"fade-in placement-right:slide-in-from-left-0.5 placement-top:slide-in-from-bottom-0.5 placement-bottom:slide-in-from-top-0.5 placement-bottom:origin-top placement-right:origin-left placement-top:origin-bottom animate-in duration-150 ease-out",

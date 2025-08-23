@@ -123,7 +123,7 @@ export const ProgressBar = ({
 					{baseProgressBar}
 					<div
 						style={{ left: `${percentage}%` }}
-						className="-top-2 -translate-x-1/2 -translate-y-full absolute rounded-lg bg-primary_alt px-3 py-2 shadow-lg ring-1 ring-secondary_alt"
+						className="-top-2 -translate-x-1/2 -translate-y-full absolute rounded-lg bg-primary_alt px-3 py-2 shadow-lg ring ring-secondary_alt"
 					>
 						<div className="font-semibold text-secondary text-xs tabular-nums">
 							{formattedValue}
@@ -137,7 +137,7 @@ export const ProgressBar = ({
 					{baseProgressBar}
 					<div
 						style={{ left: `${percentage}%` }}
-						className="-bottom-2 -translate-x-1/2 absolute translate-y-full rounded-lg bg-primary_alt px-3 py-2 shadow-lg ring-1 ring-secondary_alt"
+						className="-bottom-2 -translate-x-1/2 absolute translate-y-full rounded-lg bg-primary_alt px-3 py-2 shadow-lg ring ring-secondary_alt"
 					>
 						<div className="font-semibold text-secondary text-xs">{formattedValue}</div>
 					</div>

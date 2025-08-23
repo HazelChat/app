@@ -14,8 +14,8 @@ type RadioGroupItemType = {
 	title: string
 	disabled?: boolean
 	description: string
-	secondaryTitle: string
-	icon: FC<{ className?: string }>
+	secondaryTitle?: string
+	icon?: FC<{ className?: string }>
 }
 
 interface RadioGroupCheckboxProps extends RadioGroupProps {
@@ -38,9 +38,9 @@ export const RadioGroupCheckbox = ({ items, size = "sm", className, ...props }: 
 					value={plan.value}
 					className={({ isDisabled, isFocusVisible, isSelected }) =>
 						cx(
-							"relative flex cursor-pointer items-start gap-1 rounded-xl bg-primary p-4 outline-focus-ring ring-inset",
+							"relative flex cursor-pointer items-start gap-1 rounded-xl bg-primary p-4 outline-focus-ring inset-ring",
 							size === "md" ? "gap-3" : "gap-2",
-							isSelected ? "ring-2 ring-brand" : "ring-1 ring-secondary",
+							isSelected ? "inset-ring-brand" : "inset-ring-secondary",
 							isDisabled && "cursor-not-allowed bg-disabled_subtle ring-disabled_subtle",
 							isFocusVisible && "outline-2 outline-offset-2",
 						)
@@ -65,7 +65,7 @@ export const RadioGroupCheckbox = ({ items, size = "sm", className, ...props }: 
 							>
 								<AriaLabel
 									className={cx(
-										"pointer-events-none flex",
+										"pointer-events-none font-medium text-primary flex",
 										size === "md" ? "gap-1.5" : "gap-1",
 									)}
 								>

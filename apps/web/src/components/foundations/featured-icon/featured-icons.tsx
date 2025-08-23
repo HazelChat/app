@@ -63,7 +63,7 @@ const styles = sortCx({
 	},
 
 	modern: {
-		base: "bg-primary shadow-xs-skeumorphic ring-1 ring-inset",
+		base: "bg-primary shadow-xs-skeumorphic ring ring-inset",
 		sizes: {
 			sm: "size-8 rounded-md",
 			md: "size-10 rounded-lg",
@@ -80,9 +80,9 @@ const styles = sortCx({
 	},
 	"modern-neue": {
 		base: [
-			"bg-primary_alt ring-1 ring-inset before:absolute before:inset-1",
+			"bg-primary_alt ring ring-inset before:absolute before:inset-1",
 			// Shadow
-			"before:shadow-[0px_1px_2px_0px_rgba(0,0,0,0.1),0px_3px_3px_0px_rgba(0,0,0,0.09),1px_8px_5px_0px_rgba(0,0,0,0.05),2px_21px_6px_0px_rgba(0,0,0,0),0px_0px_0px_1px_rgba(0,0,0,0.08),1px_13px_5px_0px_rgba(0,0,0,0.01),0px_-2px_2px_0px_rgba(0,0,0,0.13)_inset] before:ring-1 before:ring-secondary_alt",
+			"before:shadow-[0px_1px_2px_0px_rgba(0,0,0,0.1),0px_3px_3px_0px_rgba(0,0,0,0.09),1px_8px_5px_0px_rgba(0,0,0,0.05),2px_21px_6px_0px_rgba(0,0,0,0),0px_0px_0px_1px_rgba(0,0,0,0.08),1px_13px_5px_0px_rgba(0,0,0,0.01),0px_-2px_2px_0px_rgba(0,0,0,0.13)_inset] before:ring before:ring-secondary_alt",
 		].join(" "),
 		sizes: {
 			sm: "size-8 rounded-[8px] before:rounded-[4px]",

@@ -1,16 +1,6 @@
 import { HelpCircle, InfoCircle } from "@untitledui/icons"
-import {
-	type ComponentType,
-	createContext,
-	type HTMLAttributes,
-	type ReactNode,
-	type Ref,
-	useContext,
-} from "react"
-import type {
-	InputProps as AriaInputProps,
-	TextFieldProps as AriaTextFieldProps,
-} from "react-aria-components"
+import { type ComponentType, createContext, type HTMLAttributes, type ReactNode, type Ref, useContext, } from "react"
+import type { InputProps as AriaInputProps, TextFieldProps as AriaTextFieldProps, } from "react-aria-components"
 import { Group as AriaGroup, Input as AriaInput, TextField as AriaTextField } from "react-aria-components"
 import { HintText } from "~/components/base/input/hint-text"
 import { Label } from "~/components/base/input/label"
@@ -91,9 +81,9 @@ export const InputBase = ({
 			ref={groupRef}
 			className={({ isFocusWithin, isDisabled, isInvalid }) =>
 				cx(
-					"relative flex w-full flex-row place-content-center place-items-center rounded-lg bg-primary shadow-xs ring-1 ring-primary ring-inset transition-shadow duration-100 ease-linear",
+					"relative flex w-full flex-row place-content-center place-items-center rounded-lg bg-primary shadow-xs inset-ring inset-ring-primary transition-shadow duration-100 ease-linear",
 
-					isFocusWithin && !isDisabled && "ring-2 ring-brand",
+					isFocusWithin && !isDisabled && "inset-ring-brand",
 
 					// Disabled state styles
 					isDisabled && "cursor-not-allowed bg-disabled_subtle ring-disabled",
@@ -177,7 +167,7 @@ export const InputBase = ({
 				>
 					<span
 						className={cx(
-							"pointer-events-none select-none rounded px-1 py-px font-medium text-quaternary text-xs ring-1 ring-secondary ring-inset",
+							"pointer-events-none select-none rounded px-1 py-px font-medium text-quaternary text-xs inset-ring inset-ring-secondary",
 							isDisabled && "bg-transparent text-disabled",
 						)}
 						aria-hidden="true"

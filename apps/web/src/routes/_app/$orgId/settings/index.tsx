@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router"
 
 import { useEffect, useState } from "react"
 import type { Color } from "react-aria-components"
-import { ColorField, ColorSwatch, parseColor, Radio, RadioGroup } from "react-aria-components"
+import { ColorSwatch, parseColor, Radio, RadioGroup } from "react-aria-components"
 import { Dark, Light, System } from "~/components/application/modals/appearances"
 import { generateRgbShades } from "~/components/application/modals/base-components/generate-shades"
 
@@ -10,7 +10,6 @@ import { SectionHeader } from "~/components/application/section-headers/section-
 import { SectionLabel } from "~/components/application/section-headers/section-label"
 
 import { Form } from "~/components/base/form/form"
-import { InputBase } from "~/components/base/input/input"
 import { RadioButtonBase } from "~/components/base/radio-buttons/radio-buttons"
 import { Select } from "~/components/base/select/select"
 import { type Theme, useTheme } from "~/components/theme-provider"

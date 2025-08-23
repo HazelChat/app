@@ -38,7 +38,7 @@ export const RadioGroupIconCard = ({ items, size = "sm", className, ...props }: 
 					className={({ isDisabled, isSelected, isFocusVisible }) =>
 						cx(
 							"relative block cursor-pointer rounded-xl bg-primary outline-focus-ring ring-inset",
-							isSelected ? "ring-2 ring-brand" : "ring-1 ring-secondary",
+							isSelected ? "ring-2 ring-brand" : "ring ring-secondary",
 							isDisabled && "cursor-not-allowed bg-disabled_subtle ring-disabled",
 							isSelected && isDisabled && "ring-disabled_subtle",
 							isFocusVisible && "outline-2 outline-offset-2",
@@ -50,7 +50,7 @@ export const RadioGroupIconCard = ({ items, size = "sm", className, ...props }: 
 							<div
 								className={cx(
 									"flex items-center gap-3 rounded-t-xl p-3 pr-5 ring-inset",
-									isSelected ? "ring-2 ring-brand" : "ring-1 ring-secondary",
+									isSelected ? "ring-2 ring-brand" : "ring ring-secondary",
 									isDisabled && "ring-disabled",
 									isSelected && isDisabled && "ring-disabled_subtle",
 									isFocusVisible && "outline-hidden",

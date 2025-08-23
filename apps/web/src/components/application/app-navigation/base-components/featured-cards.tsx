@@ -20,7 +20,7 @@ export const FeaturedCardOnboardingSteps = ({
 	onConfirm,
 }: FeaturedCardCommonProps & { supportingText: string; progress: number }) => {
 	return (
-		<div className="relative flex flex-col gap-4 rounded-xl bg-primary p-4 ring-1 ring-secondary ring-inset">
+		<div className="relative flex flex-col gap-4 rounded-xl bg-primary p-4 ring ring-secondary ring-inset">
 			<div className="flex flex-col gap-3">
 				<div className="flex justify-between">
 					<span className="font-semibold text-primary text-sm">{title}</span>

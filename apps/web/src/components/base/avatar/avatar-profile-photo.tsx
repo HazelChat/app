@@ -76,7 +76,7 @@ export const AvatarProfilePhoto = ({
 			return (
 				<div
 					className={cx(
-						"flex size-full items-center justify-center rounded-full bg-tertiary ring-1 ring-secondary_alt",
+						"flex size-full items-center justify-center rounded-full bg-tertiary ring ring-secondary_alt",
 						styles[size].content,
 					)}
 				>
@@ -89,7 +89,7 @@ export const AvatarProfilePhoto = ({
 			return (
 				<div
 					className={cx(
-						"flex size-full items-center justify-center rounded-full bg-tertiary ring-1 ring-secondary_alt",
+						"flex size-full items-center justify-center rounded-full bg-tertiary ring ring-secondary_alt",
 						styles[size].content,
 					)}
 				>
@@ -101,7 +101,7 @@ export const AvatarProfilePhoto = ({
 		return (
 			<div
 				className={cx(
-					"flex size-full items-center justify-center rounded-full bg-tertiary ring-1 ring-secondary_alt",
+					"flex size-full items-center justify-center rounded-full bg-tertiary ring ring-secondary_alt",
 					styles[size].content,
 				)}
 			>
@@ -131,7 +131,7 @@ export const AvatarProfilePhoto = ({
 	return (
 		<div
 			className={cx(
-				"relative flex shrink-0 items-center justify-center rounded-full bg-primary ring-1 ring-secondary_alt",
+				"relative flex shrink-0 items-center justify-center rounded-full bg-primary ring ring-secondary_alt",
 				styles[size].root,
 				(!src || isFailed) && styles[size].rootWithPlaceholder,
 				className,

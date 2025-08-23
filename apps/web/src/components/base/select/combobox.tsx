@@ -2,16 +2,16 @@ import { SearchLg as SearchIcon } from "@untitledui/icons"
 import type { FocusEventHandler, PointerEventHandler, RefAttributes, RefObject } from "react"
 import { useCallback, useContext, useRef, useState } from "react"
 import type {
-	ComboBoxProps as AriaComboBoxProps,
-	GroupProps as AriaGroupProps,
-	ListBoxProps as AriaListBoxProps,
+  ComboBoxProps as AriaComboBoxProps,
+  GroupProps as AriaGroupProps,
+  ListBoxProps as AriaListBoxProps,
 } from "react-aria-components"
 import {
-	ComboBox as AriaComboBox,
-	Group as AriaGroup,
-	Input as AriaInput,
-	ListBox as AriaListBox,
-	ComboBoxStateContext,
+  ComboBox as AriaComboBox,
+  ComboBoxStateContext,
+  Group as AriaGroup,
+  Input as AriaInput,
+  ListBox as AriaListBox,
 } from "react-aria-components"
 import { HintText } from "~/components/base/input/hint-text"
 import { Label } from "~/components/base/input/label"
@@ -61,7 +61,7 @@ const ComboBoxValue = ({
 			{...otherProps}
 			className={({ isFocusWithin, isDisabled }) =>
 				cx(
-					"relative flex w-full items-center gap-2 rounded-lg bg-primary shadow-xs outline-hidden ring-1 ring-primary ring-inset transition-shadow duration-100 ease-linear",
+					"relative flex w-full items-center gap-2 rounded-lg bg-primary shadow-xs outline-hidden ring ring-primary ring-inset transition-shadow duration-100 ease-linear",
 					isDisabled && "cursor-not-allowed bg-disabled_subtle",
 					isFocusWithin && "ring-2 ring-brand",
 					sizes[size].root,
@@ -116,7 +116,7 @@ const ComboBoxValue = ({
 						>
 							<span
 								className={cx(
-									"pointer-events-none select-none rounded px-1 py-px font-medium text-quaternary text-xs ring-1 ring-secondary ring-inset",
+									"pointer-events-none select-none rounded px-1 py-px font-medium text-quaternary text-xs ring ring-secondary ring-inset",
 									isDisabled && "bg-transparent text-disabled",
 								)}
 								aria-hidden="true"

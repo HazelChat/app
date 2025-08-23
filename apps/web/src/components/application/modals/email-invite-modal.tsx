@@ -2,11 +2,11 @@ import { useConvexMutation } from "@convex-dev/react-query"
 import type { Id } from "@hazel/backend"
 import { api } from "@hazel/backend/api"
 import { useParams } from "@tanstack/react-router"
-import { Mail01, Plus, Trash01, UsersPlus } from "@untitledui/icons"
+import { Mail01, Plus, UsersPlus, X } from "@untitledui/icons"
 import { useState } from "react"
 import { DialogTrigger as AriaDialogTrigger, Heading as AriaHeading } from "react-aria-components"
 import { toast } from "sonner"
-import { Dialog, Modal, ModalOverlay } from "~/components/application/modals/modal"
+import { Dialog, Modal, ModalFooter, ModalOverlay } from "~/components/application/modals/modal"
 import { Button } from "~/components/base/buttons/button"
 import { ButtonUtility } from "~/components/base/buttons/button-utility"
 import { CloseButton } from "~/components/base/buttons/close-button"
@@ -110,14 +110,14 @@ export const EmailInviteModal = ({ isOpen, onOpenChange }: EmailInviteModalProps
 			<ModalOverlay isDismissable>
 				<Modal>
 					<Dialog>
-						<div className="relative w-full overflow-hidden rounded-2xl bg-primary shadow-xl transition-all sm:max-w-130">
+						<div className="relative w-full overflow-hidden rounded-2xl bg-primary shadow-xl transition-all sm:max-w-130 [--gutter:--spacing(6)] [--gap:--spacing(1.5)] lg:[--gap:--spacing(2)]">
 							<CloseButton
 								onClick={() => onOpenChange(false)}
 								theme="light"
-								size="lg"
-								className="absolute top-3 right-3"
+								size="sm"
+								className="absolute top-[calc(var(--gutter)/2)] right-[calc(var(--gutter)/2)]"
 							/>
-							<div className="flex flex-col gap-4 px-4 pt-5 sm:px-6 sm:pt-6">
+							<div className="flex flex-col gap-4 px-4 pt-5 sm:px-(--gutter) sm:pt-(--gutter)">
 								<div className="relative w-max">
 									<FeaturedIcon color="gray" size="lg" theme="modern" icon={UsersPlus} />
 									<BackgroundPattern
@@ -137,47 +137,47 @@ export const EmailInviteModal = ({ isOpen, onOpenChange }: EmailInviteModalProps
 								</div>
 							</div>
 							<div className="h-5 w-full" />
-							<div className="flex flex-col items-start justify-start gap-3 px-4 sm:px-6">
+							<div className="flex flex-col items-start justify-start gap-(--gap) px-4 sm:px-(--gutter)">
 								{invites.map((invite, index) => (
-									<div key={invite.id} className="flex w-full items-center gap-3">
-										<div className="flex flex-1 gap-3">
-											<div className="flex-1">
-												{index === 0 && <Label>Email address</Label>}
-												<Input
-													size="md"
-													placeholder="colleague@company.com"
-													icon={Mail01}
-													value={invite.email}
-													onChange={(value) =>
-														updateInviteEntry(invite.id, "email", value)
-													}
-													isInvalid={
-														invite.email !== "" && !validateEmail(invite.email)
-													}
-												/>
-											</div>
-											<div className="w-32">
-												{index === 0 && <Label>Role</Label>}
-												<Select
-													size="md"
-													selectedKey={invite.role}
-													onSelectionChange={(value) =>
-														updateInviteEntry(invite.id, "role", value as string)
-													}
-												>
-													<Select.Item id="member">Member</Select.Item>
-													<Select.Item id="admin">Admin</Select.Item>
-												</Select>
-											</div>
-										</div>
-										{invites.length > 1 && index > 0 && (
-											<ButtonUtility
-												size="sm"
-												color="tertiary"
-												icon={Trash01}
-												onClick={() => removeInviteEntry(invite.id)}
-											/>
-										)}
+									<div key={invite.id} className="flex w-full items-center gap-(--gap)">
+                    <div className="space-y-1.5 w-full">
+                      {index === 0 && <Label>Email address</Label>}
+                      <Input
+                        size="md"
+                        placeholder="colleague@company.com"
+                        icon={Mail01}
+                        value={invite.email}
+                        onChange={(value) =>
+                          updateInviteEntry(invite.id, "email", value)
+                        }
+                        isInvalid={
+                          invite.email !== "" && !validateEmail(invite.email)
+                        }
+                      />
+                    </div>
+                    <div className='flex-1 justify-end items-center flex gap-(--gap)'>
+                      <div className="w-28 space-y-1.5">
+                        {index === 0 && <Label>Role</Label>}
+                        <Select
+                          size="md"
+                          selectedKey={invite.role}
+                          onSelectionChange={(value) =>
+                            updateInviteEntry(invite.id, "role", value as string)
+                          }
+                        >
+                          <Select.Item id="member">Member</Select.Item>
+                          <Select.Item id="admin">Admin</Select.Item>
+                        </Select>
+                      </div>
+                      {invites.length > 1 && index > 0 && (
+                        <ButtonUtility
+                          color="tertiary"
+                          className="*:data-icon:size-6 *:data-icon:stroke-[1.5px] p-[--spacing(2.3)]"
+                          icon={X}
+                          onClick={() => removeInviteEntry(invite.id)}
+                        />
+                      )}
+                    </div>
 									</div>
 								))}
 								<Button
@@ -190,7 +190,7 @@ export const EmailInviteModal = ({ isOpen, onOpenChange }: EmailInviteModalProps
 									Add another
 								</Button>
 							</div>
-							<div className="z-10 flex flex-1 flex-col-reverse gap-3 p-4 pt-6 *:grow sm:grid sm:grid-cols-2 sm:px-6 sm:pt-8 sm:pb-6">
+							<ModalFooter>
 								<Button
 									color="secondary"
 									size="lg"
@@ -209,7 +209,7 @@ export const EmailInviteModal = ({ isOpen, onOpenChange }: EmailInviteModalProps
 										? "Sending..."
 										: `Send invite${invites.filter((i) => validateEmail(i.email)).length > 1 ? "s" : ""}`}
 								</Button>
-							</div>
+							</ModalFooter>
 						</div>
 					</Dialog>
 				</Modal>

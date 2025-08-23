@@ -44,7 +44,7 @@ export const RadioGroupRadioButton = ({
 						cx(
 							"relative flex cursor-pointer rounded-xl bg-primary p-4 outline-focus-ring ring-inset",
 							size === "md" ? "gap-3" : "gap-2",
-							isSelected ? "ring-2 ring-brand" : "ring-1 ring-secondary",
+							isSelected ? "ring-2 ring-brand" : "ring ring-secondary",
 							isDisabled && "cursor-not-allowed bg-disabled_subtle ring-disabled_subtle",
 							isFocusVisible && "outline-2 outline-offset-2",
 						)
@@ -56,8 +56,8 @@ export const RadioGroupRadioButton = ({
 								className={cx(
 									"relative mt-0.5 inline-flex shrink-0 items-center justify-center rounded-full ring-inset",
 									size === "md" ? "size-5" : "size-4",
-									isSelected ? "bg-brand-solid" : "ring-1 ring-primary",
-									isDisabled && "bg-disabled_subtle ring-1 ring-disabled",
+									isSelected ? "bg-brand-solid" : "ring ring-primary",
+									isDisabled && "bg-disabled_subtle ring ring-disabled",
 									isFocusVisible && "outline-2 outline-focus-ring outline-offset-2",
 								)}
 							>

@@ -108,7 +108,7 @@ function RouteComponent() {
 
 	return (
 		<div className="flex flex-col gap-6 px-4 lg:px-8">
-			<TableCard.Root className="rounded-none bg-transparent shadow-none ring-0 lg:rounded-xl lg:bg-primary lg:shadow-xs lg:ring-1">
+			<TableCard.Root className="rounded-none bg-transparent shadow-none ring-0 lg:rounded-xl lg:bg-primary lg:shadow-xs lg:ring">
 				<TableCard.Header
 					title="Team members"
 					description="Manage your team members and their account permissions here."
@@ -120,7 +120,7 @@ function RouteComponent() {
 					}
 					contentTrailing={
 						<div className="flex gap-3">
-							<Button size="md" iconLeading={Plus} onClick={() => setShowInviteModal(true)}>
+							<Button color='secondary' size="md" iconLeading={Plus} onClick={() => setShowInviteModal(true)}>
 								Invite user
 							</Button>
 						</div>
@@ -140,7 +140,6 @@ function RouteComponent() {
 						<Table.Header className="bg-primary">
 							<Table.Head id="name" isRowHeader label="Name" allowsSorting className="w-full" />
 							<Table.Head id="status" label="Status" allowsSorting />
-							<Table.Head id="email" label="Email address" allowsSorting />
 							<Table.Head id="role" label="Role" allowsSorting />
 							<Table.Head id="actions" />
 						</Table.Header>
@@ -153,13 +152,18 @@ function RouteComponent() {
 												src={member.avatarUrl}
 												initials={getInitials(member.name)}
 												alt={member.name}
+                        className='*:rounded-md rounded-md size-9'
 												status={member.status === "Active" ? "online" : "offline"}
 											/>
-											<p className="font-medium text-primary text-sm">{member.name}</p>
+											<div className="flex flex-col">
+                        <span className="text-primary font-medium text-sm/6">{member.name}</span>
+                        <span className='text-tertiary'>{member.email}</span>
+                      </div>
 										</div>
 									</Table.Cell>
 									<Table.Cell>
 										<BadgeWithDot
+                      className='rounded-full'
 											color={
 												member.status === "Active"
 													? "success"
@@ -173,9 +177,9 @@ function RouteComponent() {
 											{member.status}
 										</BadgeWithDot>
 									</Table.Cell>
-									<Table.Cell>{member.email}</Table.Cell>
 									<Table.Cell>
 										<Badge
+                      className='rounded-full'
 											color={
 												roleToBadgeColorsMap[
 													member.role as keyof typeof roleToBadgeColorsMap

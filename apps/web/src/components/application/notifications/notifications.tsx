@@ -182,7 +182,7 @@ export const ImageNotification = ({
 					"--width": "496px",
 				} as React.CSSProperties
 			}
-			className="relative z-[var(--z-index)] flex xs:w-[var(--width)] max-w-full xs:flex-row flex-col gap-3 xs:gap-0 rounded-xl bg-primary_alt p-4 shadow-lg max-md:ring-1 max-md:ring-secondary_alt md:p-0"
+			className="relative z-[var(--z-index)] flex xs:w-[var(--width)] max-w-full xs:flex-row flex-col gap-3 xs:gap-0 rounded-xl bg-primary_alt p-4 shadow-lg max-md:ring max-md:ring-secondary_alt md:p-0"
 		>
 			<div className="-my-px -outline-offset-1 hidden w-40 shrink-0 overflow-hidden rounded-l-xl outline-1 outline-black/10 md:block">
 				<img
@@ -193,7 +193,7 @@ export const ImageNotification = ({
 				/>
 			</div>
 
-			<div className="flex flex-col gap-4 rounded-r-xl bg-primary_alt md:gap-3 md:p-4 md:pl-5 md:ring-1 md:ring-secondary_alt">
+			<div className="flex flex-col gap-4 rounded-r-xl bg-primary_alt md:gap-3 md:p-4 md:pl-5 md:ring md:ring-secondary_alt">
 				<div className="flex flex-col gap-1 pr-8">
 					<p className="font-semibold text-fg-primary text-sm">{title}</p>
 					<p className="text-fg-secondary text-sm">{description}</p>

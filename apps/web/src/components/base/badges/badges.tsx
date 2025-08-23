@@ -2,14 +2,7 @@ import { X as CloseX } from "@untitledui/icons"
 import type { MouseEventHandler, ReactNode } from "react"
 import { Dot } from "~/components/foundations/dot-icon"
 import { cx } from "~/utils/cx"
-import type {
-	BadgeColors,
-	BadgeTypes,
-	BadgeTypeToColorMap,
-	FlagTypes,
-	IconComponentType,
-	Sizes,
-} from "./badge-types"
+import type { BadgeColors, BadgeTypes, BadgeTypeToColorMap, FlagTypes, IconComponentType, Sizes, } from "./badge-types"
 import { badgeTypes } from "./badge-types"
 
 export const filledColors: Record<BadgeColors, { root: string; addon: string; addonButton: string }> = {
@@ -83,15 +76,15 @@ const addonOnlyColors = Object.fromEntries(
 
 const withPillTypes = {
 	[badgeTypes.pillColor]: {
-		common: "size-max flex items-center whitespace-nowrap rounded-full ring-1 ring-inset",
+		common: "size-max flex items-center whitespace-nowrap rounded-full ring ring-inset",
 		styles: filledColors,
 	},
 	[badgeTypes.badgeColor]: {
-		common: "size-max flex items-center whitespace-nowrap rounded-md ring-1 ring-inset",
+		common: "size-max flex items-center whitespace-nowrap rounded-md ring ring-inset",
 		styles: filledColors,
 	},
 	[badgeTypes.badgeModern]: {
-		common: "size-max flex items-center whitespace-nowrap rounded-md ring-1 ring-inset shadow-xs",
+		common: "size-max flex items-center whitespace-nowrap rounded-md ring ring-inset shadow-xs",
 		styles: {
 			gray: {
 				root: "bg-primary text-secondary ring-primary",
@@ -104,15 +97,15 @@ const withPillTypes = {
 
 const withBadgeTypes = {
 	[badgeTypes.pillColor]: {
-		common: "size-max flex items-center whitespace-nowrap rounded-full ring-1 ring-inset",
+		common: "size-max flex items-center whitespace-nowrap rounded-full ring ring-inset",
 		styles: filledColors,
 	},
 	[badgeTypes.badgeColor]: {
-		common: "size-max flex items-center whitespace-nowrap rounded-md ring-1 ring-inset",
+		common: "size-max flex items-center whitespace-nowrap rounded-md ring ring-inset",
 		styles: filledColors,
 	},
 	[badgeTypes.badgeModern]: {
-		common: "size-max flex items-center whitespace-nowrap rounded-md ring-1 ring-inset bg-primary text-secondary ring-primary shadow-xs",
+		common: "size-max flex items-center whitespace-nowrap rounded-md ring ring-inset bg-primary text-secondary ring-primary shadow-xs",
 		styles: addonOnlyColors,
 	},
 }

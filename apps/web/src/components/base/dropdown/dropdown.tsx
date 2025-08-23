@@ -78,7 +78,7 @@ const DropdownItem = ({ label, children, addon, icon: Icon, unstyled, ...props }
 					{addon && (
 						<span
 							className={cx(
-								"ml-3 shrink-0 rounded px-1 py-px font-medium text-xs ring-1 ring-secondary ring-inset",
+								"ml-3 shrink-0 rounded px-1 py-px font-medium text-xs ring ring-secondary ring-inset",
 								state.isDisabled ? "text-disabled" : "text-quaternary",
 							)}
 						>
@@ -118,7 +118,7 @@ const DropdownPopover = (props: DropdownPopoverProps) => {
 			{...props}
 			className={(state) =>
 				cx(
-					"w-62 overflow-auto rounded-lg bg-primary shadow-lg ring-1 ring-secondary_alt will-change-transform",
+					"w-62 overflow-auto rounded-lg bg-primary shadow-lg ring ring-secondary_alt will-change-transform",
 					state.isEntering &&
 						"fade-in placement-right:slide-in-from-left-0.5 placement-top:slide-in-from-bottom-0.5 placement-bottom:slide-in-from-top-0.5 placement-bottom:origin-top placement-right:origin-left placement-top:origin-bottom animate-in duration-150 ease-out",
 					state.isExiting &&
