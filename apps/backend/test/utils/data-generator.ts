@@ -1,31 +1,28 @@
-// @ts-nocheck
-
 import type { Id } from "@hazel/backend"
-import { convexTest as _convexTest, type TestConvex, type TestConvexForDataModel } from "convex-test"
+import { convexTest as _convexTest } from "convex-test"
 import { api } from "../../convex/_generated/api"
 import schema from "../../convex/schema"
 import { modules } from "../setup"
 
-export function randomIdentity(convexTest: TestConvex<typeof schema>, organizationId?: string) {
+export function convexTest() {
+	const t = _convexTest(schema, modules)
+	return t
+}
+
+export function randomIdentity(convexTestInstance: ReturnType<typeof convexTest>, organizationId?: string) {
 	const identity = {
 		tokenIdentifier: crypto.randomUUID(),
 		subject: crypto.randomUUID(),
 		...(organizationId && { organizationId }),
 	}
-	const t = convexTest.withIdentity(identity)
+	const t = convexTestInstance.withIdentity(identity)
 	// Store identity for later use
 	;(t as any)._testIdentity = identity
 	return t
 }
 
-export function convexTest() {
-	const t = _convexTest(schema, modules)
-
-	return t
-}
-
 export async function createAccount(
-	t: TestConvex<typeof schema> | TestConvexForDataModel<(typeof schema)["schemaValidation"]>,
+	t: any,
 ) {
 	// Get the stored identity
 	const identity = (t as any)._testIdentity
@@ -34,11 +31,11 @@ export async function createAccount(
 		throw new Error("No identity found - use randomIdentity() or withIdentity() first")
 	}
 
-	return await t.run(async (ctx) => {
+	return await t.run(async (ctx: any) => {
 		// Check if user already exists
 		const existingUser = await ctx.db
 			.query("users")
-			.withIndex("by_externalId", (q) => q.eq("externalId", identity.subject))
+			.withIndex("by_externalId", (q: any) => q.eq("externalId", identity.subject))
 			.unique()
 
 		if (existingUser) {
@@ -59,14 +56,14 @@ export async function createAccount(
 }
 
 export async function createServerAndAccount(
-	t: TestConvex<typeof schema> | TestConvexForDataModel<(typeof schema)["schemaValidation"]>,
+	t: any,
 	props?: { name?: string; slug?: string },
 ) {
 	const userId = await createAccount(t)
 	const organizationId = await createOrganization(t, props)
 
 	// Add user as owner of the organization
-	await t.run(async (ctx) => {
+	await t.run(async (ctx: any) => {
 		await ctx.db.insert("organizationMembers", {
 			organizationId,
 			userId,
@@ -79,7 +76,7 @@ export async function createServerAndAccount(
 }
 
 export async function createUser(
-	t: TestConvex<typeof schema> | TestConvexForDataModel<(typeof schema)["schemaValidation"]>,
+	t: any,
 	props: { organizationId: Id<"organizations">; role?: "member" | "admin" | "owner" },
 ) {
 	// Get the identity from the test context
@@ -89,11 +86,11 @@ export async function createUser(
 		throw new Error("No identity found - use randomIdentity() or withIdentity() first")
 	}
 
-	return await t.run(async (ctx) => {
+	return await t.run(async (ctx: any) => {
 		// Check if user already exists
 		const existingUser = await ctx.db
 			.query("users")
-			.withIndex("by_externalId", (q) => q.eq("externalId", identity.subject))
+			.withIndex("by_externalId", (q: any) => q.eq("externalId", identity.subject))
 			.unique()
 
 		let userId: Id<"users">
@@ -116,7 +113,7 @@ export async function createUser(
 		// Check if already member
 		const existingMembership = await ctx.db
 			.query("organizationMembers")
-			.withIndex("by_organizationId_userId", (q) =>
+			.withIndex("by_organizationId_userId", (q: any) =>
 				q.eq("organizationId", props.organizationId).eq("userId", userId),
 			)
 			.unique()
@@ -136,13 +133,13 @@ export async function createUser(
 }
 
 export async function createOrganization(
-	t: TestConvex<typeof schema> | TestConvexForDataModel<(typeof schema)["schemaValidation"]>,
+	t: any,
 	props?: { name?: string; slug?: string },
 ) {
 	const name = props?.name || "Test Organization"
 	const slug = props?.slug || "test-org"
 
-	return await t.run(async (ctx) => {
+	return await t.run(async (ctx: any) => {
 		return await ctx.db.insert("organizations", {
 			name,
 			slug,
@@ -153,14 +150,14 @@ export async function createOrganization(
 
 // Servers are replaced by organizations - keeping for compatibility
 export async function createServer(
-	t: TestConvex<typeof schema> | TestConvexForDataModel<(typeof schema)["schemaValidation"]>,
+	t: any,
 	props?: { name?: string },
 ) {
 	return await createOrganization(t, { name: props?.name })
 }
 
 export async function createOrganizationAndUser(
-	t: TestConvex<typeof schema> | TestConvexForDataModel<(typeof schema)["schemaValidation"]>,
+	t: any,
 ) {
 	const organization = await createOrganization(t)
 	const user = await createUser(t, { organizationId: organization })
@@ -168,7 +165,7 @@ export async function createOrganizationAndUser(
 }
 
 export async function addUserToOrganization(
-	t: TestConvex<typeof schema> | TestConvexForDataModel<(typeof schema)["schemaValidation"]>,
+	t: any,
 	props: { role?: "member" | "admin" | "owner"; organizationId: Id<"organizations"> },
 ) {
 	const role = props.role || "member"
@@ -176,7 +173,7 @@ export async function addUserToOrganization(
 }
 
 export async function createChannel(
-	t: TestConvex<typeof schema> | TestConvexForDataModel<(typeof schema)["schemaValidation"]>,
+	t: any,
 	props: { organizationId: Id<"organizations">; type?: "public" | "private" },
 ) {
 	// Get the identity from the test context to find the current user
@@ -185,11 +182,11 @@ export async function createChannel(
 		throw new Error("No identity found - use randomIdentity() or withIdentity() first")
 	}
 
-	return await t.run(async (ctx) => {
+	return await t.run(async (ctx: any) => {
 		// Find the user
 		const user = await ctx.db
 			.query("users")
-			.withIndex("by_externalId", (q) => q.eq("externalId", identity.subject))
+			.withIndex("by_externalId", (q: any) => q.eq("externalId", identity.subject))
 			.unique()
 
 		if (!user) {
@@ -221,7 +218,7 @@ export async function createChannel(
 }
 
 export async function createMessage(
-	t: TestConvex<typeof schema> | TestConvexForDataModel<(typeof schema)["schemaValidation"]>,
+	t: any,
 	props: {
 		organizationId: Id<"organizations">
 		channelId: Id<"channels">
@@ -237,11 +234,11 @@ export async function createMessage(
 		throw new Error("No identity found - use randomIdentity() or withIdentity() first")
 	}
 
-	const messageId = await t.run(async (ctx) => {
+	const messageId = await t.run(async (ctx: any) => {
 		// Find the user
 		const user = await ctx.db
 			.query("users")
-			.withIndex("by_externalId", (q) => q.eq("externalId", identity.subject))
+			.withIndex("by_externalId", (q: any) => q.eq("externalId", identity.subject))
 			.unique()
 
 		if (!user) {
