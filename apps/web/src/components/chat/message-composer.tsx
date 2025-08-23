@@ -4,7 +4,7 @@ import { api } from "@hazel/backend/api"
 import { useQuery } from "@tanstack/react-query"
 import { useParams } from "@tanstack/react-router"
 import { Attachment01, Loading03, XClose } from "@untitledui/icons"
-import { useEffect, useImperativeHandle, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 import { useFileUpload } from "~/hooks/use-file-upload"
 import { useChat } from "~/providers/chat-provider"
@@ -13,18 +13,13 @@ import { ButtonUtility } from "../base/buttons/button-utility"
 import { MarkdownEditor, type MarkdownEditorRef } from "../markdown-editor"
 import { ReplyIndicator } from "./reply-indicator"
 
-export interface MessageComposerRef {
-	focusAndInsertText: (text: string) => void
-}
-
 interface MessageComposerProps {
-	ref?: React.Ref<MessageComposerRef>
 	placeholder?: string
 	channelId?: string
 	organizationId?: string
 }
 
-export const MessageComposer = ({ ref, placeholder = "Type a message..." }: MessageComposerProps) => {
+export const MessageComposer = ({ placeholder = "Type a message..." }: MessageComposerProps) => {
 	const { orgId } = useParams({ from: "/_app/$orgId" })
 	const { sendMessage, startTyping, stopTyping, replyToMessageId, setReplyToMessageId } = useChat()
 	const editorRef = useRef<MarkdownEditorRef | null>(null)
@@ -32,17 +27,6 @@ export const MessageComposer = ({ ref, placeholder = "Type a message..." }: Mess
 	const [isTyping, setIsTyping] = useState(false)
 	const [attachmentIds, setAttachmentIds] = useState<Id<"attachments">[]>([])
 	const typingTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
-
-	// Expose the focusAndInsertText method to parent component
-	useImperativeHandle(
-		ref,
-		() => ({
-			focusAndInsertText: (text: string) => {
-				editorRef.current?.focusAndInsertText(text)
-			},
-		}),
-		[],
-	)
 
 	const { uploads } = useFileUpload({
 		organizationId: orgId as Id<"organizations">,
@@ -187,6 +171,7 @@ export const MessageComposer = ({ ref, placeholder = "Type a message..." }: Mess
 					attachmentIds={attachmentIds}
 					setAttachmentIds={setAttachmentIds}
 					uploads={uploads}
+					enableGlobalKeyCapture
 				/>
 			</div>
 		</div>

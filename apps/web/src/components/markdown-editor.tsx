@@ -2,7 +2,7 @@
 
 import type { Id } from "@hazel/backend"
 import { Plate, usePlateEditor } from "platejs/react"
-import { forwardRef, useCallback, useImperativeHandle, useRef } from "react"
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef } from "react"
 import { Node } from "slate"
 import { BasicNodesKit } from "~/components/editor/plugins/basic-nodes-kit"
 import { Editor, EditorContainer } from "~/components/editor-ui/editor"
@@ -31,6 +31,7 @@ interface MarkdownEditorProps {
 		status: string
 		attachmentId?: Id<"attachments">
 	}>
+	enableGlobalKeyCapture?: boolean
 }
 
 export const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>(
@@ -43,6 +44,7 @@ export const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>
 			attachmentIds = [],
 			setAttachmentIds,
 			uploads = [],
+			enableGlobalKeyCapture = false,
 		},
 		ref,
 	) => {
@@ -62,10 +64,28 @@ export const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>
 		)
 
 		const focusEditor = useCallback(() => {
-			editor.tf.focus({
-				edge: "end",
+			requestAnimationFrame(() => {
+				editor.tf.focus({
+					edge: "end",
+				})
 			})
 		}, [editor])
+
+		const focusAndInsertTextInternal = useCallback(
+			(text: string) => {
+				// Use requestAnimationFrame to ensure DOM is ready
+				requestAnimationFrame(() => {
+					// First focus the editor
+					editor.tf.focus()
+
+					// Then insert the text at the current cursor position
+					requestAnimationFrame(() => {
+						editor.transforms.insertText(text)
+					})
+				})
+			},
+			[editor],
+		)
 
 		const resetAndFocus = useCallback(() => {
 			editor.tf.reset()
@@ -82,15 +102,47 @@ export const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>
 		useImperativeHandle(
 			ref,
 			() => ({
-				focusAndInsertText: (text: string) => {
-					editor.transforms.insertText(text)
-
-					focusEditor()
-				},
+				focusAndInsertText: focusAndInsertTextInternal,
 				clearContent: resetAndFocus,
 			}),
-			[editor, focusEditor, resetAndFocus],
+			[focusAndInsertTextInternal, resetAndFocus],
 		)
+
+		// Global keydown listener for capturing keys when editor is not focused
+		useEffect(() => {
+			if (!enableGlobalKeyCapture) return
+
+			const handleGlobalKeyDown = (event: KeyboardEvent) => {
+				// Skip if target is an input, textarea, or contenteditable element
+				const target = event.target as HTMLElement
+				if (
+					target.tagName === "INPUT" ||
+					target.tagName === "TEXTAREA" ||
+					target.contentEditable === "true"
+				) {
+					return
+				}
+
+				// Skip if user is pressing modifier keys
+				if (event.ctrlKey || event.altKey || event.metaKey) {
+					return
+				}
+
+				// Check if it's a printable character or space
+				const isPrintableChar = event.key.length === 1
+
+				if (isPrintableChar) {
+					event.preventDefault()
+					focusAndInsertTextInternal(event.key)
+				}
+			}
+
+			document.addEventListener("keydown", handleGlobalKeyDown)
+
+			return () => {
+				document.removeEventListener("keydown", handleGlobalKeyDown)
+			}
+		}, [enableGlobalKeyCapture, focusAndInsertTextInternal])
 
 		const handleSubmit = async () => {
 			if (!onSubmit) return
