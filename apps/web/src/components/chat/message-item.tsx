@@ -1,3 +1,4 @@
+import { Button, Dialog as PrimitiveDialog, DialogTrigger, Heading as AriaHeading, Link } from "react-aria-components"
 import { convexQuery } from "@convex-dev/react-query"
 import type { Id } from "@hazel/backend"
 import { api } from "@hazel/backend/api"
@@ -8,7 +9,6 @@ import { Dropdown } from "~/components/base/dropdown/dropdown";
 import { Button as StyledButton } from "~/components/base/buttons/button";
 import { format } from "date-fns"
 import { useRef, useState } from "react"
-import { Button, DialogTrigger, Link } from "react-aria-components"
 import { toast } from "sonner"
 import { useChat } from "~/hooks/use-chat"
 import { cx } from "~/utils/cx"
@@ -25,6 +25,13 @@ import { ButtonUtility } from "~/components/base/buttons/button-utility";
 import { DotsHorizontal } from "@untitledui/icons"
 import { TextArea } from "~/components/base/textarea/textarea";
 import IconPencilEdit from "~/components/icons/IconPencilEdit";
+import IconUserPlusStroke from "~/components/icons/IconUserPlusStroke";
+import { Tooltip } from "~/components/base/tooltip/tooltip";
+import { Dialog, Modal, ModalFooter, ModalOverlay } from "~/components/application/modals/modal";
+import { CloseButton } from "~/components/base/buttons/close-button";
+import { FeaturedIcon } from "~/components/foundations/featured-icon/featured-icons";
+import { BackgroundPattern } from "~/components/shared-assets/background-patterns";
+import { Checkbox } from "~/components/base/checkbox/checkbox";
 
 type Message = FunctionReturnType<typeof api.messages.getMessages>["page"][0]
 
@@ -35,6 +42,14 @@ interface MessageItemProps {
   isFirstNewMessage?: boolean
   isPinned?: boolean
 }
+
+const channels = [
+  { id: "ch_001", name: "general", description: "Casual discussions and announcements" },
+  { id: "ch_002", name: "development", description: "Talk about coding, debugging, and dev tools" },
+  { id: "ch_003", name: "design", description: "Share UI/UX ideas and design feedback" },
+  { id: "ch_004", name: "random", description: "Off-topic chat and fun conversations" },
+]
+
 
 export function MessageItem({
                               message,
@@ -56,6 +71,7 @@ export function MessageItem({
     createThread,
     openThread,
   } = useChat()
+  const [openInviteUserToSpecificChannel, setOpenInviteUserToSpecificChannel] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [hasBeenHovered, setHasBeenHovered] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -121,178 +137,232 @@ export function MessageItem({
 
   return (
     // biome-ignore lint/a11y/noStaticElementInteractions: <explanation>
-    <div
-      id={`message-${message._id}`}
-      className={cx(
-        `group relative flex flex-col rounded-md rounded-l-none px-4 py-0.5 transition-colors hover:bg-secondary`,
-        isGroupStart ? "mt-2" : "",
-        isGroupEnd ? "mb-2" : "",
-        isFirstNewMessage
-          ? "border-emerald-500 border-l-2 bg-emerald-500/20 hover:bg-emerald-500/15"
-          : "",
-        isMessagePinned ? "border-amber-500 border-l-2 bg-amber-500/10 hover:bg-amber-500/15" : "",
-      )}
-      data-id={message._id}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
-      {/* Reply Section */}
-      {isRepliedTo && message.replyToMessageId && (
-        <MessageReplySection
-          replyToMessageId={message.replyToMessageId}
-          channelId={message.channelId}
-          organizationId={orgId as Id<"organizations">}
-          onClick={() => {
-            const replyElement = document.getElementById(`message-${message.replyToMessageId}`)
-            if (replyElement) {
-              replyElement.scrollIntoView({ behavior: "smooth", block: "center" })
-              // Add a highlight effect
-              replyElement.classList.add("bg-quaternary/30")
-              setTimeout(() => {
-                replyElement.classList.remove("bg-quaternary/30")
-              }, 2000)
-            }
-          }}
-        />
-      )}
-
-      {/* Main Content Row */}
-      <div className="flex gap-4">
-        {showAvatar ? (
-          <DialogTrigger>
-            <Button>
-              <Avatar
-                size="md"
-                alt={`${message.author.firstName} ${message.author.lastName}`}
-                src={message.author.avatarUrl}
-              />
-            </Button>
-            <Popover className='py-0 max-h-96! w-72 lg:w-80 bg-secondary' size='md' offset={16} crossOffset={10} placement='right top'>
-              {/* user cornology image */}
-              <div className='h-32 relative'>
-                {!isOwnMessage && (
-                <div className="absolute flex items-center top-2 right-2 p-1 gap-2">
-                  <Dropdown.Root>
-                    <ButtonUtility className='group' color='tertiary' size='xs'
-                                   icon={<svg aria-hidden="true" role="img" xmlns="http://www.w3.org/2000/svg"
-                                              width={16} height={16} fill="none" viewBox="0 0 24 24">
-                                     <path fill="currentColor"
-                                           d="M12 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM11.53 11A9.53 9.53 0 0 0 2 20.53c0 .81.66 1.47 1.47 1.47h.22c.24 0 .44-.17.5-.4.29-1.12.84-2.17 1.32-2.91.14-.21.43-.1.4.15l-.26 2.61c-.02.3.2.55.5.55h6.4a.5.5 0 0 0 .35-.85l-.02-.03a3 3 0 1 1 4.24-4.24l.53.52c.2.2.5.2.7 0l1.8-1.8c.17-.17.2-.43.06-.62A9.52 9.52 0 0 0 12.47 11h-.94Z"
-                                     />
-                                     <path fill="currentColor"
-                                           d="M23.7 17.7a1 1 0 1 0-1.4-1.4L18 20.58l-2.3-2.3a1 1 0 0 0-1.4 1.42l3 3a1 1 0 0 0 1.4 0l5-5Z"
-                                     />
-                                   </svg>
-                                   } aria-label='More'/>
-
-                    <Dropdown.Popover className="w-40">
-                      <Dropdown.Menu>
-                        <Dropdown.Section>
-                          <Dropdown.Item>
-                            Unfriend
-                          </Dropdown.Item>
-                        </Dropdown.Section>
-                      </Dropdown.Menu>
-                    </Dropdown.Popover>
-                  </Dropdown.Root>
-                  <Dropdown.Root>
-                    <ButtonUtility className='group' color='tertiary' size='xs' icon={DotsHorizontal}
-                                   aria-label='More'/>
-
-                    <Dropdown.Popover className="w-40">
-                      <Dropdown.Menu>
-                        <Dropdown.Section>
-                          <Dropdown.Item>
-                            View full profile
-                          </Dropdown.Item>
-                        </Dropdown.Section>
-                        <Dropdown.Separator/>
-                        <Dropdown.Section>
-                          <Dropdown.Item>Ignore</Dropdown.Item>
-                          <Dropdown.Item>Block</Dropdown.Item>
-                          <Dropdown.Item>Report user profile</Dropdown.Item>
-                        </Dropdown.Section>
-                        <Dropdown.Separator/>
-                        <Dropdown.Item>Copy user ID</Dropdown.Item>
-                      </Dropdown.Menu>
-                    </Dropdown.Popover>
-                  </Dropdown.Root>
-                </div>
-                )}
-              </div>
-
-              <div className='bg-tertiary inset-shadow-2xs inset-shadow-gray-500/15 rounded-t-lg p-4'>
-                <div className="-mt-12">
-                  <Avatar
-                    size="xl"
-                    className='ring-6 ring-bg-primary inset-ring inset-ring-tertiary'
-                    alt={`${message.author.firstName} ${message.author.lastName}`}
-                    src={message.author.avatarUrl}
+    <>
+      <DialogTrigger isOpen={openInviteUserToSpecificChannel} onOpenChange={setOpenInviteUserToSpecificChannel}>
+        <ModalOverlay className='z-50' isDismissable>
+          <Modal>
+            <Dialog>
+              {({close}) => (
+                <div className="relative w-full overflow-hidden rounded-2xl bg-primary shadow-xl transition-all sm:max-w-130">
+                  <CloseButton
+                    onClick={close}
+                    theme="light"
+                    size="lg"
+                    className="absolute top-3 right-3"
                   />
-                  <div className="flex mt-3 flex-col">
+                  <div className="flex flex-col gap-4 px-4 pt-5 sm:px-6 sm:pt-6">
+                    <div className="relative w-max">
+                      <FeaturedIcon color="gray" size="lg" theme="modern" icon={IconUserPlusStroke} />
+                      <BackgroundPattern
+                        pattern="circle"
+                        size="sm"
+                        className="-translate-x-1/2 -translate-y-1/2 absolute top-1/2 left-1/2"
+                      />
+                    </div>
+                    <div className="z-10 flex flex-col gap-0.5">
+                      <AriaHeading slot="title" className="font-semibold text-md text-primary">
+                        Invite Bob Smith to specific channels
+                      </AriaHeading>
+                      <p className="text-sm text-tertiary">
+                        Select a channel to invite this user to join.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="h-5 w-full" />
+                  <div className="flex max-h-96 overflow-y-auto flex-col gap-4 px-4 sm:px-6">
+                    {channels.map((channel) => (
+                      <Checkbox label={channel.name} hint={channel.description} size="sm" id={channel.id} />
+                    ))}
+                  </div>
+                  <ModalFooter>
+                    <StyledButton
+                      color="secondary"
+                      size="lg"
+                      onClick={close}
+                    >
+                      Cancel
+                    </StyledButton>
+                    <StyledButton
+                      color="primary"
+                      size="lg"
+                      onClick={close}
+                    >
+                      Invite
+                    </StyledButton>
+                  </ModalFooter>
+                </div>
+              )}
+            </Dialog>
+          </Modal>
+        </ModalOverlay>
+      </DialogTrigger>
+
+
+      <div
+        id={`message-${message._id}`}
+        className={cx(
+          `group relative flex flex-col rounded-md rounded-l-none px-4 py-0.5 transition-colors hover:bg-secondary`,
+          isGroupStart ? "mt-2" : "",
+          isGroupEnd ? "mb-2" : "",
+          isFirstNewMessage
+            ? "border-emerald-500 border-l-2 bg-emerald-500/20 hover:bg-emerald-500/15"
+            : "",
+          isMessagePinned ? "border-amber-500 border-l-2 bg-amber-500/10 hover:bg-amber-500/15" : "",
+        )}
+        data-id={message._id}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
+        {/* Reply Section */}
+        {isRepliedTo && message.replyToMessageId && (
+          <MessageReplySection
+            replyToMessageId={message.replyToMessageId}
+            channelId={message.channelId}
+            organizationId={orgId as Id<"organizations">}
+            onClick={() => {
+              const replyElement = document.getElementById(`message-${message.replyToMessageId}`)
+              if (replyElement) {
+                replyElement.scrollIntoView({ behavior: "smooth", block: "center" })
+                // Add a highlight effect
+                replyElement.classList.add("bg-quaternary/30")
+                setTimeout(() => {
+                  replyElement.classList.remove("bg-quaternary/30")
+                }, 2000)
+              }
+            }}
+          />
+        )}
+
+        {/* Main Content Row */}
+        <div className="flex gap-4">
+          {showAvatar ? (
+            <DialogTrigger>
+              <Button className='outline-hidden'>
+                <Avatar
+                  size="md"
+                  alt={`${message.author.firstName} ${message.author.lastName}`}
+                  src={message.author.avatarUrl}
+                />
+              </Button>
+              <Popover className='py-0 max-h-96! w-72 lg:w-80 bg-secondary' size='md' offset={16} crossOffset={10} placement='right top'>
+                <PrimitiveDialog className="outline-hidden">
+                  {({close}) => (
+                    <>
+                      {/* user cornology image */}
+                      <div className='h-32 relative'>
+                        {!isOwnMessage && (
+                          <div className="absolute flex items-center top-2 right-2 p-1 gap-2">
+                            <Tooltip arrow title="Invite user to specific channel" placement="bottom">
+
+                              <ButtonUtility onClick={() => {
+                                close()
+                                setOpenInviteUserToSpecificChannel(true)
+                              }} color='tertiary' size='xs' icon={IconUserPlusStroke} aria-label='Invite user to specific channel'/>
+
+                            </Tooltip>
+
+
+                            <Dropdown.Root>
+                              <ButtonUtility className='group' color='tertiary' size='xs' icon={DotsHorizontal}
+                                             aria-label='More'/>
+
+                              <Dropdown.Popover className="w-40">
+                                <Dropdown.Menu>
+                                  <Dropdown.Section>
+                                    <Dropdown.Item>
+                                      View full profile
+                                    </Dropdown.Item>
+                                  </Dropdown.Section>
+                                  <Dropdown.Separator/>
+                                  <Dropdown.Section>
+                                    <Dropdown.Item>Ignore</Dropdown.Item>
+                                    <Dropdown.Item>Block</Dropdown.Item>
+                                    <Dropdown.Item>Report user profile</Dropdown.Item>
+                                  </Dropdown.Section>
+                                  <Dropdown.Separator/>
+                                  <Dropdown.Item>Copy user ID</Dropdown.Item>
+                                </Dropdown.Menu>
+                              </Dropdown.Popover>
+                            </Dropdown.Root>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className='bg-tertiary inset-shadow-2xs inset-shadow-gray-500/15 rounded-t-lg p-4'>
+                        <div className="-mt-12">
+                          <Avatar
+                            size="xl"
+                            className='ring-6 ring-bg-primary inset-ring inset-ring-tertiary'
+                            alt={`${message.author.firstName} ${message.author.lastName}`}
+                            src={message.author.avatarUrl}
+                          />
+                          <div className="flex mt-3 flex-col">
                   <span className="font-semibold">
                     {message.author
                       ? `${message.author.firstName} ${message.author.lastName}`
                       : "Unknown"}
                   </span>
-                    <span className="text-secondary text-xs">
+                            <span className="text-secondary text-xs">
                     {message.author?.email}
                   </span>
-                  </div>
-                </div>
-                <div className="flex mt-4 flex-col gap-y-4">
-                  <div className='flex items-center gap-2'>
-                    <div className="flex -space-x-2">
-                      <Avatar size="xs" alt="Orlando Diggs" className="ring-[1.5px] ring-bg-primary" src="https://www.untitledui.com/images/avatars/orlando-diggs?fm=webp&q=80" />
-                      <Avatar size="xs" alt="Andi Lane" className="ring-[1.5px] ring-bg-primary" src="https://www.untitledui.com/images/avatars/andi-lane?fm=webp&q=80" />
-                      <Avatar size="xs" alt="Kate Morrison" className="ring-[1.5px] ring-bg-primary" src="https://www.untitledui.com/images/avatars/kate-morrison?fm=webp&q=80" />
-                      <Avatar size="xs" className="ring-[1.5px] ring-bg-primary" placeholder={<span className="flex items-center justify-center text-sm font-semibold text-quaternary">+5</span>} />
+                          </div>
+                        </div>
+                        <div className="flex mt-4 flex-col gap-y-4">
+                          <div className='flex items-center gap-2'>
+                            <div className="flex -space-x-2">
+                              <Avatar size="xs" alt="Orlando Diggs" className="ring-[1.5px] ring-bg-primary" src="https://www.untitledui.com/images/avatars/orlando-diggs?fm=webp&q=80" />
+                              <Avatar size="xs" alt="Andi Lane" className="ring-[1.5px] ring-bg-primary" src="https://www.untitledui.com/images/avatars/andi-lane?fm=webp&q=80" />
+                              <Avatar size="xs" alt="Kate Morrison" className="ring-[1.5px] ring-bg-primary" src="https://www.untitledui.com/images/avatars/kate-morrison?fm=webp&q=80" />
+                              <Avatar size="xs" className="ring-[1.5px] ring-bg-primary" placeholder={<span className="flex items-center justify-center text-sm font-semibold text-quaternary">+5</span>} />
 
-                    </div>
-                    <Link href='#' className="text-sm/6 text-secondary hover:underline">
-                      mutual servers
-                    </Link>
-                  </div>
-                  <div className='flex items-center gap-2'>
-                    {isOwnMessage ? <StyledButton size='sm' className='w-full' iconLeading={IconPencilEdit}>Edit profile</StyledButton>:
-                      <TextArea
-                        aria-label="Message"
-                        placeholder={`Message @${message.author?.firstName}`}
-                        className='resize-none'/>
-                    }
-                  </div>
-                </div>
-              </div>
-            </Popover>
-          </DialogTrigger>
-        ) : (
-          <div
-            className="flex w-10 items-center justify-end pr-1 text-[10px] text-secondary leading-tight opacity-0 group-hover:opacity-100">
-            {format(message._creationTime, "HH:mm")}
-          </div>
-        )}
+                            </div>
+                            <Link href='#' className="text-sm/6 text-secondary hover:underline">
+                              mutual channels
+                            </Link>
+                          </div>
+                          <div className='flex items-center gap-2'>
+                            {isOwnMessage ? <StyledButton size='sm' className='w-full' iconLeading={IconPencilEdit}>Edit profile</StyledButton>:
+                              <TextArea
+                                aria-label="Message"
+                                placeholder={`Message @${message.author?.firstName}`}
+                                className='resize-none'/>
+                            }
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </PrimitiveDialog>
+              </Popover>
+            </DialogTrigger>
+          ) : (
+            <div
+              className="flex w-10 items-center justify-end pr-1 text-[10px] text-secondary leading-tight opacity-0 group-hover:opacity-100">
+              {format(message._creationTime, "HH:mm")}
+            </div>
+          )}
 
-        {/* Content Section */}
-        <div className="min-w-0 flex-1">
-          {/* Author header (only when showing avatar) */}
-          {showAvatar && (
-            <div className="flex items-baseline gap-2">
+          {/* Content Section */}
+          <div className="min-w-0 flex-1">
+            {/* Author header (only when showing avatar) */}
+            {showAvatar && (
+              <div className="flex items-baseline gap-2">
 							<span className="font-semibold">
 								{message.author
                   ? `${message.author.firstName} ${message.author.lastName}`
                   : "Unknown"}
 							</span>
-              <span className="text-secondary text-xs">
+                <span className="text-secondary text-xs">
 								{format(message._creationTime, "HH:mm")}
-                {isEdited && " (edited)"}
+                  {isEdited && " (edited)"}
 							</span>
-            </div>
-          )}
+              </div>
+            )}
 
-          {/* Message Content */}
-          {isEditing ? (
-            <div className="mt-1">
-              {/* <TextEditor.Root
+            {/* Message Content */}
+            {isEditing ? (
+              <div className="mt-1">
+                {/* <TextEditor.Root
 								content={message.jsonContent}
 								editable={true}
 								className="gap-0"
@@ -363,118 +433,120 @@ export function MessageItem({
 									</>
 								)}
 							</TextEditor.Root> */}
-            </div>
-          ) : (
-            <MarkdownReadonly content={message.content}></MarkdownReadonly>
-          )}
+              </div>
+            ) : (
+              <MarkdownReadonly content={message.content}></MarkdownReadonly>
+            )}
 
-          {/* Attachments */}
-          {message.attachments && message.attachments.length > 0 && (
-            <MessageAttachments
-              attachments={message.attachments}
-              organizationId={orgId as Id<"organizations">}
-            />
-          )}
+            {/* Attachments */}
+            {message.attachments && message.attachments.length > 0 && (
+              <MessageAttachments
+                attachments={message.attachments}
+                organizationId={orgId as Id<"organizations">}
+              />
+            )}
 
-          {/* Reactions */}
-          {message.reactions && message.reactions.length > 0 && (
-            <div className="mt-2 flex flex-wrap gap-1">
-              {Object.entries(
-                message.reactions.reduce(
-                  (acc, reaction) => {
-                    if (!acc[reaction.emoji]) {
-                      acc[reaction.emoji] = { count: 0, users: [], hasReacted: false }
-                    }
-                    acc[reaction.emoji].count++
-                    acc[reaction.emoji].users.push(reaction.userId)
-                    if (reaction.userId === currentUser?._id) {
-                      acc[reaction.emoji].hasReacted = true
-                    }
-                    return acc
-                  },
-                  {} as Record<
-                    string,
-                    { count: number; users: string[]; hasReacted: boolean }
-                  >,
-                ),
-              ).map(([emoji, data]) => (
-                <Button onPress={() => handleReaction(emoji)} key={emoji}>
-                  <Badge
-                    type="pill-color"
-                    color={data.hasReacted ? "brand" : "gray"}
-                    size="md"
-                  >
-                    {emoji} {data.count}
-                  </Badge>
-                </Button>
-              ))}
-            </div>
-          )}
+            {/* Reactions */}
+            {message.reactions && message.reactions.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-1">
+                {Object.entries(
+                  message.reactions.reduce(
+                    (acc, reaction) => {
+                      if (!acc[reaction.emoji]) {
+                        acc[reaction.emoji] = { count: 0, users: [], hasReacted: false }
+                      }
+                      acc[reaction.emoji].count++
+                      acc[reaction.emoji].users.push(reaction.userId)
+                      if (reaction.userId === currentUser?._id) {
+                        acc[reaction.emoji].hasReacted = true
+                      }
+                      return acc
+                    },
+                    {} as Record<
+                      string,
+                      { count: number; users: string[]; hasReacted: boolean }
+                    >,
+                  ),
+                ).map(([emoji, data]) => (
+                  <Button onPress={() => handleReaction(emoji)} key={emoji}>
+                    <Badge
+                      type="pill-color"
+                      color={data.hasReacted ? "brand" : "gray"}
+                      size="md"
+                    >
+                      {emoji} {data.count}
+                    </Badge>
+                  </Button>
+                ))}
+              </div>
+            )}
 
-          {/* Thread Button */}
-          {(message.threadChannelId ||
-            (message.threadMessages && message.threadMessages.length > 0)) && (
-            <button
-              type="button"
-              onClick={() => {
-                if (message.threadChannelId) {
-                  openThread(message.threadChannelId, message._id)
-                }
-              }}
-              className="mt-2 flex items-center gap-2 text-secondary text-sm transition-colors hover:text-primary"
-            >
-              <IconThread className="size-4"/>
-              <span>
+            {/* Thread Button */}
+            {(message.threadChannelId ||
+              (message.threadMessages && message.threadMessages.length > 0)) && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (message.threadChannelId) {
+                    openThread(message.threadChannelId, message._id)
+                  }
+                }}
+                className="mt-2 flex items-center gap-2 text-secondary text-sm transition-colors hover:text-primary"
+              >
+                <IconThread className="size-4"/>
+                <span>
 								{message.threadMessages?.length || 0}{" "}
-                {message.threadMessages?.length === 1 ? "reply" : "replies"}
+                  {message.threadMessages?.length === 1 ? "reply" : "replies"}
 							</span>
-            </button>
-          )}
+              </button>
+            )}
+          </div>
         </div>
-      </div>
 
-      {/* Message Toolbar - Only render when hovered or menu is open to improve performance */}
-      {(hasBeenHovered || isMenuOpen) && (
-        <MessageToolbar
-          message={message}
-          isOwnMessage={isOwnMessage}
-          isPinned={isMessagePinned}
-          onReaction={handleReaction}
-          onEdit={() => setIsEditing(true)}
-          onDelete={handleDelete}
-          onCopy={handleCopy}
-          onReply={() => {
-            setReplyToMessageId(message._id)
-          }}
-          onThread={() => {
-            createThread(message._id)
-          }}
-          onForward={() => {
-            // TODO: Implement forward message
-            console.log("Forward message")
-          }}
-          onMarkUnread={() => {
-            // TODO: Implement mark as unread
-            console.log("Mark as unread")
-          }}
-          onPin={() => {
-            if (isMessagePinned) {
-              unpinMessage(message._id)
-            } else {
-              pinMessage(message._id)
-            }
-          }}
-          onReport={() => {
-            // TODO: Implement report message
-            console.log("Report message")
-          }}
-          onViewDetails={() => {
-            // TODO: Implement view details
-            console.log("View details")
-          }}
-          onMenuOpenChange={setIsMenuOpen}
-        />
-      )}
-    </div>
+        {/* Message Toolbar - Only render when hovered or menu is open to improve performance */}
+        {(hasBeenHovered || isMenuOpen) && (
+          <MessageToolbar
+            message={message}
+            isOwnMessage={isOwnMessage}
+            isPinned={isMessagePinned}
+            onReaction={handleReaction}
+            onEdit={() => setIsEditing(true)}
+            onDelete={handleDelete}
+            onCopy={handleCopy}
+            onReply={() => {
+              setReplyToMessageId(message._id)
+            }}
+            onThread={() => {
+              createThread(message._id)
+            }}
+            onForward={() => {
+              // TODO: Implement forward message
+              console.log("Forward message")
+            }}
+            onMarkUnread={() => {
+              // TODO: Implement mark as unread
+              console.log("Mark as unread")
+            }}
+            onPin={() => {
+              if (isMessagePinned) {
+                unpinMessage(message._id)
+              } else {
+                pinMessage(message._id)
+              }
+            }}
+            onReport={() => {
+              // TODO: Implement report message
+              console.log("Report message")
+            }}
+            onViewDetails={() => {
+              // TODO: Implement view details
+              console.log("View details")
+            }}
+            onMenuOpenChange={setIsMenuOpen}
+          />
+        )}
+      </div>
+    </>
+    
   )
 }
