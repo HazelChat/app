@@ -170,6 +170,7 @@ export function MessageItem({
             <Popover className='py-0 max-h-96! w-72 lg:w-80 bg-secondary' size='md' offset={16} crossOffset={10} placement='right top'>
               {/* user cornology image */}
               <div className='h-32 relative'>
+                {!isOwnMessage && (
                 <div className="absolute flex items-center top-2 right-2 p-1 gap-2">
                   <Dropdown.Root>
                     <ButtonUtility className='group' color='tertiary' size='xs'
@@ -217,6 +218,7 @@ export function MessageItem({
                     </Dropdown.Popover>
                   </Dropdown.Root>
                 </div>
+                )}
               </div>
 
               <div className='bg-tertiary inset-shadow-2xs inset-shadow-white/10 dark:inset-shadow-black/10 rounded-t-lg p-4'>
