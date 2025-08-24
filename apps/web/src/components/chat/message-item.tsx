@@ -245,8 +245,10 @@ export function MessageItem({
 				<div className="flex gap-4">
 					{showAvatar ? (
 						<UserProfilePopover
-							user={message.author}
+							user={{ ...message.author, _id: message.authorId }}
 							isOwnProfile={isOwnMessage}
+							isFavorite={false} // TODO: Get favorite status from state
+							isMuted={false} // TODO: Get muted status from state
 							onInviteToChannel={() => setOpenInviteUserToSpecificChannel(true)}
 							onEditProfile={() => {
 								// TODO: Implement edit profile
@@ -256,29 +258,17 @@ export function MessageItem({
 								// TODO: Implement view full profile
 								console.log("View full profile")
 							}}
-							onIgnore={() => {
-								// TODO: Implement ignore user
-								console.log("Ignore user")
+							onToggleMute={() => {
+								// TODO: Implement mute/unmute functionality
+								console.log("Toggle mute")
 							}}
-							onBlock={() => {
-								// TODO: Implement block user
-								console.log("Block user")
-							}}
-							onReportUser={() => {
-								// TODO: Implement report user
-								console.log("Report user")
+							onToggleFavorite={() => {
+								// TODO: Implement favorite/unfavorite functionality
+								console.log("Toggle favorite")
 							}}
 							onCopyUserId={() => {
-								// TODO: Implement copy user ID
-								navigator.clipboard.writeText(message.authorId)
-								toast.custom((t) => (
-									<IconNotification
-										title="User ID copied!"
-										description="User ID has been copied to your clipboard."
-										color="success"
-										onClose={() => toast.dismiss(t)}
-									/>
-								))
+								// Additional callback after copying user ID
+								console.log("User ID copied:", message.authorId)
 							}}
 						/>
 					) : (
