@@ -365,10 +365,17 @@ export const generateMockData = userMutation({
 			}
 		}
 
+		// Verify organization members were created
+		const finalMembers = await ctx.db
+			.query("organizationMembers")
+			.withIndex("by_organizationId", (q) => q.eq("organizationId", organizationId))
+			.collect()
+
 		return {
 			success: true,
 			stats: {
 				usersCreated: userIds.length - 1, // Exclude current user
+				organizationMembers: finalMembers.length,
 				channelsCreated: channelIds.length,
 				messagesCreated: messageIds.length,
 			},
