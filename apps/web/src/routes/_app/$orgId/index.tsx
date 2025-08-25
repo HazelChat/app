@@ -102,12 +102,14 @@ function RouteComponent() {
                   currentUserQuery.data?._id !== member._id && "group hover:bg-tertiary/40 transition-colors"
                   )}
 								>
-									<div className="flex items-center gap-2 sm:gap-3">
+									<div className="flex items-center gap-2 sm:gap-2.5">
 										<Avatar src={member.avatarUrl} alt={fullName || "User"} size="sm" />
 										<div>
-											<p className="font-semibold flex items-center gap-x-2 text-sm/6">{fullName || "Unknown User"} / 		{member.role && (
+											<p className="font-semibold flex items-center text-sm/6">{fullName || "Unknown User"}
+                        <span className="mx-2 text-tertiary">&middot;</span>
+                        {member.role && (
                         <p className="text-tertiary text-xs capitalize">
-                          {member.role}
+                          {member.role} {member.role === 'admin' && <span className='ml-1'>👑</span>}
                         </p>
                       )}</p>
 											<p className="text-tertiary text-xs">{member.email}</p>
