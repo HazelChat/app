@@ -42,56 +42,56 @@ function RouteComponent() {
 	}
 
 	return (
-			<div className="flex flex-col p-4 sm:py-12 gap-6">
-				<div className="w-full">
-					<h1 className="mb-2 font-semibold text-2xl">All Channels</h1>
-					<p className="text-secondary">Browse and join conversations</p>
-				</div>
-
-				{publicChannels.length > 0 && (
-					<div className="w-full">
-						<h2 className="mb-4 font-semibold text-lg">Public Channels</h2>
-						<div className="space-y-2">
-							{publicChannels.map((channel) => (
-								<ChannelCard key={channel._id} channel={channel} />
-							))}
-						</div>
-					</div>
-				)}
-
-				{privateChannels.length > 0 && (
-					<div className="w-full">
-						<h2 className="mb-4 font-semibold text-lg">Private Channels</h2>
-						<div className="space-y-2">
-							{privateChannels.map((channel) => (
-								<ChannelCard key={channel._id} channel={channel} isPrivate />
-							))}
-						</div>
-					</div>
-				)}
-
-				{dmChannels.length > 0 && (
-					<div className="w-full">
-						<h2 className="mb-4 font-semibold text-lg">Direct Messages</h2>
-						<div className="space-y-2">
-							{dmChannels.map((channel) => (
-								<DmCard
-									key={channel._id}
-									channel={channel}
-									currentUserId={me?._id}
-									presenceList={presenceList}
-								/>
-							))}
-						</div>
-					</div>
-				)}
-
-				{!publicChannels.length && !privateChannels.length && !dmChannels.length && (
-					<div className="flex h-64 items-center justify-center">
-						<p className="text-secondary">No channels available</p>
-					</div>
-				)}
+		<div className="flex flex-col gap-6 p-4 sm:py-12">
+			<div className="w-full">
+				<h1 className="mb-2 font-semibold text-2xl">All Channels</h1>
+				<p className="text-secondary">Browse and join conversations</p>
 			</div>
+
+			{publicChannels.length > 0 && (
+				<div className="w-full">
+					<h2 className="mb-4 font-semibold text-lg">Public Channels</h2>
+					<div className="space-y-2">
+						{publicChannels.map((channel) => (
+							<ChannelCard key={channel._id} channel={channel} />
+						))}
+					</div>
+				</div>
+			)}
+
+			{privateChannels.length > 0 && (
+				<div className="w-full">
+					<h2 className="mb-4 font-semibold text-lg">Private Channels</h2>
+					<div className="space-y-2">
+						{privateChannels.map((channel) => (
+							<ChannelCard key={channel._id} channel={channel} isPrivate />
+						))}
+					</div>
+				</div>
+			)}
+
+			{dmChannels.length > 0 && (
+				<div className="w-full">
+					<h2 className="mb-4 font-semibold text-lg">Direct Messages</h2>
+					<div className="space-y-2">
+						{dmChannels.map((channel) => (
+							<DmCard
+								key={channel._id}
+								channel={channel}
+								currentUserId={me?._id}
+								presenceList={presenceList}
+							/>
+						))}
+					</div>
+				</div>
+			)}
+
+			{!publicChannels.length && !privateChannels.length && !dmChannels.length && (
+				<div className="flex h-64 items-center justify-center">
+					<p className="text-secondary">No channels available</p>
+				</div>
+			)}
+		</div>
 	)
 }
 

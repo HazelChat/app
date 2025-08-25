@@ -111,23 +111,23 @@ function SidebarProvider({
 
 	return (
 		<SidebarContext.Provider value={contextValue}>
-				<div
-					data-slot="sidebar-wrapper"
-					style={
-						{
-							"--sidebar-width": SIDEBAR_WIDTH,
-							"--sidebar-width-icon": SIDEBAR_WIDTH_ICON,
-							...style,
-						} as React.CSSProperties
-					}
-					className={cn(
-						"group/sidebar-wrapper flex min-h-svh w-full has-data-[variant=inset]:bg-sidebar",
-						className,
-					)}
-					{...props}
-				>
-					{children}
-				</div>
+			<div
+				data-slot="sidebar-wrapper"
+				style={
+					{
+						"--sidebar-width": SIDEBAR_WIDTH,
+						"--sidebar-width-icon": SIDEBAR_WIDTH_ICON,
+						...style,
+					} as React.CSSProperties
+				}
+				className={cn(
+					"group/sidebar-wrapper flex min-h-svh w-full has-data-[variant=inset]:bg-sidebar",
+					className,
+				)}
+				{...props}
+			>
+				{children}
+			</div>
 		</SidebarContext.Provider>
 	)
 }
@@ -165,7 +165,7 @@ function Sidebar({
 		return (
 			<Sheet isOpen={openMobile} onOpenChange={setOpenMobile} {...props}>
 				<SheetContent
-          aria-label='Sidebar'
+					aria-label="Sidebar"
 					data-sidebar="sidebar"
 					data-slot="sidebar"
 					data-mobile="true"
@@ -232,7 +232,13 @@ function Sidebar({
 	)
 }
 
-function SidebarTrigger({ className, iconLeading, children, onClick, ...props }: React.ComponentProps<typeof Button>) {
+function SidebarTrigger({
+	className,
+	iconLeading,
+	children,
+	onClick,
+	...props
+}: React.ComponentProps<typeof Button>) {
 	const { toggleSidebar } = useSidebar()
 
 	return (
@@ -499,11 +505,7 @@ function SidebarMenuButton({
 	return (
 		<Tooltip>
 			<TooltipTrigger>{button}</TooltipTrigger>
-			<TooltipContent
-				placement="right"
-				hidden={state !== "collapsed" || isMobile}
-				{...tooltip}
-			/>
+			<TooltipContent placement="right" hidden={state !== "collapsed" || isMobile} {...tooltip} />
 		</Tooltip>
 	)
 }
