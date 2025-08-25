@@ -1,117 +1,312 @@
-import * as SheetPrimitive from "@radix-ui/react-dialog"
+"use client"
+
+import * as React from "react"
+import type {
+  ButtonProps,
+  DialogProps,
+  DialogTriggerProps,
+  ModalOverlayProps,
+  HeadingProps,
+  TextProps,
+} from "react-aria-components"
+import {
+  composeRenderProps,
+  Dialog as DialogPrimitive,
+  Button,
+  Heading,
+  Text,
+  DialogTrigger as DialogTriggerPrimitive,
+  Modal,
+  ModalOverlay,
+} from "react-aria-components"
+import { twJoin, twMerge } from "tailwind-merge"
+import { cva } from "class-variance-authority"
 import { X } from "@untitledui/icons"
 
-import type * as React from "react"
+type Sides = "top" | "bottom" | "left" | "right"
 
-import { cn } from "~/lib/utils"
-
-function Sheet({ ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) {
-	return <SheetPrimitive.Root data-slot="sheet" {...props} />
+const generateCompoundVariants = (sides: Array<Sides>) => {
+  return sides.map((side) => ({
+    side,
+    isFloat: true,
+    className:
+      side === "top"
+        ? "top-2 inset-x-2 rounded-lg ring-1 border-b-0"
+        : side === "bottom"
+          ? "bottom-2 inset-x-2 rounded-lg ring-1 border-t-0"
+          : side === "left"
+            ? "left-2 inset-y-2 rounded-lg ring-1 border-r-0"
+            : "right-2 inset-y-2 rounded-lg ring-1 border-l-0",
+  }))
 }
 
-function SheetTrigger({ ...props }: React.ComponentProps<typeof SheetPrimitive.Trigger>) {
-	return <SheetPrimitive.Trigger data-slot="sheet-trigger" {...props} />
+const sheetContentStyles = cva("fixed z-50 grid gap-4 border-tertiary bg-overlay text-overlay-fg shadow-lg transition ease-in-out",{
+  variants: {
+    isEntering: {
+      true: "fade-in animate-in duration-300",
+    },
+    isExiting: {
+      true: "fade-out animate-out",
+    },
+    side: {
+      top: "entering:slide-in-from-top exiting:slide-out-to-top inset-x-0 top-0 rounded-b-2xl border-b",
+      bottom:
+        "entering:slide-in-from-bottom exiting:slide-out-to-bottom inset-x-0 bottom-0 rounded-t-2xl border-t",
+      left: "entering:slide-in-from-left exiting:slide-out-to-left inset-y-0 left-0 h-auto w-3/4 overflow-y-auto border-r sm:max-w-sm",
+      right:
+        "entering:slide-in-from-right exiting:slide-out-to-right inset-y-0 right-0 h-auto w-3/4 overflow-y-auto border-l sm:max-w-sm",
+    },
+    isFloat: {
+      false: "border-fg/20 dark:border-border",
+      true: "ring-fg/5 dark:ring-border",
+    },
+  },
+  compoundVariants: generateCompoundVariants(["top", "bottom", "left", "right"]),
+})
+
+type SheetProps = DialogTriggerProps
+const Sheet = (props: SheetProps) => {
+  return <DialogTriggerPrimitive {...props} />
 }
 
-function SheetClose({ ...props }: React.ComponentProps<typeof SheetPrimitive.Close>) {
-	return <SheetPrimitive.Close data-slot="sheet-close" {...props} />
+const DialogRoot = ({
+                      role = "dialog",
+                      className,
+                      ...props
+                    }: React.ComponentProps<typeof DialogPrimitive>) => {
+  return (
+    <DialogPrimitive
+      role={role}
+      className={twMerge(
+        "peer/dialog group/dialog relative flex max-h-[inherit] flex-col overflow-hidden outline-hidden [--gutter:--spacing(0)]",
+        className,
+      )}
+      {...props}
+    />
+  )
 }
 
-function SheetPortal({ ...props }: React.ComponentProps<typeof SheetPrimitive.Portal>) {
-	return <SheetPrimitive.Portal data-slot="sheet-portal" {...props} />
+const SheetTrigger = (props: ButtonProps) => (
+  <Button {...props} />
+)
+
+interface SheetHeaderProps extends Omit<React.ComponentProps<"div">, "title"> {
+  title?: string
+  description?: string
 }
 
-function SheetOverlay({ className, ...props }: React.ComponentProps<typeof SheetPrimitive.Overlay>) {
-	return (
-		<SheetPrimitive.Overlay
-			data-slot="sheet-overlay"
-			className={cn(
-				"data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/50 data-[state=closed]:animate-out data-[state=open]:animate-in",
-				className,
-			)}
-			{...props}
-		/>
-	)
+const SheetHeader = ({ className, ...props }: SheetHeaderProps) => {
+  const headerRef = React.useRef<HTMLHeadingElement>(null)
+  React.useEffect(() => {
+    const header = headerRef.current
+    if (!header) return
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        header.parentElement?.style.setProperty(
+          "--dialog-header-height",
+          `${entry.target.clientHeight}px`,
+        )
+      }
+    })
+    observer.observe(header)
+    return () => observer.unobserve(header)
+  }, [])
+  return (
+    <div
+      data-slot="dialog-header"
+      ref={headerRef}
+      className={twMerge(
+        "relative space-y-1 p-(--gutter) pb-[calc(var(--gutter)---spacing(3))]",
+        className,
+      )}
+    >
+      {props.title && <SheetTitle>{props.title}</SheetTitle>}
+      {props.description && <SheetDescription>{props.description}</SheetDescription>}
+      {!props.title && typeof props.children === "string" ? (
+        <SheetTitle {...props} />
+      ) : (
+        props.children
+      )}
+    </div>
+  )
 }
 
-function SheetContent({
-	className,
-	children,
-	side = "right",
-	...props
-}: React.ComponentProps<typeof SheetPrimitive.Content> & {
-	side?: "top" | "right" | "bottom" | "left"
-}) {
-	return (
-		<SheetPortal>
-			<SheetOverlay />
-			<SheetPrimitive.Content
-				data-slot="sheet-content"
-				className={cn(
-					"fixed z-50 flex flex-col gap-4 bg-background shadow-lg transition ease-in-out data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:duration-300 data-[state=open]:duration-500",
-					side === "right" &&
-						"data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right inset-y-0 right-0 h-full w-3/4 border-l sm:max-w-sm",
-					side === "left" &&
-						"data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left inset-y-0 left-0 h-full w-3/4 border-r sm:max-w-sm",
-					side === "top" &&
-						"data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top inset-x-0 top-0 h-auto border-b",
-					side === "bottom" &&
-						"data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom inset-x-0 bottom-0 h-auto border-t",
-					className,
-				)}
-				{...props}
-			>
-				{children}
-				<SheetPrimitive.Close className="absolute top-4 right-4 rounded-xs opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary">
-					<X className="size-4" />
-					<span className="sr-only">Close</span>
-				</SheetPrimitive.Close>
-			</SheetPrimitive.Content>
-		</SheetPortal>
-	)
+interface SheetTitleProps extends HeadingProps {
+  ref?: React.Ref<HTMLHeadingElement>
+}
+const SheetTitle = ({ className, ref, ...props }: SheetTitleProps) => (
+  <Heading
+    slot="title"
+    ref={ref}
+    className={twMerge("text-balance font-semibold text-fg text-lg/6 sm:text-base/6", className)}
+    {...props}
+  />
+)
+
+interface SheetDescriptionProps extends TextProps {
+  ref?: React.Ref<HTMLDivElement>
+}
+const SheetDescription = ({ className, ref, ...props }: SheetDescriptionProps) => (
+  <Text
+    slot="description"
+    className={twMerge(
+      "text-pretty text-base/6 text-muted-fg group-disabled:opacity-50 sm:text-sm/6",
+      className,
+    )}
+    ref={ref}
+    {...props}
+  />
+)
+
+interface SheetBodyProps extends React.ComponentProps<"div"> {}
+const SheetBody = ({ className, ref, ...props }: SheetBodyProps) => (
+  <div
+    data-slot="dialog-body"
+    ref={ref}
+    className={twMerge(
+      "flex max-h-[calc(var(--visual-viewport-height)-var(--visual-viewport-vertical-padding)-var(--dialog-header-height,0px)-var(--dialog-footer-height,0px))] flex-1 flex-col overflow-auto px-(--gutter) py-1",
+      className,
+    )}
+    {...props}
+  />
+)
+
+interface SheetFooterProps extends React.ComponentProps<"div"> {}
+const SheetFooter = ({ className, ...props }: SheetFooterProps) => {
+  const footerRef = React.useRef<HTMLDivElement>(null)
+  React.useEffect(() => {
+    const footer = footerRef.current
+    if (!footer) return
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        footer.parentElement?.style.setProperty(
+          "--dialog-footer-height",
+          `${entry.target.clientHeight}px`,
+        )
+      }
+    })
+    observer.observe(footer)
+    return () => {
+      observer.unobserve(footer)
+    }
+  }, [])
+  return (
+    <div
+      ref={footerRef}
+      data-slot="dialog-footer"
+      className={twMerge(
+        "mt-auto flex flex-col-reverse justify-between gap-3 p-(--gutter) pt-[calc(var(--gutter)---spacing(3))] group-not-has-data-[slot=dialog-body]/dialog:pt-0 group-not-has-data-[slot=dialog-body]/popover:pt-0 sm:flex-row",
+        className,
+      )}
+      {...props}
+    />
+  )
 }
 
-function SheetHeader({ className, ...props }: React.ComponentProps<"div">) {
-	return <div data-slot="sheet-header" className={cn("flex flex-col gap-1.5 p-4", className)} {...props} />
+const SheetClose = ({ className, ...props }: ButtonProps) => {
+  return <Button slot="close" className={className} {...props} />
 }
 
-function SheetFooter({ className, ...props }: React.ComponentProps<"div">) {
-	return (
-		<div
-			data-slot="sheet-footer"
-			className={cn("mt-auto flex flex-col gap-2 p-4", className)}
-			{...props}
-		/>
-	)
+interface SheetCloseIconProps extends Omit<ButtonProps, "children"> {
+  className?: string
+  isDismissable?: boolean | undefined
 }
 
-function SheetTitle({ className, ...props }: React.ComponentProps<typeof SheetPrimitive.Title>) {
-	return (
-		<SheetPrimitive.Title
-			data-slot="sheet-title"
-			className={cn("font-semibold text-foreground", className)}
-			{...props}
-		/>
-	)
+const SheetCloseIcon = ({ className, ...props }: SheetCloseIconProps) => {
+  return props.isDismissable ? (
+    <Button
+      aria-label="Close"
+      slot="close"
+      className={twMerge(
+        "absolute top-1 right-1 z-50 grid size-8 place-content-center rounded-xl hover:bg-secondary focus:bg-secondary focus:outline-hidden focus-visible:ring-1 focus-visible:ring-primary sm:top-2 sm:right-2 sm:size-7 sm:rounded-md",
+        className,
+      )}
+    >
+      <X className="size-4" />
+    </Button>
+  ) : null
 }
 
-function SheetDescription({ className, ...props }: React.ComponentProps<typeof SheetPrimitive.Description>) {
-	return (
-		<SheetPrimitive.Description
-			data-slot="sheet-description"
-			className={cn("text-muted-foreground text-sm", className)}
-			{...props}
-		/>
-	)
+interface SheetContentProps
+  extends Omit<ModalOverlayProps, "children">,
+    Pick<DialogProps, "aria-label" | "role" | "aria-labelledby" | "children"> {
+  closeButton?: boolean
+  isBlurred?: boolean
+  isFloat?: boolean
+  side?: Sides
+  overlay?: Omit<ModalOverlayProps, "children">
 }
 
+const SheetContent = ({
+                        className,
+                        isBlurred = false,
+                        isDismissable: isDismissableInternal,
+                        side = "right",
+                        role = "dialog",
+                        closeButton = false,
+                        isFloat = false,
+                        overlay,
+                        children,
+                        ...props
+                      }: SheetContentProps) => {
+  const isDismissable = isDismissableInternal ?? role !== "alertdialog"
+  return (
+    <ModalOverlay
+      isDismissable={isDismissable}
+      className={({ isExiting, isEntering }) =>
+        twJoin(
+          "fixed inset-0 z-50 h-(--visual-viewport-height,100vh) w-screen overflow-hidden bg-black/15",
+          isEntering && "fade-in animate-in duration-300",
+          isExiting && "fade-out animate-out duration-200",
+          isBlurred && "backdrop-blur-sm backdrop-filter",
+        )
+      }
+      {...props}
+    >
+      <Modal
+        className={composeRenderProps(className, (className, renderProps) =>
+          sheetContentStyles({
+            ...renderProps,
+            side,
+            isFloat,
+            className,
+          }),
+        )}
+      >
+        <DialogRoot aria-label={props["aria-label"]} role={role}>
+          {(values) => (
+            <>
+              {typeof children === "function" ? children(values) : children}
+              {closeButton && (
+                <SheetCloseIcon className="top-2.5 right-2.5" isDismissable={isDismissable} />
+              )}
+            </>
+          )}
+        </DialogRoot>
+      </Modal>
+    </ModalOverlay>
+  )
+}
+
+export type {
+  SheetProps,
+  SheetContentProps,
+  Sides,
+  SheetHeaderProps,
+  SheetTitleProps,
+  SheetBodyProps,
+  SheetFooterProps,
+  SheetDescriptionProps,
+  SheetCloseIconProps,
+}
 export {
-	Sheet,
-	SheetTrigger,
-	SheetClose,
-	SheetContent,
-	SheetHeader,
-	SheetFooter,
-	SheetTitle,
-	SheetDescription,
+  Sheet,
+  SheetTrigger,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+  SheetBody,
+  SheetClose,
+  SheetContent,
 }

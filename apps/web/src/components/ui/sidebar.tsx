@@ -3,9 +3,9 @@ import { LeftIndent01 } from "@untitledui/icons"
 import { cva, type VariantProps } from "class-variance-authority"
 import * as React from "react"
 import { Separator } from "~/components/ui/separator"
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "~/components/ui/sheet"
+import { Sheet, SheetBody, SheetContent } from "~/components/ui/sheet"
 import { Skeleton } from "~/components/ui/skeleton"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip"
+import { Tooltip, TooltipContent, TooltipTrigger } from "~/components/ui/tooltip"
 import { useIsMobile } from "~/hooks/use-mobile"
 import { cn } from "~/lib/utils"
 import { Button } from "../base/buttons/button"
@@ -111,7 +111,6 @@ function SidebarProvider({
 
 	return (
 		<SidebarContext.Provider value={contextValue}>
-			<TooltipProvider delayDuration={0}>
 				<div
 					data-slot="sidebar-wrapper"
 					style={
@@ -129,7 +128,6 @@ function SidebarProvider({
 				>
 					{children}
 				</div>
-			</TooltipProvider>
 		</SidebarContext.Provider>
 	)
 }
@@ -165,8 +163,9 @@ function Sidebar({
 
 	if (isMobile) {
 		return (
-			<Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
+			<Sheet isOpen={openMobile} onOpenChange={setOpenMobile} {...props}>
 				<SheetContent
+          aria-label='Sidebar'
 					data-sidebar="sidebar"
 					data-slot="sidebar"
 					data-mobile="true"
@@ -178,11 +177,7 @@ function Sidebar({
 					}
 					side={side}
 				>
-					<SheetHeader className="sr-only">
-						<SheetTitle>Sidebar</SheetTitle>
-						<SheetDescription>Displays the mobile sidebar.</SheetDescription>
-					</SheetHeader>
-					<div className="flex h-full w-full flex-col">{children}</div>
+					<SheetBody>{children}</SheetBody>
 				</SheetContent>
 			</Sheet>
 		)
@@ -237,7 +232,7 @@ function Sidebar({
 	)
 }
 
-function SidebarTrigger({ className, onClick, ...props }: React.ComponentProps<typeof Button>) {
+function SidebarTrigger({ className, iconLeading, children, onClick, ...props }: React.ComponentProps<typeof Button>) {
 	const { toggleSidebar } = useSidebar()
 
 	return (
@@ -246,14 +241,14 @@ function SidebarTrigger({ className, onClick, ...props }: React.ComponentProps<t
 			data-slot="sidebar-trigger"
 			color="tertiary"
 			size="sm"
-			className={cn("size-7", className)}
+			className={cn("size-8", className)}
 			onClick={(event: any) => {
 				onClick?.(event)
 				toggleSidebar()
 			}}
 			{...props}
-			iconLeading={<LeftIndent01 />}
-		></Button>
+			iconLeading={iconLeading ?? <LeftIndent01 />}
+		/>
 	)
 }
 
@@ -503,10 +498,9 @@ function SidebarMenuButton({
 
 	return (
 		<Tooltip>
-			<TooltipTrigger asChild>{button}</TooltipTrigger>
+			<TooltipTrigger>{button}</TooltipTrigger>
 			<TooltipContent
-				side="right"
-				align="center"
+				placement="right"
 				hidden={state !== "collapsed" || isMobile}
 				{...tooltip}
 			/>

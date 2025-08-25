@@ -42,8 +42,7 @@ function RouteComponent() {
 	}
 
 	return (
-		<div className="container mx-auto px-6 py-12">
-			<div className="flex flex-col gap-6">
+			<div className="flex flex-col p-4 sm:py-12 gap-6">
 				<div className="w-full">
 					<h1 className="mb-2 font-semibold text-2xl">All Channels</h1>
 					<p className="text-secondary">Browse and join conversations</p>
@@ -93,7 +92,6 @@ function RouteComponent() {
 					</div>
 				)}
 			</div>
-		</div>
 	)
 }
 

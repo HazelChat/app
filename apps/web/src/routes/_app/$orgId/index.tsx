@@ -3,9 +3,11 @@ import type { Id } from "@hazel/backend"
 import { api } from "@hazel/backend/api"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute, useNavigate, useParams } from "@tanstack/react-router"
+import { User01 } from "@untitledui/icons"
 import { useMemo, useState } from "react"
 import { Avatar } from "~/components/base/avatar/avatar"
 import { Button } from "~/components/base/buttons/button"
+import { Dropdown } from "~/components/base/dropdown/dropdown"
 import { Input } from "~/components/base/input/input"
 import { IconChatStroke } from "~/components/icons/IconChatStroke"
 import { IconSearchStroke } from "~/components/icons/IconSearchStroke"
@@ -54,8 +56,7 @@ function RouteComponent() {
 	}
 
 	return (
-		<div className="container mx-auto px-6 py-12">
-			<div className="flex flex-col gap-6">
+			<div className="flex flex-col sm:py-12 p-4 gap-6">
 				<div className="w-full">
 					<h1 className="mb-2 font-semibold text-2xl">Members</h1>
 					<p className="text-secondary">Browse and connect with members in your organization</p>
@@ -90,7 +91,7 @@ function RouteComponent() {
 							return (
 								<div
 									key={member._id}
-									className="flex items-center justify-between gap-4 rounded-lg px-4 py-3 transition-colors hover:bg-muted/40"
+									className="flex items-center justify-between gap-4 rounded-lg px-3 py-2 transition-colors hover:bg-tertiary/40"
 								>
 									<div className="flex items-center gap-3">
 										<Avatar src={member.avatarUrl} alt={fullName || "User"} size="md" />
@@ -115,9 +116,24 @@ function RouteComponent() {
 											>
 												<IconChatStroke className="size-5" />
 											</Button>
-											<Button color="tertiary" size="sm" className="p-2">
+                      <Dropdown.Root>
+
+                      <Button color="tertiary" size="sm" className="p-2">
 												<IconThreeDotsMenuHorizontalStroke className="size-5" />
 											</Button>
+                        <Dropdown.Popover>
+                          <Dropdown.Menu>
+                            <Dropdown.Section>
+                              <Dropdown.Item>
+                              </Dropdown.Item>
+                            </Dropdown.Section>
+                            <Dropdown.Separator />
+                            <Dropdown.Section>
+                              <Dropdown.Item></Dropdown.Item>
+                            </Dropdown.Section>
+                          </Dropdown.Menu>
+                        </Dropdown.Popover>
+                      </Dropdown.Root>
 										</div>
 									)}
 								</div>
@@ -126,6 +142,5 @@ function RouteComponent() {
 					)}
 				</div>
 			</div>
-		</div>
 	)
 }
