@@ -101,7 +101,7 @@ function RouteComponent() {
 									"flex items-center justify-between gap-4 rounded-lg px-3 py-2",
 
 									currentUserQuery.data?._id !== member._id &&
-										"group transition-colors hover:bg-tertiary/40",
+										"group inset-ring inset-ring-transparent hover:inset-ring-secondary hover:bg-quaternary/40",
 								)}
 							>
 								<div className="flex items-center gap-2 sm:gap-2.5">
