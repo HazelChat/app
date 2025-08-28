@@ -103,9 +103,9 @@ function NotificationsSettings() {
 						{settings.enabled && (
 							<>
 								<div className="flex flex-col gap-y-2">
-									<label className="font-medium text-secondary text-sm">
+									<span className="font-medium text-secondary text-sm">
 										Notification sound
-									</label>
+									</span>
 									<div className="flex gap-2">
 										<Button
 											type="button"
@@ -145,7 +145,7 @@ function NotificationsSettings() {
 
 								<div className="flex flex-col gap-y-2">
 									<div className="flex items-center justify-between">
-										<label className="font-medium text-secondary text-sm">Volume</label>
+										<span className="font-medium text-secondary text-sm">Volume</span>
 										<span className="tabular-numbs text-sm text-tertiary">
 											{Math.round(settings.volume * 100)}%
 										</span>
@@ -237,9 +237,9 @@ function NotificationsSettings() {
 
 						{emailNotifications && (
 							<div className="flex flex-col gap-y-2">
-								<label className="font-medium text-secondary text-sm">
+								<span className="font-medium text-secondary text-sm">
 									Email digest frequency
-								</label>
+								</span>
 								<div className="flex gap-2">
 									<Button
 										type="button"
