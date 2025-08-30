@@ -17,3 +17,8 @@ export const AttachmentId = Schema.UUID.pipe(Schema.brand("@HazelChat/Attachment
 	description: "The ID of the attachment being replied to",
 	title: "Attachment ID",
 })
+
+export const OrganizationId = Schema.UUID.pipe(Schema.brand("@HazelChat/OrganizationId")).annotations({
+	description: "The ID of the organization",
+	title: "Organization ID",
+})

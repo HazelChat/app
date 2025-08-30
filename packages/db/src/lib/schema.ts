@@ -23,3 +23,9 @@ export const AttachmentId = Schema.UUID.pipe(Schema.brand("@HazelChat/Attachment
 	title: "Attachment ID",
 })
 export type AttachmentId = Schema.Schema.Type<typeof AttachmentId>
+
+export const OrganizationId = Schema.UUID.pipe(Schema.brand("@HazelChat/OrganizationId")).annotations({
+	description: "The ID of the organization",
+	title: "Organization ID",
+})
+export type OrganizationId = Schema.Schema.Type<typeof OrganizationId>
