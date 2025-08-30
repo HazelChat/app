@@ -7,6 +7,7 @@ import { ButtonUtility } from "../base/buttons/button-utility"
 import IconPhone from "../icons/IconPhone"
 import IconPhoneDuoSolid from "../icons/IconPhoneDuoSolid"
 import { PinnedMessagesModal } from "./pinned-messages-modal"
+import { Tooltip, TooltipTrigger } from "~/components/base/tooltip/tooltip";
 
 export function ChatHeader() {
 	const { channel } = useChat()
@@ -37,9 +38,16 @@ export function ChatHeader() {
 						)}
 						<div>
 							<h2 className="font-semibold text-sm">
-								{channel.members
+								{channel.members.slice(0,3)
 									?.map((member) => `${member.user.firstName} ${member.user.lastName}`)
-									.join(", ") || "Direct Message"}
+									.join(", ") || "Direct Message"} {" "}
+
+                <Tooltip arrow title={channel.members?.map((member) => `${member.user.firstName} ${member.user.lastName}`)
+                  .join(", ")}>
+                  <TooltipTrigger className="text-secondary text-xs font-normal">
+                    {channel.members.length > 3 && ` +${channel.members.length - 3} more`}
+                  </TooltipTrigger>
+                </Tooltip>
 							</h2>
 						</div>
 					</>
