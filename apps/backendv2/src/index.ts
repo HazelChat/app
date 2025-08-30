@@ -10,9 +10,12 @@ import { BunHttpServer, BunRuntime } from "@effect/platform-bun"
 import { Layer } from "effect"
 import { HazelApi } from "./api"
 import { HttpApiRoutes } from "./http"
+import { ChannelRepo } from "./repositories/channel-repo"
 import { MessageRepo } from "./repositories/message-repo"
 import { AuthorizationLive } from "./services/auth"
 import { DatabaseLive } from "./services/database"
+
+export { HazelApi }
 
 const HealthRouter = HttpLayerRouter.use((router) =>
 	router.add("GET", "/health", HttpServerResponse.text("OK")),
@@ -40,7 +43,7 @@ const TracerLive = OtlpTracer.layer({
 	},
 }).pipe(Layer.provide(FetchHttpClient.layer))
 
-const MainLive = Layer.mergeAll(MessageRepo.Default, DatabaseLive)
+const MainLive = Layer.mergeAll(MessageRepo.Default, ChannelRepo.Default, DatabaseLive)
 
 HttpLayerRouter.serve(AllRoutes).pipe(
 	HttpMiddleware.withTracerDisabledWhen(

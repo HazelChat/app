@@ -1,5 +1,5 @@
 {
-	"name": "backendv2",
+	"name": "@hazel/backendv2",
 	"module": "src/index.ts",
 	"type": "module",
 	"private": true,
@@ -7,7 +7,8 @@
 		"dev": "bun run --hot src/index.ts"
 	},
 	"devDependencies": {
-		"@types/bun": "latest"
+		"@types/bun": "latest",
+		"typescript": "^5.9.2"
 	},
 	"dependencies": {
 		"@effect/opentelemetry": "^0.56.4",
