@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router"
 import { Avatar } from "~/components/base/avatar/avatar"
+import { Tooltip, TooltipTrigger } from "~/components/base/tooltip/tooltip"
 import IconHashtagStroke from "~/components/icons/IconHashtagStroke"
 import { usePresence } from "~/components/presence/presence-provider"
 import { useChat } from "~/hooks/use-chat"
@@ -38,8 +39,19 @@ export function ChatHeader() {
 						<div>
 							<h2 className="font-semibold text-sm">
 								{channel.members
+									.slice(0, 3)
 									?.map((member) => `${member.user.firstName} ${member.user.lastName}`)
-									.join(", ") || "Direct Message"}
+									.join(", ") || "Direct Message"}{" "}
+								<Tooltip
+									arrow
+									title={channel.members
+										?.map((member) => `${member.user.firstName} ${member.user.lastName}`)
+										.join(", ")}
+								>
+									<TooltipTrigger className="font-normal text-secondary text-xs">
+										{channel.members.length > 3 && ` +${channel.members.length - 3} more`}
+									</TooltipTrigger>
+								</Tooltip>
 							</h2>
 						</div>
 					</>
