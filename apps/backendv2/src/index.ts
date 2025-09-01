@@ -18,6 +18,7 @@ import { OrganizationRepo } from "./repositories/organization-repo"
 import { UserRepo } from "./repositories/user-repo"
 import { AuthorizationLive } from "./services/auth"
 import { DatabaseLive } from "./services/database"
+import { MockDataGenerator } from "./services/mock-data-generator"
 import { WorkOS } from "./services/workos"
 import { WorkOSSync } from "./services/workos-sync"
 import { WorkOSWebhookVerifier } from "./services/workos-webhook"
@@ -57,6 +58,7 @@ const MainLive = Layer.mergeAll(
 	OrganizationRepo.Default,
 	OrganizationMemberRepo.Default,
 	InvitationRepo.Default,
+	MockDataGenerator.Default,
 	WorkOS.Default,
 	WorkOSSync.Default,
 	WorkOSWebhookVerifier.Default,
