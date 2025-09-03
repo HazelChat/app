@@ -1,17 +1,13 @@
 import { useConvexMutation } from "@convex-dev/react-query"
-import type { Id } from "@hazel/backend"
-import type { OrganizationId } from "@hazel/db/schema"
 import { api } from "@hazel/backend/api"
-import type { Channel } from "@hazel/db/models"
+import type { ChannelId, OrganizationId } from "@hazel/db/schema"
 import { useQueryClient } from "@tanstack/react-query"
 import { Link, useParams } from "@tanstack/react-router"
-import type { FunctionReturnType } from "convex/server"
 import { useCallback } from "react"
-import { Pressable } from "react-aria-components"
-import IconDeleteBackwardLeft from "~/components/icons/IconDeleteBackwardLeft"
 import IconDeleteDustbin011 from "~/components/icons/IconDeleteDustbin011"
 import IconPencilEdit from "~/components/icons/IconPencilEdit"
-import IconTruckTrash from "~/components/icons/IconTruckTrash"
+import { useChannelWithCurrentUser } from "~/db/hooks"
+import { useUser } from "~/lib/auth"
 import { cn } from "~/lib/utils"
 import { cx } from "~/utils/cx"
 import { Avatar } from "../base/avatar/avatar"
@@ -24,36 +20,20 @@ import IconThreeDotsMenuHorizontalStroke from "../icons/IconThreeDotsMenuHorizon
 import IconVolumeMute1 from "../icons/IconVolumeMute1"
 import IconVolumeOne1 from "../icons/IconVolumeOne1"
 import { SidebarMenuAction, SidebarMenuButton, SidebarMenuItem } from "../ui/sidebar"
-import { useUser } from "~/lib/auth"
-
-type ChannelType = typeof Channel.Model.Type
-export interface EnrichedChannel extends ChannelType {
-	isMuted: boolean
-	isFavorite: boolean
-	isHidden: boolean
-	currentUser: {
-		notificationCount: number
-	}
-	members: Array<{
-		userId: string
-		user: {
-			id: string
-			firstName: string
-			lastName: string
-			avatarUrl: string
-			email: string
-		}
-	}>
-}
 
 export interface ChannelItemProps {
-	channel: EnrichedChannel
+	channelId: ChannelId
 }
 
-export const ChannelItem = ({ channel }: ChannelItemProps) => {
-	const queryClient = useQueryClient()
+export const ChannelItem = ({ channelId }: ChannelItemProps) => {
 	const params = useParams({ from: "/_app/$orgId" })
-	const organizationId = params?.orgId as Id<"organizations">
+	const organizationId = params?.orgId as OrganizationId
+
+	const { channel } = useChannelWithCurrentUser(channelId)
+
+	if (!channel) {
+		return null
+	}
 
 	const leaveChannelMutation = useConvexMutation(api.channels.leaveChannelForOrganization)
 	const updateChannelPreferencesMutation = useConvexMutation(
@@ -64,47 +44,35 @@ export const ChannelItem = ({ channel }: ChannelItemProps) => {
 		if (organizationId) {
 			leaveChannelMutation({
 				organizationId,
-				channelId: channel.id,
+				channelId: channelId,
 			})
 		}
-	}, [channel.id, organizationId, leaveChannelMutation])
+	}, [channelId, organizationId, leaveChannelMutation])
 
 	const handleToggleMute = useCallback(() => {
 		if (organizationId) {
 			updateChannelPreferencesMutation({
 				organizationId,
-				channelId: channel.id,
-				isMuted: !channel.isMuted,
+				channelId: channelId,
+				isMuted: !channel.currentUser.isMuted,
 			})
 		}
-	}, [channel.id, channel.isMuted, organizationId, updateChannelPreferencesMutation])
+	}, [channelId, channel.currentUser.isMuted, organizationId, updateChannelPreferencesMutation])
 
 	const handleToggleFavorite = useCallback(() => {
 		if (organizationId) {
 			updateChannelPreferencesMutation({
 				organizationId,
-				channelId: channel.id,
-				isFavorite: !channel.isFavorite,
+				channelId: channelId,
+				isFavorite: !channel.currentUser.isFavorite,
 			})
 		}
-	}, [channel.id, channel.isFavorite, organizationId, updateChannelPreferencesMutation])
-
-	const handleMouseEnter = useCallback(() => {
-		// Prefetch channel data on hover
-		if (organizationId) {
-			queryClient.prefetchQuery(
-				convexQuery(api.channels.getChannel, {
-					channelId: channel.id,
-					organizationId,
-				}),
-			)
-		}
-	}, [channel.id, organizationId, queryClient])
+	}, [channelId, channel.currentUser.isFavorite, organizationId, updateChannelPreferencesMutation])
 
 	return (
-		<SidebarMenuItem onMouseEnter={handleMouseEnter}>
+		<SidebarMenuItem>
 			<SidebarMenuButton asChild>
-				<Link to="/$orgId/chat/$id" params={{ orgId: organizationId || "", id: channel.id }}>
+				<Link to="/$orgId/chat/$id" params={{ orgId: organizationId || "", id: channelId }}>
 					<IconHashtagStroke className="size-5" />
 					<p className={cn("text-ellipsis text-nowrap", channel.isMuted && "opacity-60")}>
 						{channel.name}
@@ -129,21 +97,21 @@ export const ChannelItem = ({ channel }: ChannelItemProps) => {
 					<Dropdown.Menu>
 						<Dropdown.Item
 							onAction={handleToggleMute}
-							icon={channel.isMuted ? IconVolumeOne1 : IconVolumeMute1}
+							icon={channel.currentUser.isMuted ? IconVolumeOne1 : IconVolumeMute1}
 						>
-							{channel.isMuted ? "Unmute" : "Mute"}
+							{channel.currentUser.isMuted ? "Unmute" : "Mute"}
 						</Dropdown.Item>
 						<Dropdown.Item
 							onAction={handleToggleFavorite}
 							icon={(props) =>
-								channel.isFavorite ? (
+								channel.currentUser.isFavorite ? (
 									<IconStar1 className={cx("text-amber-500", props.className)} />
 								) : (
 									<IconStar1 className={props.className}></IconStar1>
 								)
 							}
 						>
-							{channel.isFavorite ? "Unfavorite" : "Favorite"}
+							{channel.currentUser.isFavorite ? "Unfavorite" : "Favorite"}
 						</Dropdown.Item>
 						<Dropdown.Separator />
 						<Dropdown.Item
@@ -193,7 +161,7 @@ export const ChannelItem = ({ channel }: ChannelItemProps) => {
 }
 
 interface DmChannelLinkProps {
-	channel: EnrichedChannel
+	channelId: ChannelId
 	userPresence: {
 		userId: string
 		online: boolean
@@ -201,14 +169,21 @@ interface DmChannelLinkProps {
 	}[]
 }
 
-export const DmChannelLink = ({ channel, userPresence }: DmChannelLinkProps) => {
+export const DmChannelLink = ({ channelId, userPresence }: DmChannelLinkProps) => {
 	const params = useParams({ from: "/_app/$orgId" })
 	const organizationId = params?.orgId as OrganizationId
+
+	const { channel } = useChannelWithCurrentUser(channelId)
+
 	const { user: me } = useUser()
 	const queryClient = useQueryClient()
 	const updateChannelPreferencesMutation = useConvexMutation(
 		api.channels.updateChannelPreferencesForOrganization,
 	)
+
+	if (!channel) {
+		return null
+	}
 
 	const filteredMembers = (channel.members || []).filter((member) => member.userId !== me?.id)
 
@@ -216,65 +191,58 @@ export const DmChannelLink = ({ channel, userPresence }: DmChannelLinkProps) => 
 		if (organizationId) {
 			updateChannelPreferencesMutation({
 				organizationId,
-				channelId: channel.id,
-				isMuted: !channel.isMuted,
+				channelId: channelId,
+				isMuted: !channel.currentUser.isMuted,
 			})
 		}
-	}, [channel.id, channel.isMuted, organizationId, updateChannelPreferencesMutation])
+	}, [channelId, channel.currentUser.isMuted, organizationId, updateChannelPreferencesMutation])
 
 	const handleToggleFavorite = useCallback(() => {
 		if (organizationId) {
 			updateChannelPreferencesMutation({
 				organizationId,
-				channelId: channel.id,
-				isFavorite: !channel.isFavorite,
+				channelId: channelId,
+				isFavorite: !channel.currentUser.isFavorite,
 			})
 		}
-	}, [channel.id, channel.isFavorite, organizationId, updateChannelPreferencesMutation])
+	}, [channelId, channel.currentUser.isFavorite, organizationId, updateChannelPreferencesMutation])
 
 	const handleClose = useCallback(() => {
 		if (organizationId) {
 			updateChannelPreferencesMutation({
 				organizationId,
-				channelId: channel.id,
+				channelId: channelId,
 				isHidden: true,
 			})
 		}
-	}, [channel.id, organizationId, updateChannelPreferencesMutation])
-
-	const handleMouseEnter = useCallback(() => {
-		// Prefetch channel data on hover
-		if (organizationId) {
-			queryClient.prefetchQuery(
-				convexQuery(api.channels.getChannel, {
-					channelId: channel.id,
-					organizationId,
-				}),
-			)
-		}
-	}, [channel.id, organizationId, queryClient])
+	}, [channelId, organizationId, updateChannelPreferencesMutation])
 
 	return (
-		<SidebarMenuItem onMouseEnter={handleMouseEnter}>
+		<SidebarMenuItem>
 			<SidebarMenuButton asChild>
-				<Link to="/$orgId/chat/$id" params={{ orgId: organizationId || "", id: channel.id }}>
+				<Link to="/$orgId/chat/$id" params={{ orgId: organizationId || "", id: channelId }}>
 					<div className="-space-x-4 flex items-center justify-center">
 						{channel.type === "single" && filteredMembers.length === 1 ? (
 							<div className="flex items-center justify-center gap-3">
 								<Avatar
 									size="xs"
-									src={filteredMembers[0].user.avatarUrl}
-									alt={`${filteredMembers[0].user.firstName} ${filteredMembers[0].user.lastName}`}
+									src={filteredMembers[0]?.user.avatarUrl}
+									alt={`${filteredMembers[0]?.user.firstName} ${filteredMembers[0]?.user.lastName}`}
 									status={
-										userPresence.find((p) => p.userId === filteredMembers[0].user.id)
+										userPresence.find((p) => p.userId === filteredMembers[0]?.user.id)
 											?.online
 											? "online"
 											: "offline"
 									}
 								/>
 
-								<p className={cn("max-w-40 truncate", channel.isMuted && "opacity-60")}>
-									{`${filteredMembers[0].user.firstName} ${filteredMembers[0].user.lastName}`}
+								<p
+									className={cn(
+										"max-w-40 truncate",
+										channel.currentUser.isMuted && "opacity-60",
+									)}
+								>
+									{`${filteredMembers[0]?.user.firstName} ${filteredMembers[0]?.user.lastName}`}
 								</p>
 							</div>
 						) : (
@@ -338,21 +306,21 @@ export const DmChannelLink = ({ channel, userPresence }: DmChannelLinkProps) => 
 							<Dropdown.Separator />
 							<Dropdown.Item
 								onAction={handleToggleMute}
-								icon={channel.isMuted ? IconVolumeOne1 : IconVolumeMute1}
+								icon={channel.currentUser.isMuted ? IconVolumeOne1 : IconVolumeMute1}
 							>
-								{channel.isMuted ? "Unmute" : "Mute"}
+								{channel.currentUser.isMuted ? "Unmute" : "Mute"}
 							</Dropdown.Item>
 							<Dropdown.Item
 								onAction={handleToggleFavorite}
 								icon={({ className }) =>
-									channel.isFavorite ? (
+									channel.currentUser.isFavorite ? (
 										<IconStar1 className={cx(className, "text-amber-500")} />
 									) : (
 										<IconStar1 className={className} />
 									)
 								}
 							>
-								{channel.isFavorite ? "Unfavorite" : "Favorite"}
+								{channel.currentUser.isFavorite ? "Unfavorite" : "Favorite"}
 							</Dropdown.Item>
 							<Dropdown.Item
 								className="text-destructive"

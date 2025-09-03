@@ -42,7 +42,7 @@ export const SidebarFavoriteGroup = () => {
 				<SidebarMenu>
 					{channels.map((channel) => {
 						if (channel.type === "private" || channel.type === "public") {
-							return <ChannelItem key={channel._id} channel={channel} />
+							return <ChannelItem key={channel._id} channelId={channel._id} />
 						}
 						return (
 							<DmChannelLink

@@ -161,9 +161,6 @@ const ChannelGroup = (props: { organizationId: OrganizationId }) => {
 				.innerJoin({ member: channelMemberCollection }, ({ channel, member }) =>
 					eq(member.channelId, channel.id),
 				)
-				// .innerJoin({ members: channelMemberCollection }, ({ channel, members }) =>
-				// 	eq(members.channelId, channel.id),
-				// )
 				.where((q) =>
 					and(
 						eq(q.channel.organizationId, props.organizationId),
@@ -175,8 +172,6 @@ const ChannelGroup = (props: { organizationId: OrganizationId }) => {
 				.orderBy(({ channel }) => channel.createdAt, "asc"),
 		[user?.id],
 	)
-
-	console.log("userChannels", userChannels)
 
 	const channelIds = useMemo(() => {
 		if (!userChannels) return []
@@ -245,7 +240,7 @@ const ChannelGroup = (props: { organizationId: OrganizationId }) => {
 			<SidebarGroupContent>
 				<SidebarMenu>
 					{channels.map((channel) => (
-						<ChannelItem key={channel.id} channel={channel} />
+						<ChannelItem key={channel.id} channelId={channel.id} />
 					))}
 				</SidebarMenu>
 			</SidebarGroupContent>
