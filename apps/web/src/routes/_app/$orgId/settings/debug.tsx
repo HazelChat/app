@@ -1,5 +1,5 @@
-import { useConvexMutation } from "@convex-dev/react-query"
-import { api } from "@hazel/backend/api"
+import { useAtomSet } from "@effect-atom/atom-react"
+import type { OrganizationId } from "@hazel/db/schema"
 import { createFileRoute } from "@tanstack/react-router"
 import { AlertTriangle, Database01 } from "@untitledui/icons"
 import { useState } from "react"
@@ -12,6 +12,7 @@ import { Button } from "~/components/base/buttons/button"
 import { CloseButton } from "~/components/base/buttons/close-button"
 import { Form } from "~/components/base/form/form"
 import { FeaturedIcon } from "~/components/foundations/featured-icon/featured-icons"
+import { HazelApiClient } from "~/lib/client"
 
 export const Route = createFileRoute("/_app/$orgId/settings/debug")({
 	component: DebugSettings,
@@ -22,16 +23,24 @@ function DebugSettings() {
 	const [isGeneratingMockData, setIsGeneratingMockData] = useState(false)
 
 	const { orgId } = Route.useParams()
-	const generateMockDataMutation = useConvexMutation(api.mockData.generateMockData)
+
+	const generateMockData = useAtomSet(HazelApiClient.mutation("mockData", "generate"), {
+		mode: "promise",
+	})
 
 	const handleGenerateMockData = async () => {
 		setIsGeneratingMockData(true)
 		try {
-			const result = await generateMockDataMutation({
-				organizationId: orgId as any,
+			const result = await generateMockData({
+				payload: {
+					organizationId: orgId as OrganizationId,
+					userCount: 10,
+					channelCount: 5,
+					messageCount: 50,
+				},
 			})
 			toast.success(
-				`Mock data generated successfully! Created ${result.stats.usersCreated} users, ${result.stats.channelsCreated} channels, and ${result.stats.messagesCreated} messages.`,
+				`Mock data generated successfully! Created ${result.created.users} users, ${result.created.channels} channels, and ${result.created.messages} messages.`,
 			)
 			setShowMockDataDialog(false)
 		} catch (error) {
@@ -136,9 +145,15 @@ function DebugSettings() {
 									<span>{orgId}</span>
 								</div>
 								<div>
-									<span className="text-tertiary">Convex URL:</span>{" "}
+									<span className="text-tertiary">Backend URL:</span>{" "}
 									<span className="break-all">
-										{import.meta.env.VITE_CONVEX_URL || "N/A"}
+										{import.meta.env.VITE_BACKEND_URL || "N/A"}
+									</span>
+								</div>
+								<div>
+									<span className="text-tertiary">Electric URL:</span>{" "}
+									<span className="break-all">
+										{import.meta.env.VITE_ELECTRIC_URL || "N/A"}
 									</span>
 								</div>
 							</div>

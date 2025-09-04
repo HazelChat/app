@@ -166,7 +166,7 @@ const ChannelGroup = (props: { organizationId: OrganizationId }) => {
 					),
 				)
 				.orderBy(({ channel }) => channel.createdAt, "asc"),
-		[user?.id],
+		[user?.id, props.organizationId],
 	)
 
 	const channelIds = useMemo(() => {
@@ -211,7 +211,7 @@ const DmChannelGroup = (props: { organizationId: OrganizationId }) => {
 					),
 				)
 				.orderBy(({ channel }) => channel.createdAt, "asc"),
-		[user?.id],
+		[user?.id, props.organizationId],
 	)
 
 	const dmChannelIds = useMemo(() => {
@@ -242,10 +242,12 @@ const ActiveServer = () => {
 		from: "/_app/$orgId",
 	})
 
-	const { data } = useLiveQuery((q) =>
-		q
-			.from({ organization: organizationCollection })
-			.where(({ organization }) => eq(organization.id, orgId as OrganizationId)),
+	const { data } = useLiveQuery(
+		(q) =>
+			q
+				.from({ organization: organizationCollection })
+				.where(({ organization }) => eq(organization.id, orgId as OrganizationId)),
+		[orgId],
 	)
 
 	return <div className="font-semibold text-foreground text-lg">{data[0]?.name}</div>

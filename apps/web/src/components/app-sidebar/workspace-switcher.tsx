@@ -56,16 +56,16 @@ export const WorkspaceSwitcher = () => {
 				const currentPath = window.location.pathname
 				const pathSegments = currentPath.split("/")
 
-				let targetRoute = `/_app/${targetOrg.id}`
+				let targetRoute = `/${targetOrg.id}`
 
 				if (pathSegments.length > 3 && pathSegments[1] === "app") {
 					const subPath = pathSegments.slice(3).join("/")
 					if (subPath) {
-						targetRoute = `/_app/${targetOrg.id}/${subPath}`
+						targetRoute = `/${targetOrg.id}/${subPath}`
 					}
 				}
 
-				await navigate({ to: targetRoute as any })
+				await navigate({ to: targetRoute })
 
 				await switchToOrganization({ organizationId: workosOrgId })
 			}

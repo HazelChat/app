@@ -31,16 +31,18 @@ function RouteComponent() {
 	const navigate = useNavigate()
 	const [searchQuery, setSearchQuery] = useState("")
 
-	const { data: membersData } = useLiveQuery((q) =>
-		q
-			.from({ member: organizationMemberCollection })
-			.innerJoin({ user: userCollection }, ({ member, user }) => eq(member.userId, user.id))
-			.where(({ member }) => eq(member.organizationId, organizationId))
-			.select(({ member, user }) => ({
-				...user,
-				role: member.role,
-				joinedAt: member.joinedAt,
-			})),
+	const { data: membersData } = useLiveQuery(
+		(q) =>
+			q
+				.from({ member: organizationMemberCollection })
+				.innerJoin({ user: userCollection }, ({ member, user }) => eq(member.userId, user.id))
+				.where(({ member }) => eq(member.organizationId, organizationId))
+				.select(({ member, user }) => ({
+					...user,
+					role: member.role,
+					joinedAt: member.joinedAt,
+				})),
+		[organizationId],
 	)
 
 	const { user } = useUser()

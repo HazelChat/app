@@ -113,6 +113,7 @@
         "@convex-dev/r2": "^0.7.1",
         "@convex-dev/react-query": "^0.0.0-alpha.11",
         "@convex-dev/workos": "^0.0.1",
+        "@effect-atom/atom-react": "^0.1.15",
         "@effect/platform": "^0.90.6",
         "@fontsource/inter": "^5.2.6",
         "@hazel/backend": "workspace:*",
@@ -571,6 +572,10 @@
     "@edge-runtime/primitives": ["@edge-runtime/primitives@6.0.0", "", {}, "sha512-FqoxaBT+prPBHBwE1WXS1ocnu/VLTQyZ6NMUBAdbP7N2hsFTTxMC/jMu2D/8GAlMQfxeuppcPuCUk/HO3fpIvA=="],
 
     "@edge-runtime/vm": ["@edge-runtime/vm@5.0.0", "", { "dependencies": { "@edge-runtime/primitives": "6.0.0" } }, "sha512-NKBGBSIKUG584qrS1tyxVpX/AKJKQw5HgjYEnPLC0QsTw79JrGn+qUr8CXFb955Iy7GUdiiUv1rJ6JBGvaKb6w=="],
+
+    "@effect-atom/atom": ["@effect-atom/atom@0.1.20", "", { "peerDependencies": { "@effect/experimental": "^0.54.5", "@effect/platform": "^0.90.1", "@effect/rpc": "^0.69.0", "effect": "^3.17.7" } }, "sha512-LMS/lTPG1dMnWZdw2b9LyJ5aPz2PGRit+4ovnuAsJCSN5jWnCRBZqsl0jbY1IvrG6/zkC/9yLrpDD40NrmWdGw=="],
+
+    "@effect-atom/atom-react": ["@effect-atom/atom-react@0.1.15", "", { "dependencies": { "@effect-atom/atom": "^0.1.18" }, "peerDependencies": { "effect": "^3.17", "react": ">=18 <20", "scheduler": "*" } }, "sha512-o0P+WtpRWuwniLqPGq9K78mwUpusstitp+SpM6vMYMkATjQgXbJIeiNrBver2NRlhQ5qFvtWDDxL94Kx8oBVcA=="],
 
     "@effect/cluster": ["@effect/cluster@0.48.2", "", { "peerDependencies": { "@effect/platform": "^0.90.5", "@effect/rpc": "^0.69.1", "@effect/sql": "^0.44.2", "@effect/workflow": "^0.9.2", "effect": "^3.17.8" } }, "sha512-ixyr152czBMakiEsXi6zf4F6DSka42LbtoHf7WcFsfLTDwYZieUEVbw4gvIFfAGedfQ0oLY4+uArdJlkJ4gOGA=="],
 

@@ -59,7 +59,7 @@ export const HttpMessageLive = HttpApiBuilder.group(HazelApi, "messages", (handl
 			.handle(
 				"update",
 				Effect.fn(function* ({ payload, path }) {
-					const user = yield* CurrentUser
+					const _user = yield* CurrentUser
 
 					// TODO: Verify the user has permission to post in this channel
 					// This would typically check channel membership, organization membership, etc.

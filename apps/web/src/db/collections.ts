@@ -19,8 +19,7 @@ import { createCollection } from "@tanstack/react-db"
 import { Effect, Schema } from "effect"
 import { backendClient } from "~/lib/client"
 
-const electricUrl =
-	"https://api.electric-sql.cloud/v1/shape?source_id=382e0de8-797d-4395-9a5e-dafa86df0821&secret=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzb3VyY2VfaWQiOiIzODJlMGRlOC03OTdkLTQzOTUtOWE1ZS1kYWZhODZkZjA4MjEiLCJpYXQiOjE3NTY0MTkzMTJ9.Mgw0AAyt-vDM8In0G5BZN7FK6oYkvZV5Lw1sE4wRT6c"
+const electricUrl: string = import.meta.env.VITE_ELECTRIC_URL
 
 export const organizationCollection = createCollection(
 	electricCollectionOptions({
