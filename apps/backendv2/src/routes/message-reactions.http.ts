@@ -22,7 +22,6 @@ export const HttpMessageReactionLive = HttpApiBuilder.group(HazelApi, "messageRe
 							Effect.fnUntraced(function* (tx) {
 								const createdMessageReaction = yield* MessageReactionRepo.insert({
 									...payload,
-									deletedAt: null,
 								}).pipe(Effect.map((res) => res[0]!))
 
 								const txid = yield* generateTransactionId(tx)

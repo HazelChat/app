@@ -33,6 +33,55 @@ export const organizationCollection = createCollection(
 		},
 		schema: Schema.standardSchemaV1(Organization.Model.json),
 		getKey: (item) => item.id,
+		onInsert: async ({ transaction }) => {
+			const { modified: newOrganization } = transaction.mutations[0]
+			const results = await Effect.runPromise(
+				Effect.gen(function* () {
+					const client = yield* backendClient
+
+					return yield* client.organizations.create({
+						payload: newOrganization,
+					})
+				}),
+			)
+
+			return { txid: results.transactionId }
+		},
+		onUpdate: async ({ transaction }) => {
+			const { modified: newOrganization } = transaction.mutations[0]
+
+			const results = await Effect.runPromise(
+				Effect.gen(function* () {
+					const client = yield* backendClient
+
+					return yield* client.organizations.update({
+						payload: newOrganization,
+						path: {
+							id: newOrganization.id,
+						},
+					})
+				}),
+			)
+
+			return { txid: results.transactionId }
+		},
+		onDelete: async ({ transaction }) => {
+			const { original: deletedOrganization } = transaction.mutations[0]
+
+			const results = await Effect.runPromise(
+				Effect.gen(function* () {
+					const client = yield* backendClient
+
+					return yield* client.organizations.delete({
+						path: {
+							id: deletedOrganization.id,
+						},
+					})
+				}),
+			)
+
+			return { txid: results.transactionId }
+		},
 	}),
 )
 
@@ -50,6 +99,55 @@ export const invitationCollection = createCollection(
 		},
 		schema: Schema.standardSchemaV1(Invitation.Model.json),
 		getKey: (item) => item.id,
+		onInsert: async ({ transaction }) => {
+			const { modified: newInvitation } = transaction.mutations[0]
+			const results = await Effect.runPromise(
+				Effect.gen(function* () {
+					const client = yield* backendClient
+
+					return yield* client.invitations.create({
+						payload: newInvitation,
+					})
+				}),
+			)
+
+			return { txid: results.transactionId }
+		},
+		onUpdate: async ({ transaction }) => {
+			const { modified: newInvitation } = transaction.mutations[0]
+
+			const results = await Effect.runPromise(
+				Effect.gen(function* () {
+					const client = yield* backendClient
+
+					return yield* client.invitations.update({
+						payload: newInvitation,
+						path: {
+							id: newInvitation.id,
+						},
+					})
+				}),
+			)
+
+			return { txid: results.transactionId }
+		},
+		onDelete: async ({ transaction }) => {
+			const { original: deletedInvitation } = transaction.mutations[0]
+
+			const results = await Effect.runPromise(
+				Effect.gen(function* () {
+					const client = yield* backendClient
+
+					return yield* client.invitations.delete({
+						path: {
+							id: deletedInvitation.id,
+						},
+					})
+				}),
+			)
+
+			return { txid: results.transactionId }
+		},
 	}),
 )
 
@@ -133,6 +231,55 @@ export const messageReactionCollection = createCollection(
 		},
 		schema: Schema.standardSchemaV1(MessageReaction.Model.json),
 		getKey: (item) => item.id,
+		onInsert: async ({ transaction }) => {
+			const { modified: newMessageReaction } = transaction.mutations[0]
+			const results = await Effect.runPromise(
+				Effect.gen(function* () {
+					const client = yield* backendClient
+
+					return yield* client.messageReactions.create({
+						payload: newMessageReaction,
+					})
+				}),
+			)
+
+			return { txid: results.transactionId }
+		},
+		onUpdate: async ({ transaction }) => {
+			const { modified: newMessageReaction } = transaction.mutations[0]
+
+			const results = await Effect.runPromise(
+				Effect.gen(function* () {
+					const client = yield* backendClient
+
+					return yield* client.messageReactions.update({
+						payload: newMessageReaction,
+						path: {
+							id: newMessageReaction.id,
+						},
+					})
+				}),
+			)
+
+			return { txid: results.transactionId }
+		},
+		onDelete: async ({ transaction }) => {
+			const { original: deletedMessageReaction } = transaction.mutations[0]
+
+			const results = await Effect.runPromise(
+				Effect.gen(function* () {
+					const client = yield* backendClient
+
+					return yield* client.messageReactions.delete({
+						path: {
+							id: deletedMessageReaction.id,
+						},
+					})
+				}),
+			)
+
+			return { txid: results.transactionId }
+		},
 	}),
 )
 
@@ -150,6 +297,55 @@ export const pinnedMessageCollection = createCollection(
 		},
 		schema: Schema.standardSchemaV1(PinnedMessage.Model.json),
 		getKey: (item) => item.id,
+		onInsert: async ({ transaction }) => {
+			const { modified: newPinnedMessage } = transaction.mutations[0]
+			const results = await Effect.runPromise(
+				Effect.gen(function* () {
+					const client = yield* backendClient
+
+					return yield* client.pinnedMessages.create({
+						payload: newPinnedMessage,
+					})
+				}),
+			)
+
+			return { txid: results.transactionId }
+		},
+		onUpdate: async ({ transaction }) => {
+			const { modified: newPinnedMessage } = transaction.mutations[0]
+
+			const results = await Effect.runPromise(
+				Effect.gen(function* () {
+					const client = yield* backendClient
+
+					return yield* client.pinnedMessages.update({
+						payload: newPinnedMessage,
+						path: {
+							id: newPinnedMessage.id,
+						},
+					})
+				}),
+			)
+
+			return { txid: results.transactionId }
+		},
+		onDelete: async ({ transaction }) => {
+			const { original: deletedPinnedMessage } = transaction.mutations[0]
+
+			const results = await Effect.runPromise(
+				Effect.gen(function* () {
+					const client = yield* backendClient
+
+					return yield* client.pinnedMessages.delete({
+						path: {
+							id: deletedPinnedMessage.id,
+						},
+					})
+				}),
+			)
+
+			return { txid: results.transactionId }
+		},
 	}),
 )
 
@@ -167,6 +363,55 @@ export const notificationCollection = createCollection(
 		},
 		schema: Schema.standardSchemaV1(Notification.Model.json),
 		getKey: (item) => item.id,
+		onInsert: async ({ transaction }) => {
+			const { modified: newNotification } = transaction.mutations[0]
+			const results = await Effect.runPromise(
+				Effect.gen(function* () {
+					const client = yield* backendClient
+
+					return yield* client.notifications.create({
+						payload: newNotification,
+					})
+				}),
+			)
+
+			return { txid: results.transactionId }
+		},
+		onUpdate: async ({ transaction }) => {
+			const { modified: newNotification } = transaction.mutations[0]
+
+			const results = await Effect.runPromise(
+				Effect.gen(function* () {
+					const client = yield* backendClient
+
+					return yield* client.notifications.update({
+						payload: newNotification,
+						path: {
+							id: newNotification.id,
+						},
+					})
+				}),
+			)
+
+			return { txid: results.transactionId }
+		},
+		onDelete: async ({ transaction }) => {
+			const { original: deletedNotification } = transaction.mutations[0]
+
+			const results = await Effect.runPromise(
+				Effect.gen(function* () {
+					const client = yield* backendClient
+
+					return yield* client.notifications.delete({
+						path: {
+							id: deletedNotification.id,
+						},
+					})
+				}),
+			)
+
+			return { txid: results.transactionId }
+		},
 	}),
 )
 
@@ -184,6 +429,55 @@ export const userCollection = createCollection(
 		},
 		schema: Schema.standardSchemaV1(User.Model.json),
 		getKey: (item) => item.id,
+		onInsert: async ({ transaction }) => {
+			const { modified: newUser } = transaction.mutations[0]
+			const results = await Effect.runPromise(
+				Effect.gen(function* () {
+					const client = yield* backendClient
+
+					return yield* client.users.create({
+						payload: newUser,
+					})
+				}),
+			)
+
+			return { txid: results.transactionId }
+		},
+		onUpdate: async ({ transaction }) => {
+			const { modified: newUser } = transaction.mutations[0]
+
+			const results = await Effect.runPromise(
+				Effect.gen(function* () {
+					const client = yield* backendClient
+
+					return yield* client.users.update({
+						payload: newUser,
+						path: {
+							id: newUser.id,
+						},
+					})
+				}),
+			)
+
+			return { txid: results.transactionId }
+		},
+		onDelete: async ({ transaction }) => {
+			const { original: deletedUser } = transaction.mutations[0]
+
+			const results = await Effect.runPromise(
+				Effect.gen(function* () {
+					const client = yield* backendClient
+
+					return yield* client.users.delete({
+						path: {
+							id: deletedUser.id,
+						},
+					})
+				}),
+			)
+
+			return { txid: results.transactionId }
+		},
 	}),
 )
 
@@ -201,6 +495,55 @@ export const organizationMemberCollection = createCollection(
 		},
 		schema: Schema.standardSchemaV1(OrganizationMember.Model.json),
 		getKey: (item) => item.id,
+		onInsert: async ({ transaction }) => {
+			const { modified: newOrganizationMember } = transaction.mutations[0]
+			const results = await Effect.runPromise(
+				Effect.gen(function* () {
+					const client = yield* backendClient
+
+					return yield* client.organizationMembers.create({
+						payload: newOrganizationMember,
+					})
+				}),
+			)
+
+			return { txid: results.transactionId }
+		},
+		onUpdate: async ({ transaction }) => {
+			const { modified: newOrganizationMember } = transaction.mutations[0]
+
+			const results = await Effect.runPromise(
+				Effect.gen(function* () {
+					const client = yield* backendClient
+
+					return yield* client.organizationMembers.update({
+						payload: newOrganizationMember,
+						path: {
+							id: newOrganizationMember.id,
+						},
+					})
+				}),
+			)
+
+			return { txid: results.transactionId }
+		},
+		onDelete: async ({ transaction }) => {
+			const { original: deletedOrganizationMember } = transaction.mutations[0]
+
+			const results = await Effect.runPromise(
+				Effect.gen(function* () {
+					const client = yield* backendClient
+
+					return yield* client.organizationMembers.delete({
+						path: {
+							id: deletedOrganizationMember.id,
+						},
+					})
+				}),
+			)
+
+			return { txid: results.transactionId }
+		},
 	}),
 )
 
@@ -321,7 +664,7 @@ export const channelMemberCollection = createCollection(
 			return { txid: results.transactionId }
 		},
 		onDelete: async ({ transaction }) => {
-			const { original: deletedChannelMember, ...rest } = transaction.mutations[0]
+			const { original: deletedChannelMember } = transaction.mutations[0]
 
 			const results = await Effect.runPromise(
 				Effect.gen(function* () {
@@ -354,6 +697,55 @@ export const attachmentCollection = createCollection(
 		},
 		schema: Schema.standardSchemaV1(Attachment.Model.json),
 		getKey: (item) => item.id,
+		onInsert: async ({ transaction }) => {
+			const { modified: newAttachment } = transaction.mutations[0]
+			const results = await Effect.runPromise(
+				Effect.gen(function* () {
+					const client = yield* backendClient
+
+					return yield* client.attachments.create({
+						payload: newAttachment,
+					})
+				}),
+			)
+
+			return { txid: results.transactionId }
+		},
+		onUpdate: async ({ transaction }) => {
+			const { modified: newAttachment } = transaction.mutations[0]
+
+			const results = await Effect.runPromise(
+				Effect.gen(function* () {
+					const client = yield* backendClient
+
+					return yield* client.attachments.update({
+						payload: newAttachment,
+						path: {
+							id: newAttachment.id,
+						},
+					})
+				}),
+			)
+
+			return { txid: results.transactionId }
+		},
+		onDelete: async ({ transaction }) => {
+			const { original: deletedAttachment } = transaction.mutations[0]
+
+			const results = await Effect.runPromise(
+				Effect.gen(function* () {
+					const client = yield* backendClient
+
+					return yield* client.attachments.delete({
+						path: {
+							id: deletedAttachment.id,
+						},
+					})
+				}),
+			)
+
+			return { txid: results.transactionId }
+		},
 	}),
 )
 
@@ -368,5 +760,54 @@ export const directMessageParticipantCollection = createCollection(
 		},
 		schema: Schema.standardSchemaV1(DirectMessageParticipant.Model.json),
 		getKey: (item) => item.id,
+		onInsert: async ({ transaction }) => {
+			const { modified: newDirectMessageParticipant } = transaction.mutations[0]
+			const results = await Effect.runPromise(
+				Effect.gen(function* () {
+					const client = yield* backendClient
+
+					return yield* client.directMessageParticipants.create({
+						payload: newDirectMessageParticipant,
+					})
+				}),
+			)
+
+			return { txid: results.transactionId }
+		},
+		onUpdate: async ({ transaction }) => {
+			const { modified: newDirectMessageParticipant } = transaction.mutations[0]
+
+			const results = await Effect.runPromise(
+				Effect.gen(function* () {
+					const client = yield* backendClient
+
+					return yield* client.directMessageParticipants.update({
+						payload: newDirectMessageParticipant,
+						path: {
+							id: newDirectMessageParticipant.id,
+						},
+					})
+				}),
+			)
+
+			return { txid: results.transactionId }
+		},
+		onDelete: async ({ transaction }) => {
+			const { original: deletedDirectMessageParticipant } = transaction.mutations[0]
+
+			const results = await Effect.runPromise(
+				Effect.gen(function* () {
+					const client = yield* backendClient
+
+					return yield* client.directMessageParticipants.delete({
+						path: {
+							id: deletedDirectMessageParticipant.id,
+						},
+					})
+				}),
+			)
+
+			return { txid: results.transactionId }
+		},
 	}),
 )

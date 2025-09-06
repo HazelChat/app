@@ -13,7 +13,8 @@ export class Model extends M.Class<Model>("OrganizationMember")({
 	role: OrganizationRole,
 	joinedAt: Schema.Date,
 	invitedBy: Schema.NullOr(UserId),
-	...baseFields,
+	deletedAt: Schema.NullOr(Schema.Date),
+	createdAt: Schema.Date,
 }) {}
 
 export const Insert = Model.insert

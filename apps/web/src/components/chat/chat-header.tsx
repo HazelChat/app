@@ -12,7 +12,7 @@ export function ChatHeader() {
 
 	// TODO: XD
 	const { isUserOnline } = {
-		isUserOnline: (...args: any[]) => true,
+		isUserOnline: (..._args: any[]) => true,
 	}
 
 	const { channel } = useChannel(channelId)

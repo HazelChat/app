@@ -16,7 +16,6 @@ export class Model extends M.Class<Model>("Attachment")({
 	uploadedBy: UserId,
 	status: AttachmentStatus,
 	uploadedAt: Schema.Date,
-	...baseFields,
 }) {}
 
 export const Insert = Model.insert

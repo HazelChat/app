@@ -1,5 +1,12 @@
 import { index, integer, pgTable, text, timestamp, uniqueIndex, uuid, varchar } from "drizzle-orm/pg-core"
-import type { ChannelId, MessageId, UserId } from "../lib/schema"
+import type {
+	AttachmentId,
+	ChannelId,
+	MessageAttachmentId,
+	MessageId,
+	MessageReactionId,
+	UserId,
+} from "../lib/schema"
 
 // Messages table
 export const messagesTable = pgTable(
@@ -31,9 +38,9 @@ export const messagesTable = pgTable(
 export const messageReactionsTable = pgTable(
 	"message_reactions",
 	{
-		id: uuid().primaryKey().defaultRandom(),
-		messageId: uuid().notNull(),
-		userId: uuid().notNull(),
+		id: uuid().primaryKey().defaultRandom().$type<MessageReactionId>(),
+		messageId: uuid().notNull().$type<MessageId>(),
+		userId: uuid().notNull().$type<UserId>(),
 		emoji: varchar({ length: 50 }).notNull(),
 		createdAt: timestamp({ mode: "date", withTimezone: true }).notNull().defaultNow(),
 	},
@@ -48,9 +55,9 @@ export const messageReactionsTable = pgTable(
 export const messageAttachmentsTable = pgTable(
 	"message_attachments",
 	{
-		id: uuid().primaryKey().defaultRandom(),
-		messageId: uuid().notNull(),
-		attachmentId: uuid().notNull(),
+		id: uuid().primaryKey().defaultRandom().$type<MessageAttachmentId>(),
+		messageId: uuid().notNull().$type<MessageId>(),
+		attachmentId: uuid().notNull().$type<AttachmentId>(),
 		displayOrder: integer().notNull().default(0),
 		createdAt: timestamp({ mode: "date", withTimezone: true }).notNull().defaultNow(),
 	},

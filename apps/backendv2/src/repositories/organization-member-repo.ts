@@ -1,6 +1,6 @@
 import { and, Database, eq, isNull, ModelRepository, schema } from "@hazel/db"
 import { OrganizationMember } from "@hazel/db/models"
-import type { OrganizationId, OrganizationMemberId } from "@hazel/db/schema"
+import type { OrganizationId, OrganizationMemberId, UserId } from "@hazel/db/schema"
 import { Effect, Option, type Schema } from "effect"
 import { DatabaseLive } from "../services/database"
 
@@ -19,7 +19,7 @@ export class OrganizationMemberRepo extends Effect.Service<OrganizationMemberRep
 			const db = yield* Database.Database
 
 			// Extended methods for WorkOS sync
-			const findByOrgAndUser = (organizationId: string, userId: string) =>
+			const findByOrgAndUser = (organizationId: OrganizationId, userId: UserId) =>
 				db
 					.execute((client) =>
 						client
@@ -71,7 +71,7 @@ export class OrganizationMemberRepo extends Effect.Service<OrganizationMemberRep
 					}
 				})
 
-			const findAllByOrganization = (organizationId: string) =>
+			const findAllByOrganization = (organizationId: OrganizationId) =>
 				db.execute((client) =>
 					client
 						.select()
@@ -105,7 +105,7 @@ export class OrganizationMemberRepo extends Effect.Service<OrganizationMemberRep
 						),
 				)
 
-			const softDeleteByOrgAndUser = (organizationId: OrganizationId, userId: string) =>
+			const softDeleteByOrgAndUser = (organizationId: OrganizationId, userId: UserId) =>
 				db.execute((client) =>
 					client
 						.update(schema.organizationMembersTable)

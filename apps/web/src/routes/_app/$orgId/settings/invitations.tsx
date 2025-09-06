@@ -64,7 +64,7 @@ function RouteComponent() {
 		return "Expires soon"
 	}
 
-	const handleResendInvitation = async (invitationId: InvitationId) => {
+	const handleResendInvitation = async (_invitationId: InvitationId) => {
 		try {
 			// TODO: Resend mutation
 			// await resendInvitationMutation({
@@ -80,7 +80,7 @@ function RouteComponent() {
 		}
 	}
 
-	const handleRevokeInvitation = async (invitationId: InvitationId) => {
+	const handleRevokeInvitation = async (_invitationId: InvitationId) => {
 		try {
 			// await revokeInvitationMutation({
 			// 	invitationId,

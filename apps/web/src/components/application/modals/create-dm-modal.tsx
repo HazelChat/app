@@ -55,7 +55,7 @@ export const CreateDmModal = ({ isOpen, onOpenChange }: CreateDmModalProps) => {
 
 	// TODO: Implement
 	const { isUserOnline } = {
-		isUserOnline: (...args: any[]) => true,
+		isUserOnline: (..._args: any[]) => true,
 	}
 	const { user } = useUser()
 
@@ -87,7 +87,7 @@ export const CreateDmModal = ({ isOpen, onOpenChange }: CreateDmModalProps) => {
 				// Create the channel
 				if (value.userIds.length === 1) {
 					// Single DM
-					const test = channelCollection.insert({
+					const _test = channelCollection.insert({
 						id: channelId,
 						name: "",
 						type: "direct",
@@ -121,7 +121,7 @@ export const CreateDmModal = ({ isOpen, onOpenChange }: CreateDmModalProps) => {
 				} else {
 					// Group DM
 					// TODO: NOT GONNA WORK NEEDS TRANSACTION
-					const test = channelCollection.insert({
+					const _test = channelCollection.insert({
 						id: channelId,
 						name: "",
 						type: "direct",

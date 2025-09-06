@@ -22,7 +22,6 @@ export const HttpAttachmentLive = HttpApiBuilder.group(HazelApi, "attachments", 
 							Effect.fnUntraced(function* (tx) {
 								const createdAttachment = yield* AttachmentRepo.insert({
 									...payload,
-									deletedAt: null,
 								}).pipe(Effect.map((res) => res[0]!))
 
 								const txid = yield* generateTransactionId(tx)

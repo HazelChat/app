@@ -59,6 +59,7 @@ export const HttpOrganizationLive = HttpApiBuilder.group(HazelApi, "organization
 							Effect.fnUntraced(function* (tx) {
 								const updatedOrganization = yield* OrganizationRepo.update({
 									id: path.id,
+
 									...payload,
 								})
 

@@ -22,7 +22,6 @@ export const HttpInvitationLive = HttpApiBuilder.group(HazelApi, "invitations", 
 							Effect.fnUntraced(function* (tx) {
 								const createdInvitation = yield* InvitationRepo.insert({
 									...payload,
-									deletedAt: null,
 								}).pipe(Effect.map((res) => res[0]!))
 
 								const txid = yield* generateTransactionId(tx)

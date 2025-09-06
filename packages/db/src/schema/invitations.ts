@@ -1,4 +1,5 @@
 import { index, pgEnum, pgTable, timestamp, uuid, varchar } from "drizzle-orm/pg-core"
+import type { InvitationId, OrganizationId, UserId } from "../lib/schema"
 
 // Invitation status
 export const invitationStatusEnum = pgEnum("invitation_status", ["pending", "accepted", "expired", "revoked"])
@@ -7,16 +8,16 @@ export const invitationStatusEnum = pgEnum("invitation_status", ["pending", "acc
 export const invitationsTable = pgTable(
 	"invitations",
 	{
-		id: uuid().primaryKey().defaultRandom(),
+		id: uuid().primaryKey().defaultRandom().$type<InvitationId>(),
 		workosInvitationId: varchar({ length: 255 }).notNull().unique(),
-		organizationId: uuid().notNull(),
+		organizationId: uuid().notNull().$type<OrganizationId>(),
 		email: varchar({ length: 255 }).notNull(),
-		invitedBy: uuid(),
+		invitedBy: uuid().$type<UserId>(),
 		invitedAt: timestamp({ mode: "date", withTimezone: true }).notNull().defaultNow(),
 		expiresAt: timestamp({ mode: "date", withTimezone: true }).notNull(),
 		status: invitationStatusEnum().notNull().default("pending"),
 		acceptedAt: timestamp({ mode: "date", withTimezone: true }),
-		acceptedBy: uuid(),
+		acceptedBy: uuid().$type<UserId>(),
 		createdAt: timestamp({ mode: "date", withTimezone: true }).notNull().defaultNow(),
 	},
 	(table) => [

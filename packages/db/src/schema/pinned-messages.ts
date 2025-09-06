@@ -1,13 +1,14 @@
 import { index, pgTable, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core"
+import type { ChannelId, MessageId, PinnedMessageId, UserId } from "../lib/schema"
 
 // Pinned messages table (normalized from array in Convex)
 export const pinnedMessagesTable = pgTable(
 	"pinned_messages",
 	{
-		id: uuid().primaryKey().defaultRandom(),
-		channelId: uuid().notNull(),
-		messageId: uuid().notNull(),
-		pinnedBy: uuid().notNull(),
+		id: uuid().primaryKey().defaultRandom().$type<PinnedMessageId>(),
+		channelId: uuid().notNull().$type<ChannelId>(),
+		messageId: uuid().notNull().$type<MessageId>(),
+		pinnedBy: uuid().notNull().$type<UserId>(),
 		pinnedAt: timestamp({ mode: "date", withTimezone: true }).notNull().defaultNow(),
 	},
 	(table) => [

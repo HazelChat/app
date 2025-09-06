@@ -29,7 +29,7 @@ export function useFileUpload({
 	const [uploads, setUploads] = useState<Map<string, FileUploadProgress>>(new Map())
 
 	// Use the R2 component's upload hook
-	const r2UploadFile = async (any: any) => {}
+	const r2UploadFile = async (_any: any) => {}
 
 	const uploadFile = useCallback(
 		async (file: File): Promise<AttachmentId | null> => {
@@ -77,7 +77,7 @@ export function useFileUpload({
 
 				// Upload file using R2 component hook
 				// This returns the R2 key of the uploaded file
-				const r2Key = await r2UploadFile(file)
+				const _r2Key = await r2UploadFile(file)
 
 				// Create attachment record in database
 				const attachmentId = "TODO" as AttachmentId

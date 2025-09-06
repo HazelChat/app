@@ -1,12 +1,12 @@
 import { index, pgTable, timestamp, uuid, varchar } from "drizzle-orm/pg-core"
+import type { NotificationId, OrganizationMemberId } from "../lib/schema"
 
 // Notifications table
 export const notificationsTable = pgTable(
 	"notifications",
 	{
-		id: uuid().primaryKey().defaultRandom(),
-		memberId: uuid().notNull(),
-		// Can be a channel or organization
+		id: uuid().primaryKey().defaultRandom().$type<NotificationId>(),
+		memberId: uuid().notNull().$type<OrganizationMemberId>(),
 		targetedResourceId: uuid(),
 		targetedResourceType: varchar({ length: 50 }), // 'channel' or 'organization'
 		// Can be a message

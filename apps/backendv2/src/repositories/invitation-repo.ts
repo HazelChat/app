@@ -1,5 +1,6 @@
 import { and, Database, eq, lte, ModelRepository, schema } from "@hazel/db"
 import { Invitation } from "@hazel/db/models"
+import type { InvitationId, OrganizationId } from "@hazel/db/schema"
 import { Effect, Option, type Schema } from "effect"
 import { DatabaseLive } from "../services/database"
 
@@ -40,7 +41,7 @@ export class InvitationRepo extends Effect.Service<InvitationRepo>()("Invitation
 				)
 				.pipe(Effect.map((results) => results[0]))
 
-		const findAllByOrganization = (organizationId: string) =>
+		const findAllByOrganization = (organizationId: OrganizationId) =>
 			db.execute((client) =>
 				client
 					.select()
@@ -48,7 +49,7 @@ export class InvitationRepo extends Effect.Service<InvitationRepo>()("Invitation
 					.where(eq(schema.invitationsTable.organizationId, organizationId)),
 			)
 
-		const findPendingByOrganization = (organizationId: string) =>
+		const findPendingByOrganization = (organizationId: OrganizationId) =>
 			db.execute((client) =>
 				client
 					.select()
@@ -61,7 +62,7 @@ export class InvitationRepo extends Effect.Service<InvitationRepo>()("Invitation
 					),
 			)
 
-		const updateStatus = (id: string, status: "pending" | "accepted" | "expired" | "revoked") =>
+		const updateStatus = (id: InvitationId, status: "pending" | "accepted" | "expired" | "revoked") =>
 			db
 				.execute((client) =>
 					client

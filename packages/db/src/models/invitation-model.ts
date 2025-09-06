@@ -17,7 +17,6 @@ export class Model extends M.Class<Model>("Invitation")({
 	status: InvitationStatus,
 	acceptedAt: Schema.NullOr(Schema.Date),
 	acceptedBy: Schema.NullOr(UserId),
-	...baseFields,
 }) {}
 
 export const Insert = Model.insert
