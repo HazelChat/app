@@ -6,7 +6,7 @@ export class Model extends M.Class<Model>("PinnedMessage")({
 	id: M.Generated(PinnedMessageId),
 	channelId: ChannelId,
 	messageId: MessageId,
-	pinnedBy: UserId,
+	pinnedBy: M.GeneratedByApp(UserId),
 	pinnedAt: JsonDate,
 }) {}
 

@@ -18,7 +18,7 @@ export const HttpDirectMessageParticipantLive = HttpApiBuilder.group(
 				.handle(
 					"create",
 					Effect.fn(function* ({ payload }) {
-						const _user = yield* CurrentUser
+						const user = yield* CurrentUser
 
 						const { createdDirectMessageParticipant, txid } = yield* db
 							.transaction(
@@ -26,6 +26,7 @@ export const HttpDirectMessageParticipantLive = HttpApiBuilder.group(
 									const createdDirectMessageParticipant =
 										yield* DirectMessageParticipantRepo.insert({
 											...payload,
+											userId: user.id,
 										}).pipe(Effect.map((res) => res[0]!))
 
 									const txid = yield* generateTransactionId(tx)

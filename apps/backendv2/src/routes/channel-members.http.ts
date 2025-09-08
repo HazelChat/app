@@ -15,7 +15,7 @@ export const HttpChannelMemberLive = HttpApiBuilder.group(HazelApi, "channelMemb
 			.handle(
 				"create",
 				Effect.fn(function* ({ payload }) {
-					const _user = yield* CurrentUser
+					const user = yield* CurrentUser
 
 					// TODO: Verify the user has permission to add members to this channel
 					// This would typically check organization membership and channel permissions
@@ -27,6 +27,7 @@ export const HttpChannelMemberLive = HttpApiBuilder.group(HazelApi, "channelMemb
 								const createdChannelMember = yield* ChannelMemberRepo.insert({
 									...payload,
 									notificationCount: 0,
+									userId: user.id,
 									joinedAt: new Date(),
 									deletedAt: null,
 								}).pipe(Effect.map((res) => res[0]!))

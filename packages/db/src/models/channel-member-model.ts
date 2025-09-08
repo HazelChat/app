@@ -6,7 +6,7 @@ import { JsonDate } from "./utils"
 export class Model extends M.Class<Model>("ChannelMember")({
 	id: M.Generated(ChannelMemberId),
 	channelId: ChannelId,
-	userId: UserId,
+	userId: M.GeneratedByApp(UserId),
 	isHidden: Schema.Boolean,
 	isMuted: Schema.Boolean,
 	isFavorite: Schema.Boolean,

@@ -15,13 +15,14 @@ export const HttpPinnedMessageLive = HttpApiBuilder.group(HazelApi, "pinnedMessa
 			.handle(
 				"create",
 				Effect.fn(function* ({ payload }) {
-					const _user = yield* CurrentUser
+					const user = yield* CurrentUser
 
 					const { createdPinnedMessage, txid } = yield* db
 						.transaction(
 							Effect.fnUntraced(function* (tx) {
 								const createdPinnedMessage = yield* PinnedMessageRepo.insert({
 									...payload,
+									pinnedBy: user.id,
 								}).pipe(Effect.map((res) => res[0]!))
 
 								const txid = yield* generateTransactionId(tx)

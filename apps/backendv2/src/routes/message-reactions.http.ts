@@ -15,13 +15,14 @@ export const HttpMessageReactionLive = HttpApiBuilder.group(HazelApi, "messageRe
 			.handle(
 				"create",
 				Effect.fn(function* ({ payload }) {
-					const _user = yield* CurrentUser
+					const user = yield* CurrentUser
 
 					const { createdMessageReaction, txid } = yield* db
 						.transaction(
 							Effect.fnUntraced(function* (tx) {
 								const createdMessageReaction = yield* MessageReactionRepo.insert({
 									...payload,
+									userId: user.id,
 								}).pipe(Effect.map((res) => res[0]!))
 
 								const txid = yield* generateTransactionId(tx)

@@ -6,7 +6,7 @@ import { JsonDate } from "./utils"
 export class Model extends M.Class<Model>("MessageReaction")({
 	id: M.Generated(MessageReactionId),
 	messageId: MessageId,
-	userId: UserId,
+	userId: M.GeneratedByApp(UserId),
 	emoji: Schema.String,
 	createdAt: M.Generated(JsonDate),
 }) {}

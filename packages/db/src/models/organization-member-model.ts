@@ -9,7 +9,7 @@ export type OrganizationRole = Schema.Schema.Type<typeof OrganizationRole>
 export class Model extends M.Class<Model>("OrganizationMember")({
 	id: M.Generated(OrganizationMemberId),
 	organizationId: OrganizationId,
-	userId: UserId,
+	userId: M.GeneratedByApp(UserId),
 	role: OrganizationRole,
 	joinedAt: JsonDate,
 	invitedBy: Schema.NullOr(UserId),

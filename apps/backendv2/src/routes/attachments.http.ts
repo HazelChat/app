@@ -15,13 +15,14 @@ export const HttpAttachmentLive = HttpApiBuilder.group(HazelApi, "attachments", 
 			.handle(
 				"create",
 				Effect.fn(function* ({ payload }) {
-					const _user = yield* CurrentUser
+					const user = yield* CurrentUser
 
 					const { createdAttachment, txid } = yield* db
 						.transaction(
 							Effect.fnUntraced(function* (tx) {
 								const createdAttachment = yield* AttachmentRepo.insert({
 									...payload,
+									uploadedBy: user.id,
 								}).pipe(Effect.map((res) => res[0]!))
 
 								const txid = yield* generateTransactionId(tx)

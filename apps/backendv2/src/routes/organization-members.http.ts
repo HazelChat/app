@@ -15,13 +15,14 @@ export const HttpOrganizationMemberLive = HttpApiBuilder.group(HazelApi, "organi
 			.handle(
 				"create",
 				Effect.fn(function* ({ payload }) {
-					const _user = yield* CurrentUser
+					const user = yield* CurrentUser
 
 					const { createdOrganizationMember, txid } = yield* db
 						.transaction(
 							Effect.fnUntraced(function* (tx) {
 								const createdOrganizationMember = yield* OrganizationMemberRepo.insert({
 									...payload,
+									userId: user.id,
 									deletedAt: null,
 								}).pipe(Effect.map((res) => res[0]!))
 

@@ -53,6 +53,7 @@ export class WorkOSSync extends Effect.Service<WorkOSSync>()("WorkOSSync", {
 			pipe(
 				effect,
 				Effect.either,
+				// biome-ignore lint/suspicious/useIterableCallbackReturn: <explanation>
 				Effect.map((either) => {
 					if (either._tag === "Right") {
 						onSuccess(either.right)
@@ -267,7 +268,6 @@ export class WorkOSSync extends Effect.Service<WorkOSSync>()("WorkOSSync", {
 								joinedAt: new Date(),
 								invitedBy: null,
 								deletedAt: null,
-								createdAt: new Date(),
 							}),
 							() => {
 								if (existing) {
@@ -565,7 +565,6 @@ export class WorkOSSync extends Effect.Service<WorkOSSync>()("WorkOSSync", {
 									joinedAt: new Date(),
 									invitedBy: null,
 									deletedAt: null,
-									createdAt: new Date(),
 								})
 							}
 							break

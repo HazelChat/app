@@ -1,5 +1,4 @@
-2. Auth middleware working => client with bearer token
-    - AuthorID should be in 
+
 3. Api Key protect mock endpoint + connect with frotnend
 4. Replace OrgId in url to slug
 

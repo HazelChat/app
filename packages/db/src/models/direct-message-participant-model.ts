@@ -4,7 +4,7 @@ import * as M from "../services/model"
 export class Model extends M.Class<Model>("DirectMessageParticipant")({
 	id: M.Generated(DirectMessageParticipantId),
 	channelId: ChannelId,
-	userId: UserId,
+	userId: M.GeneratedByApp(UserId),
 	organizationId: OrganizationId,
 }) {}
 
