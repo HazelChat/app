@@ -9,7 +9,7 @@ import {
 	TypingIndicatorId,
 	UserId,
 } from "@hazel/db/schema"
-import { and, eq, gt, useLiveQuery } from "@tanstack/react-db"
+import { eq, useLiveQuery } from "@tanstack/react-db"
 import { createContext, type ReactNode, useContext, useEffect, useMemo, useRef, useState } from "react"
 import { v4 as uuid } from "uuid"
 import {
@@ -124,76 +124,64 @@ export function ChatProvider({ channelId, organizationId, children }: ChatProvid
 		[channelId],
 	)
 
-	// Fetch current user's channel member info
-	const { data: currentMemberData } = useLiveQuery(
-		(q) =>
-			user?.id
-				? q
-						.from({ member: channelMemberCollection })
-						.where(
-							({ member }) =>
-								and(eq(member.channelId, channelId), eq(member.userId, UserId.make(user.id))),
-						)
-						.limit(1)
-				: [],
-		[channelId, user?.id],
-	)
-	const currentChannelMemberId = currentMemberData?.[0]?.id
-
-	// Fetch typing indicators (last 5 seconds)
+	// Fetch typing indicators for this channel
 	const { data: typingIndicatorsData } = useLiveQuery(
-		(q) => {
-			const fiveSecondsAgo = Date.now() - 5000
-			return q
+		(q) =>
+			q
 				.from({ typing: typingIndicatorCollection })
-				.where(
-					({ typing }) =>
-						and(
-							eq(typing.channelId, channelId),
-							gt(typing.lastTyped, fiveSecondsAgo),
-							currentChannelMemberId ? typing.memberId !== currentChannelMemberId : true,
-						),
-				)
-		},
-		[channelId, currentChannelMemberId],
+				.where(({ typing }) => eq(typing.channelId, channelId))
+				.orderBy(({ typing }) => typing.lastTyped, "desc")
+				.limit(10),
+		[channelId],
 	)
 
-	// Join typing indicators with members and users
-	const { data: typingMembersData } = useLiveQuery(
-		(q) => {
-			if (!typingIndicatorsData?.length) return []
-			const memberIds = typingIndicatorsData.map((t) => t.memberId)
-			return q.from({ member: channelMemberCollection }).where(({ member }) => memberIds.includes(member.id))
-		},
-		[typingIndicatorsData],
+	// Fetch all channel members
+	const { data: channelMembersData } = useLiveQuery(
+		(q) =>
+			q
+				.from({ member: channelMemberCollection })
+				.where(({ member }) => eq(member.channelId, channelId)),
+		[channelId],
 	)
 
-	const { data: typingUsersData } = useLiveQuery(
-		(q) => {
-			if (!typingMembersData?.length) return []
-			const userIds = typingMembersData.map((m) => m.userId)
-			return q.from({ user: userCollection }).where(({ user }) => userIds.includes(user.id))
-		},
-		[typingMembersData],
-	)
+	// Fetch all users in the organization (they should already be synced)
+	const { data: usersData } = useLiveQuery((q) => q.from({ user: userCollection }).limit(100), [])
 
-	// Build typing users list
+	// Get current user's channel member
+	const currentChannelMember = useMemo(() => {
+		if (!user?.id || !channelMembersData) return null
+		return channelMembersData.find((m) => m.userId === user.id)
+	}, [user?.id, channelMembersData])
+
+	// Build typing users list with client-side filtering
 	const typingUsers: TypingUsers = useMemo(() => {
-		if (!typingMembersData?.length || !typingUsersData?.length) return []
-		return typingMembersData
-			.map((member) => {
-				const user = typingUsersData.find((u) => u.id === member.userId)
+		if (!typingIndicatorsData || !channelMembersData || !usersData) return []
+
+		const fiveSecondsAgo = Date.now() - 5000
+
+		return typingIndicatorsData
+			.filter((indicator) => {
+				// Filter out stale indicators
+				if (indicator.lastTyped < fiveSecondsAgo) return false
+				// Filter out current user
+				if (currentChannelMember && indicator.memberId === currentChannelMember.id) return false
+				return true
+			})
+			.map((indicator) => {
+				const member = channelMembersData.find((m) => m.id === indicator.memberId)
+				if (!member) return null
+				const user = usersData.find((u) => u.id === member.userId)
 				if (!user) return null
 				return { member, user }
 			})
 			.filter((tu): tu is TypingUser => tu !== null)
-	}, [typingMembersData, typingUsersData])
+	}, [typingIndicatorsData, channelMembersData, usersData, currentChannelMember])
 
-	// Auto-refresh typing indicators every 2 seconds to clear stale ones
+	// Auto-refresh to update typing indicators
+	const [, setRefreshTick] = useState(0)
 	useEffect(() => {
 		const interval = setInterval(() => {
-			// This will trigger a re-render and re-query of typing indicators
-			// Stale indicators (> 5 seconds old) will be filtered out
+			setRefreshTick((tick) => tick + 1)
 		}, 2000)
 		return () => clearInterval(interval)
 	}, [])
@@ -271,31 +259,36 @@ export function ChatProvider({ channelId, organizationId, children }: ChatProvid
 		console.log("unpinMessage not fully implemented - need pinned message ID lookup")
 	}
 
-	// Track typing indicator ID
+	// Track typing state
 	const typingIndicatorIdRef = useRef<TypingIndicatorId | null>(null)
 	const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
 	const startTyping = () => {
-		if (!currentChannelMemberId) return
+		if (!currentChannelMember) return
 
 		// Clear any existing timeout
 		if (typingTimeoutRef.current) {
 			clearTimeout(typingTimeoutRef.current)
 		}
 
-		// Create or update typing indicator
-		if (typingIndicatorIdRef.current) {
+		// Check if we already have a typing indicator for this member
+		const existingIndicator = typingIndicatorsData?.find(
+			(ind) => ind.memberId === currentChannelMember.id,
+		)
+
+		if (existingIndicator) {
 			// Update existing indicator
-			typingIndicatorCollection.update(typingIndicatorIdRef.current, (indicator) => {
+			typingIndicatorCollection.update(existingIndicator.id, (indicator) => {
 				indicator.lastTyped = Date.now()
 			})
+			typingIndicatorIdRef.current = existingIndicator.id
 		} else {
 			// Create new indicator
 			const newId = TypingIndicatorId.make(uuid())
 			typingIndicatorCollection.insert({
 				id: newId,
 				channelId,
-				memberId: currentChannelMemberId,
+				memberId: currentChannelMember.id,
 				lastTyped: Date.now(),
 			})
 			typingIndicatorIdRef.current = newId
@@ -324,6 +317,7 @@ export function ChatProvider({ channelId, organizationId, children }: ChatProvid
 		return () => {
 			stopTyping()
 		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [channelId])
 
 	const createThread = async (messageId: MessageId) => {

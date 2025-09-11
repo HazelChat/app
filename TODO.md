@@ -1,10 +1,14 @@
 
-4. Replace OrgId in url to slug
 
 WHAT NEXT
 
-- File Size + File Upload (use https://github.com/floydspace/effect-aws/blob/main/packages/s3/examples/file-upload.ts + R2)
+- File Upload
+ - Display a preview of the file being uploaded and show some progress
+ - Stop user from sending the message when upload is in progress
+ - Show error if upload fails
+
 - typing indicator
+- Replace OrgId in url to slug
 - DM Channel Creation (mutation)
 - Invite User (mutation)
 - presence
