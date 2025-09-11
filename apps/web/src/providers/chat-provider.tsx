@@ -1,5 +1,6 @@
 import type { Channel, ChannelMember, Message, TypingIndicator, User } from "@hazel/db/models"
 import {
+	type AttachmentId,
 	ChannelId,
 	ChannelMemberId,
 	MessageId,
@@ -12,6 +13,7 @@ import {
 import { eq, useLiveQuery } from "@tanstack/react-db"
 import { createContext, type ReactNode, useContext, useEffect, useMemo, useRef, useState } from "react"
 import { v4 as uuid } from "uuid"
+import { sendMessage as sendMessageAction } from "~/db/actions"
 import {
 	channelCollection,
 	channelMemberCollection,
@@ -204,20 +206,16 @@ export function ChatProvider({ channelId, organizationId, children }: ChatProvid
 	}) => {
 		if (!user?.id) return
 		
-		// Store attachmentIds globally before insert so onInsert can access them
-		(window as any).__pendingAttachmentIds = attachments
-		
-		messageCollection.insert({
-			id: MessageId.make(uuid()),
+		// Use the sendMessage action which handles both message creation and attachment linking
+		sendMessageAction({
 			channelId,
-			authorId: user.id,
+			authorId: UserId.make(user.id),
 			content,
 			replyToMessageId,
 			threadChannelId: null,
-			createdAt: new Date(),
-			updatedAt: null,
-			deletedAt: null,
+			attachmentIds: attachments as AttachmentId[] | undefined,
 		})
+		
 		// Clear reply state after sending
 		setReplyToMessageId(null)
 	}

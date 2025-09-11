@@ -1,10 +1,10 @@
-import { AttachmentId, type ChannelId, type OrganizationId, type UserId } from "@hazel/db/schema"
+import { AttachmentId, type ChannelId, MessageId, type OrganizationId, type UserId } from "@hazel/db/schema"
 import { createOptimisticAction } from "@tanstack/react-db"
 import { Effect } from "effect"
 import { v4 as uuid } from "uuid"
 import { getBackendClient } from "~/lib/client"
 import { authClient } from "~/providers/workos-provider"
-import { attachmentCollection } from "./collections"
+import { attachmentCollection, messageCollection } from "./collections"
 
 export const uploadAttachment = createOptimisticAction<{
 	organizationId: OrganizationId
@@ -51,6 +51,57 @@ export const uploadAttachment = createOptimisticAction<{
 			}),
 		)
 
+		return { transactionId }
+	},
+})
+
+export const sendMessage = createOptimisticAction<{
+	channelId: ChannelId
+	authorId: UserId
+	content: string
+	replyToMessageId?: MessageId | null
+	threadChannelId?: ChannelId | null
+	attachmentIds?: AttachmentId[]
+}>({
+	onMutate: (props) => {
+		const messageId = MessageId.make(uuid())
+		
+		// Insert the message optimistically
+		messageCollection.insert({
+			id: messageId,
+			channelId: props.channelId,
+			authorId: props.authorId,
+			content: props.content,
+			replyToMessageId: props.replyToMessageId || null,
+			threadChannelId: props.threadChannelId || null,
+			createdAt: new Date(),
+			updatedAt: null,
+			deletedAt: null,
+		})
+		
+		return { messageId }
+	},
+	mutationFn: async (props, _params) => {
+		const workOsClient = await authClient
+		const accessToken = await workOsClient.getAccessToken()
+		
+		const { transactionId } = await Effect.runPromise(
+			Effect.gen(function* () {
+				const client = yield* getBackendClient(accessToken)
+				
+				// Create the message with attachmentIds
+				return yield* client.messages.create({
+					payload: {
+						channelId: props.channelId,
+						content: props.content,
+						replyToMessageId: props.replyToMessageId || null,
+						threadChannelId: props.threadChannelId || null,
+						attachmentIds: props.attachmentIds || [],
+					},
+				})
+			}),
+		)
+		
 		return { transactionId }
 	},
 })

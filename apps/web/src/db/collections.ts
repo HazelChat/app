@@ -181,13 +181,7 @@ export const messageCollection = createCollection(
 		schema: Schema.standardSchemaV1(Message.Model.json),
 		getKey: (item) => item.id,
 		onInsert: async ({ transaction }) => {
-			const mutation = transaction.mutations[0]
-			const newMessage = mutation.modified
-			
-			// Get attachmentIds from global variable (set by chat provider)
-			const attachmentIds = (window as any).__pendingAttachmentIds || []
-			// Clear the global variable after use
-			delete (window as any).__pendingAttachmentIds
+			const { modified: newMessage } = transaction.mutations[0]
 
 			const workOsClient = await authClient
 			const _accessToken = await workOsClient.getAccessToken()
@@ -196,13 +190,8 @@ export const messageCollection = createCollection(
 				Effect.gen(function* () {
 					const client = yield* getBackendClient(_accessToken)
 
-					const payload = {
-						...newMessage,
-						attachmentIds: attachmentIds,
-					}
-
 					return yield* client.messages.create({
-						payload,
+						payload: newMessage,
 					})
 				}),
 			)
