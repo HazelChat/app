@@ -15,6 +15,7 @@ export interface FileUploadProgress {
 	status: "pending" | "uploading" | "complete" | "failed"
 	attachmentId?: AttachmentId
 	error?: string
+	file?: File
 }
 
 interface UseFileUploadOptions {
@@ -69,6 +70,7 @@ export function useFileUpload({
 					fileSize: file.size,
 					progress: 0,
 					status: "pending",
+					file: file,
 				})
 				return next
 			})

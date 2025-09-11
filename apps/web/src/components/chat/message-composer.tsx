@@ -11,6 +11,7 @@ import { useChat } from "~/providers/chat-provider"
 import { cx } from "~/utils/cx"
 import { ButtonUtility } from "../base/buttons/button-utility"
 import { MarkdownEditor, type MarkdownEditorRef } from "../markdown-editor"
+import { FileUploadPreview } from "./file-upload-preview"
 import { ReplyIndicator } from "./reply-indicator"
 
 interface MessageComposerProps {
@@ -51,7 +52,7 @@ export const MessageComposer = ({ placeholder = "Type a message..." }: MessageCo
 		memberId: currentChannelMember?.id || null,
 	})
 
-	const { uploads, uploadFiles } = useFileUpload({
+	const { uploads, uploadFiles, removeUpload, retryUpload } = useFileUpload({
 		organizationId: orgId as OrganizationId,
 		channelId: channelId,
 		onUploadComplete: (attachmentId) => {
@@ -104,7 +105,20 @@ export const MessageComposer = ({ placeholder = "Type a message..." }: MessageCo
 					/>
 				)}
 
-				{attachmentIds.length > 0 && (
+				{/* File Upload Previews */}
+				{uploads.length > 0 && (
+					<div
+						className={cx(
+							"rounded-t-md border border-primary px-3 py-3",
+							replyToMessageId && "rounded-none border-primary border-x border-t",
+						)}
+					>
+						<FileUploadPreview uploads={uploads} onRemove={removeUpload} onRetry={retryUpload} />
+					</div>
+				)}
+
+				{/* Completed Attachments */}
+				{attachmentIds.length > 0 && uploads.length === 0 && (
 					<div
 						className={cx(
 							"rounded-t-md border border-primary px-3 py-2",
@@ -113,34 +127,21 @@ export const MessageComposer = ({ placeholder = "Type a message..." }: MessageCo
 					>
 						<div className="flex flex-wrap gap-2">
 							{attachmentIds.map((attachmentId) => {
-								// First try to get the file name from uploads (for files being uploaded)
-								const upload = uploads.find((u) => u.attachmentId === attachmentId)
-								// Then try to get it from the attachments query (for completed uploads)
 								const attachment = attachments?.find((a) => a?.id === attachmentId)
-								const fileName = upload?.fileName || attachment?.fileName || "File"
-								const isUploading =
-									upload?.status === "uploading" || upload?.status === "pending"
+								const fileName = attachment?.fileName || "File"
 
 								return (
 									<div
 										key={attachmentId}
-										className={cx(
-											"inline-flex items-center gap-1 rounded-md bg-primary px-2 py-1",
-											isUploading && "opacity-70",
-										)}
+										className="inline-flex items-center gap-1 rounded-md bg-primary px-2 py-1"
 									>
-										{isUploading ? (
-											<Loading03 className="size-3 animate-spin text-fg-quaternary" />
-										) : (
-											<Attachment01 className="size-3 text-fg-quaternary" />
-										)}
+										<Attachment01 className="size-3 text-fg-quaternary" />
 										<span className="text-secondary text-xs">{fileName}</span>
 										<ButtonUtility
 											icon={XClose}
 											size="xs"
 											color="tertiary"
 											onClick={() => handleRemoveAttachment(attachmentId)}
-											disabled={isUploading}
 										/>
 									</div>
 								)
@@ -153,7 +154,8 @@ export const MessageComposer = ({ placeholder = "Type a message..." }: MessageCo
 					placeholder={placeholder}
 					className={cx(
 						"w-full",
-						(replyToMessageId || attachmentIds.length > 0) && "rounded-t-none",
+						(replyToMessageId || uploads.length > 0 || attachmentIds.length > 0) &&
+							"rounded-t-none",
 					)}
 					onSubmit={handleSubmit}
 					onUpdate={handleEditorUpdate}
