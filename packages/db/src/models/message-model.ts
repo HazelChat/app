@@ -1,5 +1,5 @@
 import { Schema } from "effect"
-import { ChannelId, MessageId, UserId } from "../lib/schema"
+import { AttachmentId, ChannelId, MessageId, UserId } from "../lib/schema"
 import * as M from "../services/model"
 import { baseFields } from "./utils"
 
@@ -13,5 +13,10 @@ export class Model extends M.Class<Model>("Message")({
 	...baseFields,
 }) {}
 
-export const Insert = Model.insert
+// Custom insert schema that includes attachmentIds for linking
+export const Insert = Schema.Struct({
+	...Model.insert.fields,
+	attachmentIds: Schema.optional(Schema.Array(AttachmentId)),
+})
+
 export const Update = Model.update

@@ -31,10 +31,10 @@
         "@opentelemetry/sdk-trace-node": "^2.0.1",
         "@opentelemetry/sdk-trace-web": "^2.0.1",
         "@workos-inc/node": "^7.69.1",
+        "drizzle-orm": "^0.44.5",
         "effect": "^3.17.13",
         "jose": "^6.1.0",
         "pg": "^8.16.3",
-        "uuid": "^13.0.0",
       },
       "devDependencies": {
         "@effect/language-service": "^0.38.1",

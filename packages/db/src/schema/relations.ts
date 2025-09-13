@@ -2,7 +2,7 @@ import { relations } from "drizzle-orm"
 import { attachmentsTable } from "./attachments"
 import { channelMembersTable, channelsTable, directMessageParticipantsTable } from "./channels"
 import { invitationsTable } from "./invitations"
-import { messageAttachmentsTable, messageReactionsTable, messagesTable } from "./messages"
+import { messageReactionsTable, messagesTable } from "./messages"
 import { notificationsTable } from "./notifications"
 import { organizationMembersTable, organizationsTable } from "./organizations"
 import { pinnedMessagesTable } from "./pinned-messages"
@@ -129,7 +129,7 @@ export const messagesRelations = relations(messagesTable, ({ one, many }) => ({
 		relationName: "messageReplies",
 	}),
 	reactions: many(messageReactionsTable),
-	attachments: many(messageAttachmentsTable),
+	attachments: many(attachmentsTable),
 	pinnedIn: many(pinnedMessagesTable),
 	seenBy: many(channelMembersTable),
 }))
@@ -146,20 +146,9 @@ export const messageReactionsRelations = relations(messageReactionsTable, ({ one
 	}),
 }))
 
-// Message attachments relations
-export const messageAttachmentsRelations = relations(messageAttachmentsTable, ({ one }) => ({
-	message: one(messagesTable, {
-		fields: [messageAttachmentsTable.messageId],
-		references: [messagesTable.id],
-	}),
-	attachment: one(attachmentsTable, {
-		fields: [messageAttachmentsTable.attachmentId],
-		references: [attachmentsTable.id],
-	}),
-}))
 
 // Attachments relations
-export const attachmentsRelations = relations(attachmentsTable, ({ one, many }) => ({
+export const attachmentsRelations = relations(attachmentsTable, ({ one }) => ({
 	organization: one(organizationsTable, {
 		fields: [attachmentsTable.organizationId],
 		references: [organizationsTable.id],
@@ -176,7 +165,6 @@ export const attachmentsRelations = relations(attachmentsTable, ({ one, many }) 
 		fields: [attachmentsTable.uploadedBy],
 		references: [usersTable.id],
 	}),
-	messageAttachments: many(messageAttachmentsTable),
 }))
 
 // Invitations relations

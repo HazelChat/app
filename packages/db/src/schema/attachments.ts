@@ -23,6 +23,7 @@ export const attachmentsTable = pgTable(
 		index("attachments_organization_id_idx").on(table.organizationId),
 		index("attachments_channel_id_idx").on(table.channelId),
 		index("attachments_message_id_idx").on(table.messageId),
+		index("attachments_message_uploaded_at_idx").on(table.messageId, table.uploadedAt),
 		index("attachments_uploaded_by_idx").on(table.uploadedBy),
 		index("attachments_status_idx").on(table.status),
 		index("attachments_deleted_at_idx").on(table.deletedAt),

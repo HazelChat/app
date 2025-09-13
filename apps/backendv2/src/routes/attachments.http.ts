@@ -25,6 +25,9 @@ export const HttpAttachmentLive = HttpApiBuilder.group(HazelApi, "attachments", 
 					yield* Effect.log("Uploading attachment...")
 
 					const attachmentId = AttachmentId.make(randomUUIDv7())
+					
+					// Get the original filename from the file
+					const fileName = (payload.file as any).filename || (payload.file as any).name || "unnamed_file"
 
 					const bucketName = yield* Config.string("R2_BUCKET_NAME").pipe(Effect.orDie)
 
@@ -52,7 +55,7 @@ export const HttpAttachmentLive = HttpApiBuilder.group(HazelApi, "attachments", 
 									status: "complete",
 									channelId: payload.channelId,
 									messageId: null,
-									fileName: "",
+									fileName: fileName,
 									fileSize: Number(stats.size),
 									uploadedAt: new Date(),
 								}).pipe(Effect.map((res) => res[0]!))

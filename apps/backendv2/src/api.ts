@@ -294,7 +294,7 @@ export class ChannelGroup extends HttpApiGroup.make("channels")
 export class MessageGroup extends HttpApiGroup.make("messages")
 	.add(
 		HttpApiEndpoint.post("create", "/")
-			.setPayload(Message.Model.jsonCreate)
+			.setPayload(Message.Insert)
 			.addSuccess(MessageResponse)
 			.addError(ChannelNotFoundError)
 			.addError(UnauthorizedError)

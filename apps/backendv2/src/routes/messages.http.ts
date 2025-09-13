@@ -5,6 +5,7 @@ import { HazelApi } from "../api"
 import { CurrentUser } from "../lib/auth"
 import { generateTransactionId } from "../lib/create-transactionId"
 import { InternalServerError } from "../lib/errors"
+import { AttachmentRepo } from "../repositories/attachment-repo"
 import { MessageRepo } from "../repositories/message-repo"
 
 export const HttpMessageLive = HttpApiBuilder.group(HazelApi, "messages", (handlers) =>
@@ -24,11 +25,25 @@ export const HttpMessageLive = HttpApiBuilder.group(HazelApi, "messages", (handl
 					const { createdMessage, txid } = yield* db
 						.transaction(
 							Effect.fnUntraced(function* (tx) {
+								// Extract attachmentIds from payload (it's not a database field)
+								const { attachmentIds, ...messageData } = payload
+								
 								const createdMessage = yield* MessageRepo.insert({
+									...messageData,
 									authorId: user.id,
-									...payload,
 									deletedAt: null,
 								}).pipe(Effect.map((res) => res[0]!))
+
+								// If there are attachmentIds, update those attachments with the messageId
+								if (attachmentIds && attachmentIds.length > 0) {
+									// Update each attachment with the messageId
+									yield* Effect.forEach(attachmentIds, (attachmentId) =>
+										AttachmentRepo.update({
+											id: attachmentId,
+											messageId: createdMessage.id,
+										}),
+									)
+								}
 
 								const txid = yield* generateTransactionId(tx)
 

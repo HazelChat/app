@@ -1,8 +1,6 @@
-import { index, integer, pgTable, text, timestamp, uniqueIndex, uuid, varchar } from "drizzle-orm/pg-core"
+import { index, pgTable, text, timestamp, uuid, varchar } from "drizzle-orm/pg-core"
 import type {
-	AttachmentId,
 	ChannelId,
-	MessageAttachmentId,
 	MessageId,
 	MessageReactionId,
 	UserId,
@@ -51,27 +49,10 @@ export const messageReactionsTable = pgTable(
 	],
 )
 
-// Message attachments junction table (normalized from array in Convex)
-export const messageAttachmentsTable = pgTable(
-	"message_attachments",
-	{
-		id: uuid().primaryKey().defaultRandom().$type<MessageAttachmentId>(),
-		messageId: uuid().notNull().$type<MessageId>(),
-		attachmentId: uuid().notNull().$type<AttachmentId>(),
-		displayOrder: integer().notNull().default(0),
-		createdAt: timestamp({ mode: "date", withTimezone: true }).notNull().defaultNow(),
-	},
-	(table) => [
-		index("msg_attachments_message_id_idx").on(table.messageId),
-		index("msg_attachments_attachment_id_idx").on(table.attachmentId),
-		uniqueIndex("msg_attachments_unique_idx").on(table.messageId, table.attachmentId),
-	],
-)
+// Message attachments junction table removed - attachments now directly reference messageId
 
 // Type exports
 export type Message = typeof messagesTable.$inferSelect
 export type NewMessage = typeof messagesTable.$inferInsert
 export type MessageReaction = typeof messageReactionsTable.$inferSelect
 export type NewMessageReaction = typeof messageReactionsTable.$inferInsert
-export type MessageAttachment = typeof messageAttachmentsTable.$inferSelect
-export type NewMessageAttachment = typeof messageAttachmentsTable.$inferInsert

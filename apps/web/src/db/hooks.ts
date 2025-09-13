@@ -20,8 +20,6 @@ export const useMessage = (messageId: MessageId) => {
 		[messageId],
 	)
 
-	console.log(data, "XD")
-
 	const replyMessage = data?.[0]
 
 	return {
@@ -112,11 +110,12 @@ export const useAttachments = (messageId: MessageId) => {
 			.from({
 				attachments: attachmentCollection,
 			})
-			.where(({ attachments }) => eq(attachments.messageId, messageId)),
+			.where(({ attachments }) => eq(attachments.messageId, messageId))
+			.orderBy(({ attachments }) => attachments.uploadedAt, "asc"),
 	)
 
 	return {
-		attachments: attachments,
+		attachments: attachments || [],
 		rest,
 	}
 }

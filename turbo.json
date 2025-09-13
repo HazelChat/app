@@ -2,12 +2,20 @@
 	"$schema": "https://turborepo.com/schema.json",
 	"tasks": {
 		"build": {
-			"outputs": ["dist/**"]
+			"outputs": [
+				"dist/**"
+			]
 		},
 		"typecheck": {
-			"dependsOn": ["^typecheck"]
+			"dependsOn": [
+				"^typecheck"
+			]
 		},
 		"dev": {
+			"persistent": true,
+			"cache": false
+		},
+		"start": {
 			"persistent": true,
 			"cache": false
 		}

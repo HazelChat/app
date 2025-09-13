@@ -1,8 +1,8 @@
 import type { Channel, ChannelMember, Message, TypingIndicator, User } from "@hazel/db/models"
 import {
+	type AttachmentId,
 	ChannelId,
-	ChannelMemberId,
-	MessageId,
+	type MessageId,
 	MessageReactionId,
 	type OrganizationId,
 	PinnedMessageId,
@@ -12,6 +12,7 @@ import {
 import { eq, useLiveQuery } from "@tanstack/react-db"
 import { createContext, type ReactNode, useContext, useEffect, useMemo, useRef, useState } from "react"
 import { v4 as uuid } from "uuid"
+import { sendMessage as sendMessageAction } from "~/db/actions"
 import {
 	channelCollection,
 	channelMemberCollection,
@@ -40,7 +41,7 @@ interface ChatContextValue {
 	isLoadingMessages: boolean
 	isLoadingNext: boolean
 	isLoadingPrev: boolean
-	sendMessage: (props: { content: string; attachments?: string[] }) => void
+	sendMessage: (props: { content: string; attachments?: AttachmentId[] }) => void
 	editMessage: (messageId: MessageId, content: string) => Promise<void>
 	deleteMessage: (messageId: MessageId) => void
 	addReaction: (messageId: MessageId, emoji: string) => void
@@ -195,25 +196,19 @@ export function ChatProvider({ channelId, organizationId, children }: ChatProvid
 	}, [])
 
 	// Message operations
-	const sendMessage = ({
-		content,
-		attachments: _attachments,
-	}: {
-		content: string
-		attachments?: string[]
-	}) => {
+	const sendMessage = ({ content, attachments }: { content: string; attachments?: AttachmentId[] }) => {
 		if (!user?.id) return
-		messageCollection.insert({
-			id: MessageId.make(uuid()),
+
+		// Use the sendMessage action which handles both message creation and attachment linking
+		sendMessageAction({
 			channelId,
-			authorId: user.id,
+			authorId: UserId.make(user.id),
 			content,
 			replyToMessageId,
 			threadChannelId: null,
-			createdAt: new Date(),
-			updatedAt: null,
-			deletedAt: null,
+			attachmentIds: attachments as AttachmentId[] | undefined,
 		})
+
 		// Clear reply state after sending
 		setReplyToMessageId(null)
 	}
