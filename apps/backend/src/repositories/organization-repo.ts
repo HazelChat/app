@@ -12,7 +12,7 @@ export class OrganizationRepo extends Effect.Service<OrganizationRepo>()("Organi
 			Organization.Model,
 			{
 				idColumn: "id",
-				name: "organization",
+				name: "Organization",
 			},
 		)
 		const db = yield* Database.Database

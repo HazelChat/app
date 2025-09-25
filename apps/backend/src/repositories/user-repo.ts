@@ -9,7 +9,7 @@ export class UserRepo extends Effect.Service<UserRepo>()("UserRepo", {
 	effect: Effect.gen(function* () {
 		const baseRepo = yield* ModelRepository.makeRepository(schema.usersTable, User.Model, {
 			idColumn: "id",
-			name: "user",
+			name: "User",
 		})
 		const db = yield* Database.Database
 

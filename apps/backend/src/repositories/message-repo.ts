@@ -8,7 +8,7 @@ export class MessageRepo extends Effect.Service<MessageRepo>()("MessageRepo", {
 	effect: Effect.gen(function* () {
 		const baseRepo = yield* ModelRepository.makeRepository(schema.messagesTable, Message.Model, {
 			idColumn: "id",
-			name: "message",
+			name: "Message",
 		})
 
 		return baseRepo

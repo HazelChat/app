@@ -1,7 +1,13 @@
 import { HttpApiBuilder } from "@effect/platform"
 import { Database } from "@hazel/db"
-import { CurrentUser, InternalServerError, policyUse } from "@hazel/effect-lib"
-import { Effect } from "effect"
+import {
+	CurrentUser,
+	InternalServerError,
+	policyRequire,
+	policyUse,
+	withRemapDbErrors,
+} from "@hazel/effect-lib"
+import { Effect, pipe } from "effect"
 import { HazelApi } from "../api"
 import { generateTransactionId } from "../lib/create-transactionId"
 import { ChannelMemberPolicy } from "../policies/channel-member-policy"
@@ -26,10 +32,7 @@ export const HttpChannelMemberLive = HttpApiBuilder.group(HazelApi, "channelMemb
 									userId: user.id,
 									joinedAt: new Date(),
 									deletedAt: null,
-								}).pipe(
-									Effect.map((res) => res[0]!),
-									policyUse(ChannelMemberPolicy.canCreate(payload.channelId)),
-								)
+								}).pipe(Effect.map((res) => res[0]!))
 
 								const txid = yield* generateTransactionId(tx)
 
@@ -37,18 +40,8 @@ export const HttpChannelMemberLive = HttpApiBuilder.group(HazelApi, "channelMemb
 							}),
 						)
 						.pipe(
-							Effect.catchTags({
-								DatabaseError: (err) =>
-									new InternalServerError({
-										message: "Error Creating Channel Member",
-										cause: err,
-									}),
-								ParseError: (err) =>
-									new InternalServerError({
-										message: "Error Parsing Response Schema",
-										cause: err,
-									}),
-							}),
+							policyUse(ChannelMemberPolicy.canCreate(payload.channelId)),
+							withRemapDbErrors("ChannelMember", "create"),
 						)
 
 					return {

@@ -11,7 +11,7 @@ export class PinnedMessageRepo extends Effect.Service<PinnedMessageRepo>()("Pinn
 			PinnedMessage.Model,
 			{
 				idColumn: "id",
-				name: "pinnedMessage",
+				name: "PinnedMessage",
 			},
 		)
 

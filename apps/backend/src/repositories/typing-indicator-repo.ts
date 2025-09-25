@@ -13,7 +13,7 @@ export class TypingIndicatorRepo extends Effect.Service<TypingIndicatorRepo>()("
 			TypingIndicator.Model,
 			{
 				idColumn: "id",
-				name: "typingIndicator",
+				name: "TypingIndicator",
 			},
 		)
 
@@ -37,7 +37,7 @@ export class TypingIndicatorRepo extends Effect.Service<TypingIndicatorRepo>()("
 								),
 							),
 					),
-				policyRequire("typingIndicator", "delete"),
+				policyRequire("TypingIndicator", "delete"),
 			)({ channelId, memberId })
 
 		return {

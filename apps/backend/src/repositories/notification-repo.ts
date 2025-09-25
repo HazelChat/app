@@ -11,7 +11,7 @@ export class NotificationRepo extends Effect.Service<NotificationRepo>()("Notifi
 			Notification.Model,
 			{
 				idColumn: "id",
-				name: "notification",
+				name: "Notification",
 			},
 		)
 
