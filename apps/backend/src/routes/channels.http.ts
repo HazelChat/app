@@ -36,8 +36,8 @@ export const HttpChannelLive = HttpApiBuilder.group(HazelApi, "channels", (handl
 									...payload,
 									deletedAt: null,
 								}).pipe(
-									policyUse(ChannelPolicy.canCreate(payload.organizationId)),
 									Effect.map((res) => res[0]!),
+									policyUse(ChannelPolicy.canCreate(payload.organizationId)),
 								)
 
 								yield* ChannelMemberRepo.insert({

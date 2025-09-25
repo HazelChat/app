@@ -1,7 +1,6 @@
 import { type AttachmentId, policy, UnauthorizedError } from "@hazel/effect-lib"
 import { Effect, Option } from "effect"
 import { AttachmentRepo } from "../repositories/attachment-repo"
-import { ChannelMemberRepo } from "../repositories/channel-member-repo"
 import { ChannelRepo } from "../repositories/channel-repo"
 import { MessageRepo } from "../repositories/message-repo"
 import { OrganizationMemberRepo } from "../repositories/organization-member-repo"
@@ -13,7 +12,6 @@ export class AttachmentPolicy extends Effect.Service<AttachmentPolicy>()("Attach
 		const attachmentRepo = yield* AttachmentRepo
 		const messageRepo = yield* MessageRepo
 		const channelRepo = yield* ChannelRepo
-		const channelMemberRepo = yield* ChannelMemberRepo
 		const organizationMemberRepo = yield* OrganizationMemberRepo
 
 		const canCreate = () =>
@@ -164,7 +162,6 @@ export class AttachmentPolicy extends Effect.Service<AttachmentPolicy>()("Attach
 		AttachmentRepo.Default,
 		MessageRepo.Default,
 		ChannelRepo.Default,
-		ChannelMemberRepo.Default,
 		OrganizationMemberRepo.Default,
 	],
 	accessors: true,
