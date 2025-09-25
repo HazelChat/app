@@ -12,6 +12,17 @@ import { MultipartUpload } from "@effect-aws/s3"
 import { Config, Layer } from "effect"
 import { HazelApi } from "./api"
 import { HttpApiRoutes } from "./http"
+import { AttachmentPolicy } from "./policies/attachment-policy"
+import { ChannelMemberPolicy } from "./policies/channel-member-policy"
+import { ChannelPolicy } from "./policies/channel-policy"
+import { DirectMessageParticipantPolicy } from "./policies/direct-message-participant-policy"
+import { InvitationPolicy } from "./policies/invitation-policy"
+import { MessagePolicy } from "./policies/message-policy"
+import { MessageReactionPolicy } from "./policies/message-reaction-policy"
+import { OrganizationMemberPolicy } from "./policies/organization-member-policy"
+import { OrganizationPolicy } from "./policies/organization-policy"
+import { PinnedMessagePolicy } from "./policies/pinned-message-policy"
+import { UserPolicy } from "./policies/user-policy"
 import { AttachmentRepo } from "./repositories/attachment-repo"
 import { ChannelMemberRepo } from "./repositories/channel-member-repo"
 import { ChannelRepo } from "./repositories/channel-repo"
@@ -60,7 +71,7 @@ const TracerLive = OtlpTracer.layer({
 	},
 }).pipe(Layer.provide(FetchHttpClient.layer))
 
-const MainLive = Layer.mergeAll(
+const RepoLive = Layer.mergeAll(
 	MessageRepo.Default,
 	ChannelRepo.Default,
 	ChannelMemberRepo.Default,
@@ -68,16 +79,35 @@ const MainLive = Layer.mergeAll(
 	OrganizationRepo.Default,
 	OrganizationMemberRepo.Default,
 	InvitationRepo.Default,
-	MockDataGenerator.Default,
-	WorkOS.Default,
-	WorkOSSync.Default,
-	WorkOSWebhookVerifier.Default,
-	DirectMessageParticipantRepo.Default,
-	MessageReactionRepo.Default,
 	PinnedMessageRepo.Default,
 	AttachmentRepo.Default,
 	NotificationRepo.Default,
 	TypingIndicatorRepo.Default,
+)
+
+const PolicyLive = Layer.mergeAll(
+	OrganizationPolicy.Default,
+	ChannelPolicy.Default,
+	MessagePolicy.Default,
+	InvitationPolicy.Default,
+	AttachmentPolicy.Default,
+	OrganizationMemberPolicy.Default,
+	ChannelMemberPolicy.Default,
+	DirectMessageParticipantPolicy.Default,
+	MessageReactionPolicy.Default,
+	UserPolicy.Default,
+	AttachmentPolicy.Default,
+	PinnedMessagePolicy.Default,
+	TypingIndicatorRepo.Default,
+)
+
+const MainLive = Layer.mergeAll(
+	RepoLive,
+	PolicyLive,
+	MockDataGenerator.Default,
+	WorkOS.Default,
+	WorkOSSync.Default,
+	WorkOSWebhookVerifier.Default,
 	DatabaseLive,
 	MultipartUpload.layerWithoutS3Service,
 ).pipe(
