@@ -109,7 +109,7 @@ export const HttpChannelLive = HttpApiBuilder.group(HazelApi, "channels", (handl
 						.transaction(
 							Effect.fnUntraced(function* (tx) {
 								yield* ChannelRepo.deleteById(path.id).pipe(
-									policyUse(ChannelPolicy.canDelete(path.id))
+									policyUse(ChannelPolicy.canDelete(path.id)),
 								)
 
 								const txid = yield* generateTransactionId(tx)

@@ -11,7 +11,7 @@ export class PinnedMessagePolicy extends Effect.Service<PinnedMessagePolicy>()("
 
 		const pinnedMessageRepo = yield* PinnedMessageRepo
 		const channelRepo = yield* ChannelRepo
-		const channelMemberRepo = yield* ChannelMemberRepo
+		const _channelMemberRepo = yield* ChannelMemberRepo
 		const organizationMemberRepo = yield* OrganizationMemberRepo
 
 		const canCreate = (channelId: ChannelId) =>

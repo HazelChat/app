@@ -8,502 +8,491 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from './routes/__root'
-import { Route as TestRouteImport } from './routes/test'
-import { Route as AppLayoutRouteImport } from './routes/_app/layout'
-import { Route as AppIndexRouteImport } from './routes/_app/index'
-import { Route as AuthLoginRouteImport } from './routes/auth/login'
-import { Route as AppOnboardingRouteImport } from './routes/_app/onboarding'
-import { Route as AppOrgIdLayoutRouteImport } from './routes/_app/$orgId/layout'
-import { Route as AppOrgIdIndexRouteImport } from './routes/_app/$orgId/index'
-import { Route as AppOrgIdNotificationsRouteImport } from './routes/_app/$orgId/notifications'
-import { Route as AppOrgIdCallRouteImport } from './routes/_app/$orgId/call'
-import { Route as AppOrgIdSettingsLayoutRouteImport } from './routes/_app/$orgId/settings/layout'
-import { Route as AppOrgIdSettingsIndexRouteImport } from './routes/_app/$orgId/settings/index'
-import { Route as AppOrgIdChatIndexRouteImport } from './routes/_app/$orgId/chat/index'
-import { Route as AppOrgIdSettingsTeamRouteImport } from './routes/_app/$orgId/settings/team'
-import { Route as AppOrgIdSettingsProfileRouteImport } from './routes/_app/$orgId/settings/profile'
-import { Route as AppOrgIdSettingsNotificationsRouteImport } from './routes/_app/$orgId/settings/notifications'
-import { Route as AppOrgIdSettingsInvitationsRouteImport } from './routes/_app/$orgId/settings/invitations'
-import { Route as AppOrgIdSettingsIntegrationsRouteImport } from './routes/_app/$orgId/settings/integrations'
-import { Route as AppOrgIdSettingsEmailRouteImport } from './routes/_app/$orgId/settings/email'
-import { Route as AppOrgIdSettingsDebugRouteImport } from './routes/_app/$orgId/settings/debug'
-import { Route as AppOrgIdSettingsBillingRouteImport } from './routes/_app/$orgId/settings/billing'
-import { Route as AppOrgIdChatIdRouteImport } from './routes/_app/$orgId/chat/$id'
+import { Route as rootRouteImport } from "./routes/__root"
+import { Route as AppOrgIdCallRouteImport } from "./routes/_app/$orgId/call"
+import { Route as AppOrgIdChatIdRouteImport } from "./routes/_app/$orgId/chat/$id"
+import { Route as AppOrgIdChatIndexRouteImport } from "./routes/_app/$orgId/chat/index"
+import { Route as AppOrgIdIndexRouteImport } from "./routes/_app/$orgId/index"
+import { Route as AppOrgIdLayoutRouteImport } from "./routes/_app/$orgId/layout"
+import { Route as AppOrgIdNotificationsRouteImport } from "./routes/_app/$orgId/notifications"
+import { Route as AppOrgIdSettingsBillingRouteImport } from "./routes/_app/$orgId/settings/billing"
+import { Route as AppOrgIdSettingsDebugRouteImport } from "./routes/_app/$orgId/settings/debug"
+import { Route as AppOrgIdSettingsEmailRouteImport } from "./routes/_app/$orgId/settings/email"
+import { Route as AppOrgIdSettingsIndexRouteImport } from "./routes/_app/$orgId/settings/index"
+import { Route as AppOrgIdSettingsIntegrationsRouteImport } from "./routes/_app/$orgId/settings/integrations"
+import { Route as AppOrgIdSettingsInvitationsRouteImport } from "./routes/_app/$orgId/settings/invitations"
+import { Route as AppOrgIdSettingsLayoutRouteImport } from "./routes/_app/$orgId/settings/layout"
+import { Route as AppOrgIdSettingsNotificationsRouteImport } from "./routes/_app/$orgId/settings/notifications"
+import { Route as AppOrgIdSettingsProfileRouteImport } from "./routes/_app/$orgId/settings/profile"
+import { Route as AppOrgIdSettingsTeamRouteImport } from "./routes/_app/$orgId/settings/team"
+import { Route as AppIndexRouteImport } from "./routes/_app/index"
+import { Route as AppLayoutRouteImport } from "./routes/_app/layout"
+import { Route as AppOnboardingRouteImport } from "./routes/_app/onboarding"
+import { Route as AuthLoginRouteImport } from "./routes/auth/login"
+import { Route as TestRouteImport } from "./routes/test"
 
 const TestRoute = TestRouteImport.update({
-  id: '/test',
-  path: '/test',
-  getParentRoute: () => rootRouteImport,
+	id: "/test",
+	path: "/test",
+	getParentRoute: () => rootRouteImport,
 } as any)
 const AppLayoutRoute = AppLayoutRouteImport.update({
-  id: '/_app',
-  getParentRoute: () => rootRouteImport,
+	id: "/_app",
+	getParentRoute: () => rootRouteImport,
 } as any)
 const AppIndexRoute = AppIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AppLayoutRoute,
+	id: "/",
+	path: "/",
+	getParentRoute: () => AppLayoutRoute,
 } as any)
 const AuthLoginRoute = AuthLoginRouteImport.update({
-  id: '/auth/login',
-  path: '/auth/login',
-  getParentRoute: () => rootRouteImport,
+	id: "/auth/login",
+	path: "/auth/login",
+	getParentRoute: () => rootRouteImport,
 } as any)
 const AppOnboardingRoute = AppOnboardingRouteImport.update({
-  id: '/onboarding',
-  path: '/onboarding',
-  getParentRoute: () => AppLayoutRoute,
+	id: "/onboarding",
+	path: "/onboarding",
+	getParentRoute: () => AppLayoutRoute,
 } as any)
 const AppOrgIdLayoutRoute = AppOrgIdLayoutRouteImport.update({
-  id: '/$orgId',
-  path: '/$orgId',
-  getParentRoute: () => AppLayoutRoute,
+	id: "/$orgId",
+	path: "/$orgId",
+	getParentRoute: () => AppLayoutRoute,
 } as any)
 const AppOrgIdIndexRoute = AppOrgIdIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AppOrgIdLayoutRoute,
+	id: "/",
+	path: "/",
+	getParentRoute: () => AppOrgIdLayoutRoute,
 } as any)
 const AppOrgIdNotificationsRoute = AppOrgIdNotificationsRouteImport.update({
-  id: '/notifications',
-  path: '/notifications',
-  getParentRoute: () => AppOrgIdLayoutRoute,
+	id: "/notifications",
+	path: "/notifications",
+	getParentRoute: () => AppOrgIdLayoutRoute,
 } as any)
 const AppOrgIdCallRoute = AppOrgIdCallRouteImport.update({
-  id: '/call',
-  path: '/call',
-  getParentRoute: () => AppOrgIdLayoutRoute,
+	id: "/call",
+	path: "/call",
+	getParentRoute: () => AppOrgIdLayoutRoute,
 } as any)
 const AppOrgIdSettingsLayoutRoute = AppOrgIdSettingsLayoutRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => AppOrgIdLayoutRoute,
+	id: "/settings",
+	path: "/settings",
+	getParentRoute: () => AppOrgIdLayoutRoute,
 } as any)
 const AppOrgIdSettingsIndexRoute = AppOrgIdSettingsIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AppOrgIdSettingsLayoutRoute,
+	id: "/",
+	path: "/",
+	getParentRoute: () => AppOrgIdSettingsLayoutRoute,
 } as any)
 const AppOrgIdChatIndexRoute = AppOrgIdChatIndexRouteImport.update({
-  id: '/chat/',
-  path: '/chat/',
-  getParentRoute: () => AppOrgIdLayoutRoute,
+	id: "/chat/",
+	path: "/chat/",
+	getParentRoute: () => AppOrgIdLayoutRoute,
 } as any)
 const AppOrgIdSettingsTeamRoute = AppOrgIdSettingsTeamRouteImport.update({
-  id: '/team',
-  path: '/team',
-  getParentRoute: () => AppOrgIdSettingsLayoutRoute,
+	id: "/team",
+	path: "/team",
+	getParentRoute: () => AppOrgIdSettingsLayoutRoute,
 } as any)
 const AppOrgIdSettingsProfileRoute = AppOrgIdSettingsProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
-  getParentRoute: () => AppOrgIdSettingsLayoutRoute,
+	id: "/profile",
+	path: "/profile",
+	getParentRoute: () => AppOrgIdSettingsLayoutRoute,
 } as any)
-const AppOrgIdSettingsNotificationsRoute =
-  AppOrgIdSettingsNotificationsRouteImport.update({
-    id: '/notifications',
-    path: '/notifications',
-    getParentRoute: () => AppOrgIdSettingsLayoutRoute,
-  } as any)
-const AppOrgIdSettingsInvitationsRoute =
-  AppOrgIdSettingsInvitationsRouteImport.update({
-    id: '/invitations',
-    path: '/invitations',
-    getParentRoute: () => AppOrgIdSettingsLayoutRoute,
-  } as any)
-const AppOrgIdSettingsIntegrationsRoute =
-  AppOrgIdSettingsIntegrationsRouteImport.update({
-    id: '/integrations',
-    path: '/integrations',
-    getParentRoute: () => AppOrgIdSettingsLayoutRoute,
-  } as any)
+const AppOrgIdSettingsNotificationsRoute = AppOrgIdSettingsNotificationsRouteImport.update({
+	id: "/notifications",
+	path: "/notifications",
+	getParentRoute: () => AppOrgIdSettingsLayoutRoute,
+} as any)
+const AppOrgIdSettingsInvitationsRoute = AppOrgIdSettingsInvitationsRouteImport.update({
+	id: "/invitations",
+	path: "/invitations",
+	getParentRoute: () => AppOrgIdSettingsLayoutRoute,
+} as any)
+const AppOrgIdSettingsIntegrationsRoute = AppOrgIdSettingsIntegrationsRouteImport.update({
+	id: "/integrations",
+	path: "/integrations",
+	getParentRoute: () => AppOrgIdSettingsLayoutRoute,
+} as any)
 const AppOrgIdSettingsEmailRoute = AppOrgIdSettingsEmailRouteImport.update({
-  id: '/email',
-  path: '/email',
-  getParentRoute: () => AppOrgIdSettingsLayoutRoute,
+	id: "/email",
+	path: "/email",
+	getParentRoute: () => AppOrgIdSettingsLayoutRoute,
 } as any)
 const AppOrgIdSettingsDebugRoute = AppOrgIdSettingsDebugRouteImport.update({
-  id: '/debug',
-  path: '/debug',
-  getParentRoute: () => AppOrgIdSettingsLayoutRoute,
+	id: "/debug",
+	path: "/debug",
+	getParentRoute: () => AppOrgIdSettingsLayoutRoute,
 } as any)
 const AppOrgIdSettingsBillingRoute = AppOrgIdSettingsBillingRouteImport.update({
-  id: '/billing',
-  path: '/billing',
-  getParentRoute: () => AppOrgIdSettingsLayoutRoute,
+	id: "/billing",
+	path: "/billing",
+	getParentRoute: () => AppOrgIdSettingsLayoutRoute,
 } as any)
 const AppOrgIdChatIdRoute = AppOrgIdChatIdRouteImport.update({
-  id: '/chat/$id',
-  path: '/chat/$id',
-  getParentRoute: () => AppOrgIdLayoutRoute,
+	id: "/chat/$id",
+	path: "/chat/$id",
+	getParentRoute: () => AppOrgIdLayoutRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/test': typeof TestRoute
-  '/$orgId': typeof AppOrgIdLayoutRouteWithChildren
-  '/onboarding': typeof AppOnboardingRoute
-  '/auth/login': typeof AuthLoginRoute
-  '/': typeof AppIndexRoute
-  '/$orgId/settings': typeof AppOrgIdSettingsLayoutRouteWithChildren
-  '/$orgId/call': typeof AppOrgIdCallRoute
-  '/$orgId/notifications': typeof AppOrgIdNotificationsRoute
-  '/$orgId/': typeof AppOrgIdIndexRoute
-  '/$orgId/chat/$id': typeof AppOrgIdChatIdRoute
-  '/$orgId/settings/billing': typeof AppOrgIdSettingsBillingRoute
-  '/$orgId/settings/debug': typeof AppOrgIdSettingsDebugRoute
-  '/$orgId/settings/email': typeof AppOrgIdSettingsEmailRoute
-  '/$orgId/settings/integrations': typeof AppOrgIdSettingsIntegrationsRoute
-  '/$orgId/settings/invitations': typeof AppOrgIdSettingsInvitationsRoute
-  '/$orgId/settings/notifications': typeof AppOrgIdSettingsNotificationsRoute
-  '/$orgId/settings/profile': typeof AppOrgIdSettingsProfileRoute
-  '/$orgId/settings/team': typeof AppOrgIdSettingsTeamRoute
-  '/$orgId/chat': typeof AppOrgIdChatIndexRoute
-  '/$orgId/settings/': typeof AppOrgIdSettingsIndexRoute
+	"/test": typeof TestRoute
+	"/$orgId": typeof AppOrgIdLayoutRouteWithChildren
+	"/onboarding": typeof AppOnboardingRoute
+	"/auth/login": typeof AuthLoginRoute
+	"/": typeof AppIndexRoute
+	"/$orgId/settings": typeof AppOrgIdSettingsLayoutRouteWithChildren
+	"/$orgId/call": typeof AppOrgIdCallRoute
+	"/$orgId/notifications": typeof AppOrgIdNotificationsRoute
+	"/$orgId/": typeof AppOrgIdIndexRoute
+	"/$orgId/chat/$id": typeof AppOrgIdChatIdRoute
+	"/$orgId/settings/billing": typeof AppOrgIdSettingsBillingRoute
+	"/$orgId/settings/debug": typeof AppOrgIdSettingsDebugRoute
+	"/$orgId/settings/email": typeof AppOrgIdSettingsEmailRoute
+	"/$orgId/settings/integrations": typeof AppOrgIdSettingsIntegrationsRoute
+	"/$orgId/settings/invitations": typeof AppOrgIdSettingsInvitationsRoute
+	"/$orgId/settings/notifications": typeof AppOrgIdSettingsNotificationsRoute
+	"/$orgId/settings/profile": typeof AppOrgIdSettingsProfileRoute
+	"/$orgId/settings/team": typeof AppOrgIdSettingsTeamRoute
+	"/$orgId/chat": typeof AppOrgIdChatIndexRoute
+	"/$orgId/settings/": typeof AppOrgIdSettingsIndexRoute
 }
 export interface FileRoutesByTo {
-  '/test': typeof TestRoute
-  '/onboarding': typeof AppOnboardingRoute
-  '/auth/login': typeof AuthLoginRoute
-  '/': typeof AppIndexRoute
-  '/$orgId/call': typeof AppOrgIdCallRoute
-  '/$orgId/notifications': typeof AppOrgIdNotificationsRoute
-  '/$orgId': typeof AppOrgIdIndexRoute
-  '/$orgId/chat/$id': typeof AppOrgIdChatIdRoute
-  '/$orgId/settings/billing': typeof AppOrgIdSettingsBillingRoute
-  '/$orgId/settings/debug': typeof AppOrgIdSettingsDebugRoute
-  '/$orgId/settings/email': typeof AppOrgIdSettingsEmailRoute
-  '/$orgId/settings/integrations': typeof AppOrgIdSettingsIntegrationsRoute
-  '/$orgId/settings/invitations': typeof AppOrgIdSettingsInvitationsRoute
-  '/$orgId/settings/notifications': typeof AppOrgIdSettingsNotificationsRoute
-  '/$orgId/settings/profile': typeof AppOrgIdSettingsProfileRoute
-  '/$orgId/settings/team': typeof AppOrgIdSettingsTeamRoute
-  '/$orgId/chat': typeof AppOrgIdChatIndexRoute
-  '/$orgId/settings': typeof AppOrgIdSettingsIndexRoute
+	"/test": typeof TestRoute
+	"/onboarding": typeof AppOnboardingRoute
+	"/auth/login": typeof AuthLoginRoute
+	"/": typeof AppIndexRoute
+	"/$orgId/call": typeof AppOrgIdCallRoute
+	"/$orgId/notifications": typeof AppOrgIdNotificationsRoute
+	"/$orgId": typeof AppOrgIdIndexRoute
+	"/$orgId/chat/$id": typeof AppOrgIdChatIdRoute
+	"/$orgId/settings/billing": typeof AppOrgIdSettingsBillingRoute
+	"/$orgId/settings/debug": typeof AppOrgIdSettingsDebugRoute
+	"/$orgId/settings/email": typeof AppOrgIdSettingsEmailRoute
+	"/$orgId/settings/integrations": typeof AppOrgIdSettingsIntegrationsRoute
+	"/$orgId/settings/invitations": typeof AppOrgIdSettingsInvitationsRoute
+	"/$orgId/settings/notifications": typeof AppOrgIdSettingsNotificationsRoute
+	"/$orgId/settings/profile": typeof AppOrgIdSettingsProfileRoute
+	"/$orgId/settings/team": typeof AppOrgIdSettingsTeamRoute
+	"/$orgId/chat": typeof AppOrgIdChatIndexRoute
+	"/$orgId/settings": typeof AppOrgIdSettingsIndexRoute
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport
-  '/_app': typeof AppLayoutRouteWithChildren
-  '/test': typeof TestRoute
-  '/_app/$orgId': typeof AppOrgIdLayoutRouteWithChildren
-  '/_app/onboarding': typeof AppOnboardingRoute
-  '/auth/login': typeof AuthLoginRoute
-  '/_app/': typeof AppIndexRoute
-  '/_app/$orgId/settings': typeof AppOrgIdSettingsLayoutRouteWithChildren
-  '/_app/$orgId/call': typeof AppOrgIdCallRoute
-  '/_app/$orgId/notifications': typeof AppOrgIdNotificationsRoute
-  '/_app/$orgId/': typeof AppOrgIdIndexRoute
-  '/_app/$orgId/chat/$id': typeof AppOrgIdChatIdRoute
-  '/_app/$orgId/settings/billing': typeof AppOrgIdSettingsBillingRoute
-  '/_app/$orgId/settings/debug': typeof AppOrgIdSettingsDebugRoute
-  '/_app/$orgId/settings/email': typeof AppOrgIdSettingsEmailRoute
-  '/_app/$orgId/settings/integrations': typeof AppOrgIdSettingsIntegrationsRoute
-  '/_app/$orgId/settings/invitations': typeof AppOrgIdSettingsInvitationsRoute
-  '/_app/$orgId/settings/notifications': typeof AppOrgIdSettingsNotificationsRoute
-  '/_app/$orgId/settings/profile': typeof AppOrgIdSettingsProfileRoute
-  '/_app/$orgId/settings/team': typeof AppOrgIdSettingsTeamRoute
-  '/_app/$orgId/chat/': typeof AppOrgIdChatIndexRoute
-  '/_app/$orgId/settings/': typeof AppOrgIdSettingsIndexRoute
+	__root__: typeof rootRouteImport
+	"/_app": typeof AppLayoutRouteWithChildren
+	"/test": typeof TestRoute
+	"/_app/$orgId": typeof AppOrgIdLayoutRouteWithChildren
+	"/_app/onboarding": typeof AppOnboardingRoute
+	"/auth/login": typeof AuthLoginRoute
+	"/_app/": typeof AppIndexRoute
+	"/_app/$orgId/settings": typeof AppOrgIdSettingsLayoutRouteWithChildren
+	"/_app/$orgId/call": typeof AppOrgIdCallRoute
+	"/_app/$orgId/notifications": typeof AppOrgIdNotificationsRoute
+	"/_app/$orgId/": typeof AppOrgIdIndexRoute
+	"/_app/$orgId/chat/$id": typeof AppOrgIdChatIdRoute
+	"/_app/$orgId/settings/billing": typeof AppOrgIdSettingsBillingRoute
+	"/_app/$orgId/settings/debug": typeof AppOrgIdSettingsDebugRoute
+	"/_app/$orgId/settings/email": typeof AppOrgIdSettingsEmailRoute
+	"/_app/$orgId/settings/integrations": typeof AppOrgIdSettingsIntegrationsRoute
+	"/_app/$orgId/settings/invitations": typeof AppOrgIdSettingsInvitationsRoute
+	"/_app/$orgId/settings/notifications": typeof AppOrgIdSettingsNotificationsRoute
+	"/_app/$orgId/settings/profile": typeof AppOrgIdSettingsProfileRoute
+	"/_app/$orgId/settings/team": typeof AppOrgIdSettingsTeamRoute
+	"/_app/$orgId/chat/": typeof AppOrgIdChatIndexRoute
+	"/_app/$orgId/settings/": typeof AppOrgIdSettingsIndexRoute
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/test'
-    | '/$orgId'
-    | '/onboarding'
-    | '/auth/login'
-    | '/'
-    | '/$orgId/settings'
-    | '/$orgId/call'
-    | '/$orgId/notifications'
-    | '/$orgId/'
-    | '/$orgId/chat/$id'
-    | '/$orgId/settings/billing'
-    | '/$orgId/settings/debug'
-    | '/$orgId/settings/email'
-    | '/$orgId/settings/integrations'
-    | '/$orgId/settings/invitations'
-    | '/$orgId/settings/notifications'
-    | '/$orgId/settings/profile'
-    | '/$orgId/settings/team'
-    | '/$orgId/chat'
-    | '/$orgId/settings/'
-  fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/test'
-    | '/onboarding'
-    | '/auth/login'
-    | '/'
-    | '/$orgId/call'
-    | '/$orgId/notifications'
-    | '/$orgId'
-    | '/$orgId/chat/$id'
-    | '/$orgId/settings/billing'
-    | '/$orgId/settings/debug'
-    | '/$orgId/settings/email'
-    | '/$orgId/settings/integrations'
-    | '/$orgId/settings/invitations'
-    | '/$orgId/settings/notifications'
-    | '/$orgId/settings/profile'
-    | '/$orgId/settings/team'
-    | '/$orgId/chat'
-    | '/$orgId/settings'
-  id:
-    | '__root__'
-    | '/_app'
-    | '/test'
-    | '/_app/$orgId'
-    | '/_app/onboarding'
-    | '/auth/login'
-    | '/_app/'
-    | '/_app/$orgId/settings'
-    | '/_app/$orgId/call'
-    | '/_app/$orgId/notifications'
-    | '/_app/$orgId/'
-    | '/_app/$orgId/chat/$id'
-    | '/_app/$orgId/settings/billing'
-    | '/_app/$orgId/settings/debug'
-    | '/_app/$orgId/settings/email'
-    | '/_app/$orgId/settings/integrations'
-    | '/_app/$orgId/settings/invitations'
-    | '/_app/$orgId/settings/notifications'
-    | '/_app/$orgId/settings/profile'
-    | '/_app/$orgId/settings/team'
-    | '/_app/$orgId/chat/'
-    | '/_app/$orgId/settings/'
-  fileRoutesById: FileRoutesById
+	fileRoutesByFullPath: FileRoutesByFullPath
+	fullPaths:
+		| "/test"
+		| "/$orgId"
+		| "/onboarding"
+		| "/auth/login"
+		| "/"
+		| "/$orgId/settings"
+		| "/$orgId/call"
+		| "/$orgId/notifications"
+		| "/$orgId/"
+		| "/$orgId/chat/$id"
+		| "/$orgId/settings/billing"
+		| "/$orgId/settings/debug"
+		| "/$orgId/settings/email"
+		| "/$orgId/settings/integrations"
+		| "/$orgId/settings/invitations"
+		| "/$orgId/settings/notifications"
+		| "/$orgId/settings/profile"
+		| "/$orgId/settings/team"
+		| "/$orgId/chat"
+		| "/$orgId/settings/"
+	fileRoutesByTo: FileRoutesByTo
+	to:
+		| "/test"
+		| "/onboarding"
+		| "/auth/login"
+		| "/"
+		| "/$orgId/call"
+		| "/$orgId/notifications"
+		| "/$orgId"
+		| "/$orgId/chat/$id"
+		| "/$orgId/settings/billing"
+		| "/$orgId/settings/debug"
+		| "/$orgId/settings/email"
+		| "/$orgId/settings/integrations"
+		| "/$orgId/settings/invitations"
+		| "/$orgId/settings/notifications"
+		| "/$orgId/settings/profile"
+		| "/$orgId/settings/team"
+		| "/$orgId/chat"
+		| "/$orgId/settings"
+	id:
+		| "__root__"
+		| "/_app"
+		| "/test"
+		| "/_app/$orgId"
+		| "/_app/onboarding"
+		| "/auth/login"
+		| "/_app/"
+		| "/_app/$orgId/settings"
+		| "/_app/$orgId/call"
+		| "/_app/$orgId/notifications"
+		| "/_app/$orgId/"
+		| "/_app/$orgId/chat/$id"
+		| "/_app/$orgId/settings/billing"
+		| "/_app/$orgId/settings/debug"
+		| "/_app/$orgId/settings/email"
+		| "/_app/$orgId/settings/integrations"
+		| "/_app/$orgId/settings/invitations"
+		| "/_app/$orgId/settings/notifications"
+		| "/_app/$orgId/settings/profile"
+		| "/_app/$orgId/settings/team"
+		| "/_app/$orgId/chat/"
+		| "/_app/$orgId/settings/"
+	fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  AppLayoutRoute: typeof AppLayoutRouteWithChildren
-  TestRoute: typeof TestRoute
-  AuthLoginRoute: typeof AuthLoginRoute
+	AppLayoutRoute: typeof AppLayoutRouteWithChildren
+	TestRoute: typeof TestRoute
+	AuthLoginRoute: typeof AuthLoginRoute
 }
 
-declare module '@tanstack/react-router' {
-  interface FileRoutesByPath {
-    '/test': {
-      id: '/test'
-      path: '/test'
-      fullPath: '/test'
-      preLoaderRoute: typeof TestRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_app': {
-      id: '/_app'
-      path: ''
-      fullPath: ''
-      preLoaderRoute: typeof AppLayoutRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_app/': {
-      id: '/_app/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof AppIndexRouteImport
-      parentRoute: typeof AppLayoutRoute
-    }
-    '/auth/login': {
-      id: '/auth/login'
-      path: '/auth/login'
-      fullPath: '/auth/login'
-      preLoaderRoute: typeof AuthLoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_app/onboarding': {
-      id: '/_app/onboarding'
-      path: '/onboarding'
-      fullPath: '/onboarding'
-      preLoaderRoute: typeof AppOnboardingRouteImport
-      parentRoute: typeof AppLayoutRoute
-    }
-    '/_app/$orgId': {
-      id: '/_app/$orgId'
-      path: '/$orgId'
-      fullPath: '/$orgId'
-      preLoaderRoute: typeof AppOrgIdLayoutRouteImport
-      parentRoute: typeof AppLayoutRoute
-    }
-    '/_app/$orgId/': {
-      id: '/_app/$orgId/'
-      path: '/'
-      fullPath: '/$orgId/'
-      preLoaderRoute: typeof AppOrgIdIndexRouteImport
-      parentRoute: typeof AppOrgIdLayoutRoute
-    }
-    '/_app/$orgId/notifications': {
-      id: '/_app/$orgId/notifications'
-      path: '/notifications'
-      fullPath: '/$orgId/notifications'
-      preLoaderRoute: typeof AppOrgIdNotificationsRouteImport
-      parentRoute: typeof AppOrgIdLayoutRoute
-    }
-    '/_app/$orgId/call': {
-      id: '/_app/$orgId/call'
-      path: '/call'
-      fullPath: '/$orgId/call'
-      preLoaderRoute: typeof AppOrgIdCallRouteImport
-      parentRoute: typeof AppOrgIdLayoutRoute
-    }
-    '/_app/$orgId/settings': {
-      id: '/_app/$orgId/settings'
-      path: '/settings'
-      fullPath: '/$orgId/settings'
-      preLoaderRoute: typeof AppOrgIdSettingsLayoutRouteImport
-      parentRoute: typeof AppOrgIdLayoutRoute
-    }
-    '/_app/$orgId/settings/': {
-      id: '/_app/$orgId/settings/'
-      path: '/'
-      fullPath: '/$orgId/settings/'
-      preLoaderRoute: typeof AppOrgIdSettingsIndexRouteImport
-      parentRoute: typeof AppOrgIdSettingsLayoutRoute
-    }
-    '/_app/$orgId/chat/': {
-      id: '/_app/$orgId/chat/'
-      path: '/chat'
-      fullPath: '/$orgId/chat'
-      preLoaderRoute: typeof AppOrgIdChatIndexRouteImport
-      parentRoute: typeof AppOrgIdLayoutRoute
-    }
-    '/_app/$orgId/settings/team': {
-      id: '/_app/$orgId/settings/team'
-      path: '/team'
-      fullPath: '/$orgId/settings/team'
-      preLoaderRoute: typeof AppOrgIdSettingsTeamRouteImport
-      parentRoute: typeof AppOrgIdSettingsLayoutRoute
-    }
-    '/_app/$orgId/settings/profile': {
-      id: '/_app/$orgId/settings/profile'
-      path: '/profile'
-      fullPath: '/$orgId/settings/profile'
-      preLoaderRoute: typeof AppOrgIdSettingsProfileRouteImport
-      parentRoute: typeof AppOrgIdSettingsLayoutRoute
-    }
-    '/_app/$orgId/settings/notifications': {
-      id: '/_app/$orgId/settings/notifications'
-      path: '/notifications'
-      fullPath: '/$orgId/settings/notifications'
-      preLoaderRoute: typeof AppOrgIdSettingsNotificationsRouteImport
-      parentRoute: typeof AppOrgIdSettingsLayoutRoute
-    }
-    '/_app/$orgId/settings/invitations': {
-      id: '/_app/$orgId/settings/invitations'
-      path: '/invitations'
-      fullPath: '/$orgId/settings/invitations'
-      preLoaderRoute: typeof AppOrgIdSettingsInvitationsRouteImport
-      parentRoute: typeof AppOrgIdSettingsLayoutRoute
-    }
-    '/_app/$orgId/settings/integrations': {
-      id: '/_app/$orgId/settings/integrations'
-      path: '/integrations'
-      fullPath: '/$orgId/settings/integrations'
-      preLoaderRoute: typeof AppOrgIdSettingsIntegrationsRouteImport
-      parentRoute: typeof AppOrgIdSettingsLayoutRoute
-    }
-    '/_app/$orgId/settings/email': {
-      id: '/_app/$orgId/settings/email'
-      path: '/email'
-      fullPath: '/$orgId/settings/email'
-      preLoaderRoute: typeof AppOrgIdSettingsEmailRouteImport
-      parentRoute: typeof AppOrgIdSettingsLayoutRoute
-    }
-    '/_app/$orgId/settings/debug': {
-      id: '/_app/$orgId/settings/debug'
-      path: '/debug'
-      fullPath: '/$orgId/settings/debug'
-      preLoaderRoute: typeof AppOrgIdSettingsDebugRouteImport
-      parentRoute: typeof AppOrgIdSettingsLayoutRoute
-    }
-    '/_app/$orgId/settings/billing': {
-      id: '/_app/$orgId/settings/billing'
-      path: '/billing'
-      fullPath: '/$orgId/settings/billing'
-      preLoaderRoute: typeof AppOrgIdSettingsBillingRouteImport
-      parentRoute: typeof AppOrgIdSettingsLayoutRoute
-    }
-    '/_app/$orgId/chat/$id': {
-      id: '/_app/$orgId/chat/$id'
-      path: '/chat/$id'
-      fullPath: '/$orgId/chat/$id'
-      preLoaderRoute: typeof AppOrgIdChatIdRouteImport
-      parentRoute: typeof AppOrgIdLayoutRoute
-    }
-  }
+declare module "@tanstack/react-router" {
+	interface FileRoutesByPath {
+		"/test": {
+			id: "/test"
+			path: "/test"
+			fullPath: "/test"
+			preLoaderRoute: typeof TestRouteImport
+			parentRoute: typeof rootRouteImport
+		}
+		"/_app": {
+			id: "/_app"
+			path: ""
+			fullPath: ""
+			preLoaderRoute: typeof AppLayoutRouteImport
+			parentRoute: typeof rootRouteImport
+		}
+		"/_app/": {
+			id: "/_app/"
+			path: "/"
+			fullPath: "/"
+			preLoaderRoute: typeof AppIndexRouteImport
+			parentRoute: typeof AppLayoutRoute
+		}
+		"/auth/login": {
+			id: "/auth/login"
+			path: "/auth/login"
+			fullPath: "/auth/login"
+			preLoaderRoute: typeof AuthLoginRouteImport
+			parentRoute: typeof rootRouteImport
+		}
+		"/_app/onboarding": {
+			id: "/_app/onboarding"
+			path: "/onboarding"
+			fullPath: "/onboarding"
+			preLoaderRoute: typeof AppOnboardingRouteImport
+			parentRoute: typeof AppLayoutRoute
+		}
+		"/_app/$orgId": {
+			id: "/_app/$orgId"
+			path: "/$orgId"
+			fullPath: "/$orgId"
+			preLoaderRoute: typeof AppOrgIdLayoutRouteImport
+			parentRoute: typeof AppLayoutRoute
+		}
+		"/_app/$orgId/": {
+			id: "/_app/$orgId/"
+			path: "/"
+			fullPath: "/$orgId/"
+			preLoaderRoute: typeof AppOrgIdIndexRouteImport
+			parentRoute: typeof AppOrgIdLayoutRoute
+		}
+		"/_app/$orgId/notifications": {
+			id: "/_app/$orgId/notifications"
+			path: "/notifications"
+			fullPath: "/$orgId/notifications"
+			preLoaderRoute: typeof AppOrgIdNotificationsRouteImport
+			parentRoute: typeof AppOrgIdLayoutRoute
+		}
+		"/_app/$orgId/call": {
+			id: "/_app/$orgId/call"
+			path: "/call"
+			fullPath: "/$orgId/call"
+			preLoaderRoute: typeof AppOrgIdCallRouteImport
+			parentRoute: typeof AppOrgIdLayoutRoute
+		}
+		"/_app/$orgId/settings": {
+			id: "/_app/$orgId/settings"
+			path: "/settings"
+			fullPath: "/$orgId/settings"
+			preLoaderRoute: typeof AppOrgIdSettingsLayoutRouteImport
+			parentRoute: typeof AppOrgIdLayoutRoute
+		}
+		"/_app/$orgId/settings/": {
+			id: "/_app/$orgId/settings/"
+			path: "/"
+			fullPath: "/$orgId/settings/"
+			preLoaderRoute: typeof AppOrgIdSettingsIndexRouteImport
+			parentRoute: typeof AppOrgIdSettingsLayoutRoute
+		}
+		"/_app/$orgId/chat/": {
+			id: "/_app/$orgId/chat/"
+			path: "/chat"
+			fullPath: "/$orgId/chat"
+			preLoaderRoute: typeof AppOrgIdChatIndexRouteImport
+			parentRoute: typeof AppOrgIdLayoutRoute
+		}
+		"/_app/$orgId/settings/team": {
+			id: "/_app/$orgId/settings/team"
+			path: "/team"
+			fullPath: "/$orgId/settings/team"
+			preLoaderRoute: typeof AppOrgIdSettingsTeamRouteImport
+			parentRoute: typeof AppOrgIdSettingsLayoutRoute
+		}
+		"/_app/$orgId/settings/profile": {
+			id: "/_app/$orgId/settings/profile"
+			path: "/profile"
+			fullPath: "/$orgId/settings/profile"
+			preLoaderRoute: typeof AppOrgIdSettingsProfileRouteImport
+			parentRoute: typeof AppOrgIdSettingsLayoutRoute
+		}
+		"/_app/$orgId/settings/notifications": {
+			id: "/_app/$orgId/settings/notifications"
+			path: "/notifications"
+			fullPath: "/$orgId/settings/notifications"
+			preLoaderRoute: typeof AppOrgIdSettingsNotificationsRouteImport
+			parentRoute: typeof AppOrgIdSettingsLayoutRoute
+		}
+		"/_app/$orgId/settings/invitations": {
+			id: "/_app/$orgId/settings/invitations"
+			path: "/invitations"
+			fullPath: "/$orgId/settings/invitations"
+			preLoaderRoute: typeof AppOrgIdSettingsInvitationsRouteImport
+			parentRoute: typeof AppOrgIdSettingsLayoutRoute
+		}
+		"/_app/$orgId/settings/integrations": {
+			id: "/_app/$orgId/settings/integrations"
+			path: "/integrations"
+			fullPath: "/$orgId/settings/integrations"
+			preLoaderRoute: typeof AppOrgIdSettingsIntegrationsRouteImport
+			parentRoute: typeof AppOrgIdSettingsLayoutRoute
+		}
+		"/_app/$orgId/settings/email": {
+			id: "/_app/$orgId/settings/email"
+			path: "/email"
+			fullPath: "/$orgId/settings/email"
+			preLoaderRoute: typeof AppOrgIdSettingsEmailRouteImport
+			parentRoute: typeof AppOrgIdSettingsLayoutRoute
+		}
+		"/_app/$orgId/settings/debug": {
+			id: "/_app/$orgId/settings/debug"
+			path: "/debug"
+			fullPath: "/$orgId/settings/debug"
+			preLoaderRoute: typeof AppOrgIdSettingsDebugRouteImport
+			parentRoute: typeof AppOrgIdSettingsLayoutRoute
+		}
+		"/_app/$orgId/settings/billing": {
+			id: "/_app/$orgId/settings/billing"
+			path: "/billing"
+			fullPath: "/$orgId/settings/billing"
+			preLoaderRoute: typeof AppOrgIdSettingsBillingRouteImport
+			parentRoute: typeof AppOrgIdSettingsLayoutRoute
+		}
+		"/_app/$orgId/chat/$id": {
+			id: "/_app/$orgId/chat/$id"
+			path: "/chat/$id"
+			fullPath: "/$orgId/chat/$id"
+			preLoaderRoute: typeof AppOrgIdChatIdRouteImport
+			parentRoute: typeof AppOrgIdLayoutRoute
+		}
+	}
 }
 
 interface AppOrgIdSettingsLayoutRouteChildren {
-  AppOrgIdSettingsBillingRoute: typeof AppOrgIdSettingsBillingRoute
-  AppOrgIdSettingsDebugRoute: typeof AppOrgIdSettingsDebugRoute
-  AppOrgIdSettingsEmailRoute: typeof AppOrgIdSettingsEmailRoute
-  AppOrgIdSettingsIntegrationsRoute: typeof AppOrgIdSettingsIntegrationsRoute
-  AppOrgIdSettingsInvitationsRoute: typeof AppOrgIdSettingsInvitationsRoute
-  AppOrgIdSettingsNotificationsRoute: typeof AppOrgIdSettingsNotificationsRoute
-  AppOrgIdSettingsProfileRoute: typeof AppOrgIdSettingsProfileRoute
-  AppOrgIdSettingsTeamRoute: typeof AppOrgIdSettingsTeamRoute
-  AppOrgIdSettingsIndexRoute: typeof AppOrgIdSettingsIndexRoute
+	AppOrgIdSettingsBillingRoute: typeof AppOrgIdSettingsBillingRoute
+	AppOrgIdSettingsDebugRoute: typeof AppOrgIdSettingsDebugRoute
+	AppOrgIdSettingsEmailRoute: typeof AppOrgIdSettingsEmailRoute
+	AppOrgIdSettingsIntegrationsRoute: typeof AppOrgIdSettingsIntegrationsRoute
+	AppOrgIdSettingsInvitationsRoute: typeof AppOrgIdSettingsInvitationsRoute
+	AppOrgIdSettingsNotificationsRoute: typeof AppOrgIdSettingsNotificationsRoute
+	AppOrgIdSettingsProfileRoute: typeof AppOrgIdSettingsProfileRoute
+	AppOrgIdSettingsTeamRoute: typeof AppOrgIdSettingsTeamRoute
+	AppOrgIdSettingsIndexRoute: typeof AppOrgIdSettingsIndexRoute
 }
 
-const AppOrgIdSettingsLayoutRouteChildren: AppOrgIdSettingsLayoutRouteChildren =
-  {
-    AppOrgIdSettingsBillingRoute: AppOrgIdSettingsBillingRoute,
-    AppOrgIdSettingsDebugRoute: AppOrgIdSettingsDebugRoute,
-    AppOrgIdSettingsEmailRoute: AppOrgIdSettingsEmailRoute,
-    AppOrgIdSettingsIntegrationsRoute: AppOrgIdSettingsIntegrationsRoute,
-    AppOrgIdSettingsInvitationsRoute: AppOrgIdSettingsInvitationsRoute,
-    AppOrgIdSettingsNotificationsRoute: AppOrgIdSettingsNotificationsRoute,
-    AppOrgIdSettingsProfileRoute: AppOrgIdSettingsProfileRoute,
-    AppOrgIdSettingsTeamRoute: AppOrgIdSettingsTeamRoute,
-    AppOrgIdSettingsIndexRoute: AppOrgIdSettingsIndexRoute,
-  }
+const AppOrgIdSettingsLayoutRouteChildren: AppOrgIdSettingsLayoutRouteChildren = {
+	AppOrgIdSettingsBillingRoute: AppOrgIdSettingsBillingRoute,
+	AppOrgIdSettingsDebugRoute: AppOrgIdSettingsDebugRoute,
+	AppOrgIdSettingsEmailRoute: AppOrgIdSettingsEmailRoute,
+	AppOrgIdSettingsIntegrationsRoute: AppOrgIdSettingsIntegrationsRoute,
+	AppOrgIdSettingsInvitationsRoute: AppOrgIdSettingsInvitationsRoute,
+	AppOrgIdSettingsNotificationsRoute: AppOrgIdSettingsNotificationsRoute,
+	AppOrgIdSettingsProfileRoute: AppOrgIdSettingsProfileRoute,
+	AppOrgIdSettingsTeamRoute: AppOrgIdSettingsTeamRoute,
+	AppOrgIdSettingsIndexRoute: AppOrgIdSettingsIndexRoute,
+}
 
-const AppOrgIdSettingsLayoutRouteWithChildren =
-  AppOrgIdSettingsLayoutRoute._addFileChildren(
-    AppOrgIdSettingsLayoutRouteChildren,
-  )
+const AppOrgIdSettingsLayoutRouteWithChildren = AppOrgIdSettingsLayoutRoute._addFileChildren(
+	AppOrgIdSettingsLayoutRouteChildren,
+)
 
 interface AppOrgIdLayoutRouteChildren {
-  AppOrgIdSettingsLayoutRoute: typeof AppOrgIdSettingsLayoutRouteWithChildren
-  AppOrgIdCallRoute: typeof AppOrgIdCallRoute
-  AppOrgIdNotificationsRoute: typeof AppOrgIdNotificationsRoute
-  AppOrgIdIndexRoute: typeof AppOrgIdIndexRoute
-  AppOrgIdChatIdRoute: typeof AppOrgIdChatIdRoute
-  AppOrgIdChatIndexRoute: typeof AppOrgIdChatIndexRoute
+	AppOrgIdSettingsLayoutRoute: typeof AppOrgIdSettingsLayoutRouteWithChildren
+	AppOrgIdCallRoute: typeof AppOrgIdCallRoute
+	AppOrgIdNotificationsRoute: typeof AppOrgIdNotificationsRoute
+	AppOrgIdIndexRoute: typeof AppOrgIdIndexRoute
+	AppOrgIdChatIdRoute: typeof AppOrgIdChatIdRoute
+	AppOrgIdChatIndexRoute: typeof AppOrgIdChatIndexRoute
 }
 
 const AppOrgIdLayoutRouteChildren: AppOrgIdLayoutRouteChildren = {
-  AppOrgIdSettingsLayoutRoute: AppOrgIdSettingsLayoutRouteWithChildren,
-  AppOrgIdCallRoute: AppOrgIdCallRoute,
-  AppOrgIdNotificationsRoute: AppOrgIdNotificationsRoute,
-  AppOrgIdIndexRoute: AppOrgIdIndexRoute,
-  AppOrgIdChatIdRoute: AppOrgIdChatIdRoute,
-  AppOrgIdChatIndexRoute: AppOrgIdChatIndexRoute,
+	AppOrgIdSettingsLayoutRoute: AppOrgIdSettingsLayoutRouteWithChildren,
+	AppOrgIdCallRoute: AppOrgIdCallRoute,
+	AppOrgIdNotificationsRoute: AppOrgIdNotificationsRoute,
+	AppOrgIdIndexRoute: AppOrgIdIndexRoute,
+	AppOrgIdChatIdRoute: AppOrgIdChatIdRoute,
+	AppOrgIdChatIndexRoute: AppOrgIdChatIndexRoute,
 }
 
-const AppOrgIdLayoutRouteWithChildren = AppOrgIdLayoutRoute._addFileChildren(
-  AppOrgIdLayoutRouteChildren,
-)
+const AppOrgIdLayoutRouteWithChildren = AppOrgIdLayoutRoute._addFileChildren(AppOrgIdLayoutRouteChildren)
 
 interface AppLayoutRouteChildren {
-  AppOrgIdLayoutRoute: typeof AppOrgIdLayoutRouteWithChildren
-  AppOnboardingRoute: typeof AppOnboardingRoute
-  AppIndexRoute: typeof AppIndexRoute
+	AppOrgIdLayoutRoute: typeof AppOrgIdLayoutRouteWithChildren
+	AppOnboardingRoute: typeof AppOnboardingRoute
+	AppIndexRoute: typeof AppIndexRoute
 }
 
 const AppLayoutRouteChildren: AppLayoutRouteChildren = {
-  AppOrgIdLayoutRoute: AppOrgIdLayoutRouteWithChildren,
-  AppOnboardingRoute: AppOnboardingRoute,
-  AppIndexRoute: AppIndexRoute,
+	AppOrgIdLayoutRoute: AppOrgIdLayoutRouteWithChildren,
+	AppOnboardingRoute: AppOnboardingRoute,
+	AppIndexRoute: AppIndexRoute,
 }
 
-const AppLayoutRouteWithChildren = AppLayoutRoute._addFileChildren(
-  AppLayoutRouteChildren,
-)
+const AppLayoutRouteWithChildren = AppLayoutRoute._addFileChildren(AppLayoutRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
-  AppLayoutRoute: AppLayoutRouteWithChildren,
-  TestRoute: TestRoute,
-  AuthLoginRoute: AuthLoginRoute,
+	AppLayoutRoute: AppLayoutRouteWithChildren,
+	TestRoute: TestRoute,
+	AuthLoginRoute: AuthLoginRoute,
 }
-export const routeTree = rootRouteImport
-  ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>()
+export const routeTree = rootRouteImport._addFileChildren(rootRouteChildren)._addFileTypes<FileRouteTypes>()

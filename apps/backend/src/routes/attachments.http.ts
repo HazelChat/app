@@ -61,7 +61,7 @@ export const HttpAttachmentLive = HttpApiBuilder.group(HazelApi, "attachments", 
 									uploadedAt: new Date(),
 								}).pipe(
 									Effect.map((res) => res[0]!),
-									policyUse(AttachmentPolicy.canCreate())
+									policyUse(AttachmentPolicy.canCreate()),
 								)
 
 								const txid = yield* generateTransactionId(tx)
@@ -98,7 +98,7 @@ export const HttpAttachmentLive = HttpApiBuilder.group(HazelApi, "attachments", 
 						.transaction(
 							Effect.fnUntraced(function* (tx) {
 								yield* AttachmentRepo.deleteById(path.id).pipe(
-									policyUse(AttachmentPolicy.canDelete(path.id))
+									policyUse(AttachmentPolicy.canDelete(path.id)),
 								)
 
 								const txid = yield* generateTransactionId(tx)

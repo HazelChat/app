@@ -29,7 +29,9 @@ export const HttpDirectMessageParticipantLive = HttpApiBuilder.group(
 											userId: user.id,
 										}).pipe(
 											Effect.map((res) => res[0]!),
-											policyUse(DirectMessageParticipantPolicy.canCreate(payload.channelId))
+											policyUse(
+												DirectMessageParticipantPolicy.canCreate(payload.channelId),
+											),
 										)
 
 									const txid = yield* generateTransactionId(tx)
@@ -103,7 +105,7 @@ export const HttpDirectMessageParticipantLive = HttpApiBuilder.group(
 							.transaction(
 								Effect.fnUntraced(function* (tx) {
 									yield* DirectMessageParticipantRepo.deleteById(path.id).pipe(
-										policyUse(DirectMessageParticipantPolicy.canDelete(path.id))
+										policyUse(DirectMessageParticipantPolicy.canDelete(path.id)),
 									)
 
 									const txid = yield* generateTransactionId(tx)

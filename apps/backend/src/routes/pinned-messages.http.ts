@@ -25,7 +25,7 @@ export const HttpPinnedMessageLive = HttpApiBuilder.group(HazelApi, "pinnedMessa
 									pinnedBy: user.id,
 								}).pipe(
 									Effect.map((res) => res[0]!),
-									policyUse(PinnedMessagePolicy.canCreate(payload.channelId))
+									policyUse(PinnedMessagePolicy.canCreate(payload.channelId)),
 								)
 
 								const txid = yield* generateTransactionId(tx)
@@ -98,7 +98,7 @@ export const HttpPinnedMessageLive = HttpApiBuilder.group(HazelApi, "pinnedMessa
 						.transaction(
 							Effect.fnUntraced(function* (tx) {
 								yield* PinnedMessageRepo.deleteById(path.id).pipe(
-									policyUse(PinnedMessagePolicy.canDelete(path.id))
+									policyUse(PinnedMessagePolicy.canDelete(path.id)),
 								)
 
 								const txid = yield* generateTransactionId(tx)

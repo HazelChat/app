@@ -14,7 +14,7 @@ export class MessageReactionPolicy extends Effect.Service<MessageReactionPolicy>
 
 			const messageReactionRepo = yield* MessageReactionRepo
 			const messageRepo = yield* MessageRepo
-			const channelMemberRepo = yield* ChannelMemberRepo
+			const _channelMemberRepo = yield* ChannelMemberRepo
 			const channelRepo = yield* ChannelRepo
 			const organizationMemberRepo = yield* OrganizationMemberRepo
 

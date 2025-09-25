@@ -28,7 +28,7 @@ export const HttpChannelMemberLive = HttpApiBuilder.group(HazelApi, "channelMemb
 									deletedAt: null,
 								}).pipe(
 									Effect.map((res) => res[0]!),
-									policyUse(ChannelMemberPolicy.canCreate(payload.channelId))
+									policyUse(ChannelMemberPolicy.canCreate(payload.channelId)),
 								)
 
 								const txid = yield* generateTransactionId(tx)
@@ -101,7 +101,7 @@ export const HttpChannelMemberLive = HttpApiBuilder.group(HazelApi, "channelMemb
 						.transaction(
 							Effect.fnUntraced(function* (tx) {
 								yield* ChannelMemberRepo.deleteById(path.id).pipe(
-									policyUse(ChannelMemberPolicy.canDelete(path.id))
+									policyUse(ChannelMemberPolicy.canDelete(path.id)),
 								)
 
 								const txid = yield* generateTransactionId(tx)

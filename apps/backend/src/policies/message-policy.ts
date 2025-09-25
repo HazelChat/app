@@ -10,7 +10,7 @@ export class MessagePolicy extends Effect.Service<MessagePolicy>()("MessagePolic
 		const policyEntity = "Message" as const
 
 		const messageRepo = yield* MessageRepo
-		const channelMemberRepo = yield* ChannelMemberRepo
+		const _channelMemberRepo = yield* ChannelMemberRepo
 		const channelRepo = yield* ChannelRepo
 		const organizationMemberRepo = yield* OrganizationMemberRepo
 

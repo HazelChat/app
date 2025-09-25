@@ -30,7 +30,7 @@ export const HttpMessageLive = HttpApiBuilder.group(HazelApi, "messages", (handl
 									deletedAt: null,
 								}).pipe(
 									Effect.map((res) => res[0]!),
-									policyUse(MessagePolicy.canCreate(payload.channelId))
+									policyUse(MessagePolicy.canCreate(payload.channelId)),
 								)
 
 								// If there are attachmentIds, update those attachments with the messageId
@@ -116,7 +116,7 @@ export const HttpMessageLive = HttpApiBuilder.group(HazelApi, "messages", (handl
 						.transaction(
 							Effect.fnUntraced(function* (tx) {
 								yield* MessageRepo.deleteById(path.id).pipe(
-									policyUse(MessagePolicy.canDelete(path.id))
+									policyUse(MessagePolicy.canDelete(path.id)),
 								)
 
 								const txid = yield* generateTransactionId(tx)
