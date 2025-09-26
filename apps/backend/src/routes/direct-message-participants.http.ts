@@ -1,6 +1,6 @@
 import { HttpApiBuilder } from "@effect/platform"
 import { Database } from "@hazel/db"
-import { CurrentUser, InternalServerError, policyUse } from "@hazel/effect-lib"
+import { CurrentUser, InternalServerError, policyUse, withRemapDbErrors } from "@hazel/effect-lib"
 import { Effect } from "effect"
 import { HazelApi } from "../api"
 import { generateTransactionId } from "../lib/create-transactionId"
@@ -39,20 +39,7 @@ export const HttpDirectMessageParticipantLive = HttpApiBuilder.group(
 									return { createdDirectMessageParticipant, txid }
 								}),
 							)
-							.pipe(
-								Effect.catchTags({
-									DatabaseError: (err) =>
-										new InternalServerError({
-											message: "Error Creating Direct Message Participant",
-											cause: err,
-										}),
-									ParseError: (err) =>
-										new InternalServerError({
-											message: "Error Parsing Response Schema",
-											cause: err,
-										}),
-								}),
-							)
+							.pipe(withRemapDbErrors("DirectMessageParticipant", "create"))
 
 						return {
 							data: createdDirectMessageParticipant,
@@ -70,7 +57,7 @@ export const HttpDirectMessageParticipantLive = HttpApiBuilder.group(
 										yield* DirectMessageParticipantRepo.update({
 											id: path.id,
 											...payload,
-										}).pipe(policyUse(DirectMessageParticipantPolicy.canUpdate(path.id)))
+										})
 
 									const txid = yield* generateTransactionId(tx)
 
@@ -78,18 +65,8 @@ export const HttpDirectMessageParticipantLive = HttpApiBuilder.group(
 								}),
 							)
 							.pipe(
-								Effect.catchTags({
-									DatabaseError: (err) =>
-										new InternalServerError({
-											message: "Error Updating Direct Message Participant",
-											cause: err,
-										}),
-									ParseError: (err) =>
-										new InternalServerError({
-											message: "Error Parsing Response Schema",
-											cause: err,
-										}),
-								}),
+								policyUse(DirectMessageParticipantPolicy.canUpdate(path.id)),
+								withRemapDbErrors("DirectMessageParticipantRepo", "update"),
 							)
 
 						return {
@@ -104,9 +81,7 @@ export const HttpDirectMessageParticipantLive = HttpApiBuilder.group(
 						const { txid } = yield* db
 							.transaction(
 								Effect.fnUntraced(function* (tx) {
-									yield* DirectMessageParticipantRepo.deleteById(path.id).pipe(
-										policyUse(DirectMessageParticipantPolicy.canDelete(path.id)),
-									)
+									yield* DirectMessageParticipantRepo.deleteById(path.id)
 
 									const txid = yield* generateTransactionId(tx)
 
@@ -114,13 +89,8 @@ export const HttpDirectMessageParticipantLive = HttpApiBuilder.group(
 								}),
 							)
 							.pipe(
-								Effect.catchTags({
-									DatabaseError: (err) =>
-										new InternalServerError({
-											message: "Error Deleting Direct Message Participant",
-											cause: err,
-										}),
-								}),
+								policyUse(DirectMessageParticipantPolicy.canDelete(path.id)),
+								withRemapDbErrors("DirectMessageParticipantRepo", "delete"),
 							)
 
 						return {

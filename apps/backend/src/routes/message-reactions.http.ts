@@ -1,6 +1,6 @@
 import { HttpApiBuilder } from "@effect/platform"
 import { Database } from "@hazel/db"
-import { CurrentUser, InternalServerError, policyUse } from "@hazel/effect-lib"
+import { CurrentUser, InternalServerError, policyUse, withRemapDbErrors } from "@hazel/effect-lib"
 import { Effect } from "effect"
 import { HazelApi } from "../api"
 import { generateTransactionId } from "../lib/create-transactionId"
@@ -33,20 +33,7 @@ export const HttpMessageReactionLive = HttpApiBuilder.group(HazelApi, "messageRe
 								return { createdMessageReaction, txid }
 							}),
 						)
-						.pipe(
-							Effect.catchTags({
-								DatabaseError: (err) =>
-									new InternalServerError({
-										message: "Error Creating Message Reaction",
-										cause: err,
-									}),
-								ParseError: (err) =>
-									new InternalServerError({
-										message: "Error Parsing Response Schema",
-										cause: err,
-									}),
-							}),
-						)
+						.pipe(withRemapDbErrors("MessageReaction", "create"))
 
 					return {
 						data: createdMessageReaction,
@@ -63,27 +50,14 @@ export const HttpMessageReactionLive = HttpApiBuilder.group(HazelApi, "messageRe
 								const updatedMessageReaction = yield* MessageReactionRepo.update({
 									id: path.id,
 									...payload,
-								})
+								}).pipe(policyUse(MessageReactionPolicy.canUpdate(path.id)))
 
 								const txid = yield* generateTransactionId(tx)
 
 								return { updatedMessageReaction, txid }
 							}),
 						)
-						.pipe(
-							Effect.catchTags({
-								DatabaseError: (err) =>
-									new InternalServerError({
-										message: "Error Updating Message Reaction",
-										cause: err,
-									}),
-								ParseError: (err) =>
-									new InternalServerError({
-										message: "Error Parsing Response Schema",
-										cause: err,
-									}),
-							}),
-						)
+						.pipe(withRemapDbErrors("MessageReaction", "update"))
 
 					return {
 						data: updatedMessageReaction,
@@ -106,15 +80,7 @@ export const HttpMessageReactionLive = HttpApiBuilder.group(HazelApi, "messageRe
 								return { txid }
 							}),
 						)
-						.pipe(
-							Effect.catchTags({
-								DatabaseError: (err) =>
-									new InternalServerError({
-										message: "Error Deleting Message Reaction",
-										cause: err,
-									}),
-							}),
-						)
+						.pipe(withRemapDbErrors("MessageReaction", "delete"))
 
 					return {
 						transactionId: txid,

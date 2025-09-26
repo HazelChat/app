@@ -1,6 +1,6 @@
 import { HttpApiBuilder } from "@effect/platform"
 import { Database } from "@hazel/db"
-import { CurrentUser, InternalServerError, policyUse } from "@hazel/effect-lib"
+import { CurrentUser, InternalServerError, policyUse, withRemapDbErrors } from "@hazel/effect-lib"
 import { Effect } from "effect"
 import { HazelApi } from "../api"
 import { generateTransactionId } from "../lib/create-transactionId"
@@ -15,8 +15,6 @@ export const HttpUserLive = HttpApiBuilder.group(HazelApi, "users", (handlers) =
 			.handle(
 				"create",
 				Effect.fn(function* ({ payload }) {
-					const _user = yield* CurrentUser.Context
-
 					const { createdUser, txid } = yield* db
 						.transaction(
 							Effect.fnUntraced(function* (tx) {
@@ -33,20 +31,7 @@ export const HttpUserLive = HttpApiBuilder.group(HazelApi, "users", (handlers) =
 								return { createdUser, txid }
 							}),
 						)
-						.pipe(
-							Effect.catchTags({
-								DatabaseError: (err) =>
-									new InternalServerError({
-										message: "Error Creating User",
-										cause: err,
-									}),
-								ParseError: (err) =>
-									new InternalServerError({
-										message: "Error Parsing Response Schema",
-										cause: err,
-									}),
-							}),
-						)
+						.pipe(withRemapDbErrors("User", "create"))
 
 					return {
 						data: createdUser,
@@ -70,20 +55,7 @@ export const HttpUserLive = HttpApiBuilder.group(HazelApi, "users", (handlers) =
 								return { updatedUser, txid }
 							}),
 						)
-						.pipe(
-							Effect.catchTags({
-								DatabaseError: (err) =>
-									new InternalServerError({
-										message: "Error Updating User",
-										cause: err,
-									}),
-								ParseError: (err) =>
-									new InternalServerError({
-										message: "Error Parsing Response Schema",
-										cause: err,
-									}),
-							}),
-						)
+						.pipe(withRemapDbErrors("User", "update"))
 
 					return {
 						data: updatedUser,
@@ -106,15 +78,7 @@ export const HttpUserLive = HttpApiBuilder.group(HazelApi, "users", (handlers) =
 								return { txid }
 							}),
 						)
-						.pipe(
-							Effect.catchTags({
-								DatabaseError: (err) =>
-									new InternalServerError({
-										message: "Error Deleting User",
-										cause: err,
-									}),
-							}),
-						)
+						.pipe(withRemapDbErrors("User", "delete"))
 
 					return {
 						transactionId: txid,

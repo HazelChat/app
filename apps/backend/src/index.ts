@@ -19,6 +19,7 @@ import { DirectMessageParticipantPolicy } from "./policies/direct-message-partic
 import { InvitationPolicy } from "./policies/invitation-policy"
 import { MessagePolicy } from "./policies/message-policy"
 import { MessageReactionPolicy } from "./policies/message-reaction-policy"
+import { NotificationPolicy } from "./policies/notification-policy"
 import { OrganizationMemberPolicy } from "./policies/organization-member-policy"
 import { OrganizationPolicy } from "./policies/organization-policy"
 import { PinnedMessagePolicy } from "./policies/pinned-message-policy"
@@ -27,7 +28,9 @@ import { UserPolicy } from "./policies/user-policy"
 import { AttachmentRepo } from "./repositories/attachment-repo"
 import { ChannelMemberRepo } from "./repositories/channel-member-repo"
 import { ChannelRepo } from "./repositories/channel-repo"
+import { DirectMessageParticipantRepo } from "./repositories/direct-message-participant-repo"
 import { InvitationRepo } from "./repositories/invitation-repo"
+import { MessageReactionRepo } from "./repositories/message-reaction-repo"
 import { MessageRepo } from "./repositories/message-repo"
 import { NotificationRepo } from "./repositories/notification-repo"
 import { OrganizationMemberRepo } from "./repositories/organization-member-repo"
@@ -82,6 +85,8 @@ const RepoLive = Layer.mergeAll(
 	AttachmentRepo.Default,
 	NotificationRepo.Default,
 	TypingIndicatorRepo.Default,
+	MessageReactionRepo.Default,
+	DirectMessageParticipantRepo.Default,
 )
 
 const PolicyLive = Layer.mergeAll(
@@ -98,6 +103,7 @@ const PolicyLive = Layer.mergeAll(
 	AttachmentPolicy.Default,
 	PinnedMessagePolicy.Default,
 	TypingIndicatorPolicy.Default,
+	NotificationPolicy.Default,
 )
 
 const MainLive = Layer.mergeAll(

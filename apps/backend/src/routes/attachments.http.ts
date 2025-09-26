@@ -2,7 +2,7 @@ import { FileSystem, HttpApiBuilder } from "@effect/platform"
 import { MultipartUpload } from "@effect-aws/s3"
 import { Database } from "@hazel/db"
 import { AttachmentId } from "@hazel/db/schema"
-import { CurrentUser, InternalServerError, policyUse } from "@hazel/effect-lib"
+import { CurrentUser, InternalServerError, policyUse, withRemapDbErrors } from "@hazel/effect-lib"
 import { randomUUIDv7 } from "bun"
 import { Config, Effect } from "effect"
 import { HazelApi } from "../api"
@@ -59,10 +59,7 @@ export const HttpAttachmentLive = HttpApiBuilder.group(HazelApi, "attachments", 
 									fileName: fileName,
 									fileSize: Number(stats.size),
 									uploadedAt: new Date(),
-								}).pipe(
-									Effect.map((res) => res[0]!),
-									policyUse(AttachmentPolicy.canCreate()),
-								)
+								}).pipe(Effect.map((res) => res[0]!))
 
 								const txid = yield* generateTransactionId(tx)
 
@@ -70,18 +67,8 @@ export const HttpAttachmentLive = HttpApiBuilder.group(HazelApi, "attachments", 
 							}),
 						)
 						.pipe(
-							Effect.catchTags({
-								DatabaseError: (err) =>
-									new InternalServerError({
-										message: "Error Creating Attachment",
-										cause: err,
-									}),
-								ParseError: (err) =>
-									new InternalServerError({
-										message: "Error Parsing Response Schema",
-										cause: err,
-									}),
-							}),
+							withRemapDbErrors("AttachmentRepo", "create"),
+							policyUse(AttachmentPolicy.canCreate()),
 						)
 
 					return {
@@ -97,9 +84,7 @@ export const HttpAttachmentLive = HttpApiBuilder.group(HazelApi, "attachments", 
 					const { txid } = yield* db
 						.transaction(
 							Effect.fnUntraced(function* (tx) {
-								yield* AttachmentRepo.deleteById(path.id).pipe(
-									policyUse(AttachmentPolicy.canDelete(path.id)),
-								)
+								yield* AttachmentRepo.deleteById(path.id)
 
 								const txid = yield* generateTransactionId(tx)
 
@@ -107,13 +92,8 @@ export const HttpAttachmentLive = HttpApiBuilder.group(HazelApi, "attachments", 
 							}),
 						)
 						.pipe(
-							Effect.catchTags({
-								DatabaseError: (err) =>
-									new InternalServerError({
-										message: "Error Deleting Attachment",
-										cause: err,
-									}),
-							}),
+							policyUse(AttachmentPolicy.canDelete(path.id)),
+							withRemapDbErrors("AttachmentRepo", "delete"),
 						)
 
 					return {

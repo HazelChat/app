@@ -1,4 +1,10 @@
-import { type NotificationId, type OrganizationMemberId, policy, UnauthorizedError } from "@hazel/effect-lib"
+import {
+	type NotificationId,
+	type OrganizationMemberId,
+	policy,
+	UnauthorizedError,
+	withSystemActor,
+} from "@hazel/effect-lib"
 import { Effect, Option } from "effect"
 import { NotificationRepo } from "../repositories/notification-repo"
 import { OrganizationMemberRepo } from "../repositories/organization-member-repo"
@@ -55,19 +61,20 @@ export class NotificationPolicy extends Effect.Service<NotificationPolicy>()("No
 				"update",
 			)(
 				notificationRepo.with(id, (notification) =>
-					policy(
-						policyEntity,
-						"update",
-						Effect.fn(`${policyEntity}.update`)(function* (actor) {
-							// Get the member for this notification
-							const member = yield* organizationMemberRepo.findById(notification.memberId)
+					organizationMemberRepo.with(notification.memberId, (member) =>
+						policy(
+							policyEntity,
+							"update",
+							Effect.fn(`${policyEntity}.update`)(function* (actor) {
+								if (member.userId === actor.id) {
+									return yield* Effect.succeed(true)
+								}
 
-							if (Option.isSome(member) && member.value.userId === actor.id) {
-								return yield* Effect.succeed(true)
-							}
-
-							return yield* Effect.succeed(false)
-						}),
+								return yield* Effect.succeed(
+									member.role === "admin" || member.role === "owner",
+								)
+							}),
+						),
 					),
 				),
 			)
@@ -78,19 +85,20 @@ export class NotificationPolicy extends Effect.Service<NotificationPolicy>()("No
 				"delete",
 			)(
 				notificationRepo.with(id, (notification) =>
-					policy(
-						policyEntity,
-						"delete",
-						Effect.fn(`${policyEntity}.delete`)(function* (actor) {
-							// Get the member for this notification
-							const member = yield* organizationMemberRepo.findById(notification.memberId)
+					organizationMemberRepo.with(notification.memberId, (member) =>
+						policy(
+							policyEntity,
+							"delete",
+							Effect.fn(`${policyEntity}.delete`)(function* (actor) {
+								if (member.userId === actor.id) {
+									return yield* Effect.succeed(true)
+								}
 
-							if (Option.isSome(member) && member.value.userId === actor.id) {
-								return yield* Effect.succeed(true)
-							}
-
-							return yield* Effect.succeed(false)
-						}),
+								return yield* Effect.succeed(
+									member.role === "admin" || member.role === "owner",
+								)
+							}),
+						),
 					),
 				),
 			)
@@ -101,19 +109,20 @@ export class NotificationPolicy extends Effect.Service<NotificationPolicy>()("No
 				"markAsRead",
 			)(
 				notificationRepo.with(id, (notification) =>
-					policy(
-						policyEntity,
-						"markAsRead",
-						Effect.fn(`${policyEntity}.markAsRead`)(function* (actor) {
-							// Get the member for this notification
-							const member = yield* organizationMemberRepo.findById(notification.memberId)
+					organizationMemberRepo.with(notification.memberId, (member) =>
+						policy(
+							policyEntity,
+							"markAsRead",
+							Effect.fn(`${policyEntity}.markAsRead`)(function* (actor) {
+								if (member.userId === actor.id) {
+									return yield* Effect.succeed(true)
+								}
 
-							if (Option.isSome(member) && member.value.userId === actor.id) {
-								return yield* Effect.succeed(true)
-							}
-
-							return yield* Effect.succeed(false)
-						}),
+								return yield* Effect.succeed(
+									member.role === "admin" || member.role === "owner",
+								)
+							}),
+						),
 					),
 				),
 			)
@@ -123,19 +132,18 @@ export class NotificationPolicy extends Effect.Service<NotificationPolicy>()("No
 				policyEntity,
 				"markAllAsRead",
 			)(
-				policy(
-					policyEntity,
-					"markAllAsRead",
-					Effect.fn(`${policyEntity}.markAllAsRead`)(function* (actor) {
-						// Get the member
-						const member = yield* organizationMemberRepo.findById(memberId)
+				organizationMemberRepo.with(memberId, (member) =>
+					policy(
+						policyEntity,
+						"markAllAsRead",
+						Effect.fn(`${policyEntity}.markAllAsRead`)(function* (actor) {
+							if (member.userId === actor.id) {
+								return yield* Effect.succeed(true)
+							}
 
-						if (Option.isSome(member) && member.value.userId === actor.id) {
-							return yield* Effect.succeed(true)
-						}
-
-						return yield* Effect.succeed(false)
-					}),
+							return yield* Effect.succeed(member.role === "admin" || member.role === "owner")
+						}),
+					),
 				),
 			)
 

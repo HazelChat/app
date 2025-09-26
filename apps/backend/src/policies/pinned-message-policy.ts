@@ -14,6 +14,42 @@ export class PinnedMessagePolicy extends Effect.Service<PinnedMessagePolicy>()("
 		const _channelMemberRepo = yield* ChannelMemberRepo
 		const organizationMemberRepo = yield* OrganizationMemberRepo
 
+		const canUpdate = (id: PinnedMessageId) =>
+			UnauthorizedError.refail(
+				policyEntity,
+				"update",
+			)(
+				pinnedMessageRepo.with(id, (pinnedMessage) =>
+					channelRepo.with(pinnedMessage.channelId, (channel) =>
+						policy(
+							policyEntity,
+							"update",
+							Effect.fn(`${policyEntity}.update`)(function* (actor) {
+								// User who pinned can update
+								if (actor.id === pinnedMessage.pinnedBy) {
+									return yield* Effect.succeed(true)
+								}
+
+								// Organization admins can update any message
+								const orgMember = yield* organizationMemberRepo.findByOrgAndUser(
+									channel.organizationId,
+									actor.id,
+								)
+
+								if (
+									Option.isSome(orgMember) &&
+									(orgMember.value.role === "admin" || orgMember.value.role === "owner")
+								) {
+									return yield* Effect.succeed(true)
+								}
+
+								return yield* Effect.succeed(false)
+							}),
+						),
+					),
+				),
+			)
+
 		const canCreate = (channelId: ChannelId) =>
 			UnauthorizedError.refail(
 				policyEntity,
@@ -84,7 +120,7 @@ export class PinnedMessagePolicy extends Effect.Service<PinnedMessagePolicy>()("
 				),
 			)
 
-		return { canCreate, canDelete } as const
+		return { canCreate, canDelete, canUpdate } as const
 	}),
 	dependencies: [
 		PinnedMessageRepo.Default,

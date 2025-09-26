@@ -1,6 +1,6 @@
 import { HttpApiBuilder } from "@effect/platform"
 import { Database } from "@hazel/db"
-import { CurrentUser, InternalServerError, policyUse } from "@hazel/effect-lib"
+import { CurrentUser, InternalServerError, policyUse, withRemapDbErrors } from "@hazel/effect-lib"
 import { Effect, Option } from "effect"
 import { HazelApi, TypingIndicatorNotFoundError } from "../api"
 import { generateTransactionId } from "../lib/create-transactionId"
@@ -15,11 +15,6 @@ export const HttpTypingIndicatorLive = HttpApiBuilder.group(HazelApi, "typingInd
 			.handle(
 				"create",
 				Effect.fn(function* ({ payload }) {
-					const _user = yield* CurrentUser.Context
-
-					// TODO: Verify the user has permission to type in this channel
-					// This would typically check channel membership, organization membership, etc.
-
 					const { typingIndicator, txid } = yield* db
 						.transaction(
 							Effect.fnUntraced(function* (tx) {
@@ -27,7 +22,13 @@ export const HttpTypingIndicatorLive = HttpApiBuilder.group(HazelApi, "typingInd
 								yield* TypingIndicatorRepo.deleteByChannelAndMember({
 									channelId: payload.channelId,
 									memberId: payload.memberId,
-								}).pipe(policyUse(TypingIndicatorPolicy.canCreate(payload.channelId)))
+								}).pipe(
+									policyUse(
+										TypingIndicatorPolicy.canDelete({
+											memberId: payload.memberId,
+										}),
+									),
+								)
 
 								// Then create a new one with current timestamp
 								const typingIndicator = yield* TypingIndicatorRepo.insert({
@@ -43,20 +44,7 @@ export const HttpTypingIndicatorLive = HttpApiBuilder.group(HazelApi, "typingInd
 								return { typingIndicator, txid }
 							}),
 						)
-						.pipe(
-							Effect.catchTags({
-								DatabaseError: (err) =>
-									new InternalServerError({
-										message: "Error Creating Typing Indicator",
-										cause: err,
-									}),
-								ParseError: (err) =>
-									new InternalServerError({
-										message: "Error Parsing Response Schema",
-										cause: err,
-									}),
-							}),
-						)
+						.pipe(withRemapDbErrors("TypingIndicator", "create"))
 
 					return {
 						data: typingIndicator,
@@ -67,10 +55,6 @@ export const HttpTypingIndicatorLive = HttpApiBuilder.group(HazelApi, "typingInd
 			.handle(
 				"update",
 				Effect.fn(function* ({ payload, path }) {
-					const _user = yield* CurrentUser.Context
-
-					// TODO: Verify the user has permission to type in this channel
-
 					const { typingIndicator, txid } = yield* db
 						.transaction(
 							Effect.fnUntraced(function* (tx) {
@@ -85,20 +69,7 @@ export const HttpTypingIndicatorLive = HttpApiBuilder.group(HazelApi, "typingInd
 								return { typingIndicator, txid }
 							}),
 						)
-						.pipe(
-							Effect.catchTags({
-								DatabaseError: (err) =>
-									new InternalServerError({
-										message: "Error Updating Typing Indicator",
-										cause: err,
-									}),
-								ParseError: (err) =>
-									new InternalServerError({
-										message: "Error Parsing Response Schema",
-										cause: err,
-									}),
-							}),
-						)
+						.pipe(withRemapDbErrors("TypingIndicator", "update"))
 
 					return {
 						data: typingIndicator,
@@ -109,13 +80,13 @@ export const HttpTypingIndicatorLive = HttpApiBuilder.group(HazelApi, "typingInd
 			.handle(
 				"delete",
 				Effect.fn(function* ({ path }) {
-					const _user = yield* CurrentUser.Context
-
 					return yield* db
 						.transaction(
 							Effect.fnUntraced(function* (tx) {
 								// First find the typing indicator to return it
-								const existingOption = yield* TypingIndicatorRepo.findById(path.id)
+								const existingOption = yield* TypingIndicatorRepo.findById(path.id).pipe(
+									policyUse(TypingIndicatorPolicy.canRead(path.id)),
+								)
 
 								if (Option.isNone(existingOption)) {
 									return yield* Effect.fail(
@@ -125,9 +96,8 @@ export const HttpTypingIndicatorLive = HttpApiBuilder.group(HazelApi, "typingInd
 
 								const existing = existingOption.value
 
-								// Delete it
 								yield* TypingIndicatorRepo.deleteById(path.id).pipe(
-									policyUse(TypingIndicatorPolicy.canDelete(path.id)),
+									policyUse(TypingIndicatorPolicy.canDelete({ id: path.id })),
 								)
 
 								const txid = yield* generateTransactionId(tx)
@@ -135,17 +105,7 @@ export const HttpTypingIndicatorLive = HttpApiBuilder.group(HazelApi, "typingInd
 								return { data: existing, transactionId: txid }
 							}),
 						)
-						.pipe(
-							Effect.catchTags({
-								DatabaseError: (err) =>
-									Effect.fail(
-										new InternalServerError({
-											message: "Error Deleting Typing Indicator",
-											cause: err,
-										}),
-									),
-							}),
-						)
+						.pipe(withRemapDbErrors("TypingIndicator", "delete"))
 				}),
 			)
 	}),

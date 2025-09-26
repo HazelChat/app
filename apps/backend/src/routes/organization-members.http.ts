@@ -24,17 +24,17 @@ export const HttpOrganizationMemberLive = HttpApiBuilder.group(HazelApi, "organi
 									...payload,
 									userId: user.id,
 									deletedAt: null,
-								}).pipe(
-									Effect.map((res) => res[0]!),
-									policyUse(OrganizationMemberPolicy.canCreate(payload.organizationId)),
-								)
+								}).pipe(Effect.map((res) => res[0]!))
 
 								const txid = yield* generateTransactionId(tx)
 
 								return { createdOrganizationMember, txid }
 							}),
 						)
-						.pipe(withRemapDbErrors("OrganizationMemberRepo", "create"))
+						.pipe(
+							policyUse(OrganizationMemberPolicy.canCreate(payload.organizationId)),
+							withRemapDbErrors("OrganizationMemberRepo", "create"),
+						)
 
 					return {
 						data: createdOrganizationMember,
@@ -51,7 +51,7 @@ export const HttpOrganizationMemberLive = HttpApiBuilder.group(HazelApi, "organi
 								const updatedOrganizationMember = yield* OrganizationMemberRepo.update({
 									id: path.id,
 									...payload,
-								}).pipe(policyUse(OrganizationMemberPolicy.canUpdate(path.id)))
+								})
 
 								const txid = yield* generateTransactionId(tx)
 
@@ -59,18 +59,8 @@ export const HttpOrganizationMemberLive = HttpApiBuilder.group(HazelApi, "organi
 							}),
 						)
 						.pipe(
-							Effect.catchTags({
-								DatabaseError: (err) =>
-									new InternalServerError({
-										message: "Error Updating Organization Member",
-										cause: err,
-									}),
-								ParseError: (err) =>
-									new InternalServerError({
-										message: "Error Parsing Response Schema",
-										cause: err,
-									}),
-							}),
+							policyUse(OrganizationMemberPolicy.canUpdate(path.id)),
+							withRemapDbErrors("OrganizationMemberRepo", "update"),
 						)
 
 					return {

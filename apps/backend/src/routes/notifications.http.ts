@@ -1,6 +1,6 @@
 import { HttpApiBuilder } from "@effect/platform"
 import { Database } from "@hazel/db"
-import { InternalServerError, policyUse } from "@hazel/effect-lib"
+import { InternalServerError, policyUse, withRemapDbErrors } from "@hazel/effect-lib"
 import { Effect } from "effect"
 import { HazelApi } from "../api"
 import { generateTransactionId } from "../lib/create-transactionId"
@@ -30,20 +30,7 @@ export const HttpNotificationLive = HttpApiBuilder.group(HazelApi, "notification
 								return { createdNotification, txid }
 							}),
 						)
-						.pipe(
-							Effect.catchTags({
-								DatabaseError: (err) =>
-									new InternalServerError({
-										message: "Error Creating Notification",
-										cause: err,
-									}),
-								ParseError: (err) =>
-									new InternalServerError({
-										message: "Error Parsing Response Schema",
-										cause: err,
-									}),
-							}),
-						)
+						.pipe(withRemapDbErrors("Notification", "create"))
 
 					return {
 						data: createdNotification,
@@ -67,20 +54,7 @@ export const HttpNotificationLive = HttpApiBuilder.group(HazelApi, "notification
 								return { updatedNotification, txid }
 							}),
 						)
-						.pipe(
-							Effect.catchTags({
-								DatabaseError: (err) =>
-									new InternalServerError({
-										message: "Error Updating Notification",
-										cause: err,
-									}),
-								ParseError: (err) =>
-									new InternalServerError({
-										message: "Error Parsing Response Schema",
-										cause: err,
-									}),
-							}),
-						)
+						.pipe(withRemapDbErrors("Notification", "update"))
 
 					return {
 						data: updatedNotification,
@@ -103,15 +77,7 @@ export const HttpNotificationLive = HttpApiBuilder.group(HazelApi, "notification
 								return { txid }
 							}),
 						)
-						.pipe(
-							Effect.catchTags({
-								DatabaseError: (err) =>
-									new InternalServerError({
-										message: "Error Deleting Notification",
-										cause: err,
-									}),
-							}),
-						)
+						.pipe(withRemapDbErrors("Notification", "delete"))
 
 					return {
 						transactionId: txid,

@@ -1,6 +1,6 @@
 import { HttpApiBuilder } from "@effect/platform"
 import { Database } from "@hazel/db"
-import { CurrentUser, InternalServerError, policyUse } from "@hazel/effect-lib"
+import { CurrentUser, InternalServerError, policyUse, withRemapDbErrors } from "@hazel/effect-lib"
 import { Effect } from "effect"
 import { HazelApi } from "../api"
 import { generateTransactionId } from "../lib/create-transactionId"
@@ -33,20 +33,7 @@ export const HttpPinnedMessageLive = HttpApiBuilder.group(HazelApi, "pinnedMessa
 								return { createdPinnedMessage, txid }
 							}),
 						)
-						.pipe(
-							Effect.catchTags({
-								DatabaseError: (err) =>
-									new InternalServerError({
-										message: "Error Creating Pinned Message",
-										cause: err,
-									}),
-								ParseError: (err) =>
-									new InternalServerError({
-										message: "Error Parsing Response Schema",
-										cause: err,
-									}),
-							}),
-						)
+						.pipe(withRemapDbErrors("PinnedMessage", "create"))
 
 					return {
 						data: createdPinnedMessage,
@@ -63,27 +50,14 @@ export const HttpPinnedMessageLive = HttpApiBuilder.group(HazelApi, "pinnedMessa
 								const updatedPinnedMessage = yield* PinnedMessageRepo.update({
 									id: path.id,
 									...payload,
-								})
+								}).pipe(policyUse(PinnedMessagePolicy.canUpdate(path.id)))
 
 								const txid = yield* generateTransactionId(tx)
 
 								return { updatedPinnedMessage, txid }
 							}),
 						)
-						.pipe(
-							Effect.catchTags({
-								DatabaseError: (err) =>
-									new InternalServerError({
-										message: "Error Updating Pinned Message",
-										cause: err,
-									}),
-								ParseError: (err) =>
-									new InternalServerError({
-										message: "Error Parsing Response Schema",
-										cause: err,
-									}),
-							}),
-						)
+						.pipe(withRemapDbErrors("PinnedMessage", "update"))
 
 					return {
 						data: updatedPinnedMessage,
@@ -106,15 +80,7 @@ export const HttpPinnedMessageLive = HttpApiBuilder.group(HazelApi, "pinnedMessa
 								return { txid }
 							}),
 						)
-						.pipe(
-							Effect.catchTags({
-								DatabaseError: (err) =>
-									new InternalServerError({
-										message: "Error Deleting Pinned Message",
-										cause: err,
-									}),
-							}),
-						)
+						.pipe(withRemapDbErrors("PinnedMessage", "delete"))
 
 					return {
 						transactionId: txid,

@@ -1,6 +1,6 @@
 import { HttpApiBuilder } from "@effect/platform"
 import { Database } from "@hazel/db"
-import { InternalServerError, policyUse } from "@hazel/effect-lib"
+import { InternalServerError, policyUse, withRemapDbErrors } from "@hazel/effect-lib"
 import { Effect } from "effect"
 import { HazelApi } from "../api"
 import { generateTransactionId } from "../lib/create-transactionId"
@@ -37,20 +37,7 @@ export const HttpOrganizationLive = HttpApiBuilder.group(HazelApi, "organization
 								}
 							}),
 						)
-						.pipe(
-							Effect.catchTags({
-								DatabaseError: (err) =>
-									new InternalServerError({
-										message: "Error Creating Organization",
-										cause: err,
-									}),
-								ParseError: (err) =>
-									new InternalServerError({
-										message: "Error Parsing Response Schema",
-										cause: err,
-									}),
-							}),
-						)
+						.pipe(withRemapDbErrors("Organization", "create"))
 
 					return {
 						data: createdOrganization,
@@ -81,20 +68,7 @@ export const HttpOrganizationLive = HttpApiBuilder.group(HazelApi, "organization
 								}
 							}),
 						)
-						.pipe(
-							Effect.catchTags({
-								DatabaseError: (err) =>
-									new InternalServerError({
-										message: "Error Updating Organization",
-										cause: err,
-									}),
-								ParseError: (err) =>
-									new InternalServerError({
-										message: "Error Parsing Response Schema",
-										cause: err,
-									}),
-							}),
-						)
+						.pipe(withRemapDbErrors("Organization", "update"))
 
 					return {
 						data: updatedOrganization,
@@ -117,15 +91,7 @@ export const HttpOrganizationLive = HttpApiBuilder.group(HazelApi, "organization
 								return { txid }
 							}),
 						)
-						.pipe(
-							Effect.catchTags({
-								DatabaseError: (err) =>
-									new InternalServerError({
-										message: "Error Deleting Organization",
-										cause: err,
-									}),
-							}),
-						)
+						.pipe(withRemapDbErrors("Organization", "delete"))
 
 					return {
 						transactionId: txid,

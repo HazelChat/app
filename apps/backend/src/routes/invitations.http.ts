@@ -1,6 +1,6 @@
 import { HttpApiBuilder } from "@effect/platform"
 import { Database } from "@hazel/db"
-import { InternalServerError, policyUse } from "@hazel/effect-lib"
+import { InternalServerError, policyUse, withRemapDbErrors } from "@hazel/effect-lib"
 import { Effect } from "effect"
 import { HazelApi } from "../api"
 import { generateTransactionId } from "../lib/create-transactionId"
@@ -20,10 +20,7 @@ export const HttpInvitationLive = HttpApiBuilder.group(HazelApi, "invitations", 
 							Effect.fnUntraced(function* (tx) {
 								const createdInvitation = yield* InvitationRepo.insert({
 									...payload,
-								}).pipe(
-									Effect.map((res) => res[0]!),
-									policyUse(InvitationPolicy.canCreate(payload.organizationId)),
-								)
+								}).pipe(Effect.map((res) => res[0]!))
 
 								const txid = yield* generateTransactionId(tx)
 
@@ -31,18 +28,8 @@ export const HttpInvitationLive = HttpApiBuilder.group(HazelApi, "invitations", 
 							}),
 						)
 						.pipe(
-							Effect.catchTags({
-								DatabaseError: (err) =>
-									new InternalServerError({
-										message: "Error Creating Invitation",
-										cause: err,
-									}),
-								ParseError: (err) =>
-									new InternalServerError({
-										message: "Error Parsing Response Schema",
-										cause: err,
-									}),
-							}),
+							policyUse(InvitationPolicy.canCreate(payload.organizationId)),
+							withRemapDbErrors("Invitation", "create"),
 						)
 
 					return {
@@ -60,7 +47,7 @@ export const HttpInvitationLive = HttpApiBuilder.group(HazelApi, "invitations", 
 								const updatedInvitation = yield* InvitationRepo.update({
 									id: path.id,
 									...payload,
-								}).pipe(policyUse(InvitationPolicy.canUpdate(path.id)))
+								})
 
 								const txid = yield* generateTransactionId(tx)
 
@@ -68,18 +55,8 @@ export const HttpInvitationLive = HttpApiBuilder.group(HazelApi, "invitations", 
 							}),
 						)
 						.pipe(
-							Effect.catchTags({
-								DatabaseError: (err) =>
-									new InternalServerError({
-										message: "Error Updating Invitation",
-										cause: err,
-									}),
-								ParseError: (err) =>
-									new InternalServerError({
-										message: "Error Parsing Response Schema",
-										cause: err,
-									}),
-							}),
+							policyUse(InvitationPolicy.canUpdate(path.id)),
+							withRemapDbErrors("Invitation", "update"),
 						)
 
 					return {
@@ -94,9 +71,7 @@ export const HttpInvitationLive = HttpApiBuilder.group(HazelApi, "invitations", 
 					const { txid } = yield* db
 						.transaction(
 							Effect.fnUntraced(function* (tx) {
-								yield* InvitationRepo.deleteById(path.id).pipe(
-									policyUse(InvitationPolicy.canDelete(path.id)),
-								)
+								yield* InvitationRepo.deleteById(path.id)
 
 								const txid = yield* generateTransactionId(tx)
 
@@ -104,13 +79,8 @@ export const HttpInvitationLive = HttpApiBuilder.group(HazelApi, "invitations", 
 							}),
 						)
 						.pipe(
-							Effect.catchTags({
-								DatabaseError: (err) =>
-									new InternalServerError({
-										message: "Error Deleting Invitation",
-										cause: err,
-									}),
-							}),
+							policyUse(InvitationPolicy.canDelete(path.id)),
+							withRemapDbErrors("Invitation", "delete"),
 						)
 
 					return {

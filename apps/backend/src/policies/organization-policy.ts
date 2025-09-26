@@ -39,12 +39,12 @@ export class OrganizationPolicy extends Effect.Service<OrganizationPolicy>()("Or
 		const canDelete = (id: OrganizationId) =>
 			UnauthorizedError.refail(
 				policyEntity,
-				"update",
+				"delete",
 			)(
 				policy(
 					policyEntity,
-					"update",
-					Effect.fn(`${policyEntity}.update`)(function* (actor) {
+					"delete",
+					Effect.fn(`${policyEntity}.delete`)(function* (actor) {
 						const currentMember = yield* organziationMemberRepo.findByOrgAndUser(id, actor.id)
 
 						if (Option.isNone(currentMember)) {

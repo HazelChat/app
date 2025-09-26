@@ -59,7 +59,7 @@ export const HttpChannelMemberLive = HttpApiBuilder.group(HazelApi, "channelMemb
 								const updatedChannelMember = yield* ChannelMemberRepo.update({
 									id: path.id,
 									...payload,
-								}).pipe(policyUse(ChannelMemberPolicy.canUpdate(path.id)))
+								})
 
 								const txid = yield* generateTransactionId(tx)
 
@@ -67,18 +67,8 @@ export const HttpChannelMemberLive = HttpApiBuilder.group(HazelApi, "channelMemb
 							}),
 						)
 						.pipe(
-							Effect.catchTags({
-								DatabaseError: (err) =>
-									new InternalServerError({
-										message: "Error Updating Channel Member",
-										cause: err,
-									}),
-								ParseError: (err) =>
-									new InternalServerError({
-										message: "Error Parsing Response Schema",
-										cause: err,
-									}),
-							}),
+							policyUse(ChannelMemberPolicy.canUpdate(path.id)),
+							withRemapDbErrors("ChannelMemberRepo", "update"),
 						)
 
 					return {
@@ -93,9 +83,7 @@ export const HttpChannelMemberLive = HttpApiBuilder.group(HazelApi, "channelMemb
 					const { txid } = yield* db
 						.transaction(
 							Effect.fnUntraced(function* (tx) {
-								yield* ChannelMemberRepo.deleteById(path.id).pipe(
-									policyUse(ChannelMemberPolicy.canDelete(path.id)),
-								)
+								yield* ChannelMemberRepo.deleteById(path.id)
 
 								const txid = yield* generateTransactionId(tx)
 
@@ -103,13 +91,8 @@ export const HttpChannelMemberLive = HttpApiBuilder.group(HazelApi, "channelMemb
 							}),
 						)
 						.pipe(
-							Effect.catchTags({
-								DatabaseError: (err) =>
-									new InternalServerError({
-										message: "Error Deleting Channel Member",
-										cause: err,
-									}),
-							}),
+							policyUse(ChannelMemberPolicy.canDelete(path.id)),
+							withRemapDbErrors("ChannelMemberRepo", "delete"),
 						)
 
 					return {

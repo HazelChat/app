@@ -1,7 +1,7 @@
 import { HttpApiBuilder } from "@effect/platform"
 import { Database } from "@hazel/db"
 import { OrganizationId } from "@hazel/db/schema"
-import { InternalServerError } from "@hazel/effect-lib"
+import { InternalServerError, withRemapDbErrors, withSystemActor } from "@hazel/effect-lib"
 import { Effect } from "effect"
 import { HazelApi } from "../api"
 import { generateTransactionId } from "../lib/create-transactionId"
@@ -32,20 +32,7 @@ export const HttpMockDataLive = HttpApiBuilder.group(HazelApi, "mockData", (hand
 							return { result, txid }
 						}),
 					)
-					.pipe(
-						Effect.catchTags({
-							DatabaseError: (err) =>
-								new InternalServerError({
-									message: "Failed to generate mock data",
-									cause: err,
-								}),
-							ParseError: (err) =>
-								new InternalServerError({
-									message: "Invalid data format",
-									cause: err,
-								}),
-						}),
-					)
+					.pipe(withSystemActor, withRemapDbErrors("MockDataGenerator", "create"))
 
 				return {
 					transactionId: txid,

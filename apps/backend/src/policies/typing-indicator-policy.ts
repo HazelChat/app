@@ -1,5 +1,11 @@
-import { type ChannelId, policy, type TypingIndicatorId, UnauthorizedError } from "@hazel/effect-lib"
-import { Effect, Option } from "effect"
+import {
+	type ChannelId,
+	type ChannelMemberId,
+	policy,
+	type TypingIndicatorId,
+	UnauthorizedError,
+} from "@hazel/effect-lib"
+import { Effect, Option, pipe } from "effect"
 import { ChannelMemberRepo } from "../repositories/channel-member-repo"
 import { TypingIndicatorRepo } from "../repositories/typing-indicator-repo"
 
@@ -11,6 +17,12 @@ export class TypingIndicatorPolicy extends Effect.Service<TypingIndicatorPolicy>
 
 			const channelMemberRepo = yield* ChannelMemberRepo
 			const typingIndicatorRepo = yield* TypingIndicatorRepo
+
+			const canRead = (_id: TypingIndicatorId) =>
+				UnauthorizedError.refail(
+					policyEntity,
+					"select",
+				)(policy(policyEntity, "select", () => Effect.succeed(true)))
 
 			const canCreate = (channelId: ChannelId) =>
 				UnauthorizedError.refail(
@@ -45,24 +57,27 @@ export class TypingIndicatorPolicy extends Effect.Service<TypingIndicatorPolicy>
 					),
 				)
 
-			const canDelete = (id: TypingIndicatorId) =>
+			const canDelete = (data: { memberId: ChannelMemberId } | { id: TypingIndicatorId }) =>
 				UnauthorizedError.refail(
 					policyEntity,
 					"delete",
 				)(
-					typingIndicatorRepo.with(id, (indicator) =>
-						channelMemberRepo.with(indicator.memberId, (member) =>
-							policy(
-								policyEntity,
-								"delete",
-								// User can only delete their own typing indicator
-								(actor) => Effect.succeed(actor.id === member.userId),
+					"memberId" in data
+						? channelMemberRepo.with(data.memberId, (member) =>
+								policy(policyEntity, "delete", (actor) =>
+									Effect.succeed(member.userId === actor.id),
+								),
+							)
+						: typingIndicatorRepo.with(data.id, (indicator) =>
+								channelMemberRepo.with(indicator.memberId, (member) =>
+									policy(policyEntity, "delete", (actor) =>
+										Effect.succeed(member.userId === actor.id),
+									),
+								),
 							),
-						),
-					),
 				)
 
-			return { canCreate, canUpdate, canDelete } as const
+			return { canCreate, canUpdate, canDelete, canRead } as const
 		}),
 		dependencies: [ChannelMemberRepo.Default, TypingIndicatorRepo.Default],
 		accessors: true,

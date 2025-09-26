@@ -12,6 +12,22 @@ export class ChannelMemberPolicy extends Effect.Service<ChannelMemberPolicy>()("
 		const channelRepo = yield* ChannelRepo
 		const organizationMemberRepo = yield* OrganizationMemberRepo
 
+		const isOwner = (id: ChannelMemberId) =>
+			UnauthorizedError.refail(
+				policyEntity,
+				"isOwner",
+			)(
+				channelMemberRepo.with(id, (member) =>
+					policy(
+						policyEntity,
+						"isOwner",
+						Effect.fn(`${policyEntity}.isOwner`)(function* (actor) {
+							return yield* Effect.succeed(actor.id === member.userId)
+						}),
+					),
+				),
+			)
+
 		const canCreate = (channelId: ChannelId) =>
 			UnauthorizedError.refail(
 				policyEntity,
@@ -109,7 +125,7 @@ export class ChannelMemberPolicy extends Effect.Service<ChannelMemberPolicy>()("
 				),
 			)
 
-		return { canCreate, canUpdate, canDelete } as const
+		return { canCreate, canUpdate, canDelete, isOwner } as const
 	}),
 	dependencies: [ChannelMemberRepo.Default, ChannelRepo.Default, OrganizationMemberRepo.Default],
 	accessors: true,

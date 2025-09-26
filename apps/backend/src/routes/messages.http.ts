@@ -1,6 +1,12 @@
 import { HttpApiBuilder } from "@effect/platform"
 import { Database } from "@hazel/db"
-import { CurrentUser, InternalServerError, policyUse, withSystemActor } from "@hazel/effect-lib"
+import {
+	CurrentUser,
+	InternalServerError,
+	policyUse,
+	withRemapDbErrors,
+	withSystemActor,
+} from "@hazel/effect-lib"
 import { Effect } from "effect"
 import { HazelApi } from "../api"
 import { generateTransactionId } from "../lib/create-transactionId"
@@ -49,20 +55,7 @@ export const HttpMessageLive = HttpApiBuilder.group(HazelApi, "messages", (handl
 								return { createdMessage, txid }
 							}),
 						)
-						.pipe(
-							Effect.catchTags({
-								DatabaseError: (err) =>
-									new InternalServerError({
-										message: "Error Creating Message",
-										cause: err,
-									}),
-								ParseError: (err) =>
-									new InternalServerError({
-										message: "Error Parsing Response Schema",
-										cause: err,
-									}),
-							}),
-						)
+						.pipe(withRemapDbErrors("Message", "create"))
 
 					return {
 						data: createdMessage,
@@ -73,8 +66,6 @@ export const HttpMessageLive = HttpApiBuilder.group(HazelApi, "messages", (handl
 			.handle(
 				"update",
 				Effect.fn(function* ({ payload, path }) {
-					const _user = yield* CurrentUser.Context
-
 					const { createdMessage, txid } = yield* db
 						.transaction(
 							Effect.fnUntraced(function* (tx) {
@@ -88,20 +79,7 @@ export const HttpMessageLive = HttpApiBuilder.group(HazelApi, "messages", (handl
 								return { createdMessage, txid }
 							}),
 						)
-						.pipe(
-							Effect.catchTags({
-								DatabaseError: (err) =>
-									new InternalServerError({
-										message: "Error Creating Message",
-										cause: err,
-									}),
-								ParseError: (err) =>
-									new InternalServerError({
-										message: "Error Parsing Response Schema",
-										cause: err,
-									}),
-							}),
-						)
+						.pipe(withRemapDbErrors("Message", "update"))
 
 					return {
 						data: createdMessage,
@@ -124,15 +102,7 @@ export const HttpMessageLive = HttpApiBuilder.group(HazelApi, "messages", (handl
 								return { txid }
 							}),
 						)
-						.pipe(
-							Effect.catchTags({
-								DatabaseError: (err) =>
-									new InternalServerError({
-										message: "Error Creating Message",
-										cause: err,
-									}),
-							}),
-						)
+						.pipe(withRemapDbErrors("Message", "delete"))
 
 					return {
 						transactionId: txid,

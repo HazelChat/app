@@ -14,9 +14,25 @@ export class MessageReactionPolicy extends Effect.Service<MessageReactionPolicy>
 
 			const messageReactionRepo = yield* MessageReactionRepo
 			const messageRepo = yield* MessageRepo
-			const _channelMemberRepo = yield* ChannelMemberRepo
 			const channelRepo = yield* ChannelRepo
 			const organizationMemberRepo = yield* OrganizationMemberRepo
+
+			const canUpdate = (id: MessageReactionId) =>
+				UnauthorizedError.refail(
+					policyEntity,
+					"update",
+				)(
+					messageReactionRepo.with(id, (reaction) =>
+						policy(
+							policyEntity,
+							"update",
+							Effect.fn(`${policyEntity}.update`)(function* (actor) {
+								// Users can only update their own reactions
+								return yield* Effect.succeed(actor.id === reaction.userId)
+							}),
+						),
+					),
+				)
 
 			const canCreate = (messageId: MessageId) =>
 				UnauthorizedError.refail(
@@ -76,7 +92,7 @@ export class MessageReactionPolicy extends Effect.Service<MessageReactionPolicy>
 					),
 				)
 
-			return { canCreate, canDelete } as const
+			return { canCreate, canDelete, canUpdate } as const
 		}),
 		dependencies: [
 			MessageReactionRepo.Default,

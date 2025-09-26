@@ -25,10 +25,6 @@ export const HttpChannelLive = HttpApiBuilder.group(HazelApi, "channels", (handl
 				Effect.fn(function* ({ payload }) {
 					const user = yield* CurrentUser.Context
 
-					// TODO: Verify the user has permission to create channels in this organization
-					// This would typically check organization membership and role permissions
-					// For now, we'll just create the channel
-
 					const { createdChannel, txid } = yield* db
 						.transaction(
 							Effect.fnUntraced(function* (tx) {
@@ -81,20 +77,7 @@ export const HttpChannelLive = HttpApiBuilder.group(HazelApi, "channels", (handl
 								return { updatedChannel, txid }
 							}),
 						)
-						.pipe(
-							Effect.catchTags({
-								DatabaseError: (err) =>
-									new InternalServerError({
-										message: "Error Updating Channel",
-										cause: err,
-									}),
-								ParseError: (err) =>
-									new InternalServerError({
-										message: "Error Parsing Response Schema",
-										cause: err,
-									}),
-							}),
-						)
+						.pipe(withRemapDbErrors("Channel", "update"))
 
 					return {
 						data: updatedChannel,
@@ -108,9 +91,7 @@ export const HttpChannelLive = HttpApiBuilder.group(HazelApi, "channels", (handl
 					const { txid } = yield* db
 						.transaction(
 							Effect.fnUntraced(function* (tx) {
-								yield* ChannelRepo.deleteById(path.id).pipe(
-									policyUse(ChannelPolicy.canDelete(path.id)),
-								)
+								yield* ChannelRepo.deleteById(path.id)
 
 								const txid = yield* generateTransactionId(tx)
 
@@ -118,13 +99,8 @@ export const HttpChannelLive = HttpApiBuilder.group(HazelApi, "channels", (handl
 							}),
 						)
 						.pipe(
-							Effect.catchTags({
-								DatabaseError: (err) =>
-									new InternalServerError({
-										message: "Error Deleting Channel",
-										cause: err,
-									}),
-							}),
+							policyUse(ChannelPolicy.canDelete(path.id)),
+							withRemapDbErrors("Channel", "delete"),
 						)
 
 					return {
