@@ -1,9 +1,10 @@
 import { HttpApiBuilder } from "@effect/platform"
 import { Database } from "@hazel/db"
-import { InternalServerError } from "@hazel/effect-lib"
+import { InternalServerError, policyUse } from "@hazel/effect-lib"
 import { Effect } from "effect"
 import { HazelApi } from "../api"
 import { generateTransactionId } from "../lib/create-transactionId"
+import { InvitationPolicy } from "../policies/invitation-policy"
 import { InvitationRepo } from "../repositories/invitation-repo"
 
 export const HttpInvitationLive = HttpApiBuilder.group(HazelApi, "invitations", (handlers) =>
@@ -19,7 +20,10 @@ export const HttpInvitationLive = HttpApiBuilder.group(HazelApi, "invitations", 
 							Effect.fnUntraced(function* (tx) {
 								const createdInvitation = yield* InvitationRepo.insert({
 									...payload,
-								}).pipe(Effect.map((res) => res[0]!))
+								}).pipe(
+									Effect.map((res) => res[0]!),
+									policyUse(InvitationPolicy.canCreate(payload.organizationId)),
+								)
 
 								const txid = yield* generateTransactionId(tx)
 
@@ -56,7 +60,7 @@ export const HttpInvitationLive = HttpApiBuilder.group(HazelApi, "invitations", 
 								const updatedInvitation = yield* InvitationRepo.update({
 									id: path.id,
 									...payload,
-								})
+								}).pipe(policyUse(InvitationPolicy.canUpdate(path.id)))
 
 								const txid = yield* generateTransactionId(tx)
 
@@ -90,7 +94,9 @@ export const HttpInvitationLive = HttpApiBuilder.group(HazelApi, "invitations", 
 					const { txid } = yield* db
 						.transaction(
 							Effect.fnUntraced(function* (tx) {
-								yield* InvitationRepo.deleteById(path.id)
+								yield* InvitationRepo.deleteById(path.id).pipe(
+									policyUse(InvitationPolicy.canDelete(path.id)),
+								)
 
 								const txid = yield* generateTransactionId(tx)
 

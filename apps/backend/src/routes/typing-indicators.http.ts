@@ -1,9 +1,10 @@
 import { HttpApiBuilder } from "@effect/platform"
 import { Database } from "@hazel/db"
-import { CurrentUser, InternalServerError } from "@hazel/effect-lib"
+import { CurrentUser, InternalServerError, policyUse } from "@hazel/effect-lib"
 import { Effect, Option } from "effect"
 import { HazelApi, TypingIndicatorNotFoundError } from "../api"
 import { generateTransactionId } from "../lib/create-transactionId"
+import { TypingIndicatorPolicy } from "../policies/typing-indicator-policy"
 import { TypingIndicatorRepo } from "../repositories/typing-indicator-repo"
 
 export const HttpTypingIndicatorLive = HttpApiBuilder.group(HazelApi, "typingIndicators", (handlers) =>
@@ -26,13 +27,16 @@ export const HttpTypingIndicatorLive = HttpApiBuilder.group(HazelApi, "typingInd
 								yield* TypingIndicatorRepo.deleteByChannelAndMember({
 									channelId: payload.channelId,
 									memberId: payload.memberId,
-								})
+								}).pipe(policyUse(TypingIndicatorPolicy.canCreate(payload.channelId)))
 
 								// Then create a new one with current timestamp
 								const typingIndicator = yield* TypingIndicatorRepo.insert({
 									...payload,
 									lastTyped: Date.now(),
-								}).pipe(Effect.map((res) => res[0]!))
+								}).pipe(
+									Effect.map((res) => res[0]!),
+									policyUse(TypingIndicatorPolicy.canCreate(payload.channelId)),
+								)
 
 								const txid = yield* generateTransactionId(tx)
 
@@ -74,7 +78,7 @@ export const HttpTypingIndicatorLive = HttpApiBuilder.group(HazelApi, "typingInd
 									...payload,
 									id: path.id,
 									lastTyped: Date.now(),
-								})
+								}).pipe(policyUse(TypingIndicatorPolicy.canUpdate(path.id)))
 
 								const txid = yield* generateTransactionId(tx)
 
@@ -122,7 +126,9 @@ export const HttpTypingIndicatorLive = HttpApiBuilder.group(HazelApi, "typingInd
 								const existing = existingOption.value
 
 								// Delete it
-								yield* TypingIndicatorRepo.deleteById(path.id)
+								yield* TypingIndicatorRepo.deleteById(path.id).pipe(
+									policyUse(TypingIndicatorPolicy.canDelete(path.id)),
+								)
 
 								const txid = yield* generateTransactionId(tx)
 

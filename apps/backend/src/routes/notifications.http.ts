@@ -1,9 +1,10 @@
 import { HttpApiBuilder } from "@effect/platform"
 import { Database } from "@hazel/db"
-import { InternalServerError } from "@hazel/effect-lib"
+import { InternalServerError, policyUse } from "@hazel/effect-lib"
 import { Effect } from "effect"
 import { HazelApi } from "../api"
 import { generateTransactionId } from "../lib/create-transactionId"
+import { NotificationPolicy } from "../policies/notification-policy"
 import { NotificationRepo } from "../repositories/notification-repo"
 
 export const HttpNotificationLive = HttpApiBuilder.group(HazelApi, "notifications", (handlers) =>
@@ -19,7 +20,10 @@ export const HttpNotificationLive = HttpApiBuilder.group(HazelApi, "notification
 							Effect.fnUntraced(function* (tx) {
 								const createdNotification = yield* NotificationRepo.insert({
 									...payload,
-								}).pipe(Effect.map((res) => res[0]!))
+								}).pipe(
+									Effect.map((res) => res[0]!),
+									policyUse(NotificationPolicy.canCreate(payload.memberId as any)),
+								)
 
 								const txid = yield* generateTransactionId(tx)
 
@@ -56,7 +60,7 @@ export const HttpNotificationLive = HttpApiBuilder.group(HazelApi, "notification
 								const updatedNotification = yield* NotificationRepo.update({
 									id: path.id,
 									...payload,
-								})
+								}).pipe(policyUse(NotificationPolicy.canUpdate(path.id)))
 
 								const txid = yield* generateTransactionId(tx)
 
@@ -90,7 +94,9 @@ export const HttpNotificationLive = HttpApiBuilder.group(HazelApi, "notification
 					const { txid } = yield* db
 						.transaction(
 							Effect.fnUntraced(function* (tx) {
-								yield* NotificationRepo.deleteById(path.id)
+								yield* NotificationRepo.deleteById(path.id).pipe(
+									policyUse(NotificationPolicy.canDelete(path.id)),
+								)
 
 								const txid = yield* generateTransactionId(tx)
 

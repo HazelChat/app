@@ -1,9 +1,10 @@
 import { HttpApiBuilder } from "@effect/platform"
 import { Database } from "@hazel/db"
-import { CurrentUser, InternalServerError } from "@hazel/effect-lib"
+import { CurrentUser, InternalServerError, policyUse } from "@hazel/effect-lib"
 import { Effect } from "effect"
 import { HazelApi } from "../api"
 import { generateTransactionId } from "../lib/create-transactionId"
+import { UserPolicy } from "../policies/user-policy"
 import { UserRepo } from "../repositories/user-repo"
 
 export const HttpUserLive = HttpApiBuilder.group(HazelApi, "users", (handlers) =>
@@ -22,7 +23,10 @@ export const HttpUserLive = HttpApiBuilder.group(HazelApi, "users", (handlers) =
 								const createdUser = yield* UserRepo.insert({
 									...payload,
 									deletedAt: null,
-								}).pipe(Effect.map((res) => res[0]!))
+								}).pipe(
+									Effect.map((res) => res[0]!),
+									policyUse(UserPolicy.canCreate()),
+								)
 
 								const txid = yield* generateTransactionId(tx)
 
@@ -59,7 +63,7 @@ export const HttpUserLive = HttpApiBuilder.group(HazelApi, "users", (handlers) =
 								const updatedUser = yield* UserRepo.update({
 									id: path.id,
 									...payload,
-								})
+								}).pipe(policyUse(UserPolicy.canUpdate(path.id)))
 
 								const txid = yield* generateTransactionId(tx)
 
@@ -93,7 +97,9 @@ export const HttpUserLive = HttpApiBuilder.group(HazelApi, "users", (handlers) =
 					const { txid } = yield* db
 						.transaction(
 							Effect.fnUntraced(function* (tx) {
-								yield* UserRepo.deleteById(path.id)
+								yield* UserRepo.deleteById(path.id).pipe(
+									policyUse(UserPolicy.canDelete(path.id)),
+								)
 
 								const txid = yield* generateTransactionId(tx)
 

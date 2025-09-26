@@ -1,9 +1,10 @@
 import { HttpApiBuilder } from "@effect/platform"
 import { Database } from "@hazel/db"
-import { InternalServerError } from "@hazel/effect-lib"
+import { InternalServerError, policyUse } from "@hazel/effect-lib"
 import { Effect } from "effect"
 import { HazelApi } from "../api"
 import { generateTransactionId } from "../lib/create-transactionId"
+import { OrganizationPolicy } from "../policies/organization-policy"
 import { OrganizationRepo } from "../repositories/organization-repo"
 
 export const HttpOrganizationLive = HttpApiBuilder.group(HazelApi, "organizations", (handlers) =>
@@ -20,7 +21,10 @@ export const HttpOrganizationLive = HttpApiBuilder.group(HazelApi, "organization
 								const createdOrganization = yield* OrganizationRepo.insert({
 									...payload,
 									deletedAt: null,
-								}).pipe(Effect.map((res) => res[0]!))
+								}).pipe(
+									Effect.map((res) => res[0]!),
+									policyUse(OrganizationPolicy.canCreate()),
+								)
 
 								const txid = yield* generateTransactionId(tx)
 
@@ -64,7 +68,7 @@ export const HttpOrganizationLive = HttpApiBuilder.group(HazelApi, "organization
 									id: path.id,
 
 									...payload,
-								})
+								}).pipe(policyUse(OrganizationPolicy.canUpdate(path.id)))
 
 								const txid = yield* generateTransactionId(tx)
 
@@ -104,7 +108,9 @@ export const HttpOrganizationLive = HttpApiBuilder.group(HazelApi, "organization
 					const { txid } = yield* db
 						.transaction(
 							Effect.fnUntraced(function* (tx) {
-								yield* OrganizationRepo.deleteById(path.id)
+								yield* OrganizationRepo.deleteById(path.id).pipe(
+									policyUse(OrganizationPolicy.canDelete(path.id)),
+								)
 
 								const txid = yield* generateTransactionId(tx)
 
