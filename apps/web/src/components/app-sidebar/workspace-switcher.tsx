@@ -18,7 +18,7 @@ export const WorkspaceSwitcher = () => {
 	const [createOrgModalOpen, setCreateOrgModalOpen] = useState(false)
 
 	const params = useParams({ strict: false })
-	const { user, switchToOrganization } = useUser()
+	const { user, session, switchToOrganization } = useUser()
 	const navigate = useNavigate()
 
 	const organizationId = params.orgId as OrganizationId
@@ -37,7 +37,7 @@ export const WorkspaceSwitcher = () => {
 
 	const { data: userOrganizations } = useLiveQuery(
 		(q) =>
-			user?.id
+			user?.id && session?.id
 				? q
 						.from({ member: organizationMemberCollection })
 						.innerJoin({ org: organizationCollection }, ({ member, org }) =>
@@ -46,10 +46,9 @@ export const WorkspaceSwitcher = () => {
 						.where(({ member }) => eq(member.userId, user.id))
 						.orderBy(({ member }) => member.createdAt, "asc")
 				: null,
-		[user?.id],
+		[session?.id],
 	)
 
-	// const userOrganizations= []
 
 	const currentOrg = currentOrgData?.[0]
 	const organizations = userOrganizations?.map((row) => row.org) || []
