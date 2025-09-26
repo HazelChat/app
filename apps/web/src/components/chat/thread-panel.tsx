@@ -65,8 +65,8 @@ function ThreadContent({ threadChannelId, originalMessageId, onClose }: ThreadPa
 
 			{/* Thread Composer */}
 			<div className="border-secondary border-t px-4 py-3">
-				<TypingIndicator />
 				<MessageComposer placeholder="Reply in thread..." />
+				<TypingIndicator />
 			</div>
 		</div>
 	)

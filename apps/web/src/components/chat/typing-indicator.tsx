@@ -6,7 +6,7 @@ export function TypingIndicator() {
 	if (typingUsers.length === 0) {
 		return (
 			<div className="px-4 py-2">
-				<div className="flex h-3 items-center gap-2 text-quaternary text-xs"></div>
+				
 			</div>
 		)
 	}
