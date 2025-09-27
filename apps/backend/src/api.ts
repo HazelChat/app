@@ -108,15 +108,20 @@ export class AuthCallbackRequest extends Schema.Class<AuthCallbackRequest>("Auth
 	state: Schema.optional(Schema.String),
 }) {}
 
+export class LoginResponse extends Schema.Class<LoginResponse>("LoginResponse")({
+	authorizationUrl: Schema.String,
+}) {}
+
 export class AuthGroup extends HttpApiGroup.make("auth")
 	.add(
 		HttpApiEndpoint.get("login")`/login`
-			.addSuccess(Schema.Void, { status: 302 })
+			.addSuccess(LoginResponse)
 			.addError(InternalServerError)
+			.setUrlParams(Schema.Struct({ returnTo: Schema.optional(Schema.String) }))
 			.annotateContext(
 				OpenApi.annotations({
 					title: "Login",
-					description: "Redirect to WorkOS for authentication",
+					description: "Get WorkOS authorization URL for authentication",
 					summary: "Initiate login flow",
 				}),
 			),
@@ -134,6 +139,18 @@ export class AuthGroup extends HttpApiGroup.make("auth")
 				}),
 			),
 	)
+	// .add(
+	// 	HttpApiEndpoint.post("logout")`/logout`
+	// 		.addSuccess(Schema.Struct({ message: Schema.String }))
+	// 		.addError(InternalServerError)
+	// 		.annotateContext(
+	// 			OpenApi.annotations({
+	// 				title: "Logout",
+	// 				description: "Clear session and logout user",
+	// 				summary: "End user session",
+	// 			}),
+	// 		),
+	// )
 	.prefix("/auth") {}
 
 export class HazelApi extends HttpApi.make("HazelApp")

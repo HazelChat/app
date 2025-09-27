@@ -13,6 +13,8 @@ import { ButtonUtility } from "../base/buttons/button-utility"
 import { MarkdownEditor, type MarkdownEditorRef } from "../markdown-editor"
 import { FileUploadPreview } from "./file-upload-preview"
 import { ReplyIndicator } from "./reply-indicator"
+import { Button } from "../base/buttons/button"
+import { useAuth } from "~/providers/auth-provider"
 
 interface MessageComposerProps {
 	placeholder?: string
@@ -23,6 +25,8 @@ export const MessageComposer = ({ placeholder = "Type a message..." }: MessageCo
 	const { user } = useUser()
 	const { sendMessage, replyToMessageId, setReplyToMessageId, channelId } = useChat()
 	const editorRef = useRef<MarkdownEditorRef | null>(null)
+
+	const {login} = useAuth()
 
 	const [attachmentIds, setAttachmentIds] = useState<AttachmentId[]>([])
 
@@ -160,6 +164,11 @@ export const MessageComposer = ({ placeholder = "Type a message..." }: MessageCo
 					setAttachmentIds={setAttachmentIds}
 					uploads={uploads}
 				/>
+				<Button onClick={() => {
+					login()
+				}}>
+					Login
+				</Button>
 			</div>
 		</div>
 	)

@@ -52,13 +52,10 @@ export const HttpAuthLive = HttpApiBuilder.group(HazelApi, "auth", (handlers) =>
 					),
 				)
 
-				// Redirect to WorkOS for authentication
-				return HttpServerResponse.empty({
-					status: 302,
-					headers: {
-						Location: authorizationUrl,
-					},
-				})
+				// Return the authorization URL as JSON for client-side redirect
+				return {
+					authorizationUrl,
+				}
 			}).pipe(
 				Effect.catchTag("NoSuchElementException", (error) =>
 					Effect.fail(
@@ -94,10 +91,7 @@ export const HttpAuthLive = HttpApiBuilder.group(HazelApi, "auth", (handlers) =>
 			// Get required configuration
 			const clientId = yield* Config.string("WORKOS_CLIENT_ID").pipe(Effect.orDie)
 			const cookiePassword = yield* Config.string("WORKOS_COOKIE_PASSWORD").pipe(Effect.orDie)
-			const redirectUrl = yield* Config.string("WORKOS_REDIRECT_SUCCESS_URL").pipe(
-				Effect.orDie,
-				Effect.catchAll(() => Effect.succeed("/")),
-			)
+			
 
 			// Exchange code for user information using WorkOS SDK
 			const authResponse = yield* workos.call(async (client) => {
@@ -163,14 +157,10 @@ export const HttpAuthLive = HttpApiBuilder.group(HazelApi, "auth", (handlers) =>
 			})
 
 			// Determine redirect URL (could be from state parameter or default)
-			const finalRedirectUrl = state ? JSON.parse(state).returnTo || redirectUrl : redirectUrl
+			const finalRedirectUrl = state ? JSON.parse(state).returnTo as string : "https://app.hazel.sh"
 
-			// Create cookie string
-			const nodeEnv = yield* Config.string("NODE_ENV").pipe(
-				Effect.orDie,
-				Effect.catchAll(() => Effect.succeed("development")),
-			)
-			const isSecure = nodeEnv === "production"
+		
+			const isSecure = Bun.env.NODE_ENV === "production"
 
 			const cookieOptions = [
 				`wos-session=${encryptedSession}`,
@@ -200,5 +190,6 @@ export const HttpAuthLive = HttpApiBuilder.group(HazelApi, "auth", (handlers) =>
 				),
 			),
 		),
-	),
+	)
+		
 )

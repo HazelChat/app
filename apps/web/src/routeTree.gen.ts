@@ -13,6 +13,7 @@ import { Route as TestRouteImport } from './routes/test'
 import { Route as AppLayoutRouteImport } from './routes/_app/layout'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
+import { Route as AuthCallbackRouteImport } from './routes/auth/callback'
 import { Route as AppOnboardingRouteImport } from './routes/_app/onboarding'
 import { Route as AppOrgIdLayoutRouteImport } from './routes/_app/$orgId/layout'
 import { Route as AppOrgIdIndexRouteImport } from './routes/_app/$orgId/index'
@@ -48,6 +49,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
 const AuthLoginRoute = AuthLoginRouteImport.update({
   id: '/auth/login',
   path: '/auth/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/auth/callback',
+  path: '/auth/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppOnboardingRoute = AppOnboardingRouteImport.update({
@@ -143,6 +149,7 @@ export interface FileRoutesByFullPath {
   '/test': typeof TestRoute
   '/$orgId': typeof AppOrgIdLayoutRouteWithChildren
   '/onboarding': typeof AppOnboardingRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/auth/login': typeof AuthLoginRoute
   '/': typeof AppIndexRoute
   '/$orgId/settings': typeof AppOrgIdSettingsLayoutRouteWithChildren
@@ -164,6 +171,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/test': typeof TestRoute
   '/onboarding': typeof AppOnboardingRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/auth/login': typeof AuthLoginRoute
   '/': typeof AppIndexRoute
   '/$orgId/call': typeof AppOrgIdCallRoute
@@ -187,6 +195,7 @@ export interface FileRoutesById {
   '/test': typeof TestRoute
   '/_app/$orgId': typeof AppOrgIdLayoutRouteWithChildren
   '/_app/onboarding': typeof AppOnboardingRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/auth/login': typeof AuthLoginRoute
   '/_app/': typeof AppIndexRoute
   '/_app/$orgId/settings': typeof AppOrgIdSettingsLayoutRouteWithChildren
@@ -211,6 +220,7 @@ export interface FileRouteTypes {
     | '/test'
     | '/$orgId'
     | '/onboarding'
+    | '/auth/callback'
     | '/auth/login'
     | '/'
     | '/$orgId/settings'
@@ -232,6 +242,7 @@ export interface FileRouteTypes {
   to:
     | '/test'
     | '/onboarding'
+    | '/auth/callback'
     | '/auth/login'
     | '/'
     | '/$orgId/call'
@@ -254,6 +265,7 @@ export interface FileRouteTypes {
     | '/test'
     | '/_app/$orgId'
     | '/_app/onboarding'
+    | '/auth/callback'
     | '/auth/login'
     | '/_app/'
     | '/_app/$orgId/settings'
@@ -276,6 +288,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   AppLayoutRoute: typeof AppLayoutRouteWithChildren
   TestRoute: typeof TestRoute
+  AuthCallbackRoute: typeof AuthCallbackRoute
   AuthLoginRoute: typeof AuthLoginRoute
 }
 
@@ -307,6 +320,13 @@ declare module '@tanstack/react-router' {
       path: '/auth/login'
       fullPath: '/auth/login'
       preLoaderRoute: typeof AuthLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/auth/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app/onboarding': {
@@ -502,6 +522,7 @@ const AppLayoutRouteWithChildren = AppLayoutRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   AppLayoutRoute: AppLayoutRouteWithChildren,
   TestRoute: TestRoute,
+  AuthCallbackRoute: AuthCallbackRoute,
   AuthLoginRoute: AuthLoginRoute,
 }
 export const routeTree = rootRouteImport

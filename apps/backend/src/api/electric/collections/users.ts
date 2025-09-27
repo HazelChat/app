@@ -22,6 +22,19 @@ export class UserNotFoundError extends Schema.TaggedError<UserNotFoundError>("Us
 
 export class UserGroup extends HttpApiGroup.make("users")
 	.add(
+		HttpApiEndpoint.get("me", `/me`)
+			.addSuccess(User.Model.json)
+			.addError(UnauthorizedError)
+			.addError(InternalServerError)
+			.annotateContext(
+				OpenApi.annotations({
+					title: "Get Current User",
+					description: "Get the currently authenticated user",
+					summary: "Get current user profile",
+				}),
+			),
+	)
+	.add(
 		HttpApiEndpoint.post("create", `/`)
 			.setPayload(User.Model.jsonCreate)
 			.addSuccess(UserResponse)

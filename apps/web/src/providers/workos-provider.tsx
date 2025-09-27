@@ -8,6 +8,7 @@ export const WorkOsProvider = ({ children }: { children: React.ReactNode }) => {
 		<AuthKitProvider
 			clientId={import.meta.env.VITE_WORKOS_CLIENT_ID}
 			redirectUri={import.meta.env.VITE_WORKOS_REDIRECT_URI}
+			devMode={true}
 		>
 			{children}
 		</AuthKitProvider>

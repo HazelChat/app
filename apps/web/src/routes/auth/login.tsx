@@ -1,6 +1,6 @@
 import { createFileRoute, Navigate } from "@tanstack/react-router"
-import { useAuth } from "@workos-inc/authkit-react"
-import { useEffect } from "react"
+import { useAuth } from "../../providers/auth-provider"
+import { useEffect, useState } from "react"
 
 export const Route = createFileRoute("/auth/login")({
 	component: LoginPage,
@@ -12,22 +12,15 @@ export const Route = createFileRoute("/auth/login")({
 })
 
 function LoginPage() {
-	const { user, signIn, isLoading } = useAuth()
+	const { user, login, isLoading } = useAuth()
 	const search = Route.useSearch()
 
-	console.log("user", user)
-
 	useEffect(() => {
-		const searchParams = new URLSearchParams(window.location.search)
-		const context = searchParams.get("context") ?? undefined
-
 		if (!user && !isLoading) {
-			signIn({
-				context,
-				state: { returnTo: search.returnTo || "/" },
-			})
+			// Redirect to backend login endpoint
+			login(search.returnTo || "/")
 		}
-	}, [user, isLoading, signIn, search])
+	}, [user, isLoading, login, search.returnTo])
 
 	if (isLoading) {
 		return (
