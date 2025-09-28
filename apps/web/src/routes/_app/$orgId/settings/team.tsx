@@ -18,7 +18,7 @@ import { CloseButton } from "~/components/base/buttons/close-button"
 import { Dropdown } from "~/components/base/dropdown/dropdown"
 import { FeaturedIcon } from "~/components/foundations/featured-icon/featured-icons"
 import { organizationMemberCollection, userCollection } from "~/db/collections"
-import { useUser } from "~/lib/auth"
+import { useAuth } from "~/providers/auth-provider"
 
 export const Route = createFileRoute("/_app/$orgId/settings/team")({
 	component: RouteComponent,
@@ -51,7 +51,7 @@ function RouteComponent() {
 		[organizationId],
 	)
 
-	const { user } = useUser()
+	const { user } = useAuth()
 
 	const roleToBadgeColorsMap: Record<string, BadgeColor<"pill-color">> = {
 		owner: "brand",

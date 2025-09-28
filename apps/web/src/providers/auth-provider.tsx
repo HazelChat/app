@@ -1,4 +1,4 @@
-import { useAtom, useAtomSet, useAtomValue } from "@effect-atom/atom-react"
+import { useAtomSet, useAtomValue } from "@effect-atom/atom-react"
 import type { CurrentUser } from "@hazel/db/schema"
 import type { ReactNode } from "react"
 import { createContext, useContext, useEffect, useMemo, useState } from "react"
@@ -6,10 +6,16 @@ import { HazelApiClient } from "~/lib/services/common/atom-client"
 
 type User = typeof CurrentUser.Schema.Type
 
+interface LoginOptions {
+	returnTo?: string
+	workosOrganizationId?: string
+	invitationToken?: string
+}
+
 interface AuthContextType {
 	user: User | null
 	isLoading: boolean
-	login: (returnTo?: string) => Promise<void>
+	login: (options?: LoginOptions) => Promise<void>
 	logout: () => void
 	refreshUser: () => Promise<void>
 }
@@ -21,10 +27,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 	const [isLoading, setIsLoading] = useState(true)
 
 	const loginMutation = useAtomSet(HazelApiClient.mutation("auth", "login"), {
-		mode: "promise",
-	})
-
-	const logoutMutation = useAtomSet(HazelApiClient.mutation("auth", "logout"), {
 		mode: "promise",
 	})
 
@@ -53,10 +55,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		// For now, this will be handled by the atom's internal caching
 	}
 
-	const login = async (returnTo?: string) => {
+	const login = async (options?: LoginOptions) => {
 		const data = await loginMutation({
 			urlParams: {
-				returnTo: returnTo || location.href,
+				...options,
+				returnTo: options?.returnTo || location.href,
 			},
 		})
 
@@ -66,9 +69,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 	// Logout using Effect Atom mutation
 	const logout = async () => {
 		try {
-			await logoutMutation({})
 			setUser(null)
-			window.location.href = "/"
+
+			window.location.href = `${import.meta.env.VITE_BACKEND_URL}/auth/logout`
 		} catch (error) {
 			console.error("Failed to logout:", error)
 		}

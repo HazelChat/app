@@ -13,7 +13,7 @@ import { CloseButton } from "~/components/base/buttons/close-button"
 import { Input } from "~/components/base/input/input"
 import IconHashtagStroke from "~/components/icons/IconHashtagStroke"
 import { channelCollection, channelMemberCollection } from "~/db/collections"
-import { useUser } from "~/lib/auth"
+import { useAuth } from "~/providers/auth-provider"
 import { Dialog, DialogTrigger, Modal, ModalOverlay } from "./modal"
 
 interface JoinChannelModalProps {
@@ -24,7 +24,7 @@ interface JoinChannelModalProps {
 export const JoinChannelModal = ({ isOpen, setIsOpen }: JoinChannelModalProps) => {
 	const [searchQuery, setSearchQuery] = useState("")
 	const { orgId } = useParams({ from: "/_app/$orgId" })
-	const { user } = useUser()
+	const { user } = useAuth()
 
 	const { data: userChannels } = useLiveQuery(
 		(q) =>

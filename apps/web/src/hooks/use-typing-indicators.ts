@@ -3,7 +3,7 @@ import type { ChannelId } from "@hazel/db/schema"
 import { eq, useLiveQuery } from "@tanstack/react-db"
 import { useEffect, useMemo, useState } from "react"
 import { channelMemberCollection, typingIndicatorCollection, userCollection } from "~/db/collections"
-import { useUser } from "~/lib/auth"
+import { useAuth } from "~/providers/auth-provider"
 
 type TypingUser = {
 	user: typeof User.Model.Type
@@ -18,7 +18,7 @@ interface UseTypingIndicatorsOptions {
 }
 
 export function useTypingIndicators({ channelId, staleThreshold = 5000 }: UseTypingIndicatorsOptions) {
-	const { user: currentUser } = useUser()
+	const { user: currentUser } = useAuth()
 
 	const { data: typingIndicatorsData } = useLiveQuery(
 		(q) =>

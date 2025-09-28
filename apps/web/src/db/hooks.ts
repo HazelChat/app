@@ -1,7 +1,7 @@
 import type { Channel, ChannelMember, User } from "@hazel/db/models"
 import type { ChannelId, MessageId } from "@hazel/db/schema"
 import { eq, useLiveQuery } from "@tanstack/react-db"
-import { useUser } from "~/lib/auth"
+import { useAuth } from "~/providers/auth-provider"
 import { attachmentCollection, channelCollection, messageCollection, userCollection } from "./collections"
 import { channelMemberWithUserCollection } from "./materialized-collections"
 
@@ -64,7 +64,7 @@ export const useChannel = (channelId: ChannelId) => {
 }
 
 export const useChannelWithCurrentUser = (channelId: ChannelId) => {
-	const { user } = useUser()
+	const { user } = useAuth()
 
 	const { data, ...rest } = useLiveQuery(
 		(q) =>

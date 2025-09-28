@@ -18,7 +18,7 @@ export class ApiClient extends Effect.Service<ApiClient>()("ApiClient", {
 	dependencies: [CustomFetchLive],
 	effect: Effect.gen(function* () {
 		return yield* HttpApiClient.make(HazelApi, {
-			baseUrl: import.meta.env.VITE_SERVER_URL,
+			baseUrl: import.meta.env.VITE_BACKEND_URL,
 			transformClient: (client) => client.pipe(HttpClient.retryTransient({ times: 3 })),
 		})
 	}),

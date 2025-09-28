@@ -4,7 +4,6 @@ import { useParams } from "@tanstack/react-router"
 import { useEffect, useRef } from "react"
 import { channelCollection, channelMemberCollection } from "~/db/collections"
 import { useNotificationSound } from "~/hooks/use-notification-sound"
-import { useUser } from "~/lib/auth"
 import { useAuth } from "~/providers/auth-provider"
 
 export function NotificationManager() {

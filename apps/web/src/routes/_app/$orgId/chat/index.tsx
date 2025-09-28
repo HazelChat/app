@@ -8,7 +8,7 @@ import { Avatar } from "~/components/base/avatar/avatar"
 import IconHashtagStroke from "~/components/icons/IconHashtagStroke"
 import IconLockCloseStroke from "~/components/icons/IconLockCloseStroke"
 import { channelCollection, channelMemberCollection } from "~/db/collections"
-import { useUser } from "~/lib/auth"
+import { useAuth } from "~/providers/auth-provider"
 import { cn } from "~/lib/utils"
 
 export const Route = createFileRoute("/_app/$orgId/chat/")({
@@ -18,7 +18,7 @@ export const Route = createFileRoute("/_app/$orgId/chat/")({
 function RouteComponent() {
 	const { orgId } = useParams({ from: "/_app/$orgId" })
 	const organizationId = orgId as OrganizationId
-	const { user: me } = useUser()
+	const { user: me } = useAuth()
 	// const { presenceList } = usePresence()
 
 	const presenceList: any[] = [] // TODO: Add presence list

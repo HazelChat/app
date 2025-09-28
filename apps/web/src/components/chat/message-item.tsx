@@ -12,7 +12,7 @@ import {
 	userCollection,
 } from "~/db/collections"
 import { useChat } from "~/hooks/use-chat"
-import { useUser } from "~/lib/auth"
+import { useAuth } from "~/providers/auth-provider"
 import { cx } from "~/utils/cx"
 import { IconNotification } from "../application/notifications/notifications"
 import { Badge } from "../base/badges/badges"
@@ -52,7 +52,7 @@ export function MessageItem({
 	const [isMenuOpen, setIsMenuOpen] = useState(false)
 	const hoverTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
 
-	const { user: currentUser } = useUser()
+	const { user: currentUser } = useAuth()
 	const isOwnMessage = currentUser?.id === message?.authorId
 
 	const showAvatar = isGroupStart || !!message?.replyToMessageId

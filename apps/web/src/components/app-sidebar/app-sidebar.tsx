@@ -1,12 +1,11 @@
 import type { OrganizationId } from "@hazel/db/schema"
 import { and, eq, or, useLiveQuery } from "@tanstack/react-db"
 import { Link, useParams } from "@tanstack/react-router"
-import { useAuth } from "@workos-inc/authkit-react"
 import { useMemo } from "react"
 import { ErrorBoundary } from "react-error-boundary"
 import IconChat1 from "~/components/icons/IconChat1"
 import { channelCollection, channelMemberCollection, organizationCollection } from "~/db/collections"
-import { useUser } from "~/lib/auth"
+import { useAuth } from "~/providers/auth-provider"
 import { CreateDmButton } from "../application/modals/create-dm-modal"
 import IconChatChatting1 from "../icons/IconChatChatting1"
 import IconGridDashboard01DuoSolid from "../icons/IconGridDashboard01DuoSolid"
@@ -150,7 +149,7 @@ export const AppSidebar = ({ setOpenCmd }: { setOpenCmd: (open: boolean) => void
 }
 
 const ChannelGroup = (props: { organizationId: OrganizationId }) => {
-	const { user } = useUser()
+	const { user } = useAuth()
 
 	const { data: userChannels } = useLiveQuery(
 		(q) =>
@@ -195,7 +194,7 @@ const ChannelGroup = (props: { organizationId: OrganizationId }) => {
 }
 
 const DmChannelGroup = (props: { organizationId: OrganizationId }) => {
-	const { user } = useUser()
+	const { user } = useAuth()
 
 	const { data: userDmChannels } = useLiveQuery(
 		(q) =>

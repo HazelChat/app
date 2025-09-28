@@ -2,7 +2,7 @@ import type { OrganizationId } from "@hazel/db/schema"
 import { and, eq, useLiveQuery } from "@tanstack/react-db"
 import { useParams } from "@tanstack/react-router"
 import { channelCollection, channelMemberCollection } from "~/db/collections"
-import { useUser } from "~/lib/auth"
+import { useAuth } from "~/providers/auth-provider"
 import { ChannelItem, DmChannelLink } from "./app-sidebar/channel-item"
 import { SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu } from "./ui/sidebar"
 
@@ -10,7 +10,7 @@ export const SidebarFavoriteGroup = () => {
 	const { orgId } = useParams({ from: "/_app/$orgId" })
 	const organizationId = orgId as OrganizationId
 
-	const { user } = useUser()
+	const { user } = useAuth()
 
 	const { data } = useLiveQuery(
 		(q) =>

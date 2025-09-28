@@ -19,7 +19,7 @@ import { IconSearchStroke } from "~/components/icons/IconSearchStroke"
 import { IconThreeDotsMenuHorizontalStroke } from "~/components/icons/IconThreeDotsMenuHorizontalStroke"
 import IconUserUser03 from "~/components/icons/IconUserUser03"
 import { organizationMemberCollection, userCollection } from "~/db/collections"
-import { useUser } from "~/lib/auth"
+import { useAuth } from "~/providers/auth-provider"
 import { HazelApiClient } from "~/lib/services/common/atom-client"
 
 export const Route = createFileRoute("/_app/$orgId/")({
@@ -50,7 +50,7 @@ function RouteComponent() {
 		[organizationId],
 	)
 
-	const { user } = useUser()
+	const { user } = useAuth()
 
 	const filteredMembers = useMemo(() => {
 		if (!membersData || !searchQuery) return membersData || []

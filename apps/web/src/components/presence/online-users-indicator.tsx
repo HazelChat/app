@@ -1,10 +1,10 @@
-import { useUser } from "~/lib/auth"
+import { useAuth } from "~/providers/auth-provider"
 
 /**
  * Simple component to display the number of online users in the current organization
  */
 export function OnlineUsersIndicator() {
-	const { user } = useUser()
+	const { user } = useAuth()
 
 	const onlineCount = 12
 

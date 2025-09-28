@@ -7,7 +7,7 @@ import { Button } from "~/components/base/buttons/button"
 import { FeaturedIcon } from "~/components/foundations/featured-icon/featured-icons"
 import IconMagicWand from "~/components/icons/IconMagicWand"
 import { organizationCollection, organizationMemberCollection } from "~/db/collections"
-import { useUser } from "~/lib/auth"
+import { useAuth } from "~/providers/auth-provider"
 
 export const Route = createFileRoute("/_app/onboarding")({
 	component: OnboardingPage,
@@ -15,7 +15,7 @@ export const Route = createFileRoute("/_app/onboarding")({
 
 function OnboardingPage() {
 	const [createOrgModalOpen, setCreateOrgModalOpen] = useState(false)
-	const { user } = useUser()
+	const { user } = useAuth()
 
 	// Check if user already has organizations
 	const { data: userOrganizations } = useLiveQuery(

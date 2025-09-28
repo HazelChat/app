@@ -31,7 +31,7 @@ import {
 	userCollection,
 } from "~/db/collections"
 import { useAppForm } from "~/hooks/use-app-form"
-import { useUser } from "~/lib/auth"
+import { useAuth } from "~/providers/auth-provider"
 import { cx } from "~/utils/cx"
 
 const dmFormSchema = type({
@@ -57,7 +57,7 @@ export const CreateDmModal = ({ isOpen, onOpenChange }: CreateDmModalProps) => {
 	const { isUserOnline } = {
 		isUserOnline: (..._args: any[]) => true,
 	}
-	const { user } = useUser()
+	const { user } = useAuth()
 
 	const { data: organizationUsers } = useLiveQuery(
 		(q) =>

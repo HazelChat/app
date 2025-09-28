@@ -5,7 +5,7 @@ import IconDeleteDustbin011 from "~/components/icons/IconDeleteDustbin011"
 import IconPencilEdit from "~/components/icons/IconPencilEdit"
 import { channelMemberCollection } from "~/db/collections"
 import { useChannelWithCurrentUser } from "~/db/hooks"
-import { useUser } from "~/lib/auth"
+import { useAuth } from "~/providers/auth-provider"
 import { cx } from "~/utils/cx"
 import { Avatar } from "../base/avatar/avatar"
 import { Dropdown } from "../base/dropdown/dropdown"
@@ -159,7 +159,7 @@ export const DmChannelLink = ({ channelId, userPresence }: DmChannelLinkProps) =
 
 	const { channel } = useChannelWithCurrentUser(channelId)
 
-	const { user: me } = useUser()
+	const { user: me } = useAuth()
 
 	if (!channel) {
 		return null

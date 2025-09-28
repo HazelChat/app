@@ -1,15 +1,15 @@
 import type { OrganizationId } from "@hazel/db/schema"
 import { useNavigate, useParams } from "@tanstack/react-router"
 import { Container, HelpCircle, LayersTwo01, LogOut01, Settings01, User01 } from "@untitledui/icons"
-import { useAuth } from "@workos-inc/authkit-react"
 import { Button as AriaButton } from "react-aria-components"
 import { Avatar } from "~/components/base/avatar/avatar"
 import { AvatarLabelGroup } from "~/components/base/avatar/avatar-label-group"
 import { Dropdown } from "~/components/base/dropdown/dropdown"
+import { useAuth } from "~/providers/auth-provider"
 import { cx } from "~/utils/cx"
 
 export const NavUser = () => {
-	const { user, signOut } = useAuth()
+	const { user, logout } = useAuth()
 	const navigate = useNavigate()
 
 	const params = useParams({ from: "/_app/$orgId" })
@@ -25,18 +25,14 @@ export const NavUser = () => {
 					)
 				}
 			>
-				<Avatar
-					alt={`${user?.firstName} ${user?.lastName}`}
-					src={user?.profilePictureUrl}
-					size="sm"
-				/>
+				<Avatar alt={`${user?.firstName} ${user?.lastName}`} src={user?.avatarUrl} size="sm" />
 			</AriaButton>
 
 			<Dropdown.Popover>
 				<div className="flex gap-3 border-secondary border-b p-3">
 					<AvatarLabelGroup
 						size="md"
-						src={user?.profilePictureUrl}
+						src={user?.avatarUrl}
 						status="online"
 						title={`${user?.firstName} ${user?.lastName}`}
 						subtitle={user?.email}
@@ -70,7 +66,7 @@ export const NavUser = () => {
 					</Dropdown.Section>
 					<Dropdown.Separator />
 					<Dropdown.Section>
-						<Dropdown.Item addon="⌥⇧Q" icon={LogOut01} onAction={signOut}>
+						<Dropdown.Item addon="⌥⇧Q" icon={LogOut01} onAction={logout}>
 							Log out
 						</Dropdown.Item>
 					</Dropdown.Section>

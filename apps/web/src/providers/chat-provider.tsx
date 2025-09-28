@@ -19,7 +19,7 @@ import {
 	pinnedMessageCollection,
 } from "~/db/collections"
 import { useNotificationSound } from "~/hooks/use-notification-sound"
-import { useUser } from "~/lib/auth"
+import { useAuth } from "~/providers/auth-provider"
 
 interface ChatContextValue {
 	channelId: ChannelId
@@ -64,7 +64,7 @@ interface ChatProviderProps {
 }
 
 export function ChatProvider({ channelId, organizationId, children }: ChatProviderProps) {
-	const { user } = useUser()
+	const { user } = useAuth()
 	const { playSound } = useNotificationSound()
 
 	// Reply state

@@ -11,7 +11,7 @@ import { InputBase, TextField } from "~/components/base/input/input"
 import { Label } from "~/components/base/input/label"
 import { userCollection } from "~/db/collections"
 import { useAppForm } from "~/hooks/use-app-form"
-import { useUser } from "~/lib/auth"
+import { useAuth } from "~/providers/auth-provider"
 
 export const Route = createFileRoute("/_app/$orgId/settings/profile")({
 	component: ProfileSettings,
@@ -25,7 +25,7 @@ const profileSchema = type({
 type ProfileFormData = typeof profileSchema.infer
 
 function ProfileSettings() {
-	const { user } = useUser()
+	const { user } = useAuth()
 
 	const form = useAppForm({
 		defaultValues: {

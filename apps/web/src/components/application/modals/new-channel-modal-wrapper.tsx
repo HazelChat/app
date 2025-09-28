@@ -11,7 +11,7 @@ import { Select } from "~/components/base/select/select"
 import IconHashtagStroke from "~/components/icons/IconHashtagStroke"
 import { channelCollection, channelMemberCollection } from "~/db/collections"
 import { useAppForm } from "~/hooks/use-app-form"
-import { useUser } from "~/lib/auth"
+import { useAuth } from "~/providers/auth-provider"
 
 const channelSchema = type({
 	name: "string > 2",
@@ -27,7 +27,7 @@ interface NewChannelModalWrapperProps {
 
 export const NewChannelModalWrapper = ({ isOpen, setIsOpen }: NewChannelModalWrapperProps) => {
 	const { orgId } = useParams({ from: "/_app/$orgId" })
-	const { user } = useUser()
+	const { user } = useAuth()
 	const organizationId = orgId as OrganizationId
 
 	const form = useAppForm({

@@ -72,6 +72,10 @@ export const AuthorizationLive = Layer.effect(
 						id: user.value.id,
 						role: (session.role as "admin" | "member") || "member",
 						workosOrganizationId: session.organizationId,
+						avatarUrl: user.value.avatarUrl,
+						firstName: user.value.firstName,
+						lastName: user.value.lastName,
+						email: user.value.email,
 					})
 				}),
 			bearer: (bearerToken) =>
@@ -125,6 +129,10 @@ export const AuthorizationLive = Layer.effect(
 						id: user.value.id,
 						role: (payload.role as "admin" | "member") || "member",
 						workosOrganizationId: payload.organizationId as string | undefined,
+						avatarUrl: user.value.avatarUrl,
+						firstName: user.value.firstName,
+						lastName: user.value.lastName,
+						email: user.value.email,
 					})
 				}),
 		}

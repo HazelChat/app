@@ -5,7 +5,7 @@ import { toast } from "sonner"
 import { v4 as uuid } from "uuid"
 import { IconNotification } from "~/components/application/notifications/notifications"
 import { uploadAttachment } from "~/db/actions"
-import { useUser } from "~/lib/auth"
+import { useAuth } from "~/providers/auth-provider"
 
 export interface FileUploadProgress {
 	fileId: string
@@ -34,7 +34,7 @@ export function useFileUpload({
 	maxFileSize = 10 * 1024 * 1024, // 10MB default
 }: UseFileUploadOptions) {
 	const [uploads, setUploads] = useState<Map<string, FileUploadProgress>>(new Map())
-	const { user } = useUser()
+	const { user } = useAuth()
 
 	const uploadFile = useCallback(
 		async (file: File): Promise<AttachmentId | null> => {

@@ -7,6 +7,10 @@ export class Schema extends S.Class<Schema>("CurrentUserSchema")({
 	id: UserId,
 	workosOrganizationId: S.optional(S.String),
 	role: S.Literal("admin", "member"),
+	avatarUrl: S.optional(S.String),
+	firstName: S.optional(S.String),
+	lastName: S.optional(S.String),
+	email: S.String,
 }) {}
 
 export class Context extends C.Tag("CurrentUser")<Context, Schema>() {}

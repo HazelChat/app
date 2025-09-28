@@ -13,7 +13,7 @@ import { TextArea } from "~/components/base/textarea/textarea"
 import { Tooltip } from "~/components/base/tooltip/tooltip"
 import IconPencilEdit from "~/components/icons/IconPencilEdit"
 import { userCollection } from "~/db/collections"
-import { useUser } from "~/lib/auth"
+import { useAuth } from "~/providers/auth-provider"
 import { IconNotification } from "../application/notifications/notifications"
 import IconPhone2 from "../icons/IconPhone2"
 import IconStar from "../icons/IconStar"
@@ -23,7 +23,7 @@ interface UserProfilePopoverProps {
 }
 
 export function UserProfilePopover({ userId }: UserProfilePopoverProps) {
-	const { user: currentUser } = useUser()
+	const { user: currentUser } = useAuth()
 	const { data } = useLiveQuery((q) => q.from({ user: userCollection }).where((q) => eq(q.user.id, userId)))
 	const user = data[0]
 
