@@ -71,6 +71,7 @@ export const AuthorizationLive = Layer.effect(
 					return new CurrentUser.Schema({
 						id: user.value.id,
 						role: (session.role as "admin" | "member") || "member",
+						workosOrganizationId: session.organizationId,
 					})
 				}),
 			bearer: (bearerToken) =>
@@ -123,6 +124,7 @@ export const AuthorizationLive = Layer.effect(
 					return new CurrentUser.Schema({
 						id: user.value.id,
 						role: (payload.role as "admin" | "member") || "member",
+						workosOrganizationId: payload.organizationId as string | undefined,
 					})
 				}),
 		}

@@ -5,6 +5,7 @@ import { UserId } from "./schema"
 
 export class Schema extends S.Class<Schema>("CurrentUserSchema")({
 	id: UserId,
+	workosOrganizationId: S.optional(S.String),
 	role: S.Literal("admin", "member"),
 }) {}
 
