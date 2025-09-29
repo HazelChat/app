@@ -17,6 +17,7 @@ import IconThreeDotsMenuHorizontalStroke from "../icons/IconThreeDotsMenuHorizon
 import IconVolumeMute1 from "../icons/IconVolumeMute1"
 import IconVolumeOne1 from "../icons/IconVolumeOne1"
 import { SidebarMenuAction, SidebarMenuButton, SidebarMenuItem } from "../ui/sidebar"
+import { RenameChannelModal } from "./rename-channel-modal"
 
 export interface ChannelItemProps {
 	channelId: ChannelId
@@ -98,13 +99,15 @@ export const ChannelItem = ({ channelId }: ChannelItemProps) => {
 							{channel.currentUser.isFavorite ? "Unfavorite" : "Favorite"}
 						</Dropdown.Item>
 						<Dropdown.Separator />
-						<Dropdown.Item
-							icon={(props) => (
-								<IconPencilEdit className={cx("text-amber-500", props.className)} />
-							)}
-						>
-							Rename
-						</Dropdown.Item>
+						<RenameChannelModal channelId={channelId}>
+							<Dropdown.Item
+								icon={(props) => (
+									<IconPencilEdit className={cx("text-amber-500", props.className)} />
+								)}
+							>
+								Rename
+							</Dropdown.Item>
+						</RenameChannelModal>
 						<Dropdown.Item
 							icon={(props) => (
 								<IconDeleteDustbin011 className={cx("text-amber-500", props.className)} />
