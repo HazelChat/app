@@ -73,7 +73,7 @@ function RouteComponent() {
 									to:
 										tabId === "appearance"
 											? "/$orgSlug/settings"
-											: "/$orgSlug/settings/${tabId}",
+											: `/$orgSlug/settings/${tabId}`,
 									params: { orgSlug },
 								})
 							}}
@@ -91,7 +91,7 @@ function RouteComponent() {
 									to:
 										tabId === "appearance"
 											? "/$orgSlug/settings"
-											: "/$orgSlug/settings/${tabId}",
+											: `/$orgSlug/settings/${tabId}`,
 									params: { orgSlug },
 								})
 							}}
