@@ -6,6 +6,7 @@ import { MessageList } from "~/components/chat/message-list"
 import { ThreadPanel } from "~/components/chat/thread-panel"
 import { TypingIndicator } from "~/components/chat/typing-indicator"
 import { useChat } from "~/hooks/use-chat"
+import { useOrganization } from "~/hooks/use-organization"
 import { ChatProvider } from "~/providers/chat-provider"
 
 export const Route = createFileRoute("/_app/$orgSlug/chat/$id")({
@@ -45,11 +46,11 @@ function ChatContent() {
 }
 
 function RouteComponent() {
-	const { orgSlug, id } = Route.useParams()
-	const organizationId = orgSlug as OrganizationId
+	const { id } = Route.useParams()
+	const { organizationId } = useOrganization()
 
 	return (
-		<ChatProvider channelId={id as ChannelId} organizationId={organizationId}>
+		<ChatProvider channelId={id as ChannelId} organizationId={organizationId!}>
 			<ChatContent />
 		</ChatProvider>
 	)

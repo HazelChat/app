@@ -12,20 +12,20 @@ import { Badge, BadgeWithDot } from "~/components/base/badges/badges"
 import { Button } from "~/components/base/buttons/button"
 import { ButtonUtility } from "~/components/base/buttons/button-utility"
 import { invitationCollection, userCollection } from "~/db/collections"
+import { useOrganization } from "~/hooks/use-organization"
 
 export const Route = createFileRoute("/_app/$orgSlug/settings/invitations")({
 	component: RouteComponent,
 })
 
 function RouteComponent() {
-	const params = Route.useParams()
 	const [invitationsSortDescriptor, setInvitationsSortDescriptor] = useState<SortDescriptor>({
 		column: "email",
 		direction: "ascending",
 	})
 	const [showInviteModal, setShowInviteModal] = useState(false)
 
-	const organizationId = params.orgSlug as OrganizationId
+	const { organizationId } = useOrganization()
 
 	const { data: invitations } = useLiveQuery(
 		(q) =>

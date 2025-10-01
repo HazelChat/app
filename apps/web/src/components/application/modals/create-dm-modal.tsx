@@ -1,7 +1,7 @@
 import type { User } from "@hazel/db/models"
 import type { OrganizationId, UserId } from "@hazel/db/schema"
 import { eq, useLiveQuery } from "@tanstack/react-db"
-import { useNavigate, useParams } from "@tanstack/react-router"
+import { useNavigate } from "@tanstack/react-router"
 import { Mail01, MessageSquare02, Plus } from "@untitledui/icons"
 import { type } from "arktype"
 import { useMemo, useState } from "react"
@@ -19,6 +19,7 @@ import { BackgroundPattern } from "~/components/shared-assets/background-pattern
 import { createDmChannel } from "~/db/actions"
 import { organizationMemberCollection, userCollection } from "~/db/collections"
 import { useAppForm } from "~/hooks/use-app-form"
+import { useOrganization } from "~/hooks/use-organization"
 import { useAuth } from "~/providers/auth-provider"
 import { cx } from "~/utils/cx"
 
@@ -38,8 +39,7 @@ export const CreateDmModal = ({ isOpen, onOpenChange }: CreateDmModalProps) => {
 	const [selectedUsers, setSelectedUsers] = useState<(typeof User.Model.Type)[]>([])
 
 	const _navigate = useNavigate()
-	const { orgSlug } = useParams({ from: "/_app/$orgSlug" })
-	const organizationId = orgSlug as OrganizationId
+	const { organizationId } = useOrganization()
 
 	// TODO: Implement
 	const { isUserOnline } = {
@@ -85,7 +85,7 @@ export const CreateDmModal = ({ isOpen, onOpenChange }: CreateDmModalProps) => {
 
 				// Todo: We should navigate to the chat here
 				createDmChannel({
-					organizationId,
+					organizationId: organizationId!,
 					participantIds: value.userIds as UserId[],
 					type,
 					name: type === "group" ? selectedUserNames : undefined,

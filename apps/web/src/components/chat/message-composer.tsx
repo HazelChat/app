@@ -5,6 +5,7 @@ import { Attachment01, XClose } from "@untitledui/icons"
 import { useMemo, useRef, useState } from "react"
 import { attachmentCollection, channelMemberCollection } from "~/db/collections"
 import { useFileUpload } from "~/hooks/use-file-upload"
+import { useOrganization } from "~/hooks/use-organization"
 import { useTyping } from "~/hooks/use-typing"
 import { useAuth } from "~/providers/auth-provider"
 import { useChat } from "~/providers/chat-provider"
@@ -20,6 +21,7 @@ interface MessageComposerProps {
 
 export const MessageComposer = ({ placeholder = "Type a message..." }: MessageComposerProps) => {
 	const { orgSlug } = useParams({ from: "/_app/$orgSlug" })
+	const { organizationId } = useOrganization()
 	const { user } = useAuth()
 	const { sendMessage, replyToMessageId, setReplyToMessageId, channelId } = useChat()
 	const editorRef = useRef<MarkdownEditorRef | null>(null)
@@ -52,7 +54,7 @@ export const MessageComposer = ({ placeholder = "Type a message..." }: MessageCo
 	})
 
 	const { uploads, uploadFiles, removeUpload, retryUpload } = useFileUpload({
-		organizationId: orgSlug as OrganizationId,
+		organizationId: organizationId!,
 		channelId: channelId,
 		onUploadComplete: (attachmentId) => {
 			setAttachmentIds((prev) => [...prev, attachmentId])

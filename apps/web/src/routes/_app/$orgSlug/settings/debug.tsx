@@ -12,6 +12,7 @@ import { Button } from "~/components/base/buttons/button"
 import { CloseButton } from "~/components/base/buttons/close-button"
 import { Form } from "~/components/base/form/form"
 import { FeaturedIcon } from "~/components/foundations/featured-icon/featured-icons"
+import { useOrganization } from "~/hooks/use-organization"
 import { HazelApiClient } from "~/lib/services/common/atom-client"
 
 export const Route = createFileRoute("/_app/$orgSlug/settings/debug")({
@@ -22,7 +23,7 @@ function DebugSettings() {
 	const [showMockDataDialog, setShowMockDataDialog] = useState(false)
 	const [isGeneratingMockData, setIsGeneratingMockData] = useState(false)
 
-	const { orgSlug } = Route.useParams()
+	const { organizationId } = useOrganization()
 
 	const generateMockData = useAtomSet(HazelApiClient.mutation("mockData", "generate"), {
 		mode: "promise",
@@ -33,7 +34,7 @@ function DebugSettings() {
 		try {
 			const result = await generateMockData({
 				payload: {
-					organizationId: orgSlug as OrganizationId,
+					organizationId: organizationId!,
 					userCount: 10,
 					channelCount: 5,
 					messageCount: 50,

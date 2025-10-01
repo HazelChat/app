@@ -8,6 +8,7 @@ import { Avatar } from "~/components/base/avatar/avatar"
 import IconHashtagStroke from "~/components/icons/IconHashtagStroke"
 import IconLockCloseStroke from "~/components/icons/IconLockCloseStroke"
 import { channelCollection, channelMemberCollection } from "~/db/collections"
+import { useOrganization } from "~/hooks/use-organization"
 import { cn } from "~/lib/utils"
 import { useAuth } from "~/providers/auth-provider"
 
@@ -16,8 +17,7 @@ export const Route = createFileRoute("/_app/$orgSlug/chat/")({
 })
 
 function RouteComponent() {
-	const { orgSlug } = useParams({ from: "/_app/$orgSlug" })
-	const organizationId = orgSlug as OrganizationId
+	const { organizationId } = useOrganization()
 	const { user: me } = useAuth()
 	// const { presenceList } = usePresence()
 

@@ -1,11 +1,11 @@
 import type { AttachmentId, OrganizationId } from "@hazel/db/schema"
-import { useParams } from "@tanstack/react-router"
 import { Attachment01, FaceSmile, ItalicSquare, XClose } from "@untitledui/icons"
 import { forwardRef, useImperativeHandle, useRef, useState } from "react"
 import { Dialog, DialogTrigger, Popover } from "react-aria-components"
 import { useChat } from "~/hooks/use-chat"
 import { useEmojiStats } from "~/hooks/use-emoji-stats"
 import { useFileUpload } from "~/hooks/use-file-upload"
+import { useOrganization } from "~/hooks/use-organization"
 import { cx } from "~/utils/cx"
 import { Button } from "../base/buttons/button"
 import { ButtonUtility } from "../base/buttons/button-utility"
@@ -36,7 +36,7 @@ interface MessageComposerActionsProps {
 
 export const MessageComposerActions = forwardRef<MessageComposerActionsRef, MessageComposerActionsProps>(
 	({ attachmentIds, setAttachmentIds, uploads, onEmojiSelect }, ref) => {
-		const { orgSlug } = useParams({ from: "/_app/$orgSlug" })
+		const { organizationId } = useOrganization()
 		const fileInputRef = useRef<HTMLInputElement>(null)
 		const [showUploadProgress, setShowUploadProgress] = useState(false)
 		const [emojiPickerOpen, setEmojiPickerOpen] = useState(false)
@@ -45,7 +45,7 @@ export const MessageComposerActions = forwardRef<MessageComposerActionsRef, Mess
 		const { channelId } = useChat()
 
 		const { uploadFiles, clearUploads, isUploading } = useFileUpload({
-			organizationId: orgSlug as OrganizationId,
+			organizationId: organizationId!,
 			channelId,
 			onUploadComplete: (attachmentId) => {
 				setAttachmentIds([...attachmentIds, attachmentId])

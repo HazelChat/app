@@ -1,5 +1,4 @@
 import { ChannelId, ChannelMemberId, type OrganizationId } from "@hazel/db/schema"
-import { useParams } from "@tanstack/react-router"
 import { type } from "arktype"
 import { DialogTrigger as AriaDialogTrigger, Heading as AriaHeading } from "react-aria-components"
 import { toast } from "sonner"
@@ -11,6 +10,7 @@ import { Select } from "~/components/base/select/select"
 import IconHashtagStroke from "~/components/icons/IconHashtagStroke"
 import { channelCollection, channelMemberCollection } from "~/db/collections"
 import { useAppForm } from "~/hooks/use-app-form"
+import { useOrganization } from "~/hooks/use-organization"
 import { useAuth } from "~/providers/auth-provider"
 
 const channelSchema = type({
@@ -26,9 +26,8 @@ interface NewChannelModalWrapperProps {
 }
 
 export const NewChannelModalWrapper = ({ isOpen, setIsOpen }: NewChannelModalWrapperProps) => {
-	const { orgSlug } = useParams({ from: "/_app/$orgSlug" })
 	const { user } = useAuth()
-	const organizationId = orgSlug as OrganizationId
+	const { organizationId } = useOrganization()
 
 	const form = useAppForm({
 		defaultValues: {
@@ -45,7 +44,7 @@ export const NewChannelModalWrapper = ({ isOpen, setIsOpen }: NewChannelModalWra
 					id: ChannelId.make(uuid()),
 					name: value.name,
 					type: value.type,
-					organizationId,
+					organizationId: organizationId!,
 					parentChannelId: null,
 					createdAt: new Date(),
 					updatedAt: null,

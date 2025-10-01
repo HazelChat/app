@@ -19,6 +19,7 @@ import { IconSearchStroke } from "~/components/icons/IconSearchStroke"
 import { IconThreeDotsMenuHorizontalStroke } from "~/components/icons/IconThreeDotsMenuHorizontalStroke"
 import IconUserUser03 from "~/components/icons/IconUserUser03"
 import { organizationMemberCollection, userCollection } from "~/db/collections"
+import { useOrganization } from "~/hooks/use-organization"
 import { HazelApiClient } from "~/lib/services/common/atom-client"
 import { useAuth } from "~/providers/auth-provider"
 
@@ -28,7 +29,7 @@ export const Route = createFileRoute("/_app/$orgSlug/")({
 
 function RouteComponent() {
 	const { orgSlug } = useParams({ from: "/_app/$orgSlug" })
-	const organizationId = orgSlug as OrganizationId
+	const { organizationId } = useOrganization()
 	const navigate = useNavigate()
 	const [searchQuery, setSearchQuery] = useState("")
 
@@ -72,7 +73,7 @@ function RouteComponent() {
 					name: "New DM",
 					type: "direct",
 					parentChannelId: null,
-					organizationId: orgSlug as OrganizationId,
+					organizationId: organizationId!,
 				},
 			})
 			if (result.data.id) {
