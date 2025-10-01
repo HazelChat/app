@@ -10,11 +10,11 @@
 	},
 	"scripts": {},
 	"devDependencies": {
-		"typescript": "^5.9.2"
+		"typescript": "^5.9.3"
 	},
 	"dependencies": {
 		"@effect/experimental": "^0.54.6",
-		"@effect/platform": "^0.90.10",
-		"effect": "^3.17.14"
+		"@effect/platform": "^0.92.1",
+		"effect": "^3.18.1"
 	}
 }

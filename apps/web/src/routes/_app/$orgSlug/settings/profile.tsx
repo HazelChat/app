@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router"
+import { createFileRoute, Navigate } from "@tanstack/react-router"
 import { Mail01 } from "@untitledui/icons"
 import { type } from "arktype"
 import { useEffect } from "react"

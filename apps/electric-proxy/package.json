@@ -10,12 +10,12 @@
 	},
 	"devDependencies": {
 		"@types/bun": "latest",
-		"typescript": "^5.9.2"
+		"typescript": "^5.9.3"
 	},
 	"dependencies": {
-		"@effect/platform": "^0.90.10",
-		"@effect/platform-bun": "^0.79.1",
+		"@effect/platform": "^0.92.1",
+		"@effect/platform-bun": "^0.81.0",
 		"@electric-sql/client": "^1.0.10",
-		"effect": "^3.17.14"
+		"effect": "^3.18.1"
 	}
 }
