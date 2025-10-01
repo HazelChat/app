@@ -1,7 +1,7 @@
 import { Heatmap } from "@paper-design/shaders-react"
 import { createFileRoute } from "@tanstack/react-router"
 
-export const Route = createFileRoute("/test")({
+export const Route = createFileRoute("/test2")({
 	component: RouteComponent,
 })
 

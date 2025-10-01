@@ -9,7 +9,7 @@ import IconMagicWand from "~/components/icons/IconMagicWand"
 import { organizationCollection, organizationMemberCollection } from "~/db/collections"
 import { useAuth } from "~/providers/auth-provider"
 
-export const Route = createFileRoute("/_app/onboarding")({
+export const Route = createFileRoute("/_app/onboarding/")({
 	component: OnboardingPage,
 })
 
@@ -33,7 +33,13 @@ function OnboardingPage() {
 	// If user has organizations, redirect to the first one
 	if (userOrganizations && userOrganizations.length > 0) {
 		const firstOrg = userOrganizations[0]!
-		return <Navigate to="/$orgSlug" params={{ orgSlug: firstOrg.org.slug! }} />
+
+		// If organization doesn't have a slug, redirect to setup
+		if (!firstOrg.org.slug) {
+			return <Navigate to="/onboarding/setup-organization" search={{ orgId: firstOrg.org.id }} />
+		}
+
+		return <Navigate to="/$orgSlug" params={{ orgSlug: firstOrg.org.slug }} />
 	}
 
 	return (
