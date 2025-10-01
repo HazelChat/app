@@ -1,11 +1,11 @@
 import type { OrganizationId } from "@hazel/db/schema"
 import { and, eq, or, useLiveQuery } from "@tanstack/react-db"
-import { Link } from "@tanstack/react-router"
-import { useMemo } from "react"
+import { Link, useNavigate } from "@tanstack/react-router"
+import { useEffect, useMemo } from "react"
 import { ErrorBoundary } from "react-error-boundary"
-import { useOrganization } from "~/hooks/use-organization"
 import IconChat1 from "~/components/icons/IconChat1"
 import { channelCollection, channelMemberCollection, organizationCollection } from "~/db/collections"
+import { useOrganization } from "~/hooks/use-organization"
 import { useAuth } from "~/providers/auth-provider"
 import { CreateDmButton } from "../application/modals/create-dm-modal"
 import IconChatChatting1 from "../icons/IconChatChatting1"
@@ -33,6 +33,7 @@ import { SidebarFavoriteGroup } from "./sidebar-favorite-group"
 import { WorkspaceSwitcher } from "./workspace-switcher"
 
 export const AppSidebar = ({ setOpenCmd }: { setOpenCmd: (open: boolean) => void }) => {
+	const _navigate = useNavigate()
 	const { isMobile } = useSidebar()
 	const { organizationId, slug: orgSlug } = useOrganization()
 
@@ -54,7 +55,7 @@ export const AppSidebar = ({ setOpenCmd }: { setOpenCmd: (open: boolean) => void
 								<SidebarMenuButton className="px-2.5 md:px-2" asChild>
 									<Link
 										to={"/$orgSlug"}
-										params={{ orgSlug }}
+										params={{ orgSlug: orgSlug! }}
 										activeOptions={{
 											exact: true,
 										}}
@@ -68,7 +69,7 @@ export const AppSidebar = ({ setOpenCmd }: { setOpenCmd: (open: boolean) => void
 								<SidebarMenuButton className="px-2.5 md:px-2" asChild>
 									<Link
 										to={"/$orgSlug/chat"}
-										params={{ orgSlug }}
+										params={{ orgSlug: orgSlug! }}
 										activeOptions={{
 											exact: true,
 										}}
@@ -101,8 +102,8 @@ export const AppSidebar = ({ setOpenCmd }: { setOpenCmd: (open: boolean) => void
 								</SidebarMenuItem>
 							</SidebarGroup>
 							<SidebarFavoriteGroup />
-							<ChannelGroup organizationId={organizationId} />
-							<DmChannelGroup organizationId={organizationId} />
+							<ChannelGroup organizationId={organizationId!} />
+							<DmChannelGroup organizationId={organizationId!} />
 						</SidebarGroupContent>
 					)}
 				</SidebarContent>
@@ -140,8 +141,8 @@ export const AppSidebar = ({ setOpenCmd }: { setOpenCmd: (open: boolean) => void
 						</SidebarGroupContent>
 					</SidebarGroup>
 					<SidebarFavoriteGroup />
-					<ChannelGroup organizationId={organizationId} />
-					<DmChannelGroup organizationId={organizationId} />
+					<ChannelGroup organizationId={organizationId!} />
+					<DmChannelGroup organizationId={organizationId!} />
 				</SidebarContent>
 			</Sidebar>
 		</Sidebar>

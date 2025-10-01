@@ -26,7 +26,6 @@
   - Fix webhook for invitation.created
 
 ### UI/UX Improvements
-- [ ] Replace OrgId in URL with slug
 - [ ] Image Viewer component
 - [ ] Consolidate all icons to use one Icon Library
 - [ ] Add member counts to channels (`apps/web/src/routes/_app/$orgId/chat/index.tsx:56,72,87`)
