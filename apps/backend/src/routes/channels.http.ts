@@ -150,8 +150,7 @@ export const HttpChannelLive = HttpApiBuilder.group(HazelApi, "channels", (handl
 									}
 								}
 
-								// Create the channel
-								const channelType = payload.type === "dm" ? "direct" : "private"
+								const channelType = payload.type === "dm" ? "single" : "direct"
 								const createdChannel = yield* ChannelRepo.insert({
 									name: channelName || "Group Channel",
 									type: channelType,

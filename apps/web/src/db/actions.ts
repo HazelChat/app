@@ -142,7 +142,7 @@ export const createDmChannel = createOptimisticAction<{
 		channelCollection.insert({
 			id: channelId,
 			name: channelName || "Group Channel",
-			type: props.type === "dm" ? "direct" : "private",
+			type: props.type === "dm" ? "single" : "direct",
 			organizationId: props.organizationId,
 			parentChannelId: null,
 			createdAt: now,

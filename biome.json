@@ -8,7 +8,9 @@
 		}
 	},
 	"files": {
-		"includes": ["**/*.{ts,tsx}"]
+		"includes": [
+			"**/*.{ts,tsx}"
+		]
 	},
 	"linter": {
 		"enabled": true,
@@ -28,6 +30,7 @@
 				"useSemanticElements": "off"
 			},
 			"correctness": {
+				"useUniqueElementIds": "off",
 				"useHookAtTopLevel": "off",
 				"noUnusedImports": "off",
 				"noChildrenProp": "off",

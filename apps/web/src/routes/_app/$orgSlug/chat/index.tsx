@@ -53,7 +53,6 @@ function RouteComponent() {
 					isMuted: row.member.isMuted,
 					isFavorite: row.member.isFavorite,
 					currentUser: { notificationCount: row.member.notificationCount || 0 },
-					members: [], // TODO: Add member count
 				})) || [],
 		[userChannels],
 	)
@@ -69,7 +68,6 @@ function RouteComponent() {
 					isMuted: row.member.isMuted,
 					isFavorite: row.member.isFavorite,
 					currentUser: { notificationCount: row.member.notificationCount || 0 },
-					members: [], // TODO: Add member count
 				})) || [],
 		[userChannels],
 	)
@@ -84,7 +82,6 @@ function RouteComponent() {
 					type: row.channel.type,
 					isMuted: row.member.isMuted,
 					currentUser: { notificationCount: row.member.notificationCount || 0 },
-					members: [], // TODO: Add DM participants
 				})) || [],
 		[userChannels],
 	)
