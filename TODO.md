@@ -2,6 +2,12 @@
 
 ## High Priority Features
 
+
+## Electric things to figure out
+- How todo this none optimistic 
+- How to get back backend ID from optimistic action
+- Pattern to query data in an action
+
 ### Core Features
 - [ ] **File Upload**
   - Display a preview of the file being uploaded with progress indicator
