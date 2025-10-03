@@ -183,7 +183,6 @@ export class HazelApi extends HttpApi.make("HazelApp")
 	.add(AuthGroup)
 	.add(WebhookGroup)
 	.add(MockDataGroup)
-	.addError(UnauthorizedError)
 	.annotateContext(
 		OpenApi.annotations({
 			title: "Hazel Chat API",

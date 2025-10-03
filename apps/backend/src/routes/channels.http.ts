@@ -3,6 +3,7 @@ import { Database } from "@hazel/db"
 import { ChannelId, ChannelMemberId, OrganizationId } from "@hazel/db/schema"
 import {
 	CurrentUser,
+	DmChannelAlreadyExistsError,
 	InternalServerError,
 	policyUse,
 	withRemapDbErrors,
@@ -119,8 +120,7 @@ export const HttpChannelLive = HttpApiBuilder.group(HazelApi, "channels", (handl
 					const { createdChannel, txid } = yield* db
 						.transaction(
 							Effect.fnUntraced(function* (tx) {
-								// Validate participant count
-								if (payload.type === "dm" && payload.participantIds.length !== 1) {
+								if (payload.type === "single" && payload.participantIds.length !== 1) {
 									return yield* Effect.fail(
 										new InternalServerError({
 											message: "DM channels must have exactly one other participant",
@@ -129,9 +129,30 @@ export const HttpChannelLive = HttpApiBuilder.group(HazelApi, "channels", (handl
 									)
 								}
 
+								if (payload.type === "single") {
+									const existingChannel =
+										yield* DirectMessageParticipantRepo.findExistingDmChannel(
+											user.id,
+											payload.participantIds[0],
+											OrganizationId.make(payload.organizationId),
+										)
+
+									console.log("Existing channel", existingChannel)
+
+									if (Option.isSome(existingChannel)) {
+										return yield* Effect.fail(
+											new DmChannelAlreadyExistsError({
+												message:
+													"A direct message channel already exists with this user",
+												detail: `Channel ID: ${existingChannel.value.id}`,
+											}),
+										)
+									}
+								}
+
 								// Generate channel name for DMs
 								let channelName = payload.name
-								if (payload.type === "dm") {
+								if (payload.type === "single") {
 									const otherUser = yield* UserRepo.findById(
 										payload.participantIds[0],
 									).pipe(policyUse(UserPolicy.canRead(payload.participantIds[0]!)))
@@ -150,10 +171,9 @@ export const HttpChannelLive = HttpApiBuilder.group(HazelApi, "channels", (handl
 									}
 								}
 
-								const channelType = payload.type === "dm" ? "single" : "direct"
 								const createdChannel = yield* ChannelRepo.insert({
 									name: channelName || "Group Channel",
-									type: channelType,
+									type: payload.type,
 									organizationId: OrganizationId.make(payload.organizationId),
 									parentChannelId: null,
 									deletedAt: null,
@@ -193,7 +213,7 @@ export const HttpChannelLive = HttpApiBuilder.group(HazelApi, "channels", (handl
 								}
 
 								// For DMs, add to direct_message_participants
-								if (payload.type === "dm") {
+								if (payload.type === "direct") {
 									// Add creator
 									yield* DirectMessageParticipantRepo.insert({
 										channelId: createdChannel.id,

@@ -7,7 +7,14 @@ import {
 	type OrganizationId,
 	type UserId,
 } from "@hazel/db/schema"
-import { createOptimisticAction } from "@tanstack/react-db"
+import {
+	createCollection,
+	createOptimisticAction,
+	eq,
+	inArray,
+	liveQueryCollectionOptions,
+	or,
+} from "@tanstack/react-db"
 import { Effect } from "effect"
 import { v4 as uuid } from "uuid"
 import { ApiClient } from "~/lib/services/common/api-client"
@@ -122,7 +129,7 @@ export const sendMessage = createOptimisticAction<{
 export const createDmChannel = createOptimisticAction<{
 	organizationId: OrganizationId
 	participantIds: UserId[]
-	type: "dm" | "group"
+	type: "single" | "direct"
 	name?: string
 	currentUserId: UserId
 }>({
@@ -130,11 +137,8 @@ export const createDmChannel = createOptimisticAction<{
 		const channelId = ChannelId.make(uuid())
 		const now = new Date()
 
-		// Generate channel name for DMs
 		let channelName = props.name
-		if (props.type === "dm" && props.participantIds.length === 1) {
-			// For now, we'll use a default name pattern, as we can't easily access user data synchronously
-			// The backend will generate the proper name based on user data
+		if (props.type === "single" && props.participantIds.length === 1) {
 			channelName = channelName || "Direct Message"
 		}
 
@@ -142,7 +146,7 @@ export const createDmChannel = createOptimisticAction<{
 		channelCollection.insert({
 			id: channelId,
 			name: channelName || "Group Channel",
-			type: props.type === "dm" ? "single" : "direct",
+			type: props.type === "direct" ? "single" : "direct",
 			organizationId: props.organizationId,
 			parentChannelId: null,
 			createdAt: now,
@@ -183,7 +187,7 @@ export const createDmChannel = createOptimisticAction<{
 		}
 
 		// For DMs, add to direct_message_participants
-		if (props.type === "dm" && props.participantIds.length > 0) {
+		if (props.type === "direct" && props.participantIds.length > 0) {
 			// Add current user
 			directMessageParticipantCollection.insert({
 				id: DirectMessageParticipantId.make(uuid()),
@@ -220,6 +224,8 @@ export const createDmChannel = createOptimisticAction<{
 		)
 
 		await channelCollection.utils.awaitTxId(transactionId)
+		await channelMemberCollection.utils.awaitTxId(transactionId)
+		await directMessageParticipantCollection.utils.awaitTxId(transactionId)
 
 		return { transactionId, channelId: data.id }
 	},

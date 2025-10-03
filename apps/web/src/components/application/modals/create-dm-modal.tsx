@@ -71,7 +71,7 @@ export const CreateDmModal = ({ isOpen, onOpenChange }: CreateDmModalProps) => {
 
 			try {
 				// Determine if it's a single DM or group
-				const type = value.userIds.length === 1 ? "dm" : "group"
+				const type = value.userIds.length === 1 ? "single" : "direct"
 
 				// Get selected users for group name
 				const selectedUserNames =
@@ -84,16 +84,21 @@ export const CreateDmModal = ({ isOpen, onOpenChange }: CreateDmModalProps) => {
 						: undefined
 
 				// Todo: We should navigate to the chat here
-				createDmChannel({
+				const test = createDmChannel({
 					organizationId: organizationId!,
 					participantIds: value.userIds as UserId[],
 					type,
-					name: type === "group" ? selectedUserNames : undefined,
+					name: type === "direct" ? selectedUserNames : undefined,
 					currentUserId: user.id as UserId,
 				})
 
+				test.isPersisted.promise.then((res) => {
+					console.log("res", res)
+				})
+				console.log("test", test)
+
 				// Show success message
-				if (type === "dm") {
+				if (type === "direct") {
 					const targetUser = organizationUsers?.find((u) => u?.id === value.userIds[0])
 					toast.success(`Started conversation with ${targetUser?.firstName}`)
 				} else {

@@ -48,6 +48,19 @@ export class InternalServerError extends Schema.TaggedError<InternalServerError>
 	}),
 ) {}
 
+export class DmChannelAlreadyExistsError extends Schema.TaggedError<DmChannelAlreadyExistsError>(
+	"DmChannelAlreadyExistsError",
+)(
+	"DmChannelAlreadyExistsError",
+	{
+		message: Schema.String,
+		detail: Schema.optional(Schema.String),
+	},
+	HttpApiSchema.annotations({
+		status: 409,
+	}),
+) {}
+
 export function withRemapDbErrors<R, E extends { _tag: string }, A>(
 	entityType: string,
 	action: "update" | "create" | "delete" | "select",

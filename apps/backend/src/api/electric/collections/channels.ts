@@ -1,7 +1,12 @@
 import { HttpApiEndpoint, HttpApiGroup, OpenApi } from "@effect/platform"
 import { Channel } from "@hazel/db/models"
 import { ChannelId, UserId } from "@hazel/db/schema"
-import { CurrentUser, InternalServerError, UnauthorizedError } from "@hazel/effect-lib"
+import {
+	CurrentUser,
+	DmChannelAlreadyExistsError,
+	InternalServerError,
+	UnauthorizedError,
+} from "@hazel/effect-lib"
 import { Schema } from "effect"
 import { TransactionId } from "../../../lib/schema"
 
@@ -12,7 +17,7 @@ export class CreateChannelResponse extends Schema.Class<CreateChannelResponse>("
 
 export class CreateDmChannelRequest extends Schema.Class<CreateDmChannelRequest>("CreateDmChannelRequest")({
 	participantIds: Schema.Array(UserId),
-	type: Schema.Literal("dm", "group"),
+	type: Schema.Literal("direct", "single"),
 	name: Schema.optional(Schema.String),
 	organizationId: Schema.UUID,
 }) {}
@@ -34,6 +39,7 @@ export class ChannelGroup extends HttpApiGroup.make("channels")
 			.addSuccess(CreateChannelResponse)
 			.addError(UnauthorizedError)
 			.addError(InternalServerError)
+
 			.annotateContext(
 				OpenApi.annotations({
 					title: "Create Channel",
@@ -48,6 +54,7 @@ export class ChannelGroup extends HttpApiGroup.make("channels")
 			.addSuccess(CreateChannelResponse)
 			.addError(UnauthorizedError)
 			.addError(InternalServerError)
+			.addError(DmChannelAlreadyExistsError)
 			.annotateContext(
 				OpenApi.annotations({
 					title: "Create DM or Group Channel",
