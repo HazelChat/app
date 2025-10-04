@@ -22,19 +22,19 @@ export const HttpDirectMessageParticipantLive = HttpApiBuilder.group(
 
 						const { createdDirectMessageParticipant, txid } = yield* db
 							.transaction(
-								Effect.fnUntraced(function* (tx) {
+								Effect.gen(function* () {
 									const createdDirectMessageParticipant =
 										yield* DirectMessageParticipantRepo.insert({
 											...payload,
 											userId: user.id,
-										}, tx).pipe(
+										}).pipe(
 											Effect.map((res) => res[0]!),
 											policyUse(
 												DirectMessageParticipantPolicy.canCreate(payload.channelId),
 											),
 										)
 
-									const txid = yield* generateTransactionId(tx)
+									const txid = yield* generateTransactionId()
 
 									return { createdDirectMessageParticipant, txid }
 								}),
@@ -52,14 +52,14 @@ export const HttpDirectMessageParticipantLive = HttpApiBuilder.group(
 					Effect.fn(function* ({ payload, path }) {
 						const { updatedDirectMessageParticipant, txid } = yield* db
 							.transaction(
-								Effect.fnUntraced(function* (tx) {
+								Effect.gen(function* () {
 									const updatedDirectMessageParticipant =
 										yield* DirectMessageParticipantRepo.update({
 											id: path.id,
 											...payload,
-										}, tx)
+										})
 
-									const txid = yield* generateTransactionId(tx)
+									const txid = yield* generateTransactionId()
 
 									return { updatedDirectMessageParticipant, txid }
 								}),
@@ -80,10 +80,10 @@ export const HttpDirectMessageParticipantLive = HttpApiBuilder.group(
 					Effect.fn(function* ({ path }) {
 						const { txid } = yield* db
 							.transaction(
-								Effect.fnUntraced(function* (tx) {
-									yield* DirectMessageParticipantRepo.deleteById(path.id, tx)
+								Effect.gen(function* () {
+									yield* DirectMessageParticipantRepo.deleteById(path.id)
 
-									const txid = yield* generateTransactionId(tx)
+									const txid = yield* generateTransactionId()
 
 									return { txid }
 								}),

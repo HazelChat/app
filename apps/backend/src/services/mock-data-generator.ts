@@ -16,7 +16,7 @@ interface MockDataConfig {
 
 export class MockDataGenerator extends Effect.Service<MockDataGenerator>()("MockDataGenerator", {
 	effect: Effect.gen(function* () {
-		const generateForOrganization = (organizationId: OrganizationId, config: MockDataConfig, tx: Database.Transaction) =>
+		const generateForOrganization = (organizationId: OrganizationId, config: MockDataConfig) =>
 			Effect.gen(function* () {
 				const userRepo = yield* UserRepo
 				const channelRepo = yield* ChannelRepo
@@ -37,7 +37,7 @@ export class MockDataGenerator extends Effect.Service<MockDataGenerator>()("Mock
 					deletedAt: null,
 				}))
 
-				const users = yield* Effect.forEach(userDataArray, (userData) => userRepo.insert(userData, tx), {
+				const users = yield* Effect.forEach(userDataArray, (userData) => userRepo.insert(userData), {
 					concurrency: 5,
 				})
 
@@ -55,7 +55,7 @@ export class MockDataGenerator extends Effect.Service<MockDataGenerator>()("Mock
 						invitedBy: null,
 						deletedAt: null,
 					})),
-					(memberData) => orgMemberRepo.insert(memberData, tx),
+					(memberData) => orgMemberRepo.insert(memberData),
 					{ concurrency: 5 },
 				)
 
@@ -86,7 +86,7 @@ export class MockDataGenerator extends Effect.Service<MockDataGenerator>()("Mock
 
 				const channels = yield* Effect.forEach(
 					channelDataArray,
-					(channelData) => channelRepo.insert(channelData, tx),
+					(channelData) => channelRepo.insert(channelData),
 					{ concurrency: 3 },
 				)
 
@@ -122,7 +122,7 @@ export class MockDataGenerator extends Effect.Service<MockDataGenerator>()("Mock
 
 				const channelMembers = yield* Effect.forEach(
 					channelMembersData,
-					(memberData) => channelMemberRepo.insert(memberData, tx),
+					(memberData) => channelMemberRepo.insert(memberData),
 					{ concurrency: 10 },
 				)
 
@@ -161,7 +161,7 @@ export class MockDataGenerator extends Effect.Service<MockDataGenerator>()("Mock
 
 				const messages = yield* Effect.forEach(
 					messageDataArray,
-					(messageData) => messageRepo.insert(messageData, tx),
+					(messageData) => messageRepo.insert(messageData),
 					{ concurrency: 10 },
 				)
 

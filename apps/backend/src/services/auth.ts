@@ -1,5 +1,5 @@
 import { HttpApiBuilder } from "@effect/platform"
-import { CurrentUser, UnauthorizedError } from "@hazel/effect-lib"
+import { CurrentUser, UnauthorizedError, withSystemActor } from "@hazel/effect-lib"
 import { Config, Effect, Layer, Option, Redacted } from "effect"
 import { createRemoteJWKSet, jwtVerify } from "jose"
 import { UserRepo } from "../repositories/user-repo"
@@ -66,7 +66,9 @@ export const AuthorizationLive = Layer.effect(
 					)
 
 					if (session.authenticated) {
-						const user = yield* userRepo.findByExternalId(session.user.id).pipe(Effect.orDie)
+						const user = yield* userRepo
+							.findByExternalId(session.user.id)
+							.pipe(Effect.orDie, withSystemActor)
 
 						if (Option.isNone(user)) {
 							// TODO: Should create a new user tbh
@@ -134,7 +136,9 @@ export const AuthorizationLive = Layer.effect(
 						},
 					)
 
-					const user = yield* userRepo.findByExternalId(refreshedSession.user.id).pipe(Effect.orDie)
+					const user = yield* userRepo
+						.findByExternalId(refreshedSession.user.id)
+						.pipe(Effect.orDie, withSystemActor)
 
 					if (Option.isNone(user)) {
 						// TODO: Should create a new user tbh
@@ -190,7 +194,9 @@ export const AuthorizationLive = Layer.effect(
 						)
 					}
 
-					const user = yield* userRepo.findByExternalId(workOsUserId).pipe(Effect.orDie)
+					const user = yield* userRepo
+						.findByExternalId(workOsUserId)
+						.pipe(Effect.orDie, withSystemActor)
 
 					if (Option.isNone(user)) {
 						return yield* Effect.fail(

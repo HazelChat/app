@@ -17,7 +17,7 @@ export const HttpMockDataLive = HttpApiBuilder.group(HazelApi, "mockData", (hand
 			Effect.fn(function* ({ payload }) {
 				const { result, txid } = yield* db
 					.transaction(
-						Effect.fnUntraced(function* (tx) {
+						Effect.gen(function* () {
 							const result = yield* mockDataService.generateForOrganization(
 								OrganizationId.make(payload.organizationId),
 								{
@@ -25,10 +25,9 @@ export const HttpMockDataLive = HttpApiBuilder.group(HazelApi, "mockData", (hand
 									channelCount: payload.channelCount,
 									messageCount: payload.messageCount,
 								},
-								tx,
 							)
 
-							const txid = yield* generateTransactionId(tx)
+							const txid = yield* generateTransactionId()
 
 							return { result, txid }
 						}),

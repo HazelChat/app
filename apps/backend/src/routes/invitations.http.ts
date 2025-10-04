@@ -17,12 +17,12 @@ export const HttpInvitationLive = HttpApiBuilder.group(HazelApi, "invitations", 
 				Effect.fn(function* ({ payload }) {
 					const { createdInvitation, txid } = yield* db
 						.transaction(
-							Effect.fnUntraced(function* (tx) {
+							Effect.gen(function* () {
 								const createdInvitation = yield* InvitationRepo.insert({
 									...payload,
-								}, tx).pipe(Effect.map((res) => res[0]!))
+								}).pipe(Effect.map((res) => res[0]!))
 
-								const txid = yield* generateTransactionId(tx)
+								const txid = yield* generateTransactionId()
 
 								return { createdInvitation, txid }
 							}),
@@ -43,13 +43,13 @@ export const HttpInvitationLive = HttpApiBuilder.group(HazelApi, "invitations", 
 				Effect.fn(function* ({ payload, path }) {
 					const { updatedInvitation, txid } = yield* db
 						.transaction(
-							Effect.fnUntraced(function* (tx) {
+							Effect.gen(function* () {
 								const updatedInvitation = yield* InvitationRepo.update({
 									id: path.id,
 									...payload,
-								}, tx)
+								})
 
-								const txid = yield* generateTransactionId(tx)
+								const txid = yield* generateTransactionId()
 
 								return { updatedInvitation, txid }
 							}),
@@ -70,10 +70,10 @@ export const HttpInvitationLive = HttpApiBuilder.group(HazelApi, "invitations", 
 				Effect.fn(function* ({ path }) {
 					const { txid } = yield* db
 						.transaction(
-							Effect.fnUntraced(function* (tx) {
-								yield* InvitationRepo.deleteById(path.id, tx)
+							Effect.gen(function* () {
+								yield* InvitationRepo.deleteById(path.id)
 
-								const txid = yield* generateTransactionId(tx)
+								const txid = yield* generateTransactionId()
 
 								return { txid }
 							}),

@@ -225,9 +225,11 @@ export const createDmChannel = createOptimisticAction<{
 			}),
 		)
 
-		await channelCollection.utils.awaitTxId(transactionId)
-		await channelMemberCollection.utils.awaitTxId(transactionId)
-		await directMessageParticipantCollection.utils.awaitTxId(transactionId)
+		await Promise.all([
+			channelCollection.utils.awaitTxId(transactionId),
+			directMessageParticipantCollection.utils.awaitTxId(transactionId),
+			channelMemberCollection.utils.awaitTxId(transactionId),
+		])
 
 		return { transactionId, channelId: data.id }
 	},

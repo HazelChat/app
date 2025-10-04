@@ -25,16 +25,16 @@ export const HttpUserLive = HttpApiBuilder.group(HazelApi, "users", (handlers) =
 				Effect.fn(function* ({ payload }) {
 					const { createdUser, txid } = yield* db
 						.transaction(
-							Effect.fnUntraced(function* (tx) {
+							Effect.gen(function* () {
 								const createdUser = yield* UserRepo.insert({
 									...payload,
 									deletedAt: null,
-								}, tx).pipe(
+								}).pipe(
 									Effect.map((res) => res[0]!),
 									policyUse(UserPolicy.canCreate()),
 								)
 
-								const txid = yield* generateTransactionId(tx)
+								const txid = yield* generateTransactionId()
 
 								return { createdUser, txid }
 							}),
@@ -52,13 +52,13 @@ export const HttpUserLive = HttpApiBuilder.group(HazelApi, "users", (handlers) =
 				Effect.fn(function* ({ payload, path }) {
 					const { updatedUser, txid } = yield* db
 						.transaction(
-							Effect.fnUntraced(function* (tx) {
+							Effect.gen(function* () {
 								const updatedUser = yield* UserRepo.update({
 									id: path.id,
 									...payload,
-								}, tx).pipe(policyUse(UserPolicy.canUpdate(path.id)))
+								}).pipe(policyUse(UserPolicy.canUpdate(path.id)))
 
-								const txid = yield* generateTransactionId(tx)
+								const txid = yield* generateTransactionId()
 
 								return { updatedUser, txid }
 							}),
@@ -76,12 +76,12 @@ export const HttpUserLive = HttpApiBuilder.group(HazelApi, "users", (handlers) =
 				Effect.fn(function* ({ path }) {
 					const { txid } = yield* db
 						.transaction(
-							Effect.fnUntraced(function* (tx) {
-								yield* UserRepo.deleteById(path.id, tx).pipe(
+							Effect.gen(function* () {
+								yield* UserRepo.deleteById(path.id).pipe(
 									policyUse(UserPolicy.canDelete(path.id)),
 								)
 
-								const txid = yield* generateTransactionId(tx)
+								const txid = yield* generateTransactionId()
 
 								return { txid }
 							}),

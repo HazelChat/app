@@ -26,18 +26,15 @@ export const HttpMessageLive = HttpApiBuilder.group(HazelApi, "messages", (handl
 
 					const { createdMessage, txid } = yield* db
 						.transaction(
-							Effect.fnUntraced(function* (tx) {
+							Effect.gen(function* () {
 								// Extract attachmentIds from payload (it's not a database field)
 								const { attachmentIds, ...messageData } = payload
 
-								const createdMessage = yield* MessageRepo.insert(
-									{
-										...messageData,
-										authorId: user.id,
-										deletedAt: null,
-									},
-									tx,
-								).pipe(
+								const createdMessage = yield* MessageRepo.insert({
+									...messageData,
+									authorId: user.id,
+									deletedAt: null,
+								}).pipe(
 									Effect.map((res) => res[0]!),
 									policyUse(MessagePolicy.canCreate(payload.channelId)),
 								)
@@ -49,11 +46,11 @@ export const HttpMessageLive = HttpApiBuilder.group(HazelApi, "messages", (handl
 										AttachmentRepo.update({
 											id: attachmentId,
 											messageId: createdMessage.id,
-										}, tx).pipe(withSystemActor),
+										}).pipe(withSystemActor),
 									)
 								}
 
-								const txid = yield* generateTransactionId(tx)
+								const txid = yield* generateTransactionId()
 
 								return { createdMessage, txid }
 							}),
@@ -71,13 +68,13 @@ export const HttpMessageLive = HttpApiBuilder.group(HazelApi, "messages", (handl
 				Effect.fn(function* ({ payload, path }) {
 					const { createdMessage, txid } = yield* db
 						.transaction(
-							Effect.fnUntraced(function* (tx) {
+							Effect.gen(function* () {
 								const createdMessage = yield* MessageRepo.update({
 									id: path.id,
 									...payload,
-								}, tx).pipe(policyUse(MessagePolicy.canUpdate(path.id)))
+								}).pipe(policyUse(MessagePolicy.canUpdate(path.id)))
 
-								const txid = yield* generateTransactionId(tx)
+								const txid = yield* generateTransactionId()
 
 								return { createdMessage, txid }
 							}),
@@ -95,12 +92,12 @@ export const HttpMessageLive = HttpApiBuilder.group(HazelApi, "messages", (handl
 				Effect.fn(function* ({ path }) {
 					const { txid } = yield* db
 						.transaction(
-							Effect.fnUntraced(function* (tx) {
-								yield* MessageRepo.deleteById(path.id, tx).pipe(
+							Effect.gen(function* () {
+								yield* MessageRepo.deleteById(path.id).pipe(
 									policyUse(MessagePolicy.canDelete(path.id)),
 								)
 
-								const txid = yield* generateTransactionId(tx)
+								const txid = yield* generateTransactionId()
 
 								return { txid }
 							}),

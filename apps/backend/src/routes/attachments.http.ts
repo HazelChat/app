@@ -48,7 +48,7 @@ export const HttpAttachmentLive = HttpApiBuilder.group(HazelApi, "attachments", 
 
 					const { createdAttachment, txid } = yield* db
 						.transaction(
-							Effect.fnUntraced(function* (tx) {
+							Effect.gen(function* () {
 								const createdAttachment = yield* AttachmentRepo.insert({
 									id: attachmentId,
 									uploadedBy: user.id,
@@ -59,9 +59,9 @@ export const HttpAttachmentLive = HttpApiBuilder.group(HazelApi, "attachments", 
 									fileName: fileName,
 									fileSize: Number(stats.size),
 									uploadedAt: new Date(),
-								}, tx).pipe(Effect.map((res) => res[0]!))
+								}).pipe(Effect.map((res) => res[0]!))
 
-								const txid = yield* generateTransactionId(tx)
+								const txid = yield* generateTransactionId()
 
 								return { createdAttachment, txid }
 							}),
@@ -83,10 +83,10 @@ export const HttpAttachmentLive = HttpApiBuilder.group(HazelApi, "attachments", 
 				Effect.fn(function* ({ path }) {
 					const { txid } = yield* db
 						.transaction(
-							Effect.fnUntraced(function* (tx) {
-								yield* AttachmentRepo.deleteById(path.id, tx)
+							Effect.gen(function* () {
+								yield* AttachmentRepo.deleteById(path.id)
 
-								const txid = yield* generateTransactionId(tx)
+								const txid = yield* generateTransactionId()
 
 								return { txid }
 							}),

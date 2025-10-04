@@ -17,15 +17,15 @@ export const HttpNotificationLive = HttpApiBuilder.group(HazelApi, "notification
 				Effect.fn(function* ({ payload }) {
 					const { createdNotification, txid } = yield* db
 						.transaction(
-							Effect.fnUntraced(function* (tx) {
+							Effect.gen(function* () {
 								const createdNotification = yield* NotificationRepo.insert({
 									...payload,
-								}, tx).pipe(
+								}).pipe(
 									Effect.map((res) => res[0]!),
 									policyUse(NotificationPolicy.canCreate(payload.memberId as any)),
 								)
 
-								const txid = yield* generateTransactionId(tx)
+								const txid = yield* generateTransactionId()
 
 								return { createdNotification, txid }
 							}),
@@ -43,13 +43,13 @@ export const HttpNotificationLive = HttpApiBuilder.group(HazelApi, "notification
 				Effect.fn(function* ({ payload, path }) {
 					const { updatedNotification, txid } = yield* db
 						.transaction(
-							Effect.fnUntraced(function* (tx) {
+							Effect.gen(function* () {
 								const updatedNotification = yield* NotificationRepo.update({
 									id: path.id,
 									...payload,
-								}, tx).pipe(policyUse(NotificationPolicy.canUpdate(path.id)))
+								}).pipe(policyUse(NotificationPolicy.canUpdate(path.id)))
 
-								const txid = yield* generateTransactionId(tx)
+								const txid = yield* generateTransactionId()
 
 								return { updatedNotification, txid }
 							}),
@@ -67,12 +67,12 @@ export const HttpNotificationLive = HttpApiBuilder.group(HazelApi, "notification
 				Effect.fn(function* ({ path }) {
 					const { txid } = yield* db
 						.transaction(
-							Effect.fnUntraced(function* (tx) {
-								yield* NotificationRepo.deleteById(path.id, tx).pipe(
+							Effect.gen(function* () {
+								yield* NotificationRepo.deleteById(path.id).pipe(
 									policyUse(NotificationPolicy.canDelete(path.id)),
 								)
 
-								const txid = yield* generateTransactionId(tx)
+								const txid = yield* generateTransactionId()
 
 								return { txid }
 							}),

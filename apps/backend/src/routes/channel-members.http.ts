@@ -25,16 +25,16 @@ export const HttpChannelMemberLive = HttpApiBuilder.group(HazelApi, "channelMemb
 
 					const { createdChannelMember, txid } = yield* db
 						.transaction(
-							Effect.fnUntraced(function* (tx) {
+							Effect.gen(function* () {
 								const createdChannelMember = yield* ChannelMemberRepo.insert({
 									...payload,
 									notificationCount: 0,
 									userId: user.id,
 									joinedAt: new Date(),
 									deletedAt: null,
-								}, tx).pipe(Effect.map((res) => res[0]!))
+								}).pipe(Effect.map((res) => res[0]!))
 
-								const txid = yield* generateTransactionId(tx)
+								const txid = yield* generateTransactionId()
 
 								return { createdChannelMember, txid }
 							}),
@@ -55,13 +55,13 @@ export const HttpChannelMemberLive = HttpApiBuilder.group(HazelApi, "channelMemb
 				Effect.fn(function* ({ payload, path }) {
 					const { updatedChannelMember, txid } = yield* db
 						.transaction(
-							Effect.fnUntraced(function* (tx) {
+							Effect.gen(function* () {
 								const updatedChannelMember = yield* ChannelMemberRepo.update({
 									id: path.id,
 									...payload,
-								}, tx)
+								})
 
-								const txid = yield* generateTransactionId(tx)
+								const txid = yield* generateTransactionId()
 
 								return { updatedChannelMember, txid }
 							}),
@@ -82,10 +82,10 @@ export const HttpChannelMemberLive = HttpApiBuilder.group(HazelApi, "channelMemb
 				Effect.fn(function* ({ path }) {
 					const { txid } = yield* db
 						.transaction(
-							Effect.fnUntraced(function* (tx) {
-								yield* ChannelMemberRepo.deleteById(path.id, tx)
+							Effect.gen(function* () {
+								yield* ChannelMemberRepo.deleteById(path.id)
 
-								const txid = yield* generateTransactionId(tx)
+								const txid = yield* generateTransactionId()
 
 								return { txid }
 							}),

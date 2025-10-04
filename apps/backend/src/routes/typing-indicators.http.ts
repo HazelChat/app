@@ -17,17 +17,19 @@ export const HttpTypingIndicatorLive = HttpApiBuilder.group(HazelApi, "typingInd
 				Effect.fn(function* ({ payload }) {
 					const { typingIndicator, txid } = yield* db
 						.transaction(
-							Effect.fnUntraced(function* (tx) {
+							Effect.gen(function* () {
 								// Use upsert to create or update typing indicator
-								const result = yield* TypingIndicatorRepo.upsertByChannelAndMember({
-									channelId: payload.channelId,
-									memberId: payload.memberId,
-									lastTyped: payload.lastTyped ?? Date.now(),
-								}, tx).pipe(policyUse(TypingIndicatorPolicy.canCreate(payload.channelId)))
+								const result = yield* TypingIndicatorRepo.upsertByChannelAndMember(
+									{
+										channelId: payload.channelId,
+										memberId: payload.memberId,
+										lastTyped: payload.lastTyped ?? Date.now(),
+									},
+								).pipe(policyUse(TypingIndicatorPolicy.canCreate(payload.channelId)))
 
 								const typingIndicator = result[0]!
 
-								const txid = yield* generateTransactionId(tx)
+								const txid = yield* generateTransactionId()
 
 								return { typingIndicator, txid }
 							}),
@@ -45,14 +47,16 @@ export const HttpTypingIndicatorLive = HttpApiBuilder.group(HazelApi, "typingInd
 				Effect.fn(function* ({ payload, path }) {
 					const { typingIndicator, txid } = yield* db
 						.transaction(
-							Effect.fnUntraced(function* (tx) {
-								const typingIndicator = yield* TypingIndicatorRepo.update({
-									...payload,
-									id: path.id,
-									lastTyped: Date.now(),
-								}, tx).pipe(policyUse(TypingIndicatorPolicy.canUpdate(path.id)))
+							Effect.gen(function* () {
+								const typingIndicator = yield* TypingIndicatorRepo.update(
+									{
+										...payload,
+										id: path.id,
+										lastTyped: Date.now(),
+									},
+								).pipe(policyUse(TypingIndicatorPolicy.canUpdate(path.id)))
 
-								const txid = yield* generateTransactionId(tx)
+								const txid = yield* generateTransactionId()
 
 								return { typingIndicator, txid }
 							}),
@@ -70,9 +74,9 @@ export const HttpTypingIndicatorLive = HttpApiBuilder.group(HazelApi, "typingInd
 				Effect.fn(function* ({ path }) {
 					return yield* db
 						.transaction(
-							Effect.fnUntraced(function* (tx) {
+							Effect.gen(function* () {
 								// First find the typing indicator to return it
-								const existingOption = yield* TypingIndicatorRepo.findById(path.id, tx).pipe(
+								const existingOption = yield* TypingIndicatorRepo.findById(path.id).pipe(
 									policyUse(TypingIndicatorPolicy.canRead(path.id)),
 								)
 
@@ -84,11 +88,11 @@ export const HttpTypingIndicatorLive = HttpApiBuilder.group(HazelApi, "typingInd
 
 								const existing = existingOption.value
 
-								yield* TypingIndicatorRepo.deleteById(path.id, tx).pipe(
+								yield* TypingIndicatorRepo.deleteById(path.id).pipe(
 									policyUse(TypingIndicatorPolicy.canDelete({ id: path.id })),
 								)
 
-								const txid = yield* generateTransactionId(tx)
+								const txid = yield* generateTransactionId()
 
 								return { data: existing, transactionId: txid }
 							}),

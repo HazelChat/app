@@ -7,6 +7,7 @@ import * as Data from "effect/Data"
 import * as Effect from "effect/Effect"
 import * as Exit from "effect/Exit"
 import * as Layer from "effect/Layer"
+import * as Option from "effect/Option"
 import type { ParseError } from "effect/ParseResult"
 import * as Redacted from "effect/Redacted"
 import * as Runtime from "effect/Runtime"
@@ -24,6 +25,17 @@ export type TransactionClient = PgTransaction<
 export type Client = PostgresJsDatabase<typeof schema> & {
 	$client: postgres.Sql
 }
+
+export type TxFn = <T>(fn: (client: TransactionClient) => Promise<T>) => Effect.Effect<T, DatabaseError, never>
+
+export interface TransactionService {
+	readonly execute: TxFn
+}
+
+export class TransactionContext extends Effect.Tag("TransactionContext")<
+	TransactionContext,
+	TransactionService
+>() {}
 
 export class DatabaseError extends Data.TaggedError("DatabaseError")<{
 	readonly type: "unique_violation" | "foreign_key_violation" | "connection_error"
@@ -105,17 +117,13 @@ const makeService = (config: Config) =>
 		)
 
 		const transaction = Effect.fn("Database.transaction")(
-			<T, E, R>(
-				execute: (
-					tx: <U>(fn: (client: TransactionClient) => Promise<U>) => Effect.Effect<U, DatabaseError>,
-				) => Effect.Effect<T, E, R>,
-			) =>
+			<T, E, R>(effect: Effect.Effect<T, E, R>) =>
 				Effect.runtime<R>().pipe(
 					Effect.map((runtime) => Runtime.runPromiseExit(runtime)),
 					Effect.flatMap((runPromiseExit) =>
 						Effect.async<T, DatabaseError | E, R>((resume) => {
 							db.transaction(async (tx: TransactionClient) => {
-								const txWrapper = (fn: (client: TransactionClient) => Promise<any>) =>
+								const txWrapper: TxFn = (fn: (client: TransactionClient) => Promise<any>) =>
 									Effect.tryPromise({
 										try: () => fn(tx),
 										catch: (cause) => {
@@ -129,7 +137,12 @@ const makeService = (config: Config) =>
 										},
 									})
 
-								const result = await runPromiseExit(execute(txWrapper))
+								// Provide TransactionContext to the effect
+								const withContext = effect.pipe(
+									Effect.provideService(TransactionContext, { execute: txWrapper }),
+								)
+
+								const result = await runPromiseExit(withContext)
 								Exit.match(result, {
 									onSuccess: (value) => {
 										resume(Effect.succeed(value))
@@ -183,13 +196,22 @@ const makeService = (config: Config) =>
 					fn: (client: TransactionClient) => Promise<T>,
 				) => Effect.Effect<T, DatabaseError, never>,
 			): Effect.Effect<A, E | DatabaseError | ParseError, R | AuthorizedActor<Action, Entity>> => {
-				const executor = tx ?? execute
-
 				return Effect.gen(function* () {
 					const validatedInput = yield* Schema.decode(inputSchema)(rawData)
 
-					const result = yield* queryFn(executor, validatedInput)
-					return result
+					// 1. Check explicit tx parameter (highest priority)
+					if (tx) {
+						return yield* queryFn(tx, validatedInput)
+					}
+
+					// 2. Check TransactionContext from Effect Context (auto-propagated)
+					const maybeCtx = yield* Effect.serviceOption(TransactionContext)
+					if (Option.isSome(maybeCtx)) {
+						return yield* queryFn(maybeCtx.value.execute, validatedInput)
+					}
+
+					// 3. Fall back to regular execute
+					return yield* queryFn(execute, validatedInput)
 				}).pipe(
 					policy,
 					Effect.withSpan("queryWithSchema", {
@@ -214,16 +236,31 @@ const makeService = (config: Config) =>
 				// The transaction executor type passed here must match the one defined in `transaction`
 				tx?: <U>(fn: (client: TransactionClient) => Promise<U>) => Effect.Effect<U, DatabaseError>,
 			): Effect.Effect<A, E | DatabaseError, R | AuthorizedActor<Action, Entity>> => {
-				// Ensure the executor type matches what queryFn expects
-				const executor = tx ?? execute
-				// Cast needed if the queryFn strictly expects the execute signature type
-				// but receives the tx signature type. They should be compatible.
-				return queryFn(
-					executor as <T>(
-						fn: (client: Client | TransactionClient) => Promise<T>,
-					) => Effect.Effect<T, DatabaseError>,
-					input,
-				).pipe(policy)
+				return Effect.gen(function* () {
+					// 1. Check explicit tx parameter (highest priority)
+					if (tx) {
+						return yield* queryFn(
+							tx as <T>(
+								fn: (client: Client | TransactionClient) => Promise<T>,
+							) => Effect.Effect<T, DatabaseError>,
+							input,
+						)
+					}
+
+					// 2. Check TransactionContext from Effect Context (auto-propagated)
+					const maybeCtx = yield* Effect.serviceOption(TransactionContext)
+					if (Option.isSome(maybeCtx)) {
+						return yield* queryFn(
+							maybeCtx.value.execute as <T>(
+								fn: (client: Client | TransactionClient) => Promise<T>,
+							) => Effect.Effect<T, DatabaseError>,
+							input,
+						)
+					}
+
+					// 3. Fall back to regular execute
+					return yield* queryFn(execute, input)
+				}).pipe(policy)
 			}
 		}
 

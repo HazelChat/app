@@ -83,8 +83,7 @@ export const CreateDmModal = ({ isOpen, onOpenChange }: CreateDmModalProps) => {
 								?.join(", ")
 						: undefined
 
-				// Todo: We should navigate to the chat here
-				const _test = createDmChannel({
+				createDmChannel({
 					organizationId: organizationId!,
 					participantIds: value.userIds as UserId[],
 					type,

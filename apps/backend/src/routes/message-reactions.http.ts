@@ -19,16 +19,16 @@ export const HttpMessageReactionLive = HttpApiBuilder.group(HazelApi, "messageRe
 
 					const { createdMessageReaction, txid } = yield* db
 						.transaction(
-							Effect.fnUntraced(function* (tx) {
+							Effect.gen(function* () {
 								const createdMessageReaction = yield* MessageReactionRepo.insert({
 									...payload,
 									userId: user.id,
-								}, tx).pipe(
+								}).pipe(
 									Effect.map((res) => res[0]!),
 									policyUse(MessageReactionPolicy.canCreate(payload.messageId)),
 								)
 
-								const txid = yield* generateTransactionId(tx)
+								const txid = yield* generateTransactionId()
 
 								return { createdMessageReaction, txid }
 							}),
@@ -46,13 +46,13 @@ export const HttpMessageReactionLive = HttpApiBuilder.group(HazelApi, "messageRe
 				Effect.fn(function* ({ payload, path }) {
 					const { updatedMessageReaction, txid } = yield* db
 						.transaction(
-							Effect.fnUntraced(function* (tx) {
+							Effect.gen(function* () {
 								const updatedMessageReaction = yield* MessageReactionRepo.update({
 									id: path.id,
 									...payload,
-								}, tx).pipe(policyUse(MessageReactionPolicy.canUpdate(path.id)))
+								}).pipe(policyUse(MessageReactionPolicy.canUpdate(path.id)))
 
-								const txid = yield* generateTransactionId(tx)
+								const txid = yield* generateTransactionId()
 
 								return { updatedMessageReaction, txid }
 							}),
@@ -70,12 +70,12 @@ export const HttpMessageReactionLive = HttpApiBuilder.group(HazelApi, "messageRe
 				Effect.fn(function* ({ path }) {
 					const { txid } = yield* db
 						.transaction(
-							Effect.fnUntraced(function* (tx) {
-								yield* MessageReactionRepo.deleteById(path.id, tx).pipe(
+							Effect.gen(function* () {
+								yield* MessageReactionRepo.deleteById(path.id).pipe(
 									policyUse(MessageReactionPolicy.canDelete(path.id)),
 								)
 
-								const txid = yield* generateTransactionId(tx)
+								const txid = yield* generateTransactionId()
 
 								return { txid }
 							}),

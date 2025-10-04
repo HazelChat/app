@@ -1,4 +1,4 @@
-import type { OrganizationId, UserId } from "@hazel/db/schema"
+import { type OrganizationId, type UserId, withSystemActor } from "@hazel/db/schema"
 import type { Event } from "@workos-inc/node"
 import { Effect, Option, pipe, Schema } from "effect"
 import { InvitationRepo } from "../repositories/invitation-repo"
@@ -89,19 +89,21 @@ export class WorkOSSync extends Effect.Service<WorkOSSync>()("WorkOSSync", {
 			yield* Effect.all(
 				workosUsers.data.map((workosUser) =>
 					collectResult(
-						userRepo.upsertByExternalId({
-							externalId: workosUser.id,
-							email: workosUser.email,
-							firstName: workosUser.firstName || "",
-							lastName: workosUser.lastName || "",
-							avatarUrl:
-								workosUser.profilePictureUrl ||
-								`https://avatar.vercel.sh/${workosUser.id}.svg`,
-							status: "offline" as const,
-							lastSeen: new Date(),
-							settings: null,
-							deletedAt: null,
-						}),
+						userRepo
+							.upsertByExternalId({
+								externalId: workosUser.id,
+								email: workosUser.email,
+								firstName: workosUser.firstName || "",
+								lastName: workosUser.lastName || "",
+								avatarUrl:
+									workosUser.profilePictureUrl ||
+									`https://avatar.vercel.sh/${workosUser.id}.svg`,
+								status: "offline" as const,
+								lastSeen: new Date(),
+								settings: null,
+								deletedAt: null,
+							})
+							.pipe(withSystemActor),
 						() => {
 							if (existingUserMap.has(workosUser.id)) {
 								result.updated++
@@ -125,7 +127,7 @@ export class WorkOSSync extends Effect.Service<WorkOSSync>()("WorkOSSync", {
 					)
 					.map((user) =>
 						collectResult(
-							userRepo.softDeleteByExternalId(user.externalId),
+							userRepo.softDeleteByExternalId(user.externalId).pipe(withSystemActor),
 							() => result.deleted++,
 							(error) => {
 								result.errors.push(`Error deleting user ${user.externalId}: ${error}`)
@@ -164,17 +166,19 @@ export class WorkOSSync extends Effect.Service<WorkOSSync>()("WorkOSSync", {
 			yield* Effect.all(
 				workosOrgs.data.map((workosOrg) =>
 					collectResult(
-						orgRepo.upsertByWorkosId({
-							workosId: workosOrg.id,
-							name: workosOrg.name,
-							slug: workosOrg.name
-								.toLowerCase()
-								.replace(/[^a-z0-9]+/g, "-")
-								.replace(/^-|-$/g, ""),
-							logoUrl: null,
-							settings: null,
-							deletedAt: null,
-						}),
+						orgRepo
+							.upsertByWorkosId({
+								workosId: workosOrg.id,
+								name: workosOrg.name,
+								slug: workosOrg.name
+									.toLowerCase()
+									.replace(/[^a-z0-9]+/g, "-")
+									.replace(/^-|-$/g, ""),
+								logoUrl: null,
+								settings: null,
+								deletedAt: null,
+							})
+							.pipe(withSystemActor),
 						() => {
 							if (existingOrgMap.has(workosOrg.id)) {
 								result.updated++
@@ -196,7 +200,7 @@ export class WorkOSSync extends Effect.Service<WorkOSSync>()("WorkOSSync", {
 					.filter((org) => !workosOrgIds.has(org.workosId))
 					.map((org) =>
 						collectResult(
-							orgRepo.softDeleteByWorkosId(org.workosId),
+							orgRepo.softDeleteByWorkosId(org.workosId).pipe(withSystemActor),
 							() => result.deleted++,
 							(error) => {
 								result.errors.push(`Error deleting org ${org.workosId}: ${error}`)
@@ -261,14 +265,16 @@ export class WorkOSSync extends Effect.Service<WorkOSSync>()("WorkOSSync", {
 						const role = (workosMembership.role?.slug || "member") as "admin" | "member" | "owner"
 
 						return collectResult(
-							orgMemberRepo.upsertByOrgAndUser({
-								organizationId: organizationId,
-								userId: user.id,
-								role,
-								joinedAt: new Date(),
-								invitedBy: null,
-								deletedAt: null,
-							}),
+							orgMemberRepo
+								.upsertByOrgAndUser({
+									organizationId: organizationId,
+									userId: user.id,
+									role,
+									joinedAt: new Date(),
+									invitedBy: null,
+									deletedAt: null,
+								})
+								.pipe(withSystemActor),
 							() => {
 								if (existing) {
 									result.updated++
@@ -297,7 +303,9 @@ export class WorkOSSync extends Effect.Service<WorkOSSync>()("WorkOSSync", {
 						})
 						.map((membership) =>
 							collectResult(
-								orgMemberRepo.softDeleteByOrgAndUser(organizationId, membership.userId),
+								orgMemberRepo
+									.softDeleteByOrgAndUser(organizationId, membership.userId)
+									.pipe(withSystemActor),
 								() => result.deleted++,
 								(error) => {
 									result.errors.push(`Error removing membership: ${error}`)
@@ -378,19 +386,21 @@ export class WorkOSSync extends Effect.Service<WorkOSSync>()("WorkOSSync", {
 						}
 
 						return collectResult(
-							invitationRepo.upsertByWorkosId({
-								workosInvitationId: workosInvitation.id,
-								organizationId: organizationId,
-								email: workosInvitation.email,
-								invitedBy: invitedBy,
-								invitedAt: new Date(workosInvitation.createdAt),
-								expiresAt: new Date(workosInvitation.expiresAt),
-								status,
-								acceptedAt: workosInvitation.acceptedAt
-									? new Date(workosInvitation.acceptedAt)
-									: null,
-								acceptedBy: null,
-							}),
+							invitationRepo
+								.upsertByWorkosId({
+									workosInvitationId: workosInvitation.id,
+									organizationId: organizationId,
+									email: workosInvitation.email,
+									invitedBy: invitedBy,
+									invitedAt: new Date(workosInvitation.createdAt),
+									expiresAt: new Date(workosInvitation.expiresAt),
+									status,
+									acceptedAt: workosInvitation.acceptedAt
+										? new Date(workosInvitation.acceptedAt)
+										: null,
+									acceptedBy: null,
+								})
+								.pipe(withSystemActor),
 							() => {
 								if (existing) {
 									result.updated++

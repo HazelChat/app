@@ -17,16 +17,16 @@ export const HttpOrganizationLive = HttpApiBuilder.group(HazelApi, "organization
 				Effect.fn(function* ({ payload }) {
 					const { createdOrganization, txid } = yield* db
 						.transaction(
-							Effect.fnUntraced(function* (tx) {
+							Effect.gen(function* () {
 								const createdOrganization = yield* OrganizationRepo.insert({
 									...payload,
 									deletedAt: null,
-								}, tx).pipe(
+								}).pipe(
 									Effect.map((res) => res[0]!),
 									policyUse(OrganizationPolicy.canCreate()),
 								)
 
-								const txid = yield* generateTransactionId(tx)
+								const txid = yield* generateTransactionId()
 
 								return {
 									createdOrganization: {
@@ -50,14 +50,14 @@ export const HttpOrganizationLive = HttpApiBuilder.group(HazelApi, "organization
 				Effect.fn(function* ({ payload, path }) {
 					const { updatedOrganization, txid } = yield* db
 						.transaction(
-							Effect.fnUntraced(function* (tx) {
+							Effect.gen(function* () {
 								const updatedOrganization = yield* OrganizationRepo.update({
 									id: path.id,
 
 									...payload,
-								}, tx).pipe(policyUse(OrganizationPolicy.canUpdate(path.id)))
+								}).pipe(policyUse(OrganizationPolicy.canUpdate(path.id)))
 
-								const txid = yield* generateTransactionId(tx)
+								const txid = yield* generateTransactionId()
 
 								return {
 									updatedOrganization: {
@@ -81,12 +81,12 @@ export const HttpOrganizationLive = HttpApiBuilder.group(HazelApi, "organization
 				Effect.fn(function* ({ path }) {
 					const { txid } = yield* db
 						.transaction(
-							Effect.fnUntraced(function* (tx) {
-								yield* OrganizationRepo.deleteById(path.id, tx).pipe(
+							Effect.gen(function* () {
+								yield* OrganizationRepo.deleteById(path.id).pipe(
 									policyUse(OrganizationPolicy.canDelete(path.id)),
 								)
 
-								const txid = yield* generateTransactionId(tx)
+								const txid = yield* generateTransactionId()
 
 								return { txid }
 							}),

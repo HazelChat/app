@@ -19,16 +19,16 @@ export const HttpPinnedMessageLive = HttpApiBuilder.group(HazelApi, "pinnedMessa
 
 					const { createdPinnedMessage, txid } = yield* db
 						.transaction(
-							Effect.fnUntraced(function* (tx) {
+							Effect.gen(function* () {
 								const createdPinnedMessage = yield* PinnedMessageRepo.insert({
 									...payload,
 									pinnedBy: user.id,
-								}, tx).pipe(
+								}).pipe(
 									Effect.map((res) => res[0]!),
 									policyUse(PinnedMessagePolicy.canCreate(payload.channelId)),
 								)
 
-								const txid = yield* generateTransactionId(tx)
+								const txid = yield* generateTransactionId()
 
 								return { createdPinnedMessage, txid }
 							}),
@@ -46,13 +46,13 @@ export const HttpPinnedMessageLive = HttpApiBuilder.group(HazelApi, "pinnedMessa
 				Effect.fn(function* ({ payload, path }) {
 					const { updatedPinnedMessage, txid } = yield* db
 						.transaction(
-							Effect.fnUntraced(function* (tx) {
+							Effect.gen(function* () {
 								const updatedPinnedMessage = yield* PinnedMessageRepo.update({
 									id: path.id,
 									...payload,
-								}, tx).pipe(policyUse(PinnedMessagePolicy.canUpdate(path.id)))
+								}).pipe(policyUse(PinnedMessagePolicy.canUpdate(path.id)))
 
-								const txid = yield* generateTransactionId(tx)
+								const txid = yield* generateTransactionId()
 
 								return { updatedPinnedMessage, txid }
 							}),
@@ -70,12 +70,12 @@ export const HttpPinnedMessageLive = HttpApiBuilder.group(HazelApi, "pinnedMessa
 				Effect.fn(function* ({ path }) {
 					const { txid } = yield* db
 						.transaction(
-							Effect.fnUntraced(function* (tx) {
-								yield* PinnedMessageRepo.deleteById(path.id, tx).pipe(
+							Effect.gen(function* () {
+								yield* PinnedMessageRepo.deleteById(path.id).pipe(
 									policyUse(PinnedMessagePolicy.canDelete(path.id)),
 								)
 
-								const txid = yield* generateTransactionId(tx)
+								const txid = yield* generateTransactionId()
 
 								return { txid }
 							}),
