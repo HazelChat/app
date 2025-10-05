@@ -1,5 +1,6 @@
+import { useAtomSet } from "@effect-atom/atom-react"
 import type { User } from "@hazel/db/models"
-import type { OrganizationId, UserId } from "@hazel/db/schema"
+import type { UserId } from "@hazel/db/schema"
 import { eq, useLiveQuery } from "@tanstack/react-db"
 import { useNavigate } from "@tanstack/react-router"
 import { Mail01, MessageSquare02, Plus } from "@untitledui/icons"
@@ -16,10 +17,10 @@ import { Input } from "~/components/base/input/input"
 import { FeaturedIcon } from "~/components/foundations/featured-icon/featured-icons"
 import IconCheckTickCircle from "~/components/icons/IconCheckTickCircle"
 import { BackgroundPattern } from "~/components/shared-assets/background-patterns"
-import { createDmChannel } from "~/db/actions"
 import { organizationMemberCollection, userCollection } from "~/db/collections"
 import { useAppForm } from "~/hooks/use-app-form"
 import { useOrganization } from "~/hooks/use-organization"
+import { HazelApiClient } from "~/lib/services/common/atom-client"
 import { useAuth } from "~/providers/auth-provider"
 import { cx } from "~/utils/cx"
 
@@ -38,8 +39,12 @@ export const CreateDmModal = ({ isOpen, onOpenChange }: CreateDmModalProps) => {
 	const [searchQuery, setSearchQuery] = useState("")
 	const [selectedUsers, setSelectedUsers] = useState<(typeof User.Model.Type)[]>([])
 
-	const _navigate = useNavigate()
-	const { organizationId } = useOrganization()
+	const navigate = useNavigate()
+	const { organizationId, slug } = useOrganization()
+
+	const createDmChannel = useAtomSet(HazelApiClient.mutation("channels", "createDm"), {
+		mode: "promise",
+	})
 
 	// TODO: Implement
 	const { isUserOnline } = {
@@ -67,48 +72,45 @@ export const CreateDmModal = ({ isOpen, onOpenChange }: CreateDmModalProps) => {
 			onChange: dmFormSchema,
 		},
 		onSubmit: async ({ value }) => {
-			if (value.userIds.length === 0 || !user?.id) return
+			if (value.userIds.length === 0 || !user?.id || !organizationId) return
 
-			try {
-				// Determine if it's a single DM or group
-				const type = value.userIds.length === 1 ? "single" : "direct"
+			const type = value.userIds.length === 1 ? "single" : "direct"
 
-				// Get selected users for group name
-				const selectedUserNames =
-					value.userIds.length > 1
-						? organizationUsers
-								?.filter((u) => value.userIds.includes(u?.id || ""))
-								?.map((u) => u?.firstName || "")
-								?.slice(0, 3)
-								?.join(", ")
-						: undefined
+			const targetUser = organizationUsers?.find((u) => u?.id === value.userIds[0])
 
+			toast.promise(
 				createDmChannel({
-					organizationId: organizationId!,
-					participantIds: value.userIds as UserId[],
-					type,
-					name: type === "direct" ? selectedUserNames : undefined,
-					currentUserId: user.id as UserId,
-				})
+					payload: {
+						organizationId,
+						participantIds: value.userIds as UserId[],
+						type,
+					},
+				}),
+				{
+					loading: "Creating conversation...",
+					success: (result) => {
+						if (result.data.id) {
+							navigate({
+								to: "/$orgSlug/chat/$id",
+								params: { orgSlug: slug!, id: result.data.id },
+							})
+						}
 
-				// Show success message
-				if (type === "direct") {
-					const targetUser = organizationUsers?.find((u) => u?.id === value.userIds[0])
-					toast.success(`Started conversation with ${targetUser?.firstName}`)
-				} else {
-					toast.success(`Created group conversation with ${value.userIds.length} people`)
-				}
+						// Close modal and reset form
+						onOpenChange(false)
+						form.reset()
+						setSelectedUsers([])
+						setSearchQuery("")
 
-				onOpenChange(false)
-
-				// Reset form
-				form.reset()
-				setSelectedUsers([])
-				setSearchQuery("")
-			} catch (error) {
-				console.error("Failed to create DM channel:", error)
-				toast.error("Failed to start conversation")
-			}
+						// Return success message
+						if (type === "single") {
+							return `Started conversation with ${targetUser?.firstName}`
+						}
+						return `Created group conversation with ${value.userIds.length} people`
+					},
+					error: "Failed to start conversation",
+				},
+			)
 		},
 	})
 
