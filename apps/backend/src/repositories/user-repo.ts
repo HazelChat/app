@@ -70,7 +70,9 @@ export class UserRepo extends Effect.Service<UserRepo>()("UserRepo", {
 						client
 							.update(schema.usersTable)
 							.set({ deletedAt: new Date() })
-							.where(and(eq(schema.usersTable.id, userId), isNull(schema.usersTable.deletedAt))),
+							.where(
+								and(eq(schema.usersTable.id, userId), isNull(schema.usersTable.deletedAt)),
+							),
 					),
 				policyRequire("User", "delete"),
 			)(id, tx)

@@ -7,43 +7,46 @@ import type {
 	UtilsRecord,
 } from "@tanstack/db"
 import type { Txid } from "@tanstack/electric-db-collection"
-import type { Effect } from "effect"
+import type { Effect, ManagedRuntime } from "effect"
 
 /**
  * Effect-based insert handler
- * Note: Handlers must be self-contained with all dependencies provided.
- * Use Effect.provideService or Layer.provide to inject dependencies before returning.
+ * Note: When using with a runtime, handlers can require services (R parameter).
+ * Otherwise, use Effect.provideService or Layer.provide to inject dependencies before returning.
  */
 export type EffectInsertHandler<
 	T extends Row<unknown>,
 	TKey extends string | number,
 	TUtils extends UtilsRecord,
 	E = never,
-> = (params: InsertMutationFnParams<T, TKey, TUtils>) => Effect.Effect<{ txid: Txid | Array<Txid> }, E, never>
+	R = never,
+> = (params: InsertMutationFnParams<T, TKey, TUtils>) => Effect.Effect<{ txid: Txid | Array<Txid> }, E, R>
 
 /**
  * Effect-based update handler
- * Note: Handlers must be self-contained, all dependencies provided.
- * Use Effect.provideService or Layer.provide to inject dependencies before returning.
+ * Note: When using with a runtime, handlers can require services (R parameter).
+ * Otherwise, use Effect.provideService or Layer.provide to inject dependencies before returning.
  */
 export type EffectUpdateHandler<
 	T extends Row<unknown>,
 	TKey extends string | number,
 	TUtils extends UtilsRecord,
 	E = never,
-> = (params: UpdateMutationFnParams<T, TKey, TUtils>) => Effect.Effect<{ txid: Txid | Array<Txid> }, E, never>
+	R = never,
+> = (params: UpdateMutationFnParams<T, TKey, TUtils>) => Effect.Effect<{ txid: Txid | Array<Txid> }, E, R>
 
 /**
  * Effect-based delete handler
- * Note: Handlers must be self-contained with all dependencies provided.
- * Use Effect.provideService or Layer.provide to inject dependencies before returning.
+ * Note: When using with a runtime, handlers can require services (R parameter).
+ * Otherwise, use Effect.provideService or Layer.provide to inject dependencies before returning.
  */
 export type EffectDeleteHandler<
 	T extends Row<unknown>,
 	TKey extends string | number,
 	TUtils extends UtilsRecord,
 	E = never,
-> = (params: DeleteMutationFnParams<T, TKey, TUtils>) => Effect.Effect<{ txid: Txid | Array<Txid> }, E, never>
+	R = never,
+> = (params: DeleteMutationFnParams<T, TKey, TUtils>) => Effect.Effect<{ txid: Txid | Array<Txid> }, E, R>
 
 /**
  * Configuration for Electric collection with Effect-based handlers
@@ -53,6 +56,7 @@ export interface EffectElectricCollectionConfig<
 	TKey extends string | number = string | number,
 	TSchema extends StandardSchemaV1 = never,
 	TUtils extends UtilsRecord = Record<string, never>,
+	R = never,
 > {
 	/**
 	 * Unique identifier for the collection
@@ -75,22 +79,31 @@ export interface EffectElectricCollectionConfig<
 	schema?: TSchema
 
 	/**
-	 * Effect-based insert handler (must be self-contained, all dependencies provided)
-	 * Each handler can have its own error type
+	 * Optional ManagedRuntime that provides dependencies for handlers
+	 * When provided, handlers can use services without needing to provide them manually
 	 */
-	onInsert?: EffectInsertHandler<T, TKey, TUtils, any>
+	runtime?: ManagedRuntime.ManagedRuntime<R, any>
 
 	/**
-	 * Effect-based update handler (must be self-contained, all dependencies provided)
+	 * Effect-based insert handler
+	 * When runtime is provided, can require services (R parameter)
 	 * Each handler can have its own error type
 	 */
-	onUpdate?: EffectUpdateHandler<T, TKey, TUtils, any>
+	onInsert?: EffectInsertHandler<T, TKey, TUtils, any, R>
 
 	/**
-	 * Effect-based delete handler (must be self-contained, all dependencies provided)
+	 * Effect-based update handler
+	 * When runtime is provided, can require services (R parameter)
 	 * Each handler can have its own error type
 	 */
-	onDelete?: EffectDeleteHandler<T, TKey, TUtils, any>
+	onUpdate?: EffectUpdateHandler<T, TKey, TUtils, any, R>
+
+	/**
+	 * Effect-based delete handler
+	 * When runtime is provided, can require services (R parameter)
+	 * Each handler can have its own error type
+	 */
+	onDelete?: EffectDeleteHandler<T, TKey, TUtils, any, R>
 
 	/**
 	 * Time in milliseconds after which the collection will be garbage collected

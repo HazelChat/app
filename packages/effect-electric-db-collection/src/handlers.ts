@@ -1,64 +1,63 @@
-import { Effect } from "effect"
-import type { Txid } from "@tanstack/electric-db-collection"
-import type {
-  InsertMutationFnParams,
-  UpdateMutationFnParams,
-  DeleteMutationFnParams,
-  UtilsRecord,
-} from "@tanstack/db"
 import type { Row } from "@electric-sql/client"
-import {
-  InsertError,
-  UpdateError,
-  DeleteError,
-  MissingTxIdError,
-} from "./errors"
 import type {
-  EffectInsertHandler,
-  EffectUpdateHandler,
-  EffectDeleteHandler,
-} from "./types"
+	DeleteMutationFnParams,
+	InsertMutationFnParams,
+	UpdateMutationFnParams,
+	UtilsRecord,
+} from "@tanstack/db"
+import type { Txid } from "@tanstack/electric-db-collection"
+import { Effect, type ManagedRuntime } from "effect"
+import { DeleteError, InsertError, MissingTxIdError, UpdateError } from "./errors"
+import type { EffectDeleteHandler, EffectInsertHandler, EffectUpdateHandler } from "./types"
 
 /**
  * Converts an Effect-based insert handler to a Promise-based handler
  * that can be used with the standard electric collection options
  */
 export function convertInsertHandler<
-  T extends Row<unknown>,
-  TKey extends string | number,
-  TUtils extends UtilsRecord,
-  E = never,
+	T extends Row<unknown>,
+	TKey extends string | number,
+	TUtils extends UtilsRecord,
+	E = never,
+	R = never,
 >(
-  handler: EffectInsertHandler<T, TKey, TUtils, E> | undefined
-): ((params: InsertMutationFnParams<T, TKey, TUtils>) => Promise<{
-  txid: Txid | Array<Txid>
-}>) | undefined {
-  if (!handler) return undefined
+	handler: EffectInsertHandler<T, TKey, TUtils, E, R> | undefined,
+	runtime?: ManagedRuntime.ManagedRuntime<R, any>,
+):
+	| ((params: InsertMutationFnParams<T, TKey, TUtils>) => Promise<{
+			txid: Txid | Array<Txid>
+	  }>)
+	| undefined {
+	if (!handler) return undefined
 
-  return async (params: InsertMutationFnParams<T, TKey, TUtils>) => {
-    const result = await Effect.runPromise(
-      handler(params).pipe(
-        Effect.catchAll((error: E | unknown) =>
-          Effect.fail(
-            new InsertError({
-              message: `Insert operation failed`,
-              data: params.transaction.mutations[0]?.modified,
-              cause: error,
-            })
-          )
-        )
-      )
-    )
+	return async (params: InsertMutationFnParams<T, TKey, TUtils>) => {
+		const effect = handler(params).pipe(
+			Effect.catchAll((error: E | unknown) =>
+				Effect.fail(
+					new InsertError({
+						message: `Insert operation failed`,
+						data: params.transaction.mutations[0]?.modified,
+						cause: error,
+					}),
+				),
+			),
+		)
 
-    if (!result.txid) {
-      throw new MissingTxIdError({
-        message: `Insert handler must return a txid`,
-        operation: "insert",
-      })
-    }
+		const result = runtime
+			? await runtime.runPromise(effect)
+			: await Effect.runPromise(
+					effect as Effect.Effect<{ txid: Txid | Array<Txid> }, InsertError, never>,
+				)
 
-    return result
-  }
+		if (!result.txid) {
+			throw new MissingTxIdError({
+				message: `Insert handler must return a txid`,
+				operation: "insert",
+			})
+		}
+
+		return result
+	}
 }
 
 /**
@@ -66,41 +65,49 @@ export function convertInsertHandler<
  * that can be used with the standard electric collection options
  */
 export function convertUpdateHandler<
-  T extends Row<unknown>,
-  TKey extends string | number,
-  TUtils extends UtilsRecord,
-  E = never,
+	T extends Row<unknown>,
+	TKey extends string | number,
+	TUtils extends UtilsRecord,
+	E = never,
+	R = never,
 >(
-  handler: EffectUpdateHandler<T, TKey, TUtils, E> | undefined
-): ((params: UpdateMutationFnParams<T, TKey, TUtils>) => Promise<{
-  txid: Txid | Array<Txid>
-}>) | undefined {
-  if (!handler) return undefined
+	handler: EffectUpdateHandler<T, TKey, TUtils, E, R> | undefined,
+	runtime?: ManagedRuntime.ManagedRuntime<R, any>,
+):
+	| ((params: UpdateMutationFnParams<T, TKey, TUtils>) => Promise<{
+			txid: Txid | Array<Txid>
+	  }>)
+	| undefined {
+	if (!handler) return undefined
 
-  return async (params: UpdateMutationFnParams<T, TKey, TUtils>) => {
-    const result = await Effect.runPromise(
-      handler(params).pipe(
-        Effect.catchAll((error: E | unknown) =>
-          Effect.fail(
-            new UpdateError({
-              message: `Update operation failed`,
-              key: params.transaction.mutations[0]?.key,
-              cause: error,
-            })
-          )
-        )
-      )
-    )
+	return async (params: UpdateMutationFnParams<T, TKey, TUtils>) => {
+		const effect = handler(params).pipe(
+			Effect.catchAll((error: E | unknown) =>
+				Effect.fail(
+					new UpdateError({
+						message: `Update operation failed`,
+						key: params.transaction.mutations[0]?.key,
+						cause: error,
+					}),
+				),
+			),
+		)
 
-    if (!result.txid) {
-      throw new MissingTxIdError({
-        message: `Update handler must return a txid`,
-        operation: "update",
-      })
-    }
+		const result = runtime
+			? await runtime.runPromise(effect)
+			: await Effect.runPromise(
+					effect as Effect.Effect<{ txid: Txid | Array<Txid> }, UpdateError, never>,
+				)
 
-    return result
-  }
+		if (!result.txid) {
+			throw new MissingTxIdError({
+				message: `Update handler must return a txid`,
+				operation: "update",
+			})
+		}
+
+		return result
+	}
 }
 
 /**
@@ -108,39 +115,47 @@ export function convertUpdateHandler<
  * that can be used with the standard electric collection options
  */
 export function convertDeleteHandler<
-  T extends Row<unknown>,
-  TKey extends string | number,
-  TUtils extends UtilsRecord,
-  E = never,
+	T extends Row<unknown>,
+	TKey extends string | number,
+	TUtils extends UtilsRecord,
+	E = never,
+	R = never,
 >(
-  handler: EffectDeleteHandler<T, TKey, TUtils, E> | undefined
-): ((params: DeleteMutationFnParams<T, TKey, TUtils>) => Promise<{
-  txid: Txid | Array<Txid>
-}>) | undefined {
-  if (!handler) return undefined
+	handler: EffectDeleteHandler<T, TKey, TUtils, E, R> | undefined,
+	runtime?: ManagedRuntime.ManagedRuntime<R, any>,
+):
+	| ((params: DeleteMutationFnParams<T, TKey, TUtils>) => Promise<{
+			txid: Txid | Array<Txid>
+	  }>)
+	| undefined {
+	if (!handler) return undefined
 
-  return async (params: DeleteMutationFnParams<T, TKey, TUtils>) => {
-    const result = await Effect.runPromise(
-      handler(params).pipe(
-        Effect.catchAll((error: E | unknown) =>
-          Effect.fail(
-            new DeleteError({
-              message: `Delete operation failed`,
-              key: params.transaction.mutations[0]?.key,
-              cause: error,
-            })
-          )
-        )
-      )
-    )
+	return async (params: DeleteMutationFnParams<T, TKey, TUtils>) => {
+		const effect = handler(params).pipe(
+			Effect.catchAll((error: E | unknown) =>
+				Effect.fail(
+					new DeleteError({
+						message: `Delete operation failed`,
+						key: params.transaction.mutations[0]?.key,
+						cause: error,
+					}),
+				),
+			),
+		)
 
-    if (!result.txid) {
-      throw new MissingTxIdError({
-        message: `Delete handler must return a txid`,
-        operation: "delete",
-      })
-    }
+		const result = runtime
+			? await runtime.runPromise(effect)
+			: await Effect.runPromise(
+					effect as Effect.Effect<{ txid: Txid | Array<Txid> }, DeleteError, never>,
+				)
 
-    return result
-  }
+		if (!result.txid) {
+			throw new MissingTxIdError({
+				message: `Delete handler must return a txid`,
+				operation: "delete",
+			})
+		}
+
+		return result
+	}
 }

@@ -1,16 +1,16 @@
 import type { ChannelId } from "@hazel/db/schema"
 import { Edit05 } from "@untitledui/icons"
 import { type } from "arktype"
-import { toast } from "sonner"
 import { Heading as AriaHeading } from "react-aria-components"
-import { channelCollection } from "~/db/collections"
-import { useChannel } from "~/db/hooks"
-import { useAppForm } from "~/hooks/use-app-form"
-import { Dialog, Modal, ModalFooter, ModalOverlay } from "./modal"
+import { toast } from "sonner"
 import { Button } from "~/components/base/buttons/button"
 import { CloseButton } from "~/components/base/buttons/close-button"
 import { FeaturedIcon } from "~/components/foundations/featured-icon/featured-icons"
 import { BackgroundPattern } from "~/components/shared-assets/background-patterns"
+import { channelCollection } from "~/db/collections"
+import { useChannel } from "~/db/hooks"
+import { useAppForm } from "~/hooks/use-app-form"
+import { Dialog, Modal, ModalFooter, ModalOverlay } from "./modal"
 
 interface RenameChannelModalProps {
 	channelId: ChannelId
@@ -87,9 +87,7 @@ export const RenameChannelModal = ({ channelId, isOpen, onOpenChange }: RenameCh
 								<AriaHeading slot="title" className="font-semibold text-md text-primary">
 									Rename Channel
 								</AriaHeading>
-								<p className="text-sm text-tertiary">
-									Enter a new name for this channel
-								</p>
+								<p className="text-sm text-tertiary">Enter a new name for this channel</p>
 							</div>
 						</div>
 						<div className="h-5 w-full" />

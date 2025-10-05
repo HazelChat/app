@@ -51,8 +51,8 @@ function MyMeeting() {
 	const roomState = useRealtimeKitSelector((m) => m.self.roomState)
 
 	return (
-        <RtkUiProvider meeting={meeting}>
-            <div style={{ height: "100vh" }}>
+		<RtkUiProvider meeting={meeting}>
+			<div style={{ height: "100vh" }}>
 				{roomState === "init" && <CustomMeetingPreview />}
 
 				<RtkParticipantsAudio />
@@ -60,7 +60,7 @@ function MyMeeting() {
 				<RtkDialogManager />
 
 				{roomState === "joined" && (
-					(<RtkMeeting mode="fill" meeting={meeting} showSetupScreen={false} />)
+					<RtkMeeting mode="fill" meeting={meeting} showSetupScreen={false} />
 
 					// <div className="flex h-full w-full flex-col">
 					// 	<header>
@@ -78,8 +78,8 @@ function MyMeeting() {
 				)}
 				{roomState === "ended" && <RtkEndedScreen meeting={meeting} />}
 			</div>
-        </RtkUiProvider>
-    )
+		</RtkUiProvider>
+	)
 }
 
 function CustomMeetingPreview() {

@@ -1,8 +1,8 @@
 import { and, eq, useLiveQuery } from "@tanstack/react-db"
 import { useEffect, useRef } from "react"
-import { useOrganization } from "~/hooks/use-organization"
 import { channelCollection, channelMemberCollection } from "~/db/collections"
 import { useNotificationSound } from "~/hooks/use-notification-sound"
+import { useOrganization } from "~/hooks/use-organization"
 import { useAuth } from "~/providers/auth-provider"
 
 export function NotificationManager() {

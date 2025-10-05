@@ -1,4 +1,14 @@
-import { and, Database, eq, inArray, isNull, ModelRepository, schema, sql, type TransactionClient } from "@hazel/db"
+import {
+	and,
+	Database,
+	eq,
+	inArray,
+	isNull,
+	ModelRepository,
+	schema,
+	sql,
+	type TransactionClient,
+} from "@hazel/db"
 import { DirectMessageParticipant } from "@hazel/db/models"
 import { type OrganizationId, policyRequire, type UserId } from "@hazel/db/schema"
 import { Effect, Option } from "effect"
@@ -29,18 +39,27 @@ export class DirectMessageParticipantRepo extends Effect.Service<DirectMessagePa
 			) =>
 				db
 					.makeQuery(
-						(execute, data: { userId1: UserId; userId2: UserId; organizationId: OrganizationId }) =>
+						(
+							execute,
+							data: { userId1: UserId; userId2: UserId; organizationId: OrganizationId },
+						) =>
 							execute((client) =>
 								client
 									.selectDistinct({ channel: schema.channelsTable })
 									.from(schema.directMessageParticipantsTable)
 									.innerJoin(
 										schema.channelsTable,
-										eq(schema.directMessageParticipantsTable.channelId, schema.channelsTable.id),
+										eq(
+											schema.directMessageParticipantsTable.channelId,
+											schema.channelsTable.id,
+										),
 									)
 									.where(
 										and(
-											eq(schema.directMessageParticipantsTable.organizationId, data.organizationId),
+											eq(
+												schema.directMessageParticipantsTable.organizationId,
+												data.organizationId,
+											),
 											eq(schema.channelsTable.type, "single"),
 											isNull(schema.channelsTable.deletedAt),
 											// Channel must have exactly both users as participants

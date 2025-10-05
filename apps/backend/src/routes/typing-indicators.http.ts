@@ -19,13 +19,11 @@ export const HttpTypingIndicatorLive = HttpApiBuilder.group(HazelApi, "typingInd
 						.transaction(
 							Effect.gen(function* () {
 								// Use upsert to create or update typing indicator
-								const result = yield* TypingIndicatorRepo.upsertByChannelAndMember(
-									{
-										channelId: payload.channelId,
-										memberId: payload.memberId,
-										lastTyped: payload.lastTyped ?? Date.now(),
-									},
-								).pipe(policyUse(TypingIndicatorPolicy.canCreate(payload.channelId)))
+								const result = yield* TypingIndicatorRepo.upsertByChannelAndMember({
+									channelId: payload.channelId,
+									memberId: payload.memberId,
+									lastTyped: payload.lastTyped ?? Date.now(),
+								}).pipe(policyUse(TypingIndicatorPolicy.canCreate(payload.channelId)))
 
 								const typingIndicator = result[0]!
 
@@ -48,13 +46,11 @@ export const HttpTypingIndicatorLive = HttpApiBuilder.group(HazelApi, "typingInd
 					const { typingIndicator, txid } = yield* db
 						.transaction(
 							Effect.gen(function* () {
-								const typingIndicator = yield* TypingIndicatorRepo.update(
-									{
-										...payload,
-										id: path.id,
-										lastTyped: Date.now(),
-									},
-								).pipe(policyUse(TypingIndicatorPolicy.canUpdate(path.id)))
+								const typingIndicator = yield* TypingIndicatorRepo.update({
+									...payload,
+									id: path.id,
+									lastTyped: Date.now(),
+								}).pipe(policyUse(TypingIndicatorPolicy.canUpdate(path.id)))
 
 								const txid = yield* generateTransactionId()
 

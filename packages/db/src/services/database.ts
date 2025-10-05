@@ -26,7 +26,9 @@ export type Client = PostgresJsDatabase<typeof schema> & {
 	$client: postgres.Sql
 }
 
-export type TxFn = <T>(fn: (client: TransactionClient) => Promise<T>) => Effect.Effect<T, DatabaseError, never>
+export type TxFn = <T>(
+	fn: (client: TransactionClient) => Promise<T>,
+) => Effect.Effect<T, DatabaseError, never>
 
 export interface TransactionService {
 	readonly execute: TxFn
@@ -116,52 +118,51 @@ const makeService = (config: Config) =>
 			}),
 		)
 
-		const transaction = Effect.fn("Database.transaction")(
-			<T, E, R>(effect: Effect.Effect<T, E, R>) =>
-				Effect.runtime<R>().pipe(
-					Effect.map((runtime) => Runtime.runPromiseExit(runtime)),
-					Effect.flatMap((runPromiseExit) =>
-						Effect.async<T, DatabaseError | E, R>((resume) => {
-							db.transaction(async (tx: TransactionClient) => {
-								const txWrapper: TxFn = (fn: (client: TransactionClient) => Promise<any>) =>
-									Effect.tryPromise({
-										try: () => fn(tx),
-										catch: (cause) => {
-											console.log("Cause", cause)
+		const transaction = Effect.fn("Database.transaction")(<T, E, R>(effect: Effect.Effect<T, E, R>) =>
+			Effect.runtime<R>().pipe(
+				Effect.map((runtime) => Runtime.runPromiseExit(runtime)),
+				Effect.flatMap((runPromiseExit) =>
+					Effect.async<T, DatabaseError | E, R>((resume) => {
+						db.transaction(async (tx: TransactionClient) => {
+							const txWrapper: TxFn = (fn: (client: TransactionClient) => Promise<any>) =>
+								Effect.tryPromise({
+									try: () => fn(tx),
+									catch: (cause) => {
+										console.log("Cause", cause)
 
-											const error = matchPgError(cause)
-											if (error !== null) {
-												return error
-											}
-											throw cause
-										},
-									})
-
-								// Provide TransactionContext to the effect
-								const withContext = effect.pipe(
-									Effect.provideService(TransactionContext, { execute: txWrapper }),
-								)
-
-								const result = await runPromiseExit(withContext)
-								Exit.match(result, {
-									onSuccess: (value) => {
-										resume(Effect.succeed(value))
-									},
-									onFailure: (cause) => {
-										if (Cause.isFailure(cause)) {
-											resume(Effect.fail(Cause.originalError(cause) as E))
-										} else {
-											resume(Effect.die(cause))
+										const error = matchPgError(cause)
+										if (error !== null) {
+											return error
 										}
+										throw cause
 									},
 								})
-							}).catch((cause) => {
-								const error = matchPgError(cause)
-								resume(error !== null ? Effect.fail(error) : Effect.die(cause))
+
+							// Provide TransactionContext to the effect
+							const withContext = effect.pipe(
+								Effect.provideService(TransactionContext, { execute: txWrapper }),
+							)
+
+							const result = await runPromiseExit(withContext)
+							Exit.match(result, {
+								onSuccess: (value) => {
+									resume(Effect.succeed(value))
+								},
+								onFailure: (cause) => {
+									if (Cause.isFailure(cause)) {
+										resume(Effect.fail(Cause.originalError(cause) as E))
+									} else {
+										resume(Effect.die(cause))
+									}
+								},
 							})
-						}),
-					),
+						}).catch((cause) => {
+							const error = matchPgError(cause)
+							resume(error !== null ? Effect.fail(error) : Effect.die(cause))
+						})
+					}),
 				),
+			),
 		)
 
 		/**

@@ -8,9 +8,7 @@
 		}
 	},
 	"files": {
-		"includes": [
-			"**/*.{ts,tsx}"
-		]
+		"includes": ["**/*.{ts,tsx}"]
 	},
 	"linter": {
 		"enabled": true,

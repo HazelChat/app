@@ -1,10 +1,10 @@
 import { useNavigate } from "@tanstack/react-router"
 import { Container, HelpCircle, LayersTwo01, LogOut01, Settings01, User01 } from "@untitledui/icons"
 import { Button as AriaButton } from "react-aria-components"
-import { useOrganization } from "~/hooks/use-organization"
 import { Avatar } from "~/components/base/avatar/avatar"
 import { AvatarLabelGroup } from "~/components/base/avatar/avatar-label-group"
 import { Dropdown } from "~/components/base/dropdown/dropdown"
+import { useOrganization } from "~/hooks/use-organization"
 import { useAuth } from "~/providers/auth-provider"
 import { cx } from "~/utils/cx"
 

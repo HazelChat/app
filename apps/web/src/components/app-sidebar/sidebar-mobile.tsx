@@ -1,8 +1,7 @@
-import { useOrganization } from "~/hooks/use-organization"
 import { Avatar } from "~/components/base/avatar/avatar"
-
 import { Separator } from "~/components/ui/separator"
 import { SidebarTrigger } from "~/components/ui/sidebar"
+import { useOrganization } from "~/hooks/use-organization"
 
 export function SidebarMobile() {
 	const { organization: currentOrg } = useOrganization()

@@ -32,7 +32,10 @@ export class OrganizationMemberRepo extends Effect.Service<OrganizationMemberRep
 									.from(schema.organizationMembersTable)
 									.where(
 										and(
-											eq(schema.organizationMembersTable.organizationId, data.organizationId),
+											eq(
+												schema.organizationMembersTable.organizationId,
+												data.organizationId,
+											),
 											eq(schema.organizationMembersTable.userId, data.userId),
 											isNull(schema.organizationMembersTable.deletedAt),
 										),
@@ -43,7 +46,10 @@ export class OrganizationMemberRepo extends Effect.Service<OrganizationMemberRep
 					)({ organizationId, userId }, tx)
 					.pipe(Effect.map((results) => Option.fromNullable(results[0])))
 
-			const upsertByOrgAndUser = (data: Schema.Schema.Type<typeof OrganizationMember.Insert>, tx?: TxFn) =>
+			const upsertByOrgAndUser = (
+				data: Schema.Schema.Type<typeof OrganizationMember.Insert>,
+				tx?: TxFn,
+			) =>
 				db.makeQuery(
 					(execute, input: typeof data) =>
 						execute(async (client) => {
@@ -53,7 +59,10 @@ export class OrganizationMemberRepo extends Effect.Service<OrganizationMemberRep
 								.from(schema.organizationMembersTable)
 								.where(
 									and(
-										eq(schema.organizationMembersTable.organizationId, input.organizationId),
+										eq(
+											schema.organizationMembersTable.organizationId,
+											input.organizationId,
+										),
 										eq(schema.organizationMembersTable.userId, input.userId),
 									),
 								)
@@ -137,7 +146,10 @@ export class OrganizationMemberRepo extends Effect.Service<OrganizationMemberRep
 								.set({ deletedAt: new Date() })
 								.where(
 									and(
-										eq(schema.organizationMembersTable.organizationId, data.organizationId),
+										eq(
+											schema.organizationMembersTable.organizationId,
+											data.organizationId,
+										),
 										eq(schema.organizationMembersTable.userId, data.userId),
 										isNull(schema.organizationMembersTable.deletedAt),
 									),

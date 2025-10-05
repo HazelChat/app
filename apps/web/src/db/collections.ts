@@ -15,14 +15,17 @@ import {
 } from "@hazel/db/models"
 import { effectElectricCollectionOptions } from "@hazel/effect-electric-db-collection"
 import { createCollection } from "@tanstack/react-db"
-import { Effect, Schema } from "effect"
+import { Effect, Layer, Logger, ManagedRuntime, Schema } from "effect"
 import { ApiClient } from "~/lib/services/common/api-client"
 
 const electricUrl: string = import.meta.env.VITE_ELECTRIC_URL
 
+const collectionRuntime = ManagedRuntime.make(ApiClient.Default)
+
 export const organizationCollection = createCollection(
 	effectElectricCollectionOptions({
 		id: "organizations",
+		runtime: collectionRuntime,
 		shapeOptions: {
 			url: electricUrl,
 			params: {
@@ -44,7 +47,7 @@ export const organizationCollection = createCollection(
 				})
 
 				return { txid: results.transactionId }
-			}).pipe(Effect.provide(ApiClient.Default)),
+			}),
 		onUpdate: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { modified: newOrganization } = transaction.mutations[0]
@@ -58,7 +61,7 @@ export const organizationCollection = createCollection(
 				})
 
 				return { txid: results.transactionId }
-			}).pipe(Effect.provide(ApiClient.Default)),
+			}),
 		onDelete: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { original: deletedOrganization } = transaction.mutations[0]
@@ -71,13 +74,14 @@ export const organizationCollection = createCollection(
 				})
 
 				return { txid: results.transactionId }
-			}).pipe(Effect.provide(ApiClient.Default)),
+			}),
 	}),
 )
 
 export const invitationCollection = createCollection(
 	effectElectricCollectionOptions({
 		id: "invitations",
+		runtime: collectionRuntime,
 		shapeOptions: {
 			url: electricUrl,
 			params: {
@@ -99,7 +103,7 @@ export const invitationCollection = createCollection(
 				})
 
 				return { txid: results.transactionId }
-			}).pipe(Effect.provide(ApiClient.Default)),
+			}),
 		onUpdate: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { modified: newInvitation } = transaction.mutations[0]
@@ -113,7 +117,7 @@ export const invitationCollection = createCollection(
 				})
 
 				return { txid: results.transactionId }
-			}).pipe(Effect.provide(ApiClient.Default)),
+			}),
 		onDelete: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { original: deletedInvitation } = transaction.mutations[0]
@@ -126,13 +130,14 @@ export const invitationCollection = createCollection(
 				})
 
 				return { txid: results.transactionId }
-			}).pipe(Effect.provide(ApiClient.Default)),
+			}),
 	}),
 )
 
 export const messageCollection = createCollection(
 	effectElectricCollectionOptions({
 		id: "messages",
+		runtime: collectionRuntime,
 		shapeOptions: {
 			url: electricUrl,
 			params: {
@@ -154,7 +159,7 @@ export const messageCollection = createCollection(
 				})
 
 				return { txid: results.transactionId }
-			}).pipe(Effect.provide(ApiClient.Default)),
+			}),
 		onUpdate: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { modified: newMessage } = transaction.mutations[0]
@@ -168,7 +173,7 @@ export const messageCollection = createCollection(
 				})
 
 				return { txid: results.transactionId }
-			}).pipe(Effect.provide(ApiClient.Default)),
+			}),
 		onDelete: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { original: deletedMessage } = transaction.mutations[0]
@@ -181,13 +186,14 @@ export const messageCollection = createCollection(
 				})
 
 				return { txid: results.transactionId }
-			}).pipe(Effect.provide(ApiClient.Default)),
+			}),
 	}),
 )
 
 export const messageReactionCollection = createCollection(
 	effectElectricCollectionOptions({
 		id: "message_reactions",
+		runtime: collectionRuntime,
 		shapeOptions: {
 			url: electricUrl,
 			params: {
@@ -209,7 +215,7 @@ export const messageReactionCollection = createCollection(
 				})
 
 				return { txid: results.transactionId }
-			}).pipe(Effect.provide(ApiClient.Default)),
+			}),
 		onUpdate: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { modified: newMessageReaction } = transaction.mutations[0]
@@ -223,7 +229,7 @@ export const messageReactionCollection = createCollection(
 				})
 
 				return { txid: results.transactionId }
-			}).pipe(Effect.provide(ApiClient.Default)),
+			}),
 		onDelete: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { original: deletedMessageReaction } = transaction.mutations[0]
@@ -236,13 +242,14 @@ export const messageReactionCollection = createCollection(
 				})
 
 				return { txid: results.transactionId }
-			}).pipe(Effect.provide(ApiClient.Default)),
+			}),
 	}),
 )
 
 export const pinnedMessageCollection = createCollection(
 	effectElectricCollectionOptions({
 		id: "pinned_messages",
+		runtime: collectionRuntime,
 		shapeOptions: {
 			url: electricUrl,
 			params: {
@@ -264,7 +271,7 @@ export const pinnedMessageCollection = createCollection(
 				})
 
 				return { txid: results.transactionId }
-			}).pipe(Effect.provide(ApiClient.Default)),
+			}),
 		onUpdate: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { modified: newPinnedMessage } = transaction.mutations[0]
@@ -278,7 +285,7 @@ export const pinnedMessageCollection = createCollection(
 				})
 
 				return { txid: results.transactionId }
-			}).pipe(Effect.provide(ApiClient.Default)),
+			}),
 		onDelete: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { original: deletedPinnedMessage } = transaction.mutations[0]
@@ -291,13 +298,14 @@ export const pinnedMessageCollection = createCollection(
 				})
 
 				return { txid: results.transactionId }
-			}).pipe(Effect.provide(ApiClient.Default)),
+			}),
 	}),
 )
 
 export const notificationCollection = createCollection(
 	effectElectricCollectionOptions({
 		id: "notifications",
+		runtime: collectionRuntime,
 		shapeOptions: {
 			url: electricUrl,
 			params: {
@@ -319,7 +327,7 @@ export const notificationCollection = createCollection(
 				})
 
 				return { txid: results.transactionId }
-			}).pipe(Effect.provide(ApiClient.Default)),
+			}),
 		onUpdate: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { modified: newNotification } = transaction.mutations[0]
@@ -333,7 +341,7 @@ export const notificationCollection = createCollection(
 				})
 
 				return { txid: results.transactionId }
-			}).pipe(Effect.provide(ApiClient.Default)),
+			}),
 		onDelete: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { original: deletedNotification } = transaction.mutations[0]
@@ -346,13 +354,14 @@ export const notificationCollection = createCollection(
 				})
 
 				return { txid: results.transactionId }
-			}).pipe(Effect.provide(ApiClient.Default)),
+			}),
 	}),
 )
 
 export const userCollection = createCollection(
 	effectElectricCollectionOptions({
 		id: "users",
+		runtime: collectionRuntime,
 		shapeOptions: {
 			url: electricUrl,
 			params: {
@@ -374,7 +383,7 @@ export const userCollection = createCollection(
 				})
 
 				return { txid: results.transactionId }
-			}).pipe(Effect.provide(ApiClient.Default)),
+			}),
 		onUpdate: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { modified: newUser } = transaction.mutations[0]
@@ -388,7 +397,7 @@ export const userCollection = createCollection(
 				})
 
 				return { txid: results.transactionId }
-			}).pipe(Effect.provide(ApiClient.Default)),
+			}),
 		onDelete: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { original: deletedUser } = transaction.mutations[0]
@@ -401,13 +410,14 @@ export const userCollection = createCollection(
 				})
 
 				return { txid: results.transactionId }
-			}).pipe(Effect.provide(ApiClient.Default)),
+			}),
 	}),
 )
 
 export const organizationMemberCollection = createCollection(
 	effectElectricCollectionOptions({
 		id: "organization_members",
+		runtime: collectionRuntime,
 		shapeOptions: {
 			url: electricUrl,
 			params: {
@@ -429,7 +439,7 @@ export const organizationMemberCollection = createCollection(
 				})
 
 				return { txid: results.transactionId }
-			}).pipe(Effect.provide(ApiClient.Default)),
+			}),
 		onUpdate: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { modified: newOrganizationMember } = transaction.mutations[0]
@@ -443,7 +453,7 @@ export const organizationMemberCollection = createCollection(
 				})
 
 				return { txid: results.transactionId }
-			}).pipe(Effect.provide(ApiClient.Default)),
+			}),
 		onDelete: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { original: deletedOrganizationMember } = transaction.mutations[0]
@@ -456,13 +466,14 @@ export const organizationMemberCollection = createCollection(
 				})
 
 				return { txid: results.transactionId }
-			}).pipe(Effect.provide(ApiClient.Default)),
+			}),
 	}),
 )
 
 export const channelCollection = createCollection(
 	effectElectricCollectionOptions({
 		id: "channels",
+		runtime: collectionRuntime,
 		shapeOptions: {
 			url: electricUrl,
 			params: {
@@ -484,7 +495,7 @@ export const channelCollection = createCollection(
 				})
 
 				return { txid: results.transactionId }
-			}).pipe(Effect.provide(ApiClient.Default)),
+			}),
 		onUpdate: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { modified: newChannel } = transaction.mutations[0]
@@ -498,7 +509,7 @@ export const channelCollection = createCollection(
 				})
 
 				return { txid: results.transactionId }
-			}).pipe(Effect.provide(ApiClient.Default)),
+			}),
 		onDelete: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { original: deletedChannel } = transaction.mutations[0]
@@ -511,13 +522,14 @@ export const channelCollection = createCollection(
 				})
 
 				return { txid: results.transactionId }
-			}).pipe(Effect.provide(ApiClient.Default)),
+			}),
 	}),
 )
 
 export const channelMemberCollection = createCollection(
 	effectElectricCollectionOptions({
 		id: "channel_members",
+		runtime: collectionRuntime,
 		shapeOptions: {
 			url: `${electricUrl}`,
 			params: {
@@ -539,7 +551,7 @@ export const channelMemberCollection = createCollection(
 				})
 
 				return { txid: results.transactionId }
-			}).pipe(Effect.provide(ApiClient.Default)),
+			}),
 		onUpdate: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { modified: newChannelMember } = transaction.mutations[0]
@@ -553,7 +565,7 @@ export const channelMemberCollection = createCollection(
 				})
 
 				return { txid: results.transactionId }
-			}).pipe(Effect.provide(ApiClient.Default)),
+			}),
 		onDelete: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { original: deletedChannelMember } = transaction.mutations[0]
@@ -566,13 +578,14 @@ export const channelMemberCollection = createCollection(
 				})
 
 				return { txid: results.transactionId }
-			}).pipe(Effect.provide(ApiClient.Default)),
+			}),
 	}),
 )
 
 export const attachmentCollection = createCollection(
 	effectElectricCollectionOptions({
 		id: "attachments",
+		runtime: collectionRuntime,
 		shapeOptions: {
 			url: electricUrl,
 			params: {
@@ -596,13 +609,14 @@ export const attachmentCollection = createCollection(
 				})
 
 				return { txid: results.transactionId }
-			}).pipe(Effect.provide(ApiClient.Default)),
+			}),
 	}),
 )
 
 export const directMessageParticipantCollection = createCollection(
 	effectElectricCollectionOptions({
 		id: "direct_message_participants",
+		runtime: collectionRuntime,
 		shapeOptions: {
 			url: electricUrl,
 			params: {
@@ -621,7 +635,7 @@ export const directMessageParticipantCollection = createCollection(
 				})
 
 				return { txid: results.transactionId }
-			}).pipe(Effect.provide(ApiClient.Default)),
+			}),
 		onUpdate: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { modified: newDirectMessageParticipant } = transaction.mutations[0]
@@ -635,7 +649,7 @@ export const directMessageParticipantCollection = createCollection(
 				})
 
 				return { txid: results.transactionId }
-			}).pipe(Effect.provide(ApiClient.Default)),
+			}),
 		onDelete: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { original: deletedDirectMessageParticipant } = transaction.mutations[0]
@@ -648,13 +662,14 @@ export const directMessageParticipantCollection = createCollection(
 				})
 
 				return { txid: results.transactionId }
-			}).pipe(Effect.provide(ApiClient.Default)),
+			}),
 	}),
 )
 
 export const typingIndicatorCollection = createCollection(
 	effectElectricCollectionOptions({
 		id: "typing_indicators",
+		runtime: collectionRuntime,
 		shapeOptions: {
 			url: electricUrl,
 			params: {
@@ -673,7 +688,7 @@ export const typingIndicatorCollection = createCollection(
 				})
 
 				return { txid: results.transactionId }
-			}).pipe(Effect.provide(ApiClient.Default)),
+			}),
 		onUpdate: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { modified: newTypingIndicator } = transaction.mutations[0]
@@ -687,7 +702,7 @@ export const typingIndicatorCollection = createCollection(
 				})
 
 				return { txid: results.transactionId }
-			}).pipe(Effect.provide(ApiClient.Default)),
+			}),
 		onDelete: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { original: deletedTypingIndicator } = transaction.mutations[0]
@@ -700,6 +715,6 @@ export const typingIndicatorCollection = createCollection(
 				})
 
 				return { txid: results.transactionId }
-			}).pipe(Effect.provide(ApiClient.Default)),
+			}),
 	}),
 )
