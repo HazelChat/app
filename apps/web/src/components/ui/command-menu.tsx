@@ -31,11 +31,10 @@ import {
 	useFilter,
 } from "react-aria-components"
 import { twJoin, twMerge } from "tailwind-merge"
-import IconSearch1 from "~/components/icons/IconSearch1"
-import IconSearchStroke from "~/components/icons/IconSearchStroke"
 import { Keyboard } from "~/components/ui/keyboard"
 import { Separator } from "~/components/ui/separator"
 import { composeTailwindRenderProps } from "~/lib/primitive"
+import IconMagnifier3 from "../icons/icon-magnifier-3"
 import { Loader } from "./loader"
 
 interface CommandMenuProviderProps {
@@ -165,7 +164,7 @@ const CommandMenuSearch = ({ className, placeholder, ...props }: CommandMenuSear
 			{isPending ? (
 				<Loader className="size-4.5" variant="spin" />
 			) : (
-				<IconSearchStroke
+				<IconMagnifier3
 					data-slot="command-menu-search-icon"
 					className="size-5 shrink-0 text-tertiary"
 				/>

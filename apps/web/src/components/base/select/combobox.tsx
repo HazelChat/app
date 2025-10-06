@@ -1,4 +1,3 @@
-import { SearchLg as SearchIcon } from "@untitledui/icons"
 import type { FocusEventHandler, PointerEventHandler, RefAttributes, RefObject } from "react"
 import { useCallback, useContext, useRef, useState } from "react"
 import type {
@@ -17,6 +16,7 @@ import { HintText } from "~/components/base/input/hint-text"
 import { Label } from "~/components/base/input/label"
 import { Popover } from "~/components/base/select/popover"
 import { type CommonProps, SelectContext, type SelectItemType, sizes } from "~/components/base/select/select"
+import IconMagnifier3 from "~/components/icons/icon-magnifier-3"
 import { useResizeObserver } from "~/hooks/use-resize-observer"
 import { cx } from "~/utils/cx"
 
@@ -70,7 +70,7 @@ const ComboBoxValue = ({
 		>
 			{({ isDisabled }) => (
 				<>
-					<SearchIcon className="pointer-events-none size-5 text-fg-quaternary" />
+					<IconMagnifier3 className="pointer-events-none size-5 text-fg-quaternary" />
 
 					<div className="relative flex w-full items-center gap-2">
 						{inputValue && (

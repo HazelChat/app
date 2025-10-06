@@ -1,5 +1,5 @@
 import type { AttachmentId } from "@hazel/db/schema"
-import { Attachment01, FaceSmile, ItalicSquare, XClose } from "@untitledui/icons"
+import { ItalicSquare } from "@untitledui/icons"
 import { forwardRef, useImperativeHandle, useRef, useState } from "react"
 import { Dialog, DialogTrigger, Popover } from "react-aria-components"
 import { useChat } from "~/hooks/use-chat"
@@ -15,6 +15,9 @@ import {
 	EmojiPickerFooter,
 	EmojiPickerSearch,
 } from "../base/emoji-picker/emoji-picker"
+import IconClose from "../icons/icon-close"
+import IconEmoji1 from "../icons/icon-emoji-1"
+import IconPaperclip2 from "../icons/icon-paperclip2"
 
 export interface MessageComposerActionsRef {
 	cleanup: () => void
@@ -84,7 +87,7 @@ export const MessageComposerActions = forwardRef<MessageComposerActionsRef, Mess
 							<div className="mb-1 flex items-center justify-between">
 								<span className="font-medium text-secondary text-xs">Uploading files...</span>
 								<ButtonUtility
-									icon={XClose}
+									icon={IconClose}
 									size="xs"
 									color="tertiary"
 									onClick={() => setShowUploadProgress(false)}
@@ -150,7 +153,7 @@ export const MessageComposerActions = forwardRef<MessageComposerActionsRef, Mess
 						<Button
 							size="sm"
 							color="link-gray"
-							iconLeading={<Attachment01 data-icon className="size-4!" />}
+							iconLeading={<IconPaperclip2 data-icon className="size-4!" />}
 							className="font-semibold text-xs"
 							onClick={() => fileInputRef.current?.click()}
 							disabled={isUploading}
@@ -160,7 +163,7 @@ export const MessageComposerActions = forwardRef<MessageComposerActionsRef, Mess
 
 						{/* Emoji picker */}
 						<DialogTrigger isOpen={emojiPickerOpen} onOpenChange={setEmojiPickerOpen}>
-							<ButtonUtility icon={FaceSmile} size="xs" color="tertiary" />
+							<ButtonUtility icon={IconEmoji1} size="xs" color="tertiary" />
 							<Popover>
 								<Dialog className="rounded-lg">
 									<EmojiPicker

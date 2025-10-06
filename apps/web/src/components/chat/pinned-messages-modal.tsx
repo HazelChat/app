@@ -1,12 +1,11 @@
 import { eq, useLiveQuery } from "@tanstack/react-db"
-import { X } from "@untitledui/icons"
 import { format } from "date-fns"
 import { Dialog, DialogTrigger, Popover } from "react-aria-components"
 import { messageCollection, pinnedMessageCollection } from "~/db/collections"
 import { useChat } from "~/hooks/use-chat"
-import { Avatar } from "../base/avatar/avatar"
 import { ButtonUtility } from "../base/buttons/button-utility"
-import { IconPinSlant } from "../icons/IconPinSlant"
+import IconClose from "../icons/icon-close"
+import IconPin from "../icons/icon-pin"
 import { MessageAuthorHeader } from "./message-item"
 import { UserProfilePopover } from "./user-profile-popover"
 
@@ -44,14 +43,14 @@ export function PinnedMessagesModal() {
 
 	return (
 		<DialogTrigger>
-			<ButtonUtility size="sm" color="tertiary" tooltip="View pinned messages" icon={IconPinSlant} />
+			<ButtonUtility size="sm" color="tertiary" tooltip="View pinned messages" icon={IconPin} />
 
 			<Popover placement="bottom end" className="w-96">
 				<Dialog className="p-0">
 					<div className="rounded-lg border border-primary bg-primary shadow-lg">
 						{/* Header */}
 						<div className="flex items-center gap-2 border-primary border-b px-4 py-3">
-							<IconPinSlant className="size-4 text-secondary" />
+							<IconPin className="size-4 text-secondary" />
 							<h3 className="font-semibold text-sm">Pinned Messages</h3>
 							<span className="ml-auto text-secondary text-xs">
 								{sortedPins.length} {sortedPins.length === 1 ? "pin" : "pins"}
@@ -86,7 +85,7 @@ export function PinnedMessagesModal() {
 												aria-label="Unpin message"
 												type="button"
 											>
-												<X className="size-3.5 text-secondary" />
+												<IconClose className="size-3.5 text-secondary" />
 											</button>
 
 											{/* Message Content */}

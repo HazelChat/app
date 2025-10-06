@@ -1,9 +1,9 @@
-import { Plus } from "@untitledui/icons"
 import type { ButtonProps as AriaButtonProps } from "react-aria-components"
 import {
 	Tooltip as AriaTooltip,
 	TooltipTrigger as AriaTooltipTrigger,
 } from "~/components/base/tooltip/tooltip"
+import IconPlus from "~/components/icons/icon-plus"
 import { cx } from "~/utils/cx"
 
 const sizes = {
@@ -29,7 +29,7 @@ export const AvatarAddButton = ({ size, className, title = "Add user", ...props 
 				className,
 			)}
 		>
-			<Plus className={cx("text-current transition-inherit-all", sizes[size].icon)} />
+			<IconPlus className={cx("text-current transition-inherit-all", sizes[size].icon)} />
 		</AriaTooltipTrigger>
 	</AriaTooltip>
 )

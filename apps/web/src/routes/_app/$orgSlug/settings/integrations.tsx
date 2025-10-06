@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router"
-import { Plus } from "@untitledui/icons"
 import { useState } from "react"
 import { SectionFooter } from "~/components/application/section-footers/section-footer"
 import { SectionHeader } from "~/components/application/section-headers/section-headers"
 import { TabList, Tabs } from "~/components/application/tabs/tabs"
 import { Button } from "~/components/base/buttons/button"
 import { Toggle } from "~/components/base/toggle/toggle"
+import IconPlus from "~/components/icons/icon-plus"
 
 export const Route = createFileRoute("/_app/$orgSlug/settings/integrations")({
 	component: IntegrationsSettings,
@@ -109,7 +109,7 @@ function IntegrationsSettings() {
 						</SectionHeader.Subheading>
 					</div>
 					<SectionHeader.Actions>
-						<Button color="secondary" size="md" iconLeading={Plus}>
+						<Button color="secondary" size="md" iconLeading={IconPlus}>
 							Request integration
 						</Button>
 					</SectionHeader.Actions>

@@ -9,7 +9,16 @@ import {
 	UserId,
 } from "@hazel/db/schema"
 import { eq, useLiveQuery } from "@tanstack/react-db"
-import { createContext, type ReactNode, useContext, useEffect, useMemo, useRef, useState } from "react"
+import {
+	createContext,
+	type ReactNode,
+	useCallback,
+	useContext,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react"
 import { sendMessage as sendMessageAction } from "~/db/actions"
 import {
 	channelCollection,
@@ -21,7 +30,7 @@ import { useNotificationSound } from "~/hooks/use-notification-sound"
 import { useAuth } from "~/providers/auth-provider"
 
 type MessageWithPinned = typeof Message.Model.Type & {
-	pinnedMessage: (typeof PinnedMessage.Model.Type) | null | undefined
+	pinnedMessage: typeof PinnedMessage.Model.Type | null | undefined
 }
 
 interface ChatContextValue {
@@ -29,11 +38,7 @@ interface ChatContextValue {
 	organizationId: OrganizationId
 	channel: typeof Channel.Model.Type | undefined
 	messages: MessageWithPinned[]
-	loadNext: (() => void) | undefined
-	loadPrev: (() => void) | undefined
 	isLoadingMessages: boolean
-	isLoadingNext: boolean
-	isLoadingPrev: boolean
 	sendMessage: (props: { content: string; attachments?: AttachmentId[] }) => void
 	editMessage: (messageId: MessageId, content: string) => Promise<void>
 	deleteMessage: (messageId: MessageId) => void
@@ -78,15 +83,11 @@ export function ChatProvider({ channelId, organizationId, children }: ChatProvid
 
 	const previousMessagesRef = useRef<MessageWithPinned[]>([])
 	const previousChannelIdRef = useRef<ChannelId | null>(null)
-	const loadNextRef = useRef<(() => void) | undefined>(undefined)
-	const loadPrevRef = useRef<(() => void) | undefined>(undefined)
 	const prevMessageCountRef = useRef<number>(0)
 
 	useEffect(() => {
 		if (previousChannelIdRef.current && previousChannelIdRef.current !== channelId) {
 			previousMessagesRef.current = []
-			loadNextRef.current = undefined
-			loadPrevRef.current = undefined
 			setReplyToMessageId(null)
 		}
 		previousChannelIdRef.current = channelId
@@ -122,145 +123,157 @@ export function ChatProvider({ channelId, organizationId, children }: ChatProvid
 		[channelId],
 	)
 
-	// Message operations
-	const sendMessage = async ({
-		content,
-		attachments,
-	}: {
-		content: string
-		attachments?: AttachmentId[]
-	}) => {
-		if (!user?.id) return
+	// Use previous messages during loading states to prevent flashing
+	const messages = messagesData.length > 0 ? messagesData : previousMessagesRef.current
 
-		// Use the sendMessage action which handles both message creation and attachment linking
-		const tx = sendMessageAction({
-			channelId,
-			authorId: UserId.make(user.id),
-			content,
-			replyToMessageId,
-			threadChannelId: null,
-			attachmentIds: attachments as AttachmentId[] | undefined,
-		})
-
-		await tx.isPersisted.promise
-
-		console.log("tx", tx)
-
-		// Clear reply state after sending
-		setReplyToMessageId(null)
-	}
-
-	const editMessage = async (messageId: MessageId, content: string) => {
-		messageCollection.update(messageId, (message) => {
-			message.content = content
-			message.updatedAt = new Date()
-		})
-	}
-
-	const deleteMessage = (messageId: MessageId) => {
-		messageCollection.delete(messageId)
-	}
-
-	const addReaction = (messageId: MessageId, emoji: string) => {
-		if (!user?.id) return
-
-		messageReactionCollection.insert({
-			id: MessageReactionId.make(crypto.randomUUID()),
-			messageId,
-			userId: UserId.make(user.id),
-			emoji,
-			createdAt: new Date(),
-		})
-	}
-
-	const removeReaction = (reactionId: MessageReactionId) => {
-		if (!user?.id) return
-
-		messageReactionCollection.delete(reactionId)
-	}
-
-	const pinMessage = (messageId: MessageId) => {
-		if (!user?.id) return
-
-		pinnedMessageCollection.insert({
-			id: PinnedMessageId.make(crypto.randomUUID()),
-			channelId,
-			messageId,
-			pinnedBy: UserId.make(user.id),
-			pinnedAt: new Date(),
-		})
-	}
-
-	const unpinMessage = (pinnedMessageId: PinnedMessageId) => {
-		pinnedMessageCollection.delete(pinnedMessageId)
-	}
-
-	const createThread = async (messageId: MessageId) => {
-		// Find the message to create thread for
-		const message = messages.find((m) => m.id === messageId)
-		if (!message) {
-			console.error("Message not found for thread creation")
-			return
+	// Update previous messages when we have new data
+	useEffect(() => {
+		if (messagesData.length > 0) {
+			previousMessagesRef.current = messagesData
 		}
+	}, [messagesData])
 
-		// Check if thread already exists
-		if (message.threadChannelId) {
-			// Open existing thread
-			setActiveThreadChannelId(message.threadChannelId)
-			setActiveThreadMessageId(messageId)
-		} else {
-			// Create new thread channel
-			const threadChannelId = ChannelId.make(crypto.randomUUID())
-			const tx = channelCollection.insert({
-				id: threadChannelId,
-				organizationId,
-				name: "Thread",
-				type: "thread" as const,
-				parentChannelId: channelId,
-				createdAt: new Date(),
-				updatedAt: null,
-				deletedAt: null,
+	// Message operations
+	const sendMessage = useCallback(
+		async ({ content, attachments }: { content: string; attachments?: AttachmentId[] }) => {
+			if (!user?.id) return
+
+			// Use the sendMessage action which handles both message creation and attachment linking
+			const tx = sendMessageAction({
+				channelId,
+				authorId: UserId.make(user.id),
+				content,
+				replyToMessageId,
+				threadChannelId: null,
+				attachmentIds: attachments as AttachmentId[] | undefined,
 			})
 
 			await tx.isPersisted.promise
 
-			// Open the newly created thread
-			setActiveThreadChannelId(threadChannelId)
-			setActiveThreadMessageId(messageId)
-		}
-	}
+			console.log("tx", tx)
 
-	const openThread = (threadChannelId: ChannelId, originalMessageId: MessageId) => {
+			// Clear reply state after sending
+			setReplyToMessageId(null)
+		},
+		[channelId, user?.id, replyToMessageId],
+	)
+
+	const editMessage = useCallback(async (messageId: MessageId, content: string) => {
+		messageCollection.update(messageId, (message) => {
+			message.content = content
+			message.updatedAt = new Date()
+		})
+	}, [])
+
+	const deleteMessage = useCallback((messageId: MessageId) => {
+		messageCollection.delete(messageId)
+	}, [])
+
+	const addReaction = useCallback(
+		(messageId: MessageId, emoji: string) => {
+			if (!user?.id) return
+
+			messageReactionCollection.insert({
+				id: MessageReactionId.make(crypto.randomUUID()),
+				messageId,
+				userId: UserId.make(user.id),
+				emoji,
+				createdAt: new Date(),
+			})
+		},
+		[user?.id],
+	)
+
+	const removeReaction = useCallback(
+		(reactionId: MessageReactionId) => {
+			if (!user?.id) return
+
+			messageReactionCollection.delete(reactionId)
+		},
+		[user?.id],
+	)
+
+	const pinMessage = useCallback(
+		(messageId: MessageId) => {
+			if (!user?.id) return
+
+			pinnedMessageCollection.insert({
+				id: PinnedMessageId.make(crypto.randomUUID()),
+				channelId,
+				messageId,
+				pinnedBy: UserId.make(user.id),
+				pinnedAt: new Date(),
+			})
+		},
+		[channelId, user?.id],
+	)
+
+	const unpinMessage = useCallback((pinnedMessageId: PinnedMessageId) => {
+		pinnedMessageCollection.delete(pinnedMessageId)
+	}, [])
+
+	const createThread = useCallback(
+		async (messageId: MessageId) => {
+			// Find the message to create thread for
+			const message = messages.find((m) => m.id === messageId)
+			if (!message) {
+				console.error("Message not found for thread creation")
+				return
+			}
+
+			// Check if thread already exists
+			if (message.threadChannelId) {
+				// Open existing thread
+				setActiveThreadChannelId(message.threadChannelId)
+				setActiveThreadMessageId(messageId)
+			} else {
+				// Create new thread channel
+				const threadChannelId = ChannelId.make(crypto.randomUUID())
+				const tx = channelCollection.insert({
+					id: threadChannelId,
+					organizationId,
+					name: "Thread",
+					type: "thread" as const,
+					parentChannelId: channelId,
+					createdAt: new Date(),
+					updatedAt: null,
+					deletedAt: null,
+				})
+
+				await tx.isPersisted.promise
+
+				// Open the newly created thread
+				setActiveThreadChannelId(threadChannelId)
+				setActiveThreadMessageId(messageId)
+			}
+		},
+		[messages, channelId, organizationId],
+	)
+
+	const openThread = useCallback((threadChannelId: ChannelId, originalMessageId: MessageId) => {
 		setActiveThreadChannelId(threadChannelId)
 		setActiveThreadMessageId(originalMessageId)
-	}
+	}, [])
 
-	const closeThread = () => {
+	const closeThread = useCallback(() => {
 		setActiveThreadChannelId(null)
 		setActiveThreadMessageId(null)
-	}
-
-	// Update previous messages when we have new data
-	if (messagesData.length > 0) {
-		previousMessagesRef.current = messagesData
-	}
-
-	// Use previous messages during loading states to prevent flashing
-	const messages = messagesData.length > 0 ? messagesData : previousMessagesRef.current
+	}, [])
 
 	// Play sound when new messages arrive from other users (only when window is not focused)
+	// biome-ignore lint/correctness/useExhaustiveDependencies: We intentionally only depend on length changes, not the full array
 	useEffect(() => {
 		// Skip on first render or when switching channels
 		if (prevMessageCountRef.current === 0 || previousChannelIdRef.current !== channelId) {
-			prevMessageCountRef.current = messages.length
+			prevMessageCountRef.current = messagesData.length
 			return
 		}
 
 		// Check if we have new messages
-		if (messages.length > prevMessageCountRef.current) {
+		if (messagesData.length > prevMessageCountRef.current) {
 			// Get the new messages
-			const newMessagesCount = messages.length - prevMessageCountRef.current
-			const newMessages = messages.slice(0, newMessagesCount)
+			const newMessagesCount = messagesData.length - prevMessageCountRef.current
+			const newMessages = messagesData.slice(0, newMessagesCount)
 
 			// Check if any of the new messages are from other users
 			// TODO: Join with users to get author info
@@ -272,29 +285,19 @@ export function ChatProvider({ channelId, organizationId, children }: ChatProvid
 			}
 		}
 
-		prevMessageCountRef.current = messages.length
-	}, [messages.length, channelId, user?.id, playSound, messages])
+		prevMessageCountRef.current = messagesData.length
+	}, [messagesData.length, channelId, user?.id, playSound])
 
 	// TODO: Implement pagination for TanStack DB
-	// For now, set these to undefined/false
-	const loadNext = undefined
-	const loadPrev = undefined
 	const isLoadingMessages = messagesLoading
-	const isLoadingNext = false
-	const isLoadingPrev = false
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: Dependencies are correctly managed
 	const contextValue = useMemo<ChatContextValue>(
 		() => ({
 			channelId,
 			organizationId,
 			channel,
 			messages,
-			loadNext,
-			loadPrev,
 			isLoadingMessages,
-			isLoadingNext,
-			isLoadingPrev,
 			sendMessage,
 			editMessage,
 			deleteMessage,
@@ -312,14 +315,20 @@ export function ChatProvider({ channelId, organizationId, children }: ChatProvid
 		}),
 		[
 			channelId,
+			organizationId,
 			channel,
 			messages,
-			loadNext,
-			loadPrev,
 			isLoadingMessages,
-			isLoadingNext,
-			isLoadingPrev,
-			organizationId,
+			sendMessage,
+			editMessage,
+			deleteMessage,
+			addReaction,
+			removeReaction,
+			pinMessage,
+			unpinMessage,
+			createThread,
+			openThread,
+			closeThread,
 			activeThreadChannelId,
 			activeThreadMessageId,
 			replyToMessageId,

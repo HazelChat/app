@@ -1,5 +1,4 @@
 import { createFileRoute, Navigate } from "@tanstack/react-router"
-import { Mail01 } from "@untitledui/icons"
 import { type } from "arktype"
 import { useEffect } from "react"
 import { toast } from "sonner"
@@ -9,6 +8,7 @@ import { Button } from "~/components/base/buttons/button"
 import { Form } from "~/components/base/form/form"
 import { InputBase, TextField } from "~/components/base/input/input"
 import { Label } from "~/components/base/input/label"
+import IconEnvelope from "~/components/icons/icon-envelope"
 import { userCollection } from "~/db/collections"
 import { useAppForm } from "~/hooks/use-app-form"
 import { useAuth } from "~/providers/auth-provider"
@@ -132,7 +132,7 @@ function ProfileSettings() {
 
 					<TextField name="email" type="email" isDisabled value={user?.email}>
 						<Label className="lg:hidden">Email address</Label>
-						<InputBase size="md" icon={Mail01} />
+						<InputBase size="md" icon={IconEnvelope} />
 					</TextField>
 				</div>
 				<div className="flex justify-end">

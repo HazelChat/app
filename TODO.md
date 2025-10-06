@@ -33,6 +33,8 @@
 
 ## Frontend TODOs (apps/web)
 
+- Update Icons
+
 ### Chat Components
 - [ ] **Message Features**
   - Forward message functionality (`apps/web/src/components/chat/message-item.tsx:329`)

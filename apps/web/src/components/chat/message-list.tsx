@@ -1,35 +1,38 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useChat } from "~/hooks/use-chat"
-import { useDebouncedIntersection } from "~/hooks/use-debounced-intersection"
-import { useLoadingState } from "~/hooks/use-loading-state"
-import { useScrollRestoration } from "~/hooks/use-scroll-restoration"
+// TODO: Re-enable when pagination is implemented
+// import { useDebouncedIntersection } from "~/hooks/use-debounced-intersection"
+// import { useLoadingState } from "~/hooks/use-loading-state"
+// import { useScrollRestoration } from "~/hooks/use-scroll-restoration"
 
 import { MessageItem } from "./message-item"
 
 export function MessageList() {
-	const { messages, isLoadingMessages, isLoadingNext, isLoadingPrev, loadNext, loadPrev } = useChat()
+	const { messages, isLoadingMessages } = useChat()
 	const scrollContainerRef = useRef<HTMLDivElement>(null)
-	const { saveScrollState, restoreScrollPosition } = useScrollRestoration()
-	const { canLoadTop, canLoadBottom, startLoadingTop, startLoadingBottom, finishLoading } =
-		useLoadingState()
+	// TODO: Re-enable when pagination is implemented
+	// const { saveScrollState, restoreScrollPosition } = useScrollRestoration()
+	// const { canLoadTop, canLoadBottom, startLoadingTop, startLoadingBottom, finishLoading } =
+	// 	useLoadingState()
 	const [isAtBottom, setIsAtBottom] = useState(true)
 	const prevMessageCountRef = useRef(messages.length)
 	const isUserScrollingRef = useRef(false)
 	const scrollTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
-	const loadingDirectionRef = useRef<"top" | "bottom" | null>(null)
+	// const loadingDirectionRef = useRef<"top" | "bottom" | null>(null)
 
-	const [topSentinelRef, isTopVisible] = useDebouncedIntersection({
-		rootMargin: "50px",
-		threshold: [0, 0.1, 0.5, 1],
-		enabled: canLoadTop && !isLoadingMessages && !!loadNext,
-		debounceMs: 400,
-	})
-	const [bottomSentinelRef, isBottomVisible] = useDebouncedIntersection({
-		rootMargin: "50px",
-		threshold: [0, 0.1, 0.5, 1],
-		enabled: canLoadBottom && !isLoadingMessages && !!loadPrev,
-		debounceMs: 400,
-	})
+	// TODO: Re-enable when pagination is implemented
+	// const [topSentinelRef, isTopVisible] = useDebouncedIntersection({
+	// 	rootMargin: "50px",
+	// 	threshold: [0, 0.1, 0.5, 1],
+	// 	enabled: canLoadTop && !isLoadingMessages,
+	// 	debounceMs: 400,
+	// })
+	// const [bottomSentinelRef, isBottomVisible] = useDebouncedIntersection({
+	// 	rootMargin: "50px",
+	// 	threshold: [0, 0.1, 0.5, 1],
+	// 	enabled: canLoadBottom && !isLoadingMessages,
+	// 	debounceMs: 400,
+	// })
 
 	const processedMessages = useMemo(() => {
 		const timeThreshold = 5 * 60 * 1000
@@ -120,68 +123,68 @@ export function MessageList() {
 		const container = scrollContainerRef.current
 		if (!container) return
 
-		// Check if new messages were added (not from pagination)
+		// Check if new messages were added
 		const messageCountIncreased = messages.length > prevMessageCountRef.current
-		const notLoadingOlder = !isLoadingNext && !isLoadingPrev
 
-		if (messageCountIncreased && notLoadingOlder && isAtBottom) {
+		if (messageCountIncreased && isAtBottom) {
 			// Scroll to bottom to show new messages
 			container.scrollTop = container.scrollHeight
 		}
 
 		// Update previous message count
 		prevMessageCountRef.current = messages.length
-	}, [messages.length, isAtBottom, isLoadingNext, isLoadingPrev])
+	}, [messages.length, isAtBottom])
 
-	// Load older messages when top sentinel is visible
-	useEffect(() => {
-		if (isTopVisible && loadNext && canLoadTop && !isLoadingMessages) {
-			// Try to start loading
-			if (startLoadingTop()) {
-				// Save current scroll position before loading
-				if (scrollContainerRef.current) {
-					saveScrollState(scrollContainerRef.current)
-					loadingDirectionRef.current = "top"
-				}
-				console.log("Loading older messages")
-				loadNext()
-			}
-		}
-	}, [isTopVisible, loadNext, canLoadTop, isLoadingMessages, saveScrollState, startLoadingTop])
+	// TODO: Re-enable when pagination is implemented
+	// // Load older messages when top sentinel is visible
+	// useEffect(() => {
+	// 	if (isTopVisible && loadNext && canLoadTop && !isLoadingMessages) {
+	// 		// Try to start loading
+	// 		if (startLoadingTop()) {
+	// 			// Save current scroll position before loading
+	// 			if (scrollContainerRef.current) {
+	// 				saveScrollState(scrollContainerRef.current)
+	// 				loadingDirectionRef.current = "top"
+	// 			}
+	// 			console.log("Loading older messages")
+	// 			loadNext()
+	// 		}
+	// 	}
+	// }, [isTopVisible, loadNext, canLoadTop, isLoadingMessages, saveScrollState, startLoadingTop])
 
-	// Load newer messages when bottom sentinel is visible
-	useEffect(() => {
-		if (isBottomVisible && loadPrev && canLoadBottom && !isLoadingMessages) {
-			// Try to start loading
-			if (startLoadingBottom()) {
-				// Save current scroll state before loading
-				if (scrollContainerRef.current) {
-					saveScrollState(scrollContainerRef.current)
-					loadingDirectionRef.current = "bottom"
-				}
-				console.log("Loading newer messages")
-				loadPrev()
-			}
-		}
-	}, [isBottomVisible, loadPrev, canLoadBottom, isLoadingMessages, saveScrollState, startLoadingBottom])
+	// // Load newer messages when bottom sentinel is visible
+	// useEffect(() => {
+	// 	if (isBottomVisible && loadPrev && canLoadBottom && !isLoadingMessages) {
+	// 		// Try to start loading
+	// 		if (startLoadingBottom()) {
+	// 			// Save current scroll state before loading
+	// 			if (scrollContainerRef.current) {
+	// 				saveScrollState(scrollContainerRef.current)
+	// 				loadingDirectionRef.current = "bottom"
+	// 			}
+	// 			console.log("Loading newer messages")
+	// 			loadPrev()
+	// 		}
+	// 	}
+	// }, [isBottomVisible, loadPrev, canLoadBottom, isLoadingMessages, saveScrollState, startLoadingBottom])
 
-	// Restore scroll position after loading messages
-	// biome-ignore lint/correctness/useExhaustiveDependencies: Complex scroll restoration
-	useEffect(() => {
-		const container = scrollContainerRef.current
-		if (!container || loadingDirectionRef.current === null) return
+	// // Restore scroll position after loading messages
+	// // biome-ignore lint/correctness/useExhaustiveDependencies: Complex scroll restoration
+	// useEffect(() => {
+	// 	const container = scrollContainerRef.current
+	// 	if (!container || loadingDirectionRef.current === null) return
 
-		// Only restore if we're done loading in the expected direction
-		if (loadingDirectionRef.current === "top" && !isLoadingNext) {
-			restoreScrollPosition(container, "top")
-			loadingDirectionRef.current = null
-			finishLoading()
-		} else if (loadingDirectionRef.current === "bottom" && !isLoadingPrev) {
-			restoreScrollPosition(container, "bottom")
-			loadingDirectionRef.current = null
-			finishLoading()
-		}
-	}, [isLoadingNext, isLoadingPrev, messages.length, restoreScrollPosition, finishLoading])
+	// 	// Only restore if we're done loading in the expected direction
+	// 	if (loadingDirectionRef.current === "top" && !isLoadingNext) {
+	// 		restoreScrollPosition(container, "top")
+	// 		loadingDirectionRef.current = null
+	// 		finishLoading()
+	// 	} else if (loadingDirectionRef.current === "bottom" && !isLoadingPrev) {
+	// 		restoreScrollPosition(container, "bottom")
+	// 		loadingDirectionRef.current = null
+	// 		finishLoading()
+	// 	}
+	// }, [isLoadingNext, isLoadingPrev, messages.length, restoreScrollPosition, finishLoading])
 
 	// Show skeleton loader only when no cached messages exist
 	if (isLoadingMessages && messages.length === 0) {
@@ -228,14 +231,14 @@ export function MessageList() {
 				opacity: isLoadingMessages && messages.length > 0 ? 0.7 : 1,
 			}}
 		>
-			{/* Top sentinel for loading older messages */}
-			<div ref={topSentinelRef} className="h-1" />
+			{/* TODO: Re-enable when pagination is implemented */}
+			{/* <div ref={topSentinelRef} className="h-1" /> */}
 
-			{isLoadingNext && (
+			{/* {isLoadingNext && (
 				<div className="py-2 text-center">
 					<span className="text-muted-foreground text-xs">Loading older messages...</span>
 				</div>
-			)}
+			)} */}
 
 			{Object.entries(groupedMessages).map(([date, dateMessages]) => (
 				<div key={date}>
@@ -262,14 +265,14 @@ export function MessageList() {
 				</div>
 			))}
 
-			{isLoadingPrev && (
+			{/* TODO: Re-enable when pagination is implemented */}
+			{/* {isLoadingPrev && (
 				<div className="py-2 text-center">
 					<span className="text-muted-foreground text-xs">Loading newer messages...</span>
 				</div>
-			)}
+			)} */}
 
-			{/* Bottom sentinel for loading newer messages */}
-			<div ref={bottomSentinelRef} className="h-1" />
+			{/* <div ref={bottomSentinelRef} className="h-1" /> */}
 		</div>
 	)
 }

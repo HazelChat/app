@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router"
-import { VolumeMax, VolumeMin, VolumeX } from "@untitledui/icons"
 import { useState } from "react"
 import { toast } from "sonner"
 import { SectionFooter } from "~/components/application/section-footers/section-footer"
@@ -10,6 +9,8 @@ import { Form } from "~/components/base/form/form"
 import { RadioGroupCheckbox } from "~/components/base/radio-groups/radio-group-checkbox"
 import { Slider } from "~/components/base/slider/slider"
 import { Toggle } from "~/components/base/toggle/toggle"
+import IconVolume from "~/components/icons/icon-volume"
+import IconVolumeMute from "~/components/icons/icon-volume-mute"
 import { Separator } from "~/components/ui/separator"
 import { useNotificationSound } from "~/hooks/use-notification-sound"
 import { cx } from "~/utils/cx"
@@ -136,7 +137,7 @@ function NotificationsSettings() {
 											size="sm"
 											color="secondary"
 											onClick={testSound}
-											iconLeading={VolumeMax}
+											iconLeading={IconVolume}
 										>
 											Test
 										</Button>
@@ -152,11 +153,11 @@ function NotificationsSettings() {
 									</div>
 									<div className="flex items-center gap-3">
 										{settings.volume === 0 ? (
-											<VolumeX className="size-4 text-tertiary" />
+											<IconVolumeMute className="size-4 text-tertiary" />
 										) : settings.volume < 0.5 ? (
-											<VolumeMin className="size-4 text-tertiary" />
+											<IconVolumeMute className="size-4 text-tertiary" />
 										) : (
-											<VolumeMax className="size-4 text-tertiary" />
+											<IconVolume className="size-4 text-tertiary" />
 										)}
 										<Slider
 											minValue={0}

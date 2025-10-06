@@ -1,4 +1,3 @@
-import { SearchLg } from "@untitledui/icons"
 import type { FocusEventHandler, KeyboardEvent, PointerEventHandler, RefAttributes, RefObject } from "react"
 import { createContext, useCallback, useContext, useRef, useState } from "react"
 import { FocusScope, useFilter, useFocusManager } from "react-aria"
@@ -23,6 +22,7 @@ import { Label } from "~/components/base/input/label"
 import { Popover } from "~/components/base/select/popover"
 import { type SelectItemType, sizes } from "~/components/base/select/select"
 import { TagCloseX } from "~/components/base/tags/base-components/tag-close-x"
+import IconMagnifier3 from "~/components/icons/icon-magnifier-3"
 import { useResizeObserver } from "~/hooks/use-resize-observer"
 import { cx } from "~/utils/cx"
 import { SelectItem } from "./select-item"
@@ -350,7 +350,7 @@ export const MultiSelectTagsValue = ({
 	shortcut,
 	placeholder,
 	shortcutClassName,
-	placeholderIcon: Icon = SearchLg,
+	placeholderIcon: Icon = IconMagnifier3,
 	// Omit this prop to avoid invalid HTML attribute warning
 	isDisabled: _isDisabled,
 	...otherProps

@@ -10,7 +10,7 @@ import { useAuth } from "~/providers/auth-provider"
 import { cx } from "~/utils/cx"
 import { IconNotification } from "../application/notifications/notifications"
 import { Badge } from "../base/badges/badges"
-import { IconPinSlant } from "../icons/IconPinSlant"
+import IconPin from "../icons/icon-pin"
 import { MarkdownReadonly } from "../markdown-readonly"
 import { InlineThreadPreview } from "./inline-thread-preview"
 import { MessageAttachments } from "./message-attachments"
@@ -19,7 +19,7 @@ import { MessageToolbar } from "./message-toolbar"
 import { UserProfilePopover } from "./user-profile-popover"
 
 type MessageWithPinned = typeof Message.Model.Type & {
-	pinnedMessage: (typeof PinnedMessage.Model.Type) | null | undefined
+	pinnedMessage: typeof PinnedMessage.Model.Type | null | undefined
 }
 
 interface MessageItemProps {
@@ -37,14 +37,8 @@ export function MessageItem({
 	isFirstNewMessage = false,
 	isPinned = false,
 }: MessageItemProps) {
-	const {
-		addReaction,
-		removeReaction,
-		setReplyToMessageId,
-		pinMessage,
-		unpinMessage,
-		createThread,
-	} = useChat()
+	const { addReaction, removeReaction, setReplyToMessageId, pinMessage, unpinMessage, createThread } =
+		useChat()
 
 	const [isEditing, setIsEditing] = useState(false)
 	const [hasBeenHovered, setHasBeenHovered] = useState(false)
@@ -375,7 +369,7 @@ export const MessageAuthorHeader = ({
 			</span>
 			{isPinned && (
 				<span className="flex items-center gap-1 text-amber-600 text-xs" title="Pinned message">
-					<IconPinSlant className="size-3" />
+					<IconPin className="size-3" />
 					<span>Pinned</span>
 				</span>
 			)}

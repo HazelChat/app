@@ -1,6 +1,5 @@
 "use client"
 
-import { X } from "@untitledui/icons"
 import { cva } from "class-variance-authority"
 import * as React from "react"
 import type {
@@ -22,6 +21,7 @@ import {
 	Text,
 } from "react-aria-components"
 import { twJoin, twMerge } from "tailwind-merge"
+import IconClose from "~/components/icons/icon-close"
 
 type Sides = "top" | "bottom" | "left" | "right"
 
@@ -217,7 +217,7 @@ const SheetCloseIcon = ({ className, ...props }: SheetCloseIconProps) => {
 				className,
 			)}
 		>
-			<X className="size-4" />
+			<IconClose className="size-4" />
 		</Button>
 	) : null
 }

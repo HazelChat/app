@@ -1,9 +1,9 @@
 import { createFileRoute, Outlet, useLocation, useNavigate, useParams } from "@tanstack/react-router"
-import { SearchLg } from "@untitledui/icons"
 import { useEffect, useState } from "react"
 import { TabList, Tabs } from "~/components/application/tabs/tabs"
 import { Input } from "~/components/base/input/input"
 import { NativeSelect } from "~/components/base/select/select-native"
+import IconMagnifier3 from "~/components/icons/icon-magnifier-3"
 
 export const Route = createFileRoute("/_app/$orgSlug/settings")({
 	component: RouteComponent,
@@ -58,7 +58,7 @@ function RouteComponent() {
 									shortcut
 									aria-label="Search"
 									placeholder="Search"
-									icon={SearchLg}
+									icon={IconMagnifier3}
 								/>
 							</div>
 						</div>

@@ -1,4 +1,3 @@
-import type { OrganizationId } from "@hazel/db/schema"
 import { eq, useLiveQuery } from "@tanstack/react-db"
 import { useNavigate, useParams } from "@tanstack/react-router"
 import { useState } from "react"
@@ -12,8 +11,8 @@ import { CreateOrganizationModal } from "../application/modals/create-organizati
 import { EmailInviteModal } from "../application/modals/email-invite-modal"
 import { Avatar } from "../base/avatar/avatar"
 import { Dropdown } from "../base/dropdown/dropdown"
-import IconPlusStroke from "../icons/IconPlusStroke"
-import IconUserPlus1 from "../icons/IconUserPlus1"
+import IconPlus from "../icons/icon-plus"
+import IconUsersPlus from "../icons/icon-users-plus"
 
 export const WorkspaceSwitcher = () => {
 	const [inviteModalOpen, setInviteModalOpen] = useState(false)
@@ -127,12 +126,12 @@ export const WorkspaceSwitcher = () => {
 						<Dropdown.Separator />
 						<Dropdown.Section>
 							<Dropdown.Item
-								icon={IconPlusStroke}
+								icon={IconPlus}
 								label="Add Organization"
 								onAction={() => setCreateOrgModalOpen(true)}
 							/>
 							<Dropdown.Item
-								icon={IconUserPlus1}
+								icon={IconUsersPlus}
 								label="Invite People"
 								onAction={() => setInviteModalOpen(true)}
 							/>

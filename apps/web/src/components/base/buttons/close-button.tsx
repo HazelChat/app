@@ -1,5 +1,5 @@
-import { X as CloseIcon } from "@untitledui/icons"
 import { Button as AriaButton, type ButtonProps as AriaButtonProps } from "react-aria-components"
+import IconClose from "~/components/icons/icon-close"
 import { cx } from "~/utils/cx"
 
 const sizes = {
@@ -40,7 +40,7 @@ export const CloseButton = ({
 				)
 			}
 		>
-			<CloseIcon
+			<IconClose
 				aria-hidden="true"
 				className={cx("shrink-0 transition-inherit-all", sizes[size].icon)}
 			/>

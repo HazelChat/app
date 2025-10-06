@@ -1,9 +1,12 @@
 import { FileIcon } from "@untitledui/file-icons"
-import { Copy01, DownloadCloud02, Edit04, Link03, RefreshCcw02, Stars02 } from "@untitledui/icons"
+import { DownloadCloud02, Link03, RefreshCcw02 } from "@untitledui/icons"
 import type { ComponentPropsWithRef, ReactNode } from "react"
 import { Button as AriaButton } from "react-aria-components"
 import { Avatar } from "~/components/base/avatar/avatar"
 import { Tooltip } from "~/components/base/tooltip/tooltip"
+import IconCopy from "~/components/icons/icon-copy"
+import IconEdit from "~/components/icons/icon-edit"
+import IconStar from "~/components/icons/icon-star"
 import { cx } from "~/utils/cx"
 
 export type Message = {
@@ -113,7 +116,7 @@ export const MessageItem = ({ msg, showUserLabel = true, ...props }: MessageItem
 				aria-label="Generate with AI"
 				className="cursor-pointer rounded p-0.5 text-fg-quaternary outline-focus-ring transition duration-100 ease-linear hover:text-fg-quaternary_hover focus-visible:outline-2 focus-visible:outline-offset-2"
 			>
-				<Stars02 className="size-4" />
+				<IconStar className="size-4" />
 			</button>
 
 			{(msg.text || msg.attachment || msg.audio || msg.image) && (
@@ -122,7 +125,7 @@ export const MessageItem = ({ msg, showUserLabel = true, ...props }: MessageItem
 					aria-label={msg.text ? "Edit message" : "Download"}
 					className="cursor-pointer rounded p-0.5 text-fg-quaternary outline-focus-ring transition duration-100 ease-linear hover:text-fg-quaternary_hover focus-visible:outline-2 focus-visible:outline-offset-2"
 				>
-					{msg.text ? <Edit04 className="size-4" /> : <DownloadCloud02 className="size-4" />}
+					{msg.text ? <IconEdit className="size-4" /> : <DownloadCloud02 className="size-4" />}
 				</button>
 			)}
 
@@ -138,7 +141,7 @@ export const MessageItem = ({ msg, showUserLabel = true, ...props }: MessageItem
 				aria-label="Copy"
 				className="cursor-pointer rounded p-0.5 text-fg-quaternary outline-focus-ring transition duration-100 ease-linear hover:text-fg-quaternary_hover focus-visible:outline-2 focus-visible:outline-offset-2"
 			>
-				<Copy01 className="size-4" />
+				<IconCopy className="size-4" />
 			</button>
 		</div>
 	)

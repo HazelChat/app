@@ -9,7 +9,7 @@ import { toast } from "sonner"
 import { Button } from "~/components/base/buttons/button"
 import { CloseButton } from "~/components/base/buttons/close-button"
 import { Input } from "~/components/base/input/input"
-import IconHashtagStroke from "~/components/icons/IconHashtagStroke"
+import IconHashtag from "~/components/icons/icon-hashtag"
 import { channelCollection, channelMemberCollection } from "~/db/collections"
 import { useAuth } from "~/providers/auth-provider"
 import { Dialog, DialogTrigger, Modal, ModalOverlay } from "./modal"
@@ -120,7 +120,7 @@ export const JoinChannelModal = ({ isOpen, setIsOpen }: JoinChannelModalProps) =
 							<div className="max-h-[400px] overflow-y-auto px-4 sm:px-6">
 								{filteredChannels.length === 0 ? (
 									<div className="py-8 text-center">
-										<IconHashtagStroke className="mx-auto mb-3 h-12 w-12 text-fg-quaternary" />
+										<IconHashtag className="mx-auto mb-3 h-12 w-12 text-fg-quaternary" />
 										<p className="text-sm text-tertiary">
 											{searchQuery
 												? "No channels found matching your search"
@@ -137,7 +137,7 @@ export const JoinChannelModal = ({ isOpen, setIsOpen }: JoinChannelModalProps) =
 												className="flex items-center justify-between rounded-lg border border-secondary p-3 transition-colors hover:bg-secondary"
 											>
 												<div className="flex items-center gap-3">
-													<IconHashtagStroke className="h-5 w-5 text-fg-quaternary" />
+													<IconHashtag className="h-5 w-5 text-fg-quaternary" />
 													<div className="font-medium text-primary">
 														{channel.name}
 													</div>

@@ -1,6 +1,5 @@
 import type { UserId } from "@hazel/db/schema"
 import { eq, useLiveQuery } from "@tanstack/react-db"
-import { DotsHorizontal } from "@untitledui/icons"
 import { useState } from "react"
 import { Button, DialogTrigger, Dialog as PrimitiveDialog } from "react-aria-components"
 import { toast } from "sonner"
@@ -11,12 +10,13 @@ import { Dropdown } from "~/components/base/dropdown/dropdown"
 import { Popover } from "~/components/base/select/popover"
 import { TextArea } from "~/components/base/textarea/textarea"
 import { Tooltip } from "~/components/base/tooltip/tooltip"
-import IconPencilEdit from "~/components/icons/IconPencilEdit"
+import IconEdit from "~/components/icons/icon-edit"
 import { userCollection } from "~/db/collections"
 import { useAuth } from "~/providers/auth-provider"
 import { IconNotification } from "../application/notifications/notifications"
-import IconPhone2 from "../icons/IconPhone2"
-import IconStar from "../icons/IconStar"
+import IconDots from "../icons/icon-dots"
+import IconPhone from "../icons/icon-phone"
+import IconStar from "../icons/icon-star"
 
 interface UserProfilePopoverProps {
 	userId: UserId
@@ -132,7 +132,7 @@ export function UserProfilePopover({ userId }: UserProfilePopoverProps) {
 												onClick={handleCall}
 												color="tertiary"
 												size="xs"
-												icon={IconPhone2}
+												icon={IconPhone}
 												aria-label="Call user"
 											/>
 										</Tooltip>
@@ -142,7 +142,7 @@ export function UserProfilePopover({ userId }: UserProfilePopoverProps) {
 												className="group"
 												color="tertiary"
 												size="xs"
-												icon={DotsHorizontal}
+												icon={IconDots}
 												aria-label="More"
 											/>
 
@@ -183,7 +183,7 @@ export function UserProfilePopover({ userId }: UserProfilePopoverProps) {
 											<StyledButton
 												size="sm"
 												className="w-full"
-												iconLeading={IconPencilEdit}
+												iconLeading={IconEdit}
 												onClick={() => {
 													// TODO: Implement edit profile functionality
 													console.log("Edit profile clicked")

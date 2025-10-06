@@ -1,11 +1,11 @@
 import { Avatar } from "~/components/base/avatar/avatar"
 import { Tooltip, TooltipTrigger } from "~/components/base/tooltip/tooltip"
-import IconHashtagStroke from "~/components/icons/IconHashtagStroke"
+import IconHashtag from "~/components/icons/icon-hashtag"
 import { useChannel } from "~/db/hooks"
 import { useChat } from "~/hooks/use-chat"
 import { useAuth } from "~/providers/auth-provider"
 import { ButtonUtility } from "../base/buttons/button-utility"
-import IconPhone from "../icons/IconPhone"
+import IconPhone from "../icons/icon-phone"
 import { PinnedMessagesModal } from "./pinned-messages-modal"
 
 export function ChatHeader() {
@@ -64,7 +64,7 @@ export function ChatHeader() {
 					</>
 				) : (
 					<>
-						<IconHashtagStroke className="size-5 text-secondary" />
+						<IconHashtag className="size-5 text-secondary" />
 						<div>
 							<h2 className="font-semibold text-sm">{channel.name}</h2>
 						</div>

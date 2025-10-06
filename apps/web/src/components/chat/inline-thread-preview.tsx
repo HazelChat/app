@@ -7,7 +7,7 @@ import { messageCollection, userCollection } from "~/db/collections"
 import { useChat } from "~/hooks/use-chat"
 import { cx } from "~/utils/cx"
 import { Avatar } from "../base/avatar/avatar"
-import { IconThread } from "../temp-icons/thread"
+import IconThread from "../icons/icon-thread"
 
 interface InlineThreadPreviewProps {
 	threadChannelId: ChannelId

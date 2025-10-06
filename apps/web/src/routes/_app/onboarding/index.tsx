@@ -5,7 +5,7 @@ import { useState } from "react"
 import { CreateOrganizationModal } from "~/components/application/modals/create-organization-modal"
 import { Button } from "~/components/base/buttons/button"
 import { FeaturedIcon } from "~/components/foundations/featured-icon/featured-icons"
-import IconMagicWand from "~/components/icons/IconMagicWand"
+import IconMagicWandSparkle from "~/components/icons/icon-magic-wand-sparkle"
 import { organizationCollection, organizationMemberCollection } from "~/db/collections"
 import { useAuth } from "~/providers/auth-provider"
 
@@ -48,7 +48,7 @@ function OnboardingPage() {
 				{/* Logo/Header */}
 				<div className="text-center">
 					<div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-brand-solid">
-						<IconMagicWand className="h-8 w-8 text-white" />
+						<IconMagicWandSparkle className="h-8 w-8 text-white" />
 					</div>
 					<h2 className="mt-6 font-bold text-3xl text-primary">Welcome to Maki Chat</h2>
 					<p className="mt-2 text-secondary text-sm">

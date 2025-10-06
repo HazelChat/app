@@ -1,7 +1,7 @@
 import type { InvitationId, OrganizationId } from "@hazel/db/schema"
 import { eq, useLiveQuery } from "@tanstack/react-db"
 import { createFileRoute } from "@tanstack/react-router"
-import { Plus, RefreshCcw02, XClose } from "@untitledui/icons"
+import { RefreshCcw02 } from "@untitledui/icons"
 import { useState } from "react"
 import type { SortDescriptor } from "react-aria-components"
 import { toast } from "sonner"
@@ -11,6 +11,8 @@ import { Table, TableCard } from "~/components/application/table/table"
 import { Badge, BadgeWithDot } from "~/components/base/badges/badges"
 import { Button } from "~/components/base/buttons/button"
 import { ButtonUtility } from "~/components/base/buttons/button-utility"
+import IconClose from "~/components/icons/icon-close"
+import IconPlus from "~/components/icons/icon-plus"
 import { invitationCollection, userCollection } from "~/db/collections"
 import { useOrganization } from "~/hooks/use-organization"
 
@@ -114,7 +116,7 @@ function RouteComponent() {
 							<Button
 								color="secondary"
 								size="md"
-								iconLeading={Plus}
+								iconLeading={IconPlus}
 								onClick={() => setShowInviteModal(true)}
 							>
 								Invite user
@@ -186,7 +188,7 @@ function RouteComponent() {
 												size="xs"
 												color="tertiary"
 												tooltip="Revoke invitation"
-												icon={XClose}
+												icon={IconClose}
 												onClick={() => handleRevokeInvitation(invitation.id)}
 											/>
 										</div>

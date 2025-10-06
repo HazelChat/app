@@ -1,12 +1,11 @@
-import type { OrganizationId } from "@hazel/db/schema"
 import { and, eq, or, useLiveQuery } from "@tanstack/react-db"
 import { createFileRoute, Link, useParams } from "@tanstack/react-router"
 import { useMemo } from "react"
 import { SectionHeader } from "~/components/application/section-headers/section-headers"
 import { TabList, TabPanel, Tabs } from "~/components/application/tabs/tabs"
 import { Avatar } from "~/components/base/avatar/avatar"
-import IconHashtagStroke from "~/components/icons/IconHashtagStroke"
-import IconLockCloseStroke from "~/components/icons/IconLockCloseStroke"
+import IconHashtag from "~/components/icons/icon-hashtag"
+import IconLock from "~/components/icons/icon-lock"
 import { channelCollection, channelMemberCollection } from "~/db/collections"
 import { useOrganization } from "~/hooks/use-organization"
 import { cn } from "~/lib/utils"
@@ -185,9 +184,9 @@ function ChannelCard({ channel, isPrivate = false }: { channel: any; isPrivate?:
 			<div className="flex items-center gap-3">
 				<div className="inset-ring inset-ring-secondary flex size-10 items-center justify-center rounded-md bg-primary">
 					{isPrivate ? (
-						<IconLockCloseStroke className="size-5 text-secondary" />
+						<IconLock className="size-5 text-secondary" />
 					) : (
-						<IconHashtagStroke className="size-5 text-secondary" />
+						<IconHashtag className="size-5 text-secondary" />
 					)}
 				</div>
 				<div>

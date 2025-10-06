@@ -8,7 +8,7 @@ import {
 	EmojiPicker as EmojiPickerPrimitive,
 } from "frimousse"
 import type * as React from "react"
-import IconSearch from "~/components/icons/IconSearch"
+import IconMagnifier3 from "~/components/icons/icon-magnifier-3"
 import { cx } from "~/utils/cx"
 
 function EmojiPicker({ className, ...props }: React.ComponentProps<typeof EmojiPickerPrimitive.Root>) {
@@ -33,7 +33,7 @@ function EmojiPickerSearch({
 			className={cx("flex h-9 items-center gap-2 border-primary border-b px-3", className)}
 			data-slot="emoji-picker-search-wrapper"
 		>
-			<IconSearch className="size-4 shrink-0 opacity-50" />
+			<IconMagnifier3 className="size-4 shrink-0 opacity-50" />
 			<EmojiPickerPrimitive.Search
 				className="flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-hidden placeholder:text-secondary disabled:cursor-not-allowed disabled:opacity-50"
 				data-slot="emoji-picker-search"

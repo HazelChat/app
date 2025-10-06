@@ -1,5 +1,5 @@
-import { User01 } from "@untitledui/icons"
 import { type FC, type ReactNode, useState } from "react"
+import IconCircleDottedUser from "~/components/icons/icon-circle-dotted-user"
 import { cx } from "~/utils/cx"
 import { AvatarOnlineIndicator, VerifiedTick } from "./base-components"
 
@@ -114,7 +114,7 @@ export const Avatar = ({
 			return <PlaceholderIcon className={cx("text-fg-quaternary", styles[size].icon)} />
 		}
 
-		return placeholder || <User01 className={cx("text-fg-quaternary", styles[size].icon)} />
+		return placeholder || <IconCircleDottedUser className={cx("text-fg-quaternary", styles[size].icon)} />
 	}
 
 	const renderBadgeContent = () => {

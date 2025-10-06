@@ -1,9 +1,5 @@
 "use client"
-import { useState } from "react"
-import IconChatChatting1 from "~/components/icons/IconChatChatting1"
-import IconGridDashboard01DuoSolid from "~/components/icons/IconGridDashboard01DuoSolid"
-import IconGridDashboard01Stroke from "~/components/icons/IconGridDashboard01Stroke"
-import IconSettings01Stroke from "~/components/icons/IconSettings01Stroke"
+
 import {
 	CommandMenu,
 	CommandMenuItem,
@@ -14,6 +10,9 @@ import {
 	CommandMenuSection,
 	CommandMenuShortcut,
 } from "~/components/ui/command-menu"
+import IconDashboard from "./icons/icon-dashboard"
+import IconGear from "./icons/icon-gear"
+import IconMsgs from "./icons/icon-msgs"
 
 export function CommandPalette(props: Pick<CommandMenuProps, "isOpen" | "onOpenChange">) {
 	return (
@@ -22,15 +21,15 @@ export function CommandPalette(props: Pick<CommandMenuProps, "isOpen" | "onOpenC
 			<CommandMenuList>
 				<CommandMenuSection>
 					<CommandMenuItem href="#" textValue="all channels">
-						<IconChatChatting1 />
+						<IconMsgs />
 						<CommandMenuLabel>All channels</CommandMenuLabel>
 					</CommandMenuItem>
 					<CommandMenuItem href="#" textValue="members">
-						<IconGridDashboard01Stroke />
+						<IconDashboard />
 						<CommandMenuLabel>Members</CommandMenuLabel>
 					</CommandMenuItem>
 					<CommandMenuItem href="#" textValue="settings">
-						<IconSettings01Stroke />
+						<IconGear />
 						<CommandMenuLabel>Settings</CommandMenuLabel>
 					</CommandMenuItem>
 				</CommandMenuSection>

@@ -1,10 +1,10 @@
-import { Trash01 } from "@untitledui/icons"
 import { Heading as AriaHeading } from "react-aria-components"
 import { Dialog, Modal, ModalOverlay } from "~/components/application/modals/modal"
 import { Button } from "~/components/base/buttons/button"
 import { CloseButton } from "~/components/base/buttons/close-button"
 import { FeaturedIcon } from "~/components/foundations/featured-icon/featured-icons"
 import { BackgroundPattern } from "~/components/shared-assets/background-patterns"
+import IconTrash from "../icons/icon-trash"
 
 interface DeleteMessageModalProps {
 	isOpen: boolean
@@ -31,7 +31,7 @@ export const DeleteMessageModal = ({ isOpen, onOpenChange, onConfirm }: DeleteMe
 						/>
 						<div className="flex flex-col gap-4 px-4 pt-5 sm:px-6 sm:pt-6">
 							<div className="relative w-max">
-								<FeaturedIcon color="error" size="lg" theme="light" icon={Trash01} />
+								<FeaturedIcon color="error" size="lg" theme="light" icon={IconTrash} />
 
 								<BackgroundPattern
 									pattern="circle"

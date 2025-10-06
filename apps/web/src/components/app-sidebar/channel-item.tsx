@@ -1,8 +1,8 @@
 import type { ChannelId, OrganizationId } from "@hazel/db/schema"
 import { Link } from "@tanstack/react-router"
 import { useCallback, useState } from "react"
-import IconDeleteDustbin011 from "~/components/icons/IconDeleteDustbin011"
-import IconPencilEdit from "~/components/icons/IconPencilEdit"
+import IconEdit from "~/components/icons/icon-edit"
+import IconTrash from "~/components/icons/icon-trash"
 import { channelMemberCollection } from "~/db/collections"
 import { useChannelWithCurrentUser } from "~/db/hooks"
 import { useOrganization } from "~/hooks/use-organization"
@@ -11,13 +11,13 @@ import { cx } from "~/utils/cx"
 import { RenameChannelModal } from "../application/modals/rename-channel-modal"
 import { Avatar } from "../base/avatar/avatar"
 import { Dropdown } from "../base/dropdown/dropdown"
-import IconHashtagStroke from "../icons/IconHashtagStroke"
-import IconMultipleCrossCancelStroke from "../icons/IconMultipleCrossCancelStroke"
-import IconPhone2 from "../icons/IconPhone2"
-import IconStar1 from "../icons/IconStar1"
-import IconThreeDotsMenuHorizontalStroke from "../icons/IconThreeDotsMenuHorizontalStroke"
-import IconVolumeMute1 from "../icons/IconVolumeMute1"
-import IconVolumeOne1 from "../icons/IconVolumeOne1"
+import IconClose from "../icons/icon-close"
+import IconDots from "../icons/icon-dots"
+import IconHashtag from "../icons/icon-hashtag"
+import IconPhone from "../icons/icon-phone"
+import IconStar from "../icons/icon-star"
+import IconVolume from "../icons/icon-volume"
+import IconVolumeMute from "../icons/icon-volume-mute"
 import { SidebarMenuAction, SidebarMenuButton, SidebarMenuItem } from "../ui/sidebar"
 
 export interface ChannelItemProps {
@@ -58,7 +58,7 @@ export const ChannelItem = ({ channelId }: ChannelItemProps) => {
 		<SidebarMenuItem>
 			<SidebarMenuButton asChild>
 				<Link to="/$orgSlug/chat/$id" params={{ orgSlug: orgSlug || "", id: channelId }}>
-					<IconHashtagStroke className="size-5" />
+					<IconHashtag className="size-5" />
 					<p
 						className={cx(
 							"text-ellipsis text-nowrap",
@@ -79,7 +79,7 @@ export const ChannelItem = ({ channelId }: ChannelItemProps) => {
 					showOnHover
 					className="rounded-sm text-foreground data-[state=open]:bg-muted"
 				>
-					<IconThreeDotsMenuHorizontalStroke className="text-foreground" />
+					<IconDots className="text-foreground" />
 					<span className="sr-only">More</span>
 				</SidebarMenuAction>
 
@@ -87,7 +87,7 @@ export const ChannelItem = ({ channelId }: ChannelItemProps) => {
 					<Dropdown.Menu>
 						<Dropdown.Item
 							onAction={handleToggleMute}
-							icon={channel.currentUser.isMuted ? IconVolumeOne1 : IconVolumeMute1}
+							icon={channel.currentUser.isMuted ? IconVolume : IconVolumeMute}
 						>
 							{channel.currentUser.isMuted ? "Unmute" : "Mute"}
 						</Dropdown.Item>
@@ -95,9 +95,9 @@ export const ChannelItem = ({ channelId }: ChannelItemProps) => {
 							onAction={handleToggleFavorite}
 							icon={(props) =>
 								channel.currentUser.isFavorite ? (
-									<IconStar1 className={cx("text-amber-500", props.className)} />
+									<IconStar className={cx("text-amber-500", props.className)} />
 								) : (
-									<IconStar1 className={props.className}></IconStar1>
+									<IconStar className={props.className}></IconStar>
 								)
 							}
 						>
@@ -106,16 +106,12 @@ export const ChannelItem = ({ channelId }: ChannelItemProps) => {
 						<Dropdown.Separator />
 						<Dropdown.Item
 							onAction={handleRename}
-							icon={(props) => (
-								<IconPencilEdit className={cx("text-amber-500", props.className)} />
-							)}
+							icon={(props) => <IconEdit className={cx("text-amber-500", props.className)} />}
 						>
 							Rename
 						</Dropdown.Item>
 						<Dropdown.Item
-							icon={(props) => (
-								<IconDeleteDustbin011 className={cx("text-amber-500", props.className)} />
-							)}
+							icon={(props) => <IconTrash className={cx("text-amber-500", props.className)} />}
 						>
 							Delete
 						</Dropdown.Item>
@@ -273,7 +269,7 @@ export const DmChannelLink = ({ channelId, userPresence }: DmChannelLinkProps) =
 					showOnHover
 					className="rounded-sm text-foreground data-[state=open]:bg-muted"
 				>
-					<IconThreeDotsMenuHorizontalStroke className="text-foreground" />
+					<IconDots className="text-foreground" />
 					<span className="sr-only">More</span>
 				</SidebarMenuAction>
 				<Dropdown.Popover placement="right top" className="w-42">
@@ -283,14 +279,14 @@ export const DmChannelLink = ({ channelId, userPresence }: DmChannelLinkProps) =
 								onAction={() => {
 									console.log("TODO: Implement call")
 								}}
-								icon={IconPhone2}
+								icon={IconPhone}
 							>
 								Call
 							</Dropdown.Item>
 							<Dropdown.Separator />
 							<Dropdown.Item
 								onAction={handleToggleMute}
-								icon={channel.currentUser.isMuted ? IconVolumeOne1 : IconVolumeMute1}
+								icon={channel.currentUser.isMuted ? IconVolume : IconVolumeMute}
 							>
 								{channel.currentUser.isMuted ? "Unmute" : "Mute"}
 							</Dropdown.Item>
@@ -298,9 +294,9 @@ export const DmChannelLink = ({ channelId, userPresence }: DmChannelLinkProps) =
 								onAction={handleToggleFavorite}
 								icon={({ className }) =>
 									channel.currentUser.isFavorite ? (
-										<IconStar1 className={cx(className, "text-amber-500")} />
+										<IconStar className={cx(className, "text-amber-500")} />
 									) : (
-										<IconStar1 className={className} />
+										<IconStar className={className} />
 									)
 								}
 							>
@@ -309,7 +305,7 @@ export const DmChannelLink = ({ channelId, userPresence }: DmChannelLinkProps) =
 							<Dropdown.Item
 								className="text-destructive"
 								onAction={handleClose}
-								icon={IconMultipleCrossCancelStroke}
+								icon={IconClose}
 							>
 								Close
 							</Dropdown.Item>

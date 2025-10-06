@@ -1,10 +1,10 @@
 import type { ChannelId, MessageId, OrganizationId } from "@hazel/db/schema"
-import { X } from "@untitledui/icons"
 import { format } from "date-fns"
 import { Button } from "react-aria-components"
 import { useMessage } from "~/db/hooks"
 import { ChatProvider } from "~/providers/chat-provider"
 import { Avatar } from "../base/avatar/avatar"
+import IconClose from "../icons/icon-close"
 import { MarkdownReadonly } from "../markdown-readonly"
 import { MessageComposer } from "./message-composer"
 import { MessageList } from "./message-list"
@@ -28,7 +28,7 @@ function ThreadContent({ threadChannelId, originalMessageId, onClose }: ThreadPa
 					<h2 className="font-semibold">Thread</h2>
 				</div>
 				<Button onPress={onClose} className="rounded p-1 hover:bg-tertiary" aria-label="Close thread">
-					<X className="size-4" />
+					<IconClose className="size-4" />
 				</Button>
 			</div>
 

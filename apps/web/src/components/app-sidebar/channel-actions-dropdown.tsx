@@ -1,13 +1,13 @@
 "use client"
 
+import { Plus } from "@untitledui/icons"
 import { useState } from "react"
 import { ButtonUtility } from "~/components/base/buttons/button-utility"
 import { Dropdown } from "~/components/base/dropdown/dropdown"
-import IconHashtagStroke from "~/components/icons/IconHashtagStroke"
-import IconPlusStroke from "~/components/icons/IconPlusStroke"
+import IconHashtag from "~/components/icons/icon-hashtag"
+import IconPlus from "~/components/icons/icon-plus"
 import { JoinChannelModal } from "../application/modals/join-channel-modal"
 import { NewChannelModalWrapper } from "../application/modals/new-channel-modal-wrapper"
-import IconPlusSquareStroke from "../icons/IconPlusSquareStroke"
 
 export const ChannelActionsDropdown = () => {
 	const [modalType, setModalType] = useState<"create" | "join" | null>(null)
@@ -17,7 +17,7 @@ export const ChannelActionsDropdown = () => {
 			<Dropdown.Root>
 				<ButtonUtility
 					tooltip="Channel options"
-					icon={IconPlusStroke}
+					icon={Plus}
 					size="xs"
 					color="tertiary"
 					className="p-1 text-primary hover:text-secondary"
@@ -26,12 +26,12 @@ export const ChannelActionsDropdown = () => {
 					<Dropdown.Menu>
 						<Dropdown.Item
 							onAction={() => setModalType("create")}
-							icon={IconPlusStroke}
+							icon={IconPlus}
 							label="Create new channel"
 						/>
 						<Dropdown.Item
 							onAction={() => setModalType("join")}
-							icon={IconHashtagStroke}
+							icon={IconHashtag}
 							label="Join existing channel"
 						/>
 					</Dropdown.Menu>

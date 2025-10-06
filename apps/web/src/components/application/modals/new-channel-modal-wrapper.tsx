@@ -1,13 +1,12 @@
 import { useAtomSet } from "@effect-atom/atom-react"
 import { useNavigate } from "@tanstack/react-router"
 import { type } from "arktype"
-import { Cause, Exit, Match } from "effect"
 import { DialogTrigger as AriaDialogTrigger, Heading as AriaHeading } from "react-aria-components"
 import { Dialog, Modal, ModalOverlay } from "~/components/application/modals/modal"
 import { Button } from "~/components/base/buttons/button"
 import { CloseButton } from "~/components/base/buttons/close-button"
 import { Select } from "~/components/base/select/select"
-import IconHashtagStroke from "~/components/icons/IconHashtagStroke"
+import IconHashtag from "~/components/icons/icon-hashtag"
 import { useAppForm } from "~/hooks/use-app-form"
 import { useOrganization } from "~/hooks/use-organization"
 import { HazelApiClient } from "~/lib/services/common/atom-client"
@@ -119,7 +118,7 @@ export const NewChannelModalWrapper = ({ isOpen, setIsOpen }: NewChannelModalWra
 												label="Channel Name"
 												size="sm"
 												placeholder="general"
-												icon={IconHashtagStroke}
+												icon={IconHashtag}
 												value={field.state.value}
 												onChange={(value) => field.handleChange(value)}
 												onBlur={field.handleBlur}

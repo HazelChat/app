@@ -1,11 +1,8 @@
 import { useAtomSet } from "@effect-atom/atom-react"
-import type { OrganizationId } from "@hazel/db/schema"
 import { eq, useLiveQuery } from "@tanstack/react-db"
-import { useMutation } from "@tanstack/react-query"
 import { createFileRoute, useNavigate, useParams } from "@tanstack/react-router"
 import { PhoneCall01 } from "@untitledui/icons"
-import { Effect } from "effect"
-import { useStoreAtomState } from "platejs/react"
+
 import { useMemo, useState } from "react"
 import { twJoin } from "tailwind-merge"
 import { SectionHeader } from "~/components/application/section-headers/section-headers"
@@ -13,11 +10,12 @@ import { Avatar } from "~/components/base/avatar/avatar"
 import { ButtonUtility } from "~/components/base/buttons/button-utility"
 import { Dropdown } from "~/components/base/dropdown/dropdown"
 import { Input } from "~/components/base/input/input"
-import { IconChatStroke } from "~/components/icons/IconChatStroke"
-import IconClipboard from "~/components/icons/IconClipboard"
-import { IconSearchStroke } from "~/components/icons/IconSearchStroke"
-import { IconThreeDotsMenuHorizontalStroke } from "~/components/icons/IconThreeDotsMenuHorizontalStroke"
-import IconUserUser03 from "~/components/icons/IconUserUser03"
+import IconCircleDottedUser from "~/components/icons/icon-circle-dotted-user"
+import IconCopy from "~/components/icons/icon-copy"
+
+import IconDots from "~/components/icons/icon-dots"
+import IconMagnifier3 from "~/components/icons/icon-magnifier-3"
+import IconMsgs from "~/components/icons/icon-msgs"
 import { organizationMemberCollection, userCollection } from "~/db/collections"
 import { useOrganization } from "~/hooks/use-organization"
 import { HazelApiClient } from "~/lib/services/common/atom-client"
@@ -110,7 +108,7 @@ function RouteComponent() {
 					onChange={(value) => setSearchQuery(value)}
 					placeholder="Search members..."
 					className="w-full"
-					icon={IconSearchStroke}
+					icon={IconMagnifier3}
 					iconClassName="size-5 text-secondary"
 				/>
 			</div>
@@ -165,27 +163,25 @@ function RouteComponent() {
 											onClick={() => handleOpenChat(member.id)}
 											className="inset-ring-0 hidden pressed:bg-tertiary group-hover:bg-tertiary sm:inline-grid"
 											size="sm"
-											icon={IconChatStroke}
+											icon={IconMsgs}
 										/>
 										<Dropdown.Root>
 											<ButtonUtility
 												className="inset-ring-0 pressed:bg-tertiary group-hover:bg-tertiary"
 												size="sm"
-												icon={IconThreeDotsMenuHorizontalStroke}
+												icon={IconDots}
 											/>
 											<Dropdown.Popover>
 												<Dropdown.Menu>
 													<Dropdown.Section>
-														<Dropdown.Item icon={IconChatStroke}>
-															Message
-														</Dropdown.Item>
-														<Dropdown.Item icon={IconUserUser03}>
+														<Dropdown.Item icon={IconMsgs}>Message</Dropdown.Item>
+														<Dropdown.Item icon={IconCircleDottedUser}>
 															View profile
 														</Dropdown.Item>
 														<Dropdown.Item icon={PhoneCall01}>
 															Start call
 														</Dropdown.Item>
-														<Dropdown.Item icon={IconClipboard}>
+														<Dropdown.Item icon={IconCopy}>
 															Copy email
 														</Dropdown.Item>
 													</Dropdown.Section>

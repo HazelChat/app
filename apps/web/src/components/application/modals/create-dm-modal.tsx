@@ -14,7 +14,7 @@ import { ButtonUtility } from "~/components/base/buttons/button-utility"
 import { CloseButton } from "~/components/base/buttons/close-button"
 import { Input } from "~/components/base/input/input"
 import { FeaturedIcon } from "~/components/foundations/featured-icon/featured-icons"
-import IconCheckTickCircle from "~/components/icons/IconCheckTickCircle"
+import IconCheck from "~/components/icons/icon-check"
 import { BackgroundPattern } from "~/components/shared-assets/background-patterns"
 import { organizationMemberCollection, userCollection } from "~/db/collections"
 import { useAppForm } from "~/hooks/use-app-form"
@@ -282,7 +282,7 @@ export const CreateDmModal = ({ isOpen, onOpenChange }: CreateDmModalProps) => {
 													</div>
 												</div>
 												{selectedUsers.some((u) => u.id === user?.id) && (
-													<IconCheckTickCircle className="size-5 text-brand" />
+													<IconCheck className="size-5 text-brand" />
 												)}
 											</button>
 										))}

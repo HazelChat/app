@@ -1,4 +1,3 @@
-import { DotsVertical } from "@untitledui/icons"
 import type { FC, RefAttributes } from "react"
 import type {
 	ButtonProps as AriaButtonProps,
@@ -17,6 +16,7 @@ import {
 	Popover as AriaPopover,
 	Separator as AriaSeparator,
 } from "react-aria-components"
+import IconDotsVertical from "~/components/icons/icon-dots-vertical"
 import { cx } from "~/utils/cx"
 
 interface DropdownItemProps extends AriaMenuItemProps {
@@ -152,7 +152,7 @@ const DropdownDotsButton = (props: AriaButtonProps & RefAttributes<HTMLButtonEle
 				)
 			}
 		>
-			<DotsVertical className="size-5 transition-inherit-all" />
+			<IconDotsVertical className="size-5 transition-inherit-all" />
 		</AriaButton>
 	)
 }

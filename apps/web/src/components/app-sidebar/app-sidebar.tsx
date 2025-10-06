@@ -3,14 +3,13 @@ import { and, eq, or, useLiveQuery } from "@tanstack/react-db"
 import { Link, useNavigate } from "@tanstack/react-router"
 import { useEffect, useMemo } from "react"
 import { ErrorBoundary } from "react-error-boundary"
-import IconChat1 from "~/components/icons/IconChat1"
 import { channelCollection, channelMemberCollection, organizationCollection } from "~/db/collections"
 import { useOrganization } from "~/hooks/use-organization"
 import { useAuth } from "~/providers/auth-provider"
 import { CreateDmButton } from "../application/modals/create-dm-modal"
-import IconChatChatting1 from "../icons/IconChatChatting1"
-import IconGridDashboard01DuoSolid from "../icons/IconGridDashboard01DuoSolid"
-import IconNotificationBellOn1 from "../icons/IconNotificationBellOn1"
+import IconBell from "../icons/icon-bell"
+import IconDashboard from "../icons/icon-dashboard"
+import IconMsgs from "../icons/icon-msgs"
 import {
 	Sidebar,
 	SidebarContent,
@@ -60,7 +59,7 @@ export const AppSidebar = ({ setOpenCmd }: { setOpenCmd: (open: boolean) => void
 											exact: true,
 										}}
 									>
-										<IconGridDashboard01DuoSolid />
+										<IconDashboard />
 										<span>Home</span>
 									</Link>
 								</SidebarMenuButton>
@@ -74,7 +73,7 @@ export const AppSidebar = ({ setOpenCmd }: { setOpenCmd: (open: boolean) => void
 											exact: true,
 										}}
 									>
-										<IconChatChatting1 />
+										<IconMsgs />
 										<span>Chat</span>
 									</Link>
 								</SidebarMenuButton>
@@ -87,7 +86,7 @@ export const AppSidebar = ({ setOpenCmd }: { setOpenCmd: (open: boolean) => void
 							<SidebarGroup>
 								<SidebarMenuItem>
 									<SidebarMenuButton>
-										<IconNotificationBellOn1 />
+										<IconBell />
 										Notifications
 										<SidebarMenuBadge className="rounded-full bg-destructive">
 											1
@@ -96,7 +95,7 @@ export const AppSidebar = ({ setOpenCmd }: { setOpenCmd: (open: boolean) => void
 								</SidebarMenuItem>
 								<SidebarMenuItem>
 									<SidebarMenuButton onClick={() => setOpenCmd(true)}>
-										<IconChat1 />
+										<IconMsgs />
 										Find conversation
 									</SidebarMenuButton>
 								</SidebarMenuItem>
@@ -124,7 +123,7 @@ export const AppSidebar = ({ setOpenCmd }: { setOpenCmd: (open: boolean) => void
 						<SidebarGroupContent>
 							<SidebarMenuItem>
 								<SidebarMenuButton>
-									<IconNotificationBellOn1 />
+									<IconBell />
 									Notifications
 									<SidebarMenuBadge className="rounded-full bg-destructive">
 										1
@@ -133,7 +132,7 @@ export const AppSidebar = ({ setOpenCmd }: { setOpenCmd: (open: boolean) => void
 							</SidebarMenuItem>
 							<SidebarMenuItem>
 								<SidebarMenuButton onClick={() => setOpenCmd(true)}>
-									<IconChat1 />
+									<IconMsgs />
 									Find conversation
 									<span className="ml-auto font-mono text-xs">⌘K</span>
 								</SidebarMenuButton>

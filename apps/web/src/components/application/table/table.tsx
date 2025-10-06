@@ -1,4 +1,4 @@
-import { ArrowDown, ChevronSelectorVertical, Copy01, Edit01, HelpCircle, Trash01 } from "@untitledui/icons"
+import { ArrowDown, ChevronSelectorVertical } from "@untitledui/icons"
 import type {
 	ComponentPropsWithRef,
 	HTMLAttributes,
@@ -30,6 +30,10 @@ import { Badge } from "~/components/base/badges/badges"
 import { Checkbox } from "~/components/base/checkbox/checkbox"
 import { Dropdown } from "~/components/base/dropdown/dropdown"
 import { Tooltip, TooltipTrigger } from "~/components/base/tooltip/tooltip"
+import IconCopy from "~/components/icons/icon-copy"
+import IconEdit from "~/components/icons/icon-edit"
+import IconSupport from "~/components/icons/icon-support"
+import IconTrash from "~/components/icons/icon-trash"
 import { cx } from "~/utils/cx"
 
 export const TableRowActionsDropdown = () => (
@@ -38,13 +42,13 @@ export const TableRowActionsDropdown = () => (
 
 		<Dropdown.Popover className="w-min">
 			<Dropdown.Menu>
-				<Dropdown.Item icon={Edit01}>
+				<Dropdown.Item icon={IconEdit}>
 					<span className="pr-4">Edit</span>
 				</Dropdown.Item>
-				<Dropdown.Item icon={Copy01}>
+				<Dropdown.Item icon={IconCopy}>
 					<span className="pr-4">Copy link</span>
 				</Dropdown.Item>
-				<Dropdown.Item icon={Trash01}>
+				<Dropdown.Item icon={IconTrash}>
 					<span className="pr-4">Delete</span>
 				</Dropdown.Item>
 			</Dropdown.Menu>
@@ -234,7 +238,7 @@ const TableHead = ({ className, tooltip, label, children, ...props }: TableHeadP
 					{tooltip && (
 						<Tooltip title={tooltip} placement="top">
 							<TooltipTrigger className="cursor-pointer text-fg-quaternary transition duration-100 ease-linear hover:text-fg-quaternary_hover focus:text-fg-quaternary_hover">
-								<HelpCircle className="size-4" />
+								<IconSupport className="size-4" />
 							</TooltipTrigger>
 						</Tooltip>
 					)}

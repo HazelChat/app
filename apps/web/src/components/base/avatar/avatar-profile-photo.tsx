@@ -1,5 +1,5 @@
-import { User01 } from "@untitledui/icons"
 import { useState } from "react"
+import IconCircleDottedUser from "~/components/icons/icon-circle-dotted-user"
 import { cx } from "~/utils/cx"
 import type { AvatarProps } from "./avatar"
 import { AvatarOnlineIndicator, VerifiedTick } from "./base-components"
@@ -105,7 +105,9 @@ export const AvatarProfilePhoto = ({
 					styles[size].content,
 				)}
 			>
-				{placeholder || <User01 className={cx("text-fg-quaternary", styles[size].icon)} />}
+				{placeholder || (
+					<IconCircleDottedUser className={cx("text-fg-quaternary", styles[size].icon)} />
+				)}
 			</div>
 		)
 	}
