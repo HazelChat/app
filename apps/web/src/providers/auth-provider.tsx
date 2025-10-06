@@ -2,7 +2,7 @@ import { useAtomSet, useAtomValue } from "@effect-atom/atom-react"
 import type { CurrentUser } from "@hazel/db/schema"
 import { Exit } from "effect"
 import type { ReactNode } from "react"
-import { createContext, useContext, useEffect, useState } from "react"
+import { createContext, useContext, useEffect, useMemo, useState } from "react"
 import { HazelApiClient } from "~/lib/services/common/atom-client"
 
 type User = typeof CurrentUser.Schema.Type
@@ -26,10 +26,27 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: ReactNode }) {
 	const [user, setUser] = useState<User | null>(null)
 	const [isLoading, setIsLoading] = useState(true)
+	const [authFailed, setAuthFailed] = useState(false)
+	const [isPublicRoute, setIsPublicRoute] = useState(window.location.pathname.startsWith("/auth"))
 
 	const loginMutation = useAtomSet(HazelApiClient.mutation("auth", "login"), {
 		mode: "promiseExit",
 	})
+
+	// Update public route status when location changes
+	useEffect(() => {
+		const checkRoute = () => {
+			setIsPublicRoute(window.location.pathname.startsWith("/auth"))
+		}
+		// Listen to popstate (browser back/forward)
+		window.addEventListener("popstate", checkRoute)
+		// Listen to custom navigation events if using SPA routing
+		window.addEventListener("pushstate", checkRoute)
+		return () => {
+			window.removeEventListener("popstate", checkRoute)
+			window.removeEventListener("pushstate", checkRoute)
+		}
+	}, [])
 
 	const currentUserResult = useAtomValue(
 		HazelApiClient.query("users", "me", {
@@ -38,16 +55,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 	)
 
 	useEffect(() => {
+		// If we're on a public route or auth has failed, don't process the query result
+		if (isPublicRoute) {
+			setUser(null)
+			setIsLoading(false)
+			return
+		}
+
+		// Don't process the query if auth has already failed
+		if (authFailed && currentUserResult._tag !== "Success") {
+			setUser(null)
+			setIsLoading(false)
+			return
+		}
+
 		if (currentUserResult._tag === "Success") {
 			setUser(currentUserResult.value)
 			setIsLoading(false)
+			setAuthFailed(false)
 		} else if (currentUserResult._tag === "Failure") {
 			setUser(null)
 			setIsLoading(false)
+			setAuthFailed(true)
 		} else if (currentUserResult._tag === "Initial") {
 			setIsLoading(true)
 		}
-	}, [currentUserResult])
+	}, [currentUserResult, isPublicRoute, authFailed])
 
 	// Refresh user by invalidating the atom
 	const refreshUser = async () => {
@@ -57,6 +90,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 	}
 
 	const login = async (options?: LoginOptions) => {
+		// Reset auth failed state when user attempts to login
+		setAuthFailed(false)
+
 		const exit = await loginMutation({
 			urlParams: {
 				...options,
