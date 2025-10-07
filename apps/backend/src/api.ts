@@ -13,6 +13,7 @@ import {
 	OrganizationGroup,
 	OrganizationMemberGroup,
 	PinnedMessageGroup,
+	PresenceGroup,
 	TypingIndicatorGroup,
 	UserGroup,
 } from "./api/electric/collections"
@@ -179,6 +180,7 @@ export class HazelApi extends HttpApi.make("HazelApp")
 	.add(AttachmentGroup)
 	.add(DirectMessageParticipantGroup)
 	.add(TypingIndicatorGroup)
+	.add(PresenceGroup)
 	.add(RootGroup)
 	.add(AuthGroup)
 	.add(WebhookGroup)

@@ -8,6 +8,7 @@ import IconHashtag from "~/components/icons/icon-hashtag"
 import IconLock from "~/components/icons/icon-lock"
 import { channelCollection, channelMemberCollection, userCollection } from "~/db/collections"
 import { useOrganization } from "~/hooks/use-organization"
+import { useUserPresence } from "~/hooks/use-presence"
 import { cn } from "~/lib/utils"
 import { useAuth } from "~/providers/auth-provider"
 
@@ -18,9 +19,6 @@ export const Route = createFileRoute("/_app/$orgSlug/chat/")({
 function RouteComponent() {
 	const { organizationId } = useOrganization()
 	const { user: me } = useAuth()
-	// const { presenceList } = usePresence()
-
-	const presenceList: any[] = [] // TODO: Add presence list
 
 	// Get all channels with members and users in a single query
 	const { data: channelsData, isLoading: channelsLoading } = useLiveQuery(
@@ -146,12 +144,7 @@ function RouteComponent() {
 										<h2 className="sr-only">Direct Messages</h2>
 										<div className="space-y-2">
 											{dmChannels.map((channel) => (
-												<DmCard
-													key={channel._id}
-													channel={channel}
-													currentUserId={me?.id}
-													presenceList={presenceList}
-												/>
+												<DmCard key={channel._id} channel={channel} currentUserId={me?.id} />
 											))}
 										</div>
 									</div>
@@ -212,21 +205,13 @@ function ChannelCard({ channel, isPrivate = false }: { channel: any; isPrivate?:
 	)
 }
 
-function DmCard({
-	channel,
-	currentUserId,
-	presenceList,
-}: {
-	channel: any
-	currentUserId?: string
-	presenceList: any[]
-}) {
+function DmCard({ channel, currentUserId }: { channel: any; currentUserId?: string }) {
 	const { orgSlug } = useParams({ from: "/_app/$orgSlug" })
 	const otherMembers = channel.members.filter((member: any) => member.userId !== currentUserId)
 
 	if (channel.type === "single" && otherMembers.length === 1) {
 		const member = otherMembers[0]
-		const isOnline = presenceList.find((p) => p.userId === member.user._id)?.online
+		const { isOnline, status } = useUserPresence(member.user._id)
 
 		return (
 			<Link
@@ -245,7 +230,17 @@ function DmCard({
 						<h3 className={cn("font-medium", channel.isMuted && "opacity-60")}>
 							{member.user.firstName} {member.user.lastName}
 						</h3>
-						<p className="text-secondary text-sm">{isOnline ? "Active now" : "Offline"}</p>
+						<p className="text-secondary text-sm">
+							{isOnline
+								? "Active now"
+								: status === "away"
+									? "Away"
+									: status === "busy"
+										? "Busy"
+										: status === "dnd"
+											? "Do not disturb"
+											: "Offline"}
+						</p>
 					</div>
 				</div>
 				{channel.currentUser?.notificationCount > 0 && (

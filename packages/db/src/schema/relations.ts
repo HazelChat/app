@@ -6,7 +6,6 @@ import { messageReactionsTable, messagesTable } from "./messages"
 import { notificationsTable } from "./notifications"
 import { organizationMembersTable, organizationsTable } from "./organizations"
 import { pinnedMessagesTable } from "./pinned-messages"
-import { presenceTable } from "./presence"
 import { typingIndicatorsTable } from "./typing-indicators"
 import { usersTable } from "./users"
 
@@ -20,7 +19,6 @@ export const usersRelations = relations(usersTable, ({ many }) => ({
 	invitationsSent: many(invitationsTable),
 	invitationsAccepted: many(invitationsTable),
 	pinnedMessages: many(pinnedMessagesTable),
-	presence: many(presenceTable),
 	directMessageParticipations: many(directMessageParticipantsTable),
 }))
 
@@ -219,13 +217,5 @@ export const typingIndicatorsRelations = relations(typingIndicatorsTable, ({ one
 	member: one(organizationMembersTable, {
 		fields: [typingIndicatorsTable.memberId],
 		references: [organizationMembersTable.id],
-	}),
-}))
-
-// Presence relations
-export const presenceRelations = relations(presenceTable, ({ one }) => ({
-	user: one(usersTable, {
-		fields: [presenceTable.userId],
-		references: [usersTable.id],
 	}),
 }))
