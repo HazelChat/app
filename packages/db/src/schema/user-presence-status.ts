@@ -7,6 +7,7 @@ export const userPresenceStatusEnum = pgEnum("user_presence_status_enum", [
 	"away",
 	"busy",
 	"dnd", // do not disturb
+	"offline",
 ])
 
 // User presence status table - for tracking user-set status overrides

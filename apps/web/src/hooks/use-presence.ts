@@ -1,13 +1,14 @@
-import { UserId } from "@hazel/db/schema"
+import { UserId, UserPresenceStatusId } from "@hazel/db/schema"
 import { eq, useLiveQuery } from "@tanstack/react-db"
 import { useParams } from "@tanstack/react-router"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { userPresenceStatusCollection } from "~/db/collections"
 import { useAuth } from "~/providers/auth-provider"
 
-type PresenceStatus = "online" | "away" | "busy" | "dnd"
+type PresenceStatus = "online" | "away" | "busy" | "dnd" | "offline"
 
 const AFK_TIMEOUT = 5 * 60 * 1000 // 5 minutes
+const OFFLINE_TIMEOUT = 15 * 60 * 1000 // 15 minutes (when window is hidden)
 const UPDATE_INTERVAL = 30 * 1000 // 30 seconds
 
 export function usePresence() {
@@ -16,8 +17,10 @@ export function usePresence() {
 	const [status, setStatus] = useState<PresenceStatus>("online")
 	const [isAFK, setIsAFK] = useState(false)
 	const lastActivityRef = useRef(Date.now())
-	const afkTimerRef = useRef<NodeJS.Timeout>()
-	const updateIntervalRef = useRef<NodeJS.Timeout>()
+	const windowHiddenSinceRef = useRef<number | null>(null)
+	const afkTimerRef = useRef<NodeJS.Timeout | undefined>(undefined)
+	const updateIntervalRef = useRef<NodeJS.Timeout | undefined>(undefined)
+	const offlineTimerRef = useRef<NodeJS.Timeout | undefined>(undefined)
 	const previousStatusRef = useRef<PresenceStatus>("online")
 
 	// Get user's presence status from DB
@@ -27,12 +30,39 @@ export function usePresence() {
 				? q
 						.from({ presence: userPresenceStatusCollection })
 						.where(({ presence }) => eq(presence.userId, UserId.make(user.id)))
+						.orderBy(({ presence }) => presence.updatedAt, "desc")
 						.limit(1)
 				: undefined,
 		[user?.id],
 	)
 
-	const currentPresence = presenceData?.[0]?.presence
+	const currentPresence = presenceData?.[0]
+
+	// Update or create presence status in DB
+	const updatePresenceStatus = useCallback(
+		(newStatus: PresenceStatus) => {
+			if (!user?.id) return
+
+			if (currentPresence?.id) {
+				// Update existing
+				userPresenceStatusCollection.update(currentPresence.id, (draft) => {
+					draft.status = newStatus
+					draft.updatedAt = new Date()
+				})
+			} else {
+				// Insert new
+				userPresenceStatusCollection.insert({
+					id: UserPresenceStatusId.make(crypto.randomUUID()),
+					userId: UserId.make(user.id),
+					status: newStatus,
+					customMessage: null,
+					activeChannelId: null,
+					updatedAt: new Date(),
+				})
+			}
+		},
+		[user?.id, currentPresence?.id],
+	)
 
 	// Track user activity
 	const handleActivity = useCallback(() => {
@@ -44,36 +74,31 @@ export function usePresence() {
 			setStatus(previousStatusRef.current)
 			updatePresenceStatus(previousStatusRef.current)
 		}
-	}, [isAFK])
-
-	// Update presence status in DB
-	const updatePresenceStatus = useCallback(
-		(newStatus: PresenceStatus) => {
-			if (!user?.id) return
-
-			userPresenceStatusCollection.update(currentPresence?.id ?? crypto.randomUUID(), () => ({
-				userId: UserId.make(user.id),
-				status: newStatus,
-				customMessage: currentPresence?.customMessage ?? null,
-				activeChannelId: currentPresence?.activeChannelId ?? null,
-				updatedAt: new Date(),
-			}))
-		},
-		[user?.id, currentPresence],
-	)
+	}, [isAFK, updatePresenceStatus])
 
 	// Update active channel
 	const updateActiveChannel = useCallback(
 		(channelId: string | null) => {
 			if (!user?.id) return
 
-			userPresenceStatusCollection.update(currentPresence?.id ?? crypto.randomUUID(), (prev) => ({
-				...prev,
-				activeChannelId: channelId as any,
-				updatedAt: new Date(),
-			}))
+			if (currentPresence?.id) {
+				userPresenceStatusCollection.update(currentPresence.id, (draft) => {
+					draft.activeChannelId = channelId as any
+					draft.updatedAt = new Date()
+				})
+			} else {
+				// Insert new with active channel
+				userPresenceStatusCollection.insert({
+					id: UserPresenceStatusId.make(crypto.randomUUID()),
+					userId: UserId.make(user.id),
+					status: "online",
+					customMessage: null,
+					activeChannelId: channelId as any,
+					updatedAt: new Date(),
+				})
+			}
 		},
-		[user?.id, currentPresence],
+		[user?.id, currentPresence?.id],
 	)
 
 	// Manually set status (for status picker UI)
@@ -84,14 +109,25 @@ export function usePresence() {
 			setStatus(newStatus)
 			previousStatusRef.current = newStatus
 
-			userPresenceStatusCollection.update(currentPresence?.id ?? crypto.randomUUID(), (prev) => ({
-				...prev,
-				status: newStatus,
-				customMessage: customMessage ?? null,
-				updatedAt: new Date(),
-			}))
+			if (currentPresence?.id) {
+				userPresenceStatusCollection.update(currentPresence.id, (draft) => {
+					draft.status = newStatus
+					draft.customMessage = customMessage ?? null
+					draft.updatedAt = new Date()
+				})
+			} else {
+				// Insert new with custom message
+				userPresenceStatusCollection.insert({
+					id: UserPresenceStatusId.make(crypto.randomUUID()),
+					userId: UserId.make(user.id),
+					status: newStatus,
+					customMessage: customMessage ?? null,
+					activeChannelId: null,
+					updatedAt: new Date(),
+				})
+			}
 		},
-		[user?.id, currentPresence],
+		[user?.id, currentPresence?.id],
 	)
 
 	// Check for AFK
@@ -139,16 +175,13 @@ export function usePresence() {
 
 	// Periodic status update (heartbeat)
 	useEffect(() => {
-		if (!user?.id) return
+		if (!user?.id || !currentPresence?.id) return
 
 		updateIntervalRef.current = setInterval(() => {
 			// Just update the timestamp to keep presence fresh
-			if (currentPresence?.id) {
-				userPresenceStatusCollection.update(currentPresence.id, (prev) => ({
-					...prev,
-					updatedAt: new Date(),
-				}))
-			}
+			userPresenceStatusCollection.update(currentPresence.id, (draft) => {
+				draft.updatedAt = new Date()
+			})
 		}, UPDATE_INTERVAL)
 
 		return () => {
@@ -158,25 +191,51 @@ export function usePresence() {
 		}
 	}, [user?.id, currentPresence?.id])
 
-	// Handle window visibility (pause updates when hidden)
+	// Handle window visibility (pause updates when hidden, mark offline after timeout)
 	useEffect(() => {
 		const handleVisibilityChange = () => {
 			if (document.hidden) {
-				// Window is hidden, could reduce update frequency or mark as away
+				// Window is hidden - start offline timer
+				windowHiddenSinceRef.current = Date.now()
+
+				// Stop heartbeat updates
 				if (updateIntervalRef.current) {
 					clearInterval(updateIntervalRef.current)
+					updateIntervalRef.current = undefined
 				}
+
+				// Set timer to mark as offline after 15 minutes
+				offlineTimerRef.current = setTimeout(() => {
+					// Only mark as offline if user didn't manually set busy/dnd
+					if (status !== "busy" && status !== "dnd") {
+						previousStatusRef.current = status
+						setStatus("offline")
+						updatePresenceStatus("offline")
+					}
+				}, OFFLINE_TIMEOUT)
 			} else {
-				// Window is visible again, resume updates
+				// Window is visible again
+				windowHiddenSinceRef.current = null
+
+				// Clear offline timer
+				if (offlineTimerRef.current) {
+					clearTimeout(offlineTimerRef.current)
+					offlineTimerRef.current = undefined
+				}
+
+				// If user was marked offline due to window being hidden, restore previous status
+				if (status === "offline") {
+					setStatus(previousStatusRef.current)
+					updatePresenceStatus(previousStatusRef.current)
+				}
+
+				// Resume activity tracking and heartbeat
 				handleActivity()
-				if (user?.id && !updateIntervalRef.current) {
+				if (user?.id && currentPresence?.id && !updateIntervalRef.current) {
 					updateIntervalRef.current = setInterval(() => {
-						if (currentPresence?.id) {
-							userPresenceStatusCollection.update(currentPresence.id, (prev) => ({
-								...prev,
-								updatedAt: new Date(),
-							}))
-						}
+						userPresenceStatusCollection.update(currentPresence.id, (draft) => {
+							draft.updatedAt = new Date()
+						})
 					}, UPDATE_INTERVAL)
 				}
 			}
@@ -186,8 +245,30 @@ export function usePresence() {
 
 		return () => {
 			document.removeEventListener("visibilitychange", handleVisibilityChange)
+			if (offlineTimerRef.current) {
+				clearTimeout(offlineTimerRef.current)
+			}
 		}
-	}, [user?.id, currentPresence?.id, handleActivity])
+	}, [user?.id, currentPresence?.id, handleActivity, status, updatePresenceStatus])
+
+	// Mark as offline on page unload (tab/browser close)
+	useEffect(() => {
+		const handleBeforeUnload = () => {
+			if (currentPresence?.id) {
+				// Mark as offline when closing tab/browser
+				userPresenceStatusCollection.update(currentPresence.id, (draft) => {
+					draft.status = "offline"
+					draft.updatedAt = new Date()
+				})
+			}
+		}
+
+		window.addEventListener("beforeunload", handleBeforeUnload)
+
+		return () => {
+			window.removeEventListener("beforeunload", handleBeforeUnload)
+		}
+	}, [currentPresence?.id])
 
 	return {
 		status: currentPresence?.status ?? status,
@@ -205,15 +286,20 @@ export function useUserPresence(userId: string) {
 			q
 				.from({ presence: userPresenceStatusCollection })
 				.where(({ presence }) => eq(presence.userId, UserId.make(userId)))
+				.orderBy(({ presence }) => presence.updatedAt, "desc")
 				.limit(1),
 		[userId],
 	)
 
-	const presence = presenceData?.[0]?.presence
+	const presence = presenceData?.[0]
 
 	return {
-		status: presence?.status ?? "offline",
-		isOnline: presence?.status === "online" || presence?.status === "busy",
+		status: presence?.status ?? ("offline" as const),
+		isOnline:
+			presence?.status === "online" ||
+			presence?.status === "busy" ||
+			presence?.status === "dnd" ||
+			presence?.status === "away",
 		activeChannelId: presence?.activeChannelId,
 		customMessage: presence?.customMessage,
 		lastUpdated: presence?.updatedAt,
