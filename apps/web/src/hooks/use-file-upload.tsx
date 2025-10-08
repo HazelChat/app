@@ -4,7 +4,7 @@ import { useCallback, useState } from "react"
 import { toast } from "sonner"
 import { IconNotification } from "~/components/application/notifications/notifications"
 import { uploadAttachment } from "~/db/actions"
-import { useAuth } from "~/providers/auth-provider"
+import { useAuth } from "~/lib/auth"
 
 export interface FileUploadProgress {
 	fileId: string

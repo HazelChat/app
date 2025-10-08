@@ -3,7 +3,7 @@ import { eq, useLiveQuery } from "@tanstack/react-db"
 import { useParams } from "@tanstack/react-router"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { userPresenceStatusCollection } from "~/db/collections"
-import { useAuth } from "~/providers/auth-provider"
+import { useAuth } from "~/lib/auth"
 
 type PresenceStatus = "online" | "away" | "busy" | "dnd" | "offline"
 

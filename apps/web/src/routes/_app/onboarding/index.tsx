@@ -7,7 +7,7 @@ import { Button } from "~/components/base/buttons/button"
 import { FeaturedIcon } from "~/components/foundations/featured-icon/featured-icons"
 import IconMagicWandSparkle from "~/components/icons/icon-magic-wand-sparkle"
 import { organizationCollection, organizationMemberCollection } from "~/db/collections"
-import { useAuth } from "~/providers/auth-provider"
+import { useAuth } from "~/lib/auth"
 
 export const Route = createFileRoute("/_app/onboarding/")({
 	component: OnboardingPage,

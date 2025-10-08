@@ -11,7 +11,7 @@ import { CloseButton } from "~/components/base/buttons/close-button"
 import { Input } from "~/components/base/input/input"
 import IconHashtag from "~/components/icons/icon-hashtag"
 import { channelCollection, channelMemberCollection } from "~/db/collections"
-import { useAuth } from "~/providers/auth-provider"
+import { useAuth } from "~/lib/auth"
 import { Dialog, DialogTrigger, Modal, ModalOverlay } from "./modal"
 
 interface JoinChannelModalProps {

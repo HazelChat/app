@@ -1,6 +1,7 @@
 import { Atom, Result, useAtomSet, useAtomValue } from "@effect-atom/atom-react"
 import { Effect, Exit } from "effect"
 import { HazelApiClient } from "~/lib/services/common/atom-client"
+import { router } from "~/main"
 
 interface LoginOptions {
 	returnTo?: string
@@ -21,22 +22,14 @@ interface LogoutOptions {
  * (i.e., starts with /auth)
  */
 const isPublicRouteAtom = Atom.make((get) => {
-	const checkRoute = () => window.location.pathname.startsWith("/auth")
-
-	// Set up event listeners for route changes
-	const onRouteChange = () => {
-		get.setSelf(checkRoute())
-	}
-
-	window.addEventListener("popstate", onRouteChange)
-	window.addEventListener("pushstate", onRouteChange)
-
-	get.addFinalizer(() => {
-		window.removeEventListener("popstate", onRouteChange)
-		window.removeEventListener("pushstate", onRouteChange)
+	// Subscribe to route changes using TanStack Router
+	const unsubscribe = router.subscribe("onResolved", (event) => {
+		get.setSelf(event.toLocation.pathname.startsWith("/auth"))
 	})
 
-	return checkRoute()
+	get.addFinalizer(unsubscribe)
+
+	return router.state.location.pathname.startsWith("/auth")
 }).pipe(Atom.keepAlive)
 
 /**

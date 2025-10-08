@@ -19,10 +19,10 @@ import IconMagnifier3 from "~/components/icons/icon-magnifier-3"
 import IconMsgs from "~/components/icons/icon-msgs"
 import { organizationMemberCollection, userCollection } from "~/db/collections"
 import { useOrganization } from "~/hooks/use-organization"
+import { useAuth } from "~/lib/auth"
 import { findExistingDmChannel } from "~/lib/channels"
 import { HazelApiClient } from "~/lib/services/common/atom-client"
 import { toastExit } from "~/lib/toast-exit"
-import { useAuth } from "~/providers/auth-provider"
 
 export const Route = createFileRoute("/_app/$orgSlug/")({
 	component: RouteComponent,

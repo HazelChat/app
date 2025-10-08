@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react"
 import { channelCollection, channelMemberCollection } from "~/db/collections"
 import { useNotificationSound } from "~/hooks/use-notification-sound"
 import { useOrganization } from "~/hooks/use-organization"
-import { useAuth } from "~/providers/auth-provider"
+import { useAuth } from "~/lib/auth"
 
 export function NotificationManager() {
 	const { organizationId } = useOrganization()

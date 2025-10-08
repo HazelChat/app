@@ -2,7 +2,7 @@ import { eq, useLiveQuery } from "@tanstack/react-db"
 import { createFileRoute, Navigate } from "@tanstack/react-router"
 import { Loader } from "~/components/loader"
 import { organizationCollection } from "~/db/collections"
-import { useAuth } from "~/providers/auth-provider"
+import { useAuth } from "~/lib/auth"
 
 export const Route = createFileRoute("/_app/")({
 	component: RouteComponent,
@@ -30,6 +30,11 @@ function RouteComponent() {
 
 	if (isLoading || isAuthLoading || !isReady) {
 		return <Loader />
+	}
+
+	// If user is not authenticated, let parent layout handle auth redirect
+	if (!user) {
+		return null
 	}
 
 	if (organizations && organizations.length > 0) {

@@ -13,7 +13,7 @@ import { Loader } from "./components/loader.tsx"
 import { ThemeProvider } from "./components/theme-provider.tsx"
 import reportWebVitals from "./reportWebVitals.ts"
 
-const router = createRouter({
+export const router = createRouter({
 	routeTree,
 	context: {},
 	defaultPreload: "intent",

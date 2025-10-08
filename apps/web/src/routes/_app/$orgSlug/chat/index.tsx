@@ -9,8 +9,8 @@ import IconLock from "~/components/icons/icon-lock"
 import { channelCollection, channelMemberCollection, userCollection } from "~/db/collections"
 import { useOrganization } from "~/hooks/use-organization"
 import { useUserPresence } from "~/hooks/use-presence"
+import { useAuth } from "~/lib/auth"
 import { cn } from "~/lib/utils"
-import { useAuth } from "~/providers/auth-provider"
 
 export const Route = createFileRoute("/_app/$orgSlug/chat/")({
 	component: RouteComponent,
@@ -144,7 +144,11 @@ function RouteComponent() {
 										<h2 className="sr-only">Direct Messages</h2>
 										<div className="space-y-2">
 											{dmChannels.map((channel) => (
-												<DmCard key={channel._id} channel={channel} currentUserId={me?.id} />
+												<DmCard
+													key={channel._id}
+													channel={channel}
+													currentUserId={me?.id}
+												/>
 											))}
 										</div>
 									</div>

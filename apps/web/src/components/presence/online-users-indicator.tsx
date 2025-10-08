@@ -1,4 +1,4 @@
-import { useAuth } from "~/providers/auth-provider"
+import { useAuth } from "~/lib/auth"
 
 /**
  * Simple component to display the number of online users in the current organization

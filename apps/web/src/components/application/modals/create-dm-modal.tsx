@@ -19,9 +19,9 @@ import { BackgroundPattern } from "~/components/shared-assets/background-pattern
 import { organizationMemberCollection, userCollection, userPresenceStatusCollection } from "~/db/collections"
 import { useAppForm } from "~/hooks/use-app-form"
 import { useOrganization } from "~/hooks/use-organization"
+import { useAuth } from "~/lib/auth"
 import { HazelApiClient } from "~/lib/services/common/atom-client"
 import { toastExit } from "~/lib/toast-exit"
-import { useAuth } from "~/providers/auth-provider"
 import { cx } from "~/utils/cx"
 
 const dmFormSchema = type({
@@ -53,7 +53,9 @@ export const CreateDmModal = ({ isOpen, onOpenChange }: CreateDmModalProps) => {
 			q
 				.from({ member: organizationMemberCollection })
 				.innerJoin({ user: userCollection }, ({ member, user }) => eq(member.userId, user.id))
-				.leftJoin({ presence: userPresenceStatusCollection }, ({ user, presence }) => eq(user.id, presence.userId))
+				.leftJoin({ presence: userPresenceStatusCollection }, ({ user, presence }) =>
+					eq(user.id, presence.userId),
+				)
 				.where(({ member }) => eq(member.organizationId, organizationId))
 				.select(({ user, presence }) => ({
 					...user,
@@ -281,7 +283,7 @@ export const CreateDmModal = ({ isOpen, onOpenChange }: CreateDmModalProps) => {
 															</span>
 														)}
 														{user?.presence?.customMessage && (
-															<span className="text-tertiary text-xs truncate">
+															<span className="truncate text-tertiary text-xs">
 																{user.presence.customMessage}
 															</span>
 														)}

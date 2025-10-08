@@ -6,7 +6,7 @@ import { AvatarLabelGroup } from "~/components/base/avatar/avatar-label-group"
 import { Dropdown } from "~/components/base/dropdown/dropdown"
 import { useOrganization } from "~/hooks/use-organization"
 import { usePresence } from "~/hooks/use-presence"
-import { useAuth } from "~/providers/auth-provider"
+import { useAuth } from "~/lib/auth"
 import { cx } from "~/utils/cx"
 
 export const NavUser = () => {

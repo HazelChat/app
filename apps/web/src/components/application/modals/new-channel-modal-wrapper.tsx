@@ -9,9 +9,9 @@ import { Select } from "~/components/base/select/select"
 import IconHashtag from "~/components/icons/icon-hashtag"
 import { useAppForm } from "~/hooks/use-app-form"
 import { useOrganization } from "~/hooks/use-organization"
+import { useAuth } from "~/lib/auth"
 import { HazelApiClient } from "~/lib/services/common/atom-client"
 import { toastExit } from "~/lib/toast-exit"
-import { useAuth } from "~/providers/auth-provider"
 
 const channelSchema = type({
 	name: "string > 2",

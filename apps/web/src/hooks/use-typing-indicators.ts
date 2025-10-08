@@ -3,7 +3,7 @@ import type { ChannelId } from "@hazel/db/schema"
 import { eq, useLiveQuery } from "@tanstack/react-db"
 import { useEffect, useMemo, useState } from "react"
 import { channelMemberCollection, typingIndicatorCollection, userCollection } from "~/db/collections"
-import { useAuth } from "~/providers/auth-provider"
+import { useAuth } from "~/lib/auth"
 
 type TypingUser = {
 	user: typeof User.Model.Type

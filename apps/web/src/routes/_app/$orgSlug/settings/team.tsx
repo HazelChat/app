@@ -24,10 +24,10 @@ import IconPlus from "~/components/icons/icon-plus"
 import IconTrash from "~/components/icons/icon-trash"
 import { organizationMemberCollection, userCollection, userPresenceStatusCollection } from "~/db/collections"
 import { useOrganization } from "~/hooks/use-organization"
+import { useAuth } from "~/lib/auth"
 import { findExistingDmChannel } from "~/lib/channels"
 import { HazelApiClient } from "~/lib/services/common/atom-client"
 import { toastExit } from "~/lib/toast-exit"
-import { useAuth } from "~/providers/auth-provider"
 
 export const Route = createFileRoute("/_app/$orgSlug/settings/team")({
 	component: RouteComponent,
@@ -60,7 +60,9 @@ function RouteComponent() {
 				.from({ members: organizationMemberCollection })
 				.where(({ members }) => eq(members.organizationId, organizationId))
 				.innerJoin({ user: userCollection }, ({ members, user }) => eq(members.userId, user.id))
-				.leftJoin({ presence: userPresenceStatusCollection }, ({ user, presence }) => eq(user.id, presence.userId))
+				.leftJoin({ presence: userPresenceStatusCollection }, ({ user, presence }) =>
+					eq(user.id, presence.userId),
+				)
 				.select(({ members, user, presence }) => ({ ...members, user, presence })),
 		[organizationId],
 	)
@@ -216,19 +218,23 @@ function RouteComponent() {
 									<BadgeWithDot
 										className="rounded-full"
 										color={
-											member.presence?.status === "online" ? "success" :
-											member.presence?.status === "away" ? "warning" :
-											member.presence?.status === "busy" ? "warning" :
-											member.presence?.status === "dnd" ? "error" :
-											"gray"
+											member.presence?.status === "online"
+												? "success"
+												: member.presence?.status === "away"
+													? "warning"
+													: member.presence?.status === "busy"
+														? "warning"
+														: member.presence?.status === "dnd"
+															? "error"
+															: "gray"
 										}
 										size="sm"
 										type="modern"
 									>
-										{member.presence?.status ?
-											member.presence.status.charAt(0).toUpperCase() + member.presence.status.slice(1) :
-											"Offline"
-										}
+										{member.presence?.status
+											? member.presence.status.charAt(0).toUpperCase() +
+												member.presence.status.slice(1)
+											: "Offline"}
 									</BadgeWithDot>
 								</Table.Cell>
 								<Table.Cell>

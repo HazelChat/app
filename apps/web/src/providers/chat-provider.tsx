@@ -27,7 +27,7 @@ import {
 	pinnedMessageCollection,
 } from "~/db/collections"
 import { useNotificationSound } from "~/hooks/use-notification-sound"
-import { useAuth } from "~/providers/auth-provider"
+import { useAuth } from "~/lib/auth"
 
 type MessageWithPinned = typeof Message.Model.Type & {
 	pinnedMessage: typeof PinnedMessage.Model.Type | null | undefined

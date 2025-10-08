@@ -1,7 +1,7 @@
 import { and, eq, useLiveQuery } from "@tanstack/react-db"
 import { channelCollection, channelMemberCollection } from "~/db/collections"
 import { useOrganization } from "~/hooks/use-organization"
-import { useAuth } from "~/providers/auth-provider"
+import { useAuth } from "~/lib/auth"
 import { ChannelItem, DmChannelLink } from "./app-sidebar/channel-item"
 import { SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu } from "./ui/sidebar"
 

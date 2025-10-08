@@ -22,10 +22,10 @@ import {
 	userPresenceStatusCollection,
 } from "~/db/collections"
 import { useOrganization } from "~/hooks/use-organization"
+import { useAuth } from "~/lib/auth"
 import { findExistingDmChannel } from "~/lib/channels"
 import { HazelApiClient } from "~/lib/services/common/atom-client"
 import { toastExit } from "~/lib/toast-exit"
-import { useAuth } from "~/providers/auth-provider"
 import { Avatar } from "./base/avatar/avatar"
 
 import IconBell from "./icons/icon-bell"
@@ -256,7 +256,9 @@ function MembersView({ onClose }: { onClose: () => void }) {
 				? q
 						.from({ member: organizationMemberCollection })
 						.innerJoin({ user: userCollection }, ({ member, user }) => eq(member.userId, user.id))
-						.leftJoin({ presence: userPresenceStatusCollection }, ({ user, presence }) => eq(user.id, presence.userId))
+						.leftJoin({ presence: userPresenceStatusCollection }, ({ user, presence }) =>
+							eq(user.id, presence.userId),
+						)
 						.where((q) => eq(q.member.organizationId, organizationId))
 						.orderBy(({ user }) => user.firstName, "asc")
 						.select(({ member, user, presence }) => ({ member, user, presence }))
@@ -272,7 +274,11 @@ function MembersView({ onClose }: { onClose: () => void }) {
 		<CommandMenuSection>
 			{filteredMembers.map(({ user, presence }) => {
 				const fullName = `${user.firstName} ${user.lastName}`
-				const isOnline = presence?.status === "online" || presence?.status === "away" || presence?.status === "busy" || presence?.status === "dnd"
+				const isOnline =
+					presence?.status === "online" ||
+					presence?.status === "away" ||
+					presence?.status === "busy" ||
+					presence?.status === "dnd"
 				return (
 					<CommandMenuItem
 						key={user.id}
@@ -321,10 +327,18 @@ function MembersView({ onClose }: { onClose: () => void }) {
 							}
 						}}
 					>
-						<Avatar size="xs" className="mr-1" src={user.avatarUrl} alt={fullName} status={isOnline ? "online" : "offline"} />
+						<Avatar
+							size="xs"
+							className="mr-1"
+							src={user.avatarUrl}
+							alt={fullName}
+							status={isOnline ? "online" : "offline"}
+						/>
 						<CommandMenuLabel>{fullName}</CommandMenuLabel>
 						{presence?.customMessage && (
-							<span className="ml-auto text-tertiary text-xs truncate">{presence.customMessage}</span>
+							<span className="ml-auto truncate text-tertiary text-xs">
+								{presence.customMessage}
+							</span>
 						)}
 					</CommandMenuItem>
 				)

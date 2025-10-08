@@ -1,7 +1,7 @@
 import { createFileRoute, Navigate } from "@tanstack/react-router"
 import { useEffect, useState } from "react"
 import { Button } from "~/components/base/buttons/button"
-import { useAuth } from "../../providers/auth-provider"
+import { useAuth } from "../../lib/auth"
 
 export const Route = createFileRoute("/auth/login")({
 	component: LoginPage,

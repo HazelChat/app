@@ -12,7 +12,7 @@ import { TextArea } from "~/components/base/textarea/textarea"
 import { Tooltip } from "~/components/base/tooltip/tooltip"
 import IconEdit from "~/components/icons/icon-edit"
 import { userCollection, userPresenceStatusCollection } from "~/db/collections"
-import { useAuth } from "~/providers/auth-provider"
+import { useAuth } from "~/lib/auth"
 import { IconNotification } from "../application/notifications/notifications"
 import IconDots from "../icons/icon-dots"
 import IconPhone from "../icons/icon-phone"
@@ -27,9 +27,11 @@ export function UserProfilePopover({ userId }: UserProfilePopoverProps) {
 	const { data } = useLiveQuery((q) =>
 		q
 			.from({ user: userCollection })
-			.leftJoin({ presence: userPresenceStatusCollection }, ({ user, presence }) => eq(user.id, presence.userId))
+			.leftJoin({ presence: userPresenceStatusCollection }, ({ user, presence }) =>
+				eq(user.id, presence.userId),
+			)
 			.where((q) => eq(q.user.id, userId))
-			.select(({ user, presence }) => ({ user, presence }))
+			.select(({ user, presence }) => ({ user, presence })),
 	)
 	const result = data[0]
 	const user = result?.user
@@ -192,7 +194,7 @@ export function UserProfilePopover({ userId }: UserProfilePopoverProps) {
 										<span className="font-semibold">{user ? fullName : "Unknown"}</span>
 										<span className="text-secondary text-xs">{user?.email}</span>
 										{presence?.status && (
-											<span className="mt-1 text-xs text-tertiary">
+											<span className="mt-1 text-tertiary text-xs">
 												{presence.status === "online" && "🟢 Online"}
 												{presence.status === "away" && "🟡 Away"}
 												{presence.status === "busy" && "🟠 Busy"}
@@ -201,7 +203,7 @@ export function UserProfilePopover({ userId }: UserProfilePopoverProps) {
 											</span>
 										)}
 										{presence?.customMessage && (
-											<span className="mt-1 text-xs text-tertiary italic">
+											<span className="mt-1 text-tertiary text-xs italic">
 												"{presence.customMessage}"
 											</span>
 										)}

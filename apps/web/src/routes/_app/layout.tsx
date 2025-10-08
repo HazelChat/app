@@ -1,6 +1,7 @@
 import { createFileRoute, Navigate, Outlet } from "@tanstack/react-router"
+import { Loader } from "~/components/loader"
 import { organizationCollection, organizationMemberCollection } from "~/db/collections"
-import { useAuth } from "~/providers/auth-provider"
+import { useAuth } from "~/lib/auth"
 
 export const Route = createFileRoute("/_app")({
 	component: RouteComponent,
@@ -24,7 +25,7 @@ function RouteComponent() {
 					}}
 				/>
 			)}
-			<Outlet />
+			{isLoading ? <Loader /> : <Outlet />}
 		</>
 	)
 }

@@ -11,7 +11,7 @@ import { Label } from "~/components/base/input/label"
 import IconEnvelope from "~/components/icons/icon-envelope"
 import { userCollection } from "~/db/collections"
 import { useAppForm } from "~/hooks/use-app-form"
-import { useAuth } from "~/providers/auth-provider"
+import { useAuth } from "~/lib/auth"
 
 export const Route = createFileRoute("/_app/$orgSlug/settings/profile")({
 	component: ProfileSettings,
