@@ -1,5 +1,5 @@
 {
-	"$schema": "https://biomejs.dev/schemas/2.2.3/schema.json",
+	"$schema": "https://biomejs.dev/schemas/2.2.5/schema.json",
 	"assist": {
 		"actions": {
 			"source": {
@@ -8,7 +8,14 @@
 		}
 	},
 	"files": {
-		"includes": ["**/*.{ts,tsx}"]
+		"includes": [
+			"**/*.{ts,tsx}"
+		],
+		"experimentalScannerIgnores": [
+			".context",
+			"node_modules",
+			".turbo"
+		]
 	},
 	"linter": {
 		"enabled": true,

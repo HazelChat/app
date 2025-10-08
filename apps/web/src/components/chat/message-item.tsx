@@ -111,14 +111,14 @@ export function MessageItem({
 			<div
 				id={`message-${message.id}`}
 				className={cx(
-					`group relative flex flex-col rounded-lg py-1 transition-all duration-200 md:px-4 md:py-2 md:hover:bg-secondary`,
+					`group relative flex flex-col rounded-lg px-0.5 py-1 transition-colors duration-200 hover:bg-secondary`,
 					isGroupStart ? "mt-2" : "",
 					isGroupEnd ? "mb-2" : "",
 					isFirstNewMessage
-						? "border-emerald-500 border-l-2 bg-emerald-500/20 hover:bg-emerald-500/15"
+						? "rounded-l-none border-emerald-500 border-l-2 bg-emerald-500/20 hover:bg-emerald-500/15"
 						: "",
 					isPinned
-						? "border-amber-500 border-l-4 bg-amber-500/15 shadow-sm hover:bg-amber-500/20"
+						? "rounded-l-none border-amber-500 border-l-4 bg-amber-500/15 pl-2 shadow-sm hover:bg-amber-500/20"
 						: "",
 				)}
 				data-id={message.id}

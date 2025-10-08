@@ -5,6 +5,7 @@ import { Avatar } from "~/components/base/avatar/avatar"
 import { AvatarLabelGroup } from "~/components/base/avatar/avatar-label-group"
 import { Dropdown } from "~/components/base/dropdown/dropdown"
 import { useOrganization } from "~/hooks/use-organization"
+import { usePresence } from "~/hooks/use-presence"
 import { useAuth } from "~/providers/auth-provider"
 import { cx } from "~/utils/cx"
 
@@ -12,6 +13,7 @@ export const NavUser = () => {
 	const { user, logout } = useAuth()
 	const navigate = useNavigate()
 	const { slug: orgSlug } = useOrganization()
+	const { status } = usePresence()
 
 	return (
 		<Dropdown.Root>
@@ -31,7 +33,7 @@ export const NavUser = () => {
 					<AvatarLabelGroup
 						size="md"
 						src={user?.avatarUrl}
-						status="online"
+						status={status === "offline" ? "offline" : "online"}
 						title={`${user?.firstName} ${user?.lastName}`}
 						subtitle={user?.email}
 					/>

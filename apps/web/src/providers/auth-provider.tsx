@@ -1,4 +1,4 @@
-import { useAtomSet, useAtomValue } from "@effect-atom/atom-react"
+import { Atom, useAtomSet, useAtomValue } from "@effect-atom/atom-react"
 import type { CurrentUser } from "@hazel/db/schema"
 import { Exit } from "effect"
 import type { ReactNode } from "react"

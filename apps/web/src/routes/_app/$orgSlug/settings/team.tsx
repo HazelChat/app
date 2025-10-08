@@ -22,7 +22,7 @@ import IconCircleDottedUser from "~/components/icons/icon-circle-dotted-user"
 import IconMessage from "~/components/icons/icon-msgs"
 import IconPlus from "~/components/icons/icon-plus"
 import IconTrash from "~/components/icons/icon-trash"
-import { organizationMemberCollection, userCollection } from "~/db/collections"
+import { organizationMemberCollection, userCollection, userPresenceStatusCollection } from "~/db/collections"
 import { useOrganization } from "~/hooks/use-organization"
 import { findExistingDmChannel } from "~/lib/channels"
 import { HazelApiClient } from "~/lib/services/common/atom-client"
@@ -60,7 +60,8 @@ function RouteComponent() {
 				.from({ members: organizationMemberCollection })
 				.where(({ members }) => eq(members.organizationId, organizationId))
 				.innerJoin({ user: userCollection }, ({ members, user }) => eq(members.userId, user.id))
-				.select(({ members, user }) => ({ ...members, user })),
+				.leftJoin({ presence: userPresenceStatusCollection }, ({ user, presence }) => eq(user.id, presence.userId))
+				.select(({ members, user, presence }) => ({ ...members, user, presence })),
 		[organizationId],
 	)
 
@@ -214,12 +215,20 @@ function RouteComponent() {
 								<Table.Cell>
 									<BadgeWithDot
 										className="rounded-full"
-										// biome-ignore lint/correctness/noConstantCondition: <explanation>
-										color={true ? "success" : true ? "gray" : "gray"}
+										color={
+											member.presence?.status === "online" ? "success" :
+											member.presence?.status === "away" ? "warning" :
+											member.presence?.status === "busy" ? "warning" :
+											member.presence?.status === "dnd" ? "error" :
+											"gray"
+										}
 										size="sm"
 										type="modern"
 									>
-										Online
+										{member.presence?.status ?
+											member.presence.status.charAt(0).toUpperCase() + member.presence.status.slice(1) :
+											"Offline"
+										}
 									</BadgeWithDot>
 								</Table.Cell>
 								<Table.Cell>

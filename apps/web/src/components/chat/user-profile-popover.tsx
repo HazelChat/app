@@ -11,7 +11,7 @@ import { Popover } from "~/components/base/select/popover"
 import { TextArea } from "~/components/base/textarea/textarea"
 import { Tooltip } from "~/components/base/tooltip/tooltip"
 import IconEdit from "~/components/icons/icon-edit"
-import { userCollection } from "~/db/collections"
+import { userCollection, userPresenceStatusCollection } from "~/db/collections"
 import { useAuth } from "~/providers/auth-provider"
 import { IconNotification } from "../application/notifications/notifications"
 import IconDots from "../icons/icon-dots"
@@ -24,8 +24,16 @@ interface UserProfilePopoverProps {
 
 export function UserProfilePopover({ userId }: UserProfilePopoverProps) {
 	const { user: currentUser } = useAuth()
-	const { data } = useLiveQuery((q) => q.from({ user: userCollection }).where((q) => eq(q.user.id, userId)))
-	const user = data[0]
+	const { data } = useLiveQuery((q) =>
+		q
+			.from({ user: userCollection })
+			.leftJoin({ presence: userPresenceStatusCollection }, ({ user, presence }) => eq(user.id, presence.userId))
+			.where((q) => eq(q.user.id, userId))
+			.select(({ user, presence }) => ({ user, presence }))
+	)
+	const result = data[0]
+	const user = result?.user
+	const presence = result?.presence
 
 	// Internal state for user interactions
 	const [isFavorite, setIsFavorite] = useState(false)
@@ -171,10 +179,32 @@ export function UserProfilePopover({ userId }: UserProfilePopoverProps) {
 										className="inset-ring inset-ring-tertiary ring-6 ring-bg-primary"
 										alt={fullName}
 										src={user.avatarUrl}
+										status={
+											presence?.status === "online" ||
+											presence?.status === "away" ||
+											presence?.status === "busy" ||
+											presence?.status === "dnd"
+												? "online"
+												: "offline"
+										}
 									/>
 									<div className="mt-3 flex flex-col">
 										<span className="font-semibold">{user ? fullName : "Unknown"}</span>
 										<span className="text-secondary text-xs">{user?.email}</span>
+										{presence?.status && (
+											<span className="mt-1 text-xs text-tertiary">
+												{presence.status === "online" && "🟢 Online"}
+												{presence.status === "away" && "🟡 Away"}
+												{presence.status === "busy" && "🟠 Busy"}
+												{presence.status === "dnd" && "🔴 Do not disturb"}
+												{presence.status === "offline" && "⚪ Offline"}
+											</span>
+										)}
+										{presence?.customMessage && (
+											<span className="mt-1 text-xs text-tertiary italic">
+												"{presence.customMessage}"
+											</span>
+										)}
 									</div>
 								</div>
 								<div className="mt-4 flex flex-col gap-y-4">

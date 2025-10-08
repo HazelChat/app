@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.base.json",
+  "references": [
+    {
+      "path": "packages/atom"
+    },
+    {
+      "path": "packages/atom-react"
+    },
+    {
+      "path": "packages/atom-vue"
+    }
+  ]
+}

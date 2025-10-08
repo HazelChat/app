@@ -25,6 +25,7 @@ import { OrganizationPolicy } from "./policies/organization-policy"
 import { PinnedMessagePolicy } from "./policies/pinned-message-policy"
 import { TypingIndicatorPolicy } from "./policies/typing-indicator-policy"
 import { UserPolicy } from "./policies/user-policy"
+import { UserPresenceStatusPolicy } from "./policies/user-presence-status-policy"
 import { AttachmentRepo } from "./repositories/attachment-repo"
 import { ChannelMemberRepo } from "./repositories/channel-member-repo"
 import { ChannelRepo } from "./repositories/channel-repo"
@@ -38,6 +39,7 @@ import { OrganizationRepo } from "./repositories/organization-repo"
 import { PinnedMessageRepo } from "./repositories/pinned-message-repo"
 import { TypingIndicatorRepo } from "./repositories/typing-indicator-repo"
 import { UserRepo } from "./repositories/user-repo"
+import { UserPresenceStatusRepo } from "./repositories/user-presence-status-repo"
 import { AuthorizationLive } from "./services/auth"
 import { DatabaseLive } from "./services/database"
 import { MockDataGenerator } from "./services/mock-data-generator"
@@ -87,6 +89,7 @@ const RepoLive = Layer.mergeAll(
 	TypingIndicatorRepo.Default,
 	MessageReactionRepo.Default,
 	DirectMessageParticipantRepo.Default,
+	UserPresenceStatusRepo.Default,
 )
 
 const PolicyLive = Layer.mergeAll(
@@ -104,6 +107,7 @@ const PolicyLive = Layer.mergeAll(
 	PinnedMessagePolicy.Default,
 	TypingIndicatorPolicy.Default,
 	NotificationPolicy.Default,
+	UserPresenceStatusPolicy.Default,
 )
 
 const MainLive = Layer.mergeAll(

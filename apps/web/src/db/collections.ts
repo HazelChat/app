@@ -12,6 +12,7 @@ import {
 	PinnedMessage,
 	TypingIndicator,
 	User,
+	UserPresenceStatus,
 } from "@hazel/db/models"
 import { effectElectricCollectionOptions } from "@hazel/effect-electric-db-collection"
 import { createCollection } from "@tanstack/react-db"
@@ -717,3 +718,51 @@ export const typingIndicatorCollection = createCollection(
 			}),
 	}),
 )
+
+
+export const userPresenceStatusCollection = createCollection(
+	effectElectricCollectionOptions({
+		id: "user_presence_status",
+		runtime: runtime,
+		shapeOptions: {
+			url: electricUrl,
+			params: {
+				table: "user_presence_status",
+			},
+			parser: {
+				timestamptz: (date) => new Date(date),
+			},
+		},
+		schema: Schema.standardSchemaV1(UserPresenceStatus.Model.json),
+		getKey: (item) => item.id,
+		onInsert: ({ transaction }) =>
+			Effect.gen(function* () {
+				const { modified: newUserPresenceStatus } = transaction.mutations[0]
+				const client = yield* ApiClient
+
+				const results = yield* client.presence.updateStatus({
+					payload: {
+						status: newUserPresenceStatus.status,
+						customMessage: newUserPresenceStatus.customMessage,
+					},
+				})
+
+				return { txid: results.transactionId }
+			}),
+		onUpdate: ({ transaction }) =>
+			Effect.gen(function* () {
+				const { modified: newUserPresenceStatus } = transaction.mutations[0]
+				const client = yield* ApiClient
+
+				const results = yield* client.presence.updateStatus({
+					payload: {
+						status: newUserPresenceStatus.status,
+						customMessage: newUserPresenceStatus.customMessage,
+					},
+				})
+
+				return { txid: results.transactionId }
+			}),
+	}),
+)
+

@@ -16,7 +16,7 @@ import { Input } from "~/components/base/input/input"
 import { FeaturedIcon } from "~/components/foundations/featured-icon/featured-icons"
 import IconCheck from "~/components/icons/icon-check"
 import { BackgroundPattern } from "~/components/shared-assets/background-patterns"
-import { organizationMemberCollection, userCollection } from "~/db/collections"
+import { organizationMemberCollection, userCollection, userPresenceStatusCollection } from "~/db/collections"
 import { useAppForm } from "~/hooks/use-app-form"
 import { useOrganization } from "~/hooks/use-organization"
 import { HazelApiClient } from "~/lib/services/common/atom-client"
@@ -46,10 +46,6 @@ export const CreateDmModal = ({ isOpen, onOpenChange }: CreateDmModalProps) => {
 		mode: "promiseExit",
 	})
 
-	// TODO: Implement
-	const { isUserOnline } = {
-		isUserOnline: (..._args: any[]) => true,
-	}
 	const { user } = useAuth()
 
 	const { data: organizationUsers } = useLiveQuery(
@@ -57,9 +53,11 @@ export const CreateDmModal = ({ isOpen, onOpenChange }: CreateDmModalProps) => {
 			q
 				.from({ member: organizationMemberCollection })
 				.innerJoin({ user: userCollection }, ({ member, user }) => eq(member.userId, user.id))
+				.leftJoin({ presence: userPresenceStatusCollection }, ({ user, presence }) => eq(user.id, presence.userId))
 				.where(({ member }) => eq(member.organizationId, organizationId))
-				.select(({ user }) => ({
+				.select(({ user, presence }) => ({
 					...user,
+					presence,
 				})),
 		[organizationId],
 	)
@@ -265,7 +263,10 @@ export const CreateDmModal = ({ isOpen, onOpenChange }: CreateDmModalProps) => {
 														initials={`${user?.firstName?.charAt(0) || ""}${user?.lastName?.charAt(0) || ""}`}
 														alt={`${user?.firstName || ""} ${user?.lastName || ""}`}
 														status={
-															isUserOnline(user?.id || "")
+															user?.presence?.status === "online" ||
+															user?.presence?.status === "away" ||
+															user?.presence?.status === "busy" ||
+															user?.presence?.status === "dnd"
 																? "online"
 																: "offline"
 														}
@@ -274,9 +275,14 @@ export const CreateDmModal = ({ isOpen, onOpenChange }: CreateDmModalProps) => {
 														<p className="font-medium text-primary text-sm">
 															{user?.firstName || ""} {user?.lastName || ""}
 														</p>
-														{isUserOnline(user?.id || "") && (
+														{user?.presence?.status === "online" && (
 															<span className="text-success text-xs">
 																Active now
+															</span>
+														)}
+														{user?.presence?.customMessage && (
+															<span className="text-tertiary text-xs truncate">
+																{user.presence.customMessage}
 															</span>
 														)}
 													</div>
