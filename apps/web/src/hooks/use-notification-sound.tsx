@@ -1,4 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from "react"
+import { BrowserKeyValueStore } from "@effect/platform-browser"
+import { Atom, useAtomSet, useAtomValue } from "@effect-atom/atom-react"
+import { Schema } from "effect"
+import { useCallback, useEffect, useRef } from "react"
 
 interface NotificationSoundSettings {
 	enabled: boolean
@@ -7,29 +10,38 @@ interface NotificationSoundSettings {
 	cooldownMs: number
 }
 
-const DEFAULT_SETTINGS: NotificationSoundSettings = {
-	enabled: true,
-	volume: 0.5,
-	soundFile: "notification01",
-	cooldownMs: 2000, // Prevent sound spam - min 2 seconds between sounds
-}
+// Schema for notification settings validation
+const NotificationSoundSettingsSchema = Schema.Struct({
+	enabled: Schema.Boolean,
+	volume: Schema.Number,
+	soundFile: Schema.Literal("notification01", "notification02"),
+	cooldownMs: Schema.Number,
+})
 
-const STORAGE_KEY = "notification-sound-settings"
+// localStorage runtime for settings persistence
+const localStorageRuntime = Atom.runtime(BrowserKeyValueStore.layerLocalStorage)
+
+// Notification settings atom with automatic localStorage persistence
+const notificationSettingsAtom = Atom.kvs({
+	runtime: localStorageRuntime,
+	key: "notification-sound-settings",
+	schema: Schema.NullOr(NotificationSoundSettingsSchema),
+	defaultValue: () => ({
+		enabled: true,
+		volume: 0.5,
+		soundFile: "notification01" as const,
+		cooldownMs: 2000,
+	}),
+})
 
 export function useNotificationSound() {
-	const [settings, setSettings] = useState<NotificationSoundSettings>(() => {
-		if (typeof window === "undefined") return DEFAULT_SETTINGS
-
-		const stored = localStorage.getItem(STORAGE_KEY)
-		if (stored) {
-			try {
-				return { ...DEFAULT_SETTINGS, ...JSON.parse(stored) }
-			} catch {
-				return DEFAULT_SETTINGS
-			}
-		}
-		return DEFAULT_SETTINGS
-	})
+	const settings = useAtomValue(notificationSettingsAtom) || {
+		enabled: true,
+		volume: 0.5,
+		soundFile: "notification01" as const,
+		cooldownMs: 2000,
+	}
+	const setSettings = useAtomSet(notificationSettingsAtom)
 
 	const audioRef = useRef<HTMLAudioElement | null>(null)
 	const lastPlayedRef = useRef<number>(0)
@@ -67,12 +79,6 @@ export function useNotificationSound() {
 		}
 	}, [settings.volume])
 
-	// Save settings to localStorage
-	useEffect(() => {
-		if (typeof window === "undefined") return
-		localStorage.setItem(STORAGE_KEY, JSON.stringify(settings))
-	}, [settings])
-
 	const playSound = useCallback(async () => {
 		if (!settings.enabled || !audioRef.current) return
 
@@ -100,9 +106,20 @@ export function useNotificationSound() {
 		}
 	}, [settings.enabled, settings.cooldownMs])
 
-	const updateSettings = useCallback((updates: Partial<NotificationSoundSettings>) => {
-		setSettings((prev) => ({ ...prev, ...updates }))
-	}, [])
+	const updateSettings = useCallback(
+		(updates: Partial<NotificationSoundSettings>) => {
+			setSettings((prev) => ({
+				...(prev || {
+					enabled: true,
+					volume: 0.5,
+					soundFile: "notification01" as const,
+					cooldownMs: 2000,
+				}),
+				...updates,
+			}))
+		},
+		[setSettings],
+	)
 
 	const testSound = useCallback(async () => {
 		if (!audioRef.current) return

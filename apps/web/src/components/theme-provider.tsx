@@ -1,4 +1,7 @@
-import { createContext, useContext, useEffect, useState } from "react"
+import { BrowserKeyValueStore } from "@effect/platform-browser"
+import { Atom, useAtomSet, useAtomValue } from "@effect-atom/atom-react"
+import { Schema } from "effect"
+import { useEffect } from "react"
 
 export type Theme = "dark" | "light" | "system"
 
@@ -8,62 +11,52 @@ type ThemeProviderProps = {
 	storageKey?: string
 }
 
-type ThemeProviderState = {
-	theme: Theme
-	setTheme: (theme: Theme) => void
-}
+// Schema for theme validation
+const ThemeSchema = Schema.Literal("dark", "light", "system")
 
-const initialState: ThemeProviderState = {
-	theme: "system",
-	setTheme: () => null,
-}
+// localStorage runtime for theme persistence
+const localStorageRuntime = Atom.runtime(BrowserKeyValueStore.layerLocalStorage)
 
-const ThemeProviderContext = createContext<ThemeProviderState>(initialState)
+// Theme atom with automatic localStorage persistence
+export const themeAtom = Atom.kvs({
+	runtime: localStorageRuntime,
+	key: "hazel-ui-theme",
+	schema: Schema.NullOr(ThemeSchema),
+	defaultValue: () => "system" as const,
+})
 
-export function ThemeProvider({
-	children,
-	defaultTheme = "system",
-	storageKey = "hazel-ui-theme",
-	...props
-}: ThemeProviderProps) {
-	const [theme, setTheme] = useState<Theme>(
-		() => (localStorage.getItem(storageKey) as Theme) || defaultTheme,
-	)
+// Derived atom that resolves "system" to actual theme
+export const resolvedThemeAtom = Atom.make((get) => {
+	const theme = get(themeAtom)
+	if (theme === "system") {
+		// Check system preference
+		if (typeof window !== "undefined") {
+			return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
+		}
+		return "light"
+	}
+	return theme || "system"
+})
+
+export function ThemeProvider({ children }: ThemeProviderProps) {
+	const resolvedTheme = useAtomValue(resolvedThemeAtom)
 
 	useEffect(() => {
 		const root = window.document.documentElement
 
 		root.classList.remove("light", "dark")
+		root.classList.add(resolvedTheme)
+	}, [resolvedTheme])
 
-		if (theme === "system") {
-			const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
-
-			root.classList.add(systemTheme)
-			return
-		}
-
-		root.classList.add(theme)
-	}, [theme])
-
-	const value = {
-		theme,
-		setTheme: (theme: Theme) => {
-			localStorage.setItem(storageKey, theme)
-			setTheme(theme)
-		},
-	}
-
-	return (
-		<ThemeProviderContext.Provider {...props} value={value}>
-			{children}
-		</ThemeProviderContext.Provider>
-	)
+	return <>{children}</>
 }
 
 export const useTheme = () => {
-	const context = useContext(ThemeProviderContext)
+	const theme = useAtomValue(themeAtom)
+	const setTheme = useAtomSet(themeAtom)
 
-	if (context === undefined) throw new Error("useTheme must be used within a ThemeProvider")
-
-	return context
+	return {
+		theme: theme || "system",
+		setTheme,
+	}
 }

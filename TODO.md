@@ -8,6 +8,8 @@
 - Setup Organization should display better errors 
 - Migrate the missing icons to nucleo
 
+- New Version checker not working
+
 
 ### Core Features
 - [ ] **File Upload**
