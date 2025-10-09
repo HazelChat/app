@@ -1,0 +1,45 @@
+import { Result, useAtomValue } from "@effect-atom/atom-react"
+import { useEffect, useRef } from "react"
+import { toast } from "sonner"
+import { versionCheckAtom } from "~/atoms/version-atom"
+
+/**
+ * Component that monitors for new app versions and displays a toast notification
+ * when an update is available, prompting the user to reload the page.
+ *
+ * Features:
+ * - Polls for new versions every 1 minutes
+ * - Shows toast only once per session
+ * - Provides "Reload" action button in toast
+ * - Gracefully handles errors (fails silently)
+ */
+export const VersionCheck = () => {
+	// Subscribe to version check atom
+	const versionStateResult = useAtomValue(versionCheckAtom)
+	const versionState = Result.getOrElse(versionStateResult, () => null)
+
+	const toastShownRef = useRef(false)
+
+	useEffect(() => {
+		if (versionState?.shouldShowToast && !toastShownRef.current) {
+			toastShownRef.current = true
+
+			toast("A new version is available", {
+				description: "Reload the page to get the latest updates",
+				duration: Number.POSITIVE_INFINITY,
+				action: {
+					label: "Reload",
+					onClick: () => {
+						window.location.reload()
+					},
+				},
+				cancel: {
+					label: "Dismiss",
+					onClick: () => {},
+				},
+			})
+		}
+	}, [versionState])
+
+	return null
+}

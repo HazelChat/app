@@ -16,6 +16,7 @@
 		"@cloudflare/realtimekit-react-ui": "^1.0.5",
 		"@effect-atom/atom-react": "^0.3.0",
 		"@effect/platform": "^0.92.1",
+		"@effect/platform-browser": "^0.72.0",
 		"@effect/rpc": "^0.71.0",
 		"@fontsource/inter": "^5.2.8",
 		"@hazel/backend": "workspace:*",

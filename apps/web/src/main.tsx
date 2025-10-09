@@ -11,6 +11,7 @@ import "./styles/styles.css"
 import { Toaster } from "./components/application/notifications/toaster.tsx"
 import { Loader } from "./components/loader.tsx"
 import { ThemeProvider } from "./components/theme-provider.tsx"
+import { VersionCheck } from "./components/version-check.tsx"
 import reportWebVitals from "./reportWebVitals.ts"
 
 export const router = createRouter({
@@ -24,6 +25,7 @@ export const router = createRouter({
 	Wrap: ({ children }) => (
 		<ThemeProvider>
 			<Toaster />
+			<VersionCheck />
 			{children}
 		</ThemeProvider>
 	),
