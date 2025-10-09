@@ -38,10 +38,7 @@ export class UserPresenceStatusRepo extends Effect.Service<UserPresenceStatusRep
 					.pipe(Effect.map((results) => Option.fromNullable(results[0])))
 
 			// Upsert user presence status
-			const upsertByUserId = (
-				data: Schema.Schema.Type<typeof UserPresenceStatus.Insert>,
-				tx?: TxFn,
-			) =>
+			const upsertByUserId = (data: Schema.Schema.Type<typeof UserPresenceStatus.Insert>, tx?: TxFn) =>
 				db
 					.makeQuery(
 						(execute, input: typeof data) =>

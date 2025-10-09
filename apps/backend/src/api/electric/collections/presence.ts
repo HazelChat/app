@@ -13,10 +13,12 @@ export class UserPresenceStatusResponse extends Schema.Class<UserPresenceStatusR
 }) {}
 
 // Payload for updating user status
-export class UpdateUserStatusPayload extends Schema.Class<UpdateUserStatusPayload>("UpdateUserStatusPayload")({
-	status: Schema.Literal("online", "away", "busy", "dnd", "offline"),
-	customMessage: Schema.optional(Schema.NullOr(Schema.String)),
-}) {}
+export class UpdateUserStatusPayload extends Schema.Class<UpdateUserStatusPayload>("UpdateUserStatusPayload")(
+	{
+		status: Schema.Literal("online", "away", "busy", "dnd", "offline"),
+		customMessage: Schema.optional(Schema.NullOr(Schema.String)),
+	},
+) {}
 
 // Payload for updating active channel
 export class UpdateActiveChannelPayload extends Schema.Class<UpdateActiveChannelPayload>(

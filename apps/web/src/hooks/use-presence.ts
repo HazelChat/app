@@ -81,7 +81,8 @@ const afkStateAtom = Atom.make((get) =>
 			const timeSinceActivity = DateTime.distance(lastActivity, now)
 
 			const isAFK =
-				Duration.greaterThanOrEqualTo(timeSinceActivity, AFK_TIMEOUT) && manualStatus.status !== "away"
+				Duration.greaterThanOrEqualTo(timeSinceActivity, AFK_TIMEOUT) &&
+				manualStatus.status !== "away"
 
 			return {
 				isAFK,

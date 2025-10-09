@@ -1,4 +1,14 @@
-import { and, Database, eq, inArray, isNull, ModelRepository, schema, sql, type TransactionClient } from "@hazel/db"
+import {
+	and,
+	Database,
+	eq,
+	inArray,
+	isNull,
+	ModelRepository,
+	schema,
+	sql,
+	type TransactionClient,
+} from "@hazel/db"
 import { ChannelMember } from "@hazel/db/models"
 import { type ChannelId, type OrganizationId, policyRequire, type UserId } from "@hazel/db/schema"
 import { Effect, Option } from "effect"
@@ -50,10 +60,7 @@ export class ChannelMemberRepo extends Effect.Service<ChannelMemberRepo>()("Chan
 		) =>
 			db
 				.makeQuery(
-					(
-						execute,
-						data: { userId1: UserId; userId2: UserId; organizationId: OrganizationId },
-					) =>
+					(execute, data: { userId1: UserId; userId2: UserId; organizationId: OrganizationId }) =>
 						execute((client) =>
 							client
 								.selectDistinct({ channel: schema.channelsTable })

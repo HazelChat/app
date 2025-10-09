@@ -1,6 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router"
-import { useState } from "react"
-import { toast } from "sonner"
 import { SectionFooter } from "~/components/application/section-footers/section-footer"
 import { SectionHeader } from "~/components/application/section-headers/section-headers"
 import { SectionLabel } from "~/components/application/section-headers/section-label"
@@ -12,6 +10,7 @@ import { Toggle } from "~/components/base/toggle/toggle"
 import IconVolume from "~/components/icons/icon-volume"
 import IconVolumeMute from "~/components/icons/icon-volume-mute"
 import { Separator } from "~/components/ui/separator"
+import { useNotificationSettings } from "~/hooks/use-notification-settings"
 import { useNotificationSound } from "~/hooks/use-notification-sound"
 import { cx } from "~/utils/cx"
 
@@ -21,34 +20,34 @@ export const Route = createFileRoute("/_app/$orgSlug/settings/notifications")({
 
 function NotificationsSettings() {
 	const { settings, updateSettings, testSound } = useNotificationSound()
-	const [isSubmitting, setIsSubmitting] = useState(false)
-	const [desktopNotifications, setDesktopNotifications] = useState(true)
-	const [messagePreference, setMessagePreference] = useState<"all" | "mentions" | "direct" | "none">("all")
-	const [emailNotifications, setEmailNotifications] = useState(true)
-	const [emailDigest, setEmailDigest] = useState<"instant" | "daily" | "weekly">("instant")
-	const [doNotDisturb, setDoNotDisturb] = useState(false)
-	const [quietHoursStart, setQuietHoursStart] = useState("22:00")
-	const [quietHoursEnd, setQuietHoursEnd] = useState("08:00")
-
-	const handleSave = async () => {
-		setIsSubmitting(true)
-		try {
-			// Save settings (in real app, this would be an API call)
-			await new Promise((resolve) => setTimeout(resolve, 500))
-			toast.success("Notification settings saved")
-		} catch (_error) {
-			toast.error("Failed to save settings")
-		} finally {
-			setIsSubmitting(false)
-		}
-	}
+	const {
+		// Values
+		desktopNotifications,
+		messagePreference,
+		emailNotifications,
+		emailDigest,
+		doNotDisturb,
+		quietHoursStart,
+		quietHoursEnd,
+		isSubmitting,
+		// Setters
+		setDesktopNotifications,
+		setMessagePreference,
+		setEmailNotifications,
+		setEmailDigest,
+		setDoNotDisturb,
+		setQuietHoursStart,
+		setQuietHoursEnd,
+		// Actions
+		saveSettings,
+	} = useNotificationSettings()
 
 	return (
 		<Form
 			className="flex flex-col gap-6 px-4 lg:px-8"
 			onSubmit={(e) => {
 				e.preventDefault()
-				handleSave()
+				saveSettings()
 			}}
 		>
 			<SectionHeader.Root>
@@ -246,7 +245,7 @@ function NotificationsSettings() {
 										type="button"
 										size="sm"
 										color={emailDigest === "instant" ? "primary" : "secondary"}
-										onClick={() => setEmailDigest("instant")}
+										onClick={() => setEmailDigest("instant" as const)}
 									>
 										Instant
 									</Button>
@@ -254,7 +253,7 @@ function NotificationsSettings() {
 										type="button"
 										size="sm"
 										color={emailDigest === "daily" ? "primary" : "secondary"}
-										onClick={() => setEmailDigest("daily")}
+										onClick={() => setEmailDigest("daily" as const)}
 									>
 										Daily
 									</Button>
@@ -262,7 +261,7 @@ function NotificationsSettings() {
 										type="button"
 										size="sm"
 										color={emailDigest === "weekly" ? "primary" : "secondary"}
-										onClick={() => setEmailDigest("weekly")}
+										onClick={() => setEmailDigest("weekly" as const)}
 									>
 										Weekly
 									</Button>

@@ -27,7 +27,7 @@ export const singleDmChannelsCollection = createLiveQueryCollection({
 export function findExistingDmChannel(
 	currentUserId: string,
 	targetUserId: string,
-): (typeof Channel.Model.Type) | null {
+): typeof Channel.Model.Type | null {
 	const channels = singleDmChannelsCollection.toArray
 
 	if (!channels || channels.length === 0) return null
@@ -43,11 +43,7 @@ export function findExistingDmChannel(
 
 	// Find a channel with exactly these two users
 	for (const [channelId, memberIds] of channelGroups.entries()) {
-		if (
-			memberIds.length === 2 &&
-			memberIds.includes(currentUserId) &&
-			memberIds.includes(targetUserId)
-		) {
+		if (memberIds.length === 2 && memberIds.includes(currentUserId) && memberIds.includes(targetUserId)) {
 			return channels.find((item) => item.channel.id === channelId)?.channel ?? null
 		}
 	}

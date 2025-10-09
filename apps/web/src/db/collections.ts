@@ -719,7 +719,6 @@ export const typingIndicatorCollection = createCollection(
 	}),
 )
 
-
 export const userPresenceStatusCollection = createCollection(
 	effectElectricCollectionOptions({
 		id: "user_presence_status",
@@ -765,4 +764,3 @@ export const userPresenceStatusCollection = createCollection(
 			}),
 	}),
 )
-
