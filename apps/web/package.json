@@ -22,6 +22,7 @@
 		"@hazel/backend": "workspace:*",
 		"@hazel/db": "workspace:*",
 		"@hazel/effect-electric-db-collection": "workspace:*",
+		"@hazel/tanstack-db-atom": "workspace:*",
 		"@paper-design/shaders-react": "^0.0.55",
 		"@platejs/ai": "^49.2.15",
 		"@platejs/autoformat": "^49.0.0",

@@ -1,4 +1,4 @@
-import { useAtomSet, useAtomValue } from "@effect-atom/atom-react"
+import { Result, useAtomSet, useAtomValue } from "@effect-atom/atom-react"
 import type { Channel, Message, PinnedMessage } from "@hazel/db/models"
 import {
 	type AttachmentId,
@@ -9,13 +9,14 @@ import {
 	PinnedMessageId,
 	UserId,
 } from "@hazel/db/schema"
-import { eq, useLiveQuery } from "@tanstack/react-db"
+import { eq } from "@tanstack/db"
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useRef } from "react"
 import {
 	activeThreadChannelIdAtom,
 	activeThreadMessageIdAtom,
 	replyToMessageAtomFamily,
 } from "~/atoms/chat-atoms"
+import { channelByIdAtomFamily, messagesByChannelAtomFamily } from "~/atoms/chat-query-atoms"
 import { sendMessage as sendMessageAction } from "~/db/actions"
 import {
 	channelCollection,
@@ -95,45 +96,25 @@ export function ChatProvider({ channelId, organizationId, children }: ChatProvid
 		previousChannelIdRef.current = channelId
 	}, [channelId])
 
-	const { data: channelData } = useLiveQuery(
-		(q) =>
-			q
-				.from({ channel: channelCollection })
-				.where(({ channel }) => eq(channel.id, channelId))
-				.orderBy(({ channel }) => channel.createdAt, "desc")
-				.limit(1),
-		[channelId],
-	)
+	// Fetch channel using new tanstack-db-atom
+	const channelResult = useAtomValue(channelByIdAtomFamily(channelId))
+	const channel = Result.getOrElse(channelResult, () => undefined)?.[0]
 
-	const channel = channelData?.[0]
-
-	// Fetch messages from TanStack DB (TODO: Add pagination)
-	const { data: messagesData, isLoading: messagesLoading } = useLiveQuery(
-		(q) =>
-			q
-				.from({ message: messageCollection })
-				.leftJoin({ pinned: pinnedMessageCollection }, ({ message, pinned }) =>
-					eq(message.id, pinned.messageId),
-				)
-				.where(({ message }) => eq(message.channelId, channelId))
-				.select(({ message, pinned }) => ({
-					...message,
-					pinnedMessage: pinned,
-				}))
-				.orderBy(({ message }) => message.createdAt, "desc")
-				.limit(50), // TODO: Implement proper pagination
-		[channelId],
-	)
+	// Fetch messages using new tanstack-db-atom (TODO: Add pagination)
+	const messagesResult = useAtomValue(messagesByChannelAtomFamily(channelId))
+	const messagesData = Result.getOrElse(messagesResult, () => [])
+	const messagesLoading = Result.isInitial(messagesResult)
 
 	// Use previous messages during loading states to prevent flashing
-	const messages = messagesData.length > 0 ? messagesData : previousMessagesRef.current
+	// Show actual data (even if empty) when successfully loaded
+	const messages = messagesLoading ? previousMessagesRef.current : messagesData
 
-	// Update previous messages when we have new data
+	// Update previous messages when we have valid data (including empty arrays)
 	useEffect(() => {
-		if (messagesData.length > 0) {
+		if (!messagesLoading) {
 			previousMessagesRef.current = messagesData
 		}
-	}, [messagesData])
+	}, [messagesData, messagesLoading])
 
 	// Message operations
 	const sendMessage = useCallback(
