@@ -1,5 +1,5 @@
 import { Result, useAtomValue } from "@effect-atom/atom-react"
-import { useEffect, useRef } from "react"
+import { useEffect } from "react"
 import { toast } from "sonner"
 import { versionCheckAtom } from "~/atoms/version-atom"
 
@@ -8,8 +8,8 @@ import { versionCheckAtom } from "~/atoms/version-atom"
  * when an update is available, prompting the user to reload the page.
  *
  * Features:
- * - Polls for new versions every 1 minutes
- * - Shows toast only once per session
+ * - Checks immediately on mount, then polls every 1 minute
+ * - Shows toast whenever a new version is detected
  * - Provides "Reload" action button in toast
  * - Gracefully handles errors (fails silently)
  */
@@ -18,12 +18,8 @@ export const VersionCheck = () => {
 	const versionStateResult = useAtomValue(versionCheckAtom)
 	const versionState = Result.getOrElse(versionStateResult, () => null)
 
-	const toastShownRef = useRef(false)
-
 	useEffect(() => {
-		if (versionState?.shouldShowToast && !toastShownRef.current) {
-			toastShownRef.current = true
-
+		if (versionState?.shouldShowToast) {
 			toast("A new version is available", {
 				description: "Reload the page to get the latest updates",
 				duration: Number.POSITIVE_INFINITY,

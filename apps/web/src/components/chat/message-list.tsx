@@ -1,28 +1,17 @@
-import { Result, useAtomSet, useAtomValue } from "@effect-atom/atom-react"
-import { useCallback, useEffect, useMemo, useRef } from "react"
-import {
-	isAtBottomAtomFamily,
-	messageCountAtomFamily,
-	scrollContainerRefAtomFamily,
-} from "~/atoms/chat-atoms"
+import { Result, useAtomValue } from "@effect-atom/atom-react"
+import { useMemo } from "react"
 import { messagesByChannelAtomFamily, processedMessagesByChannelAtomFamily } from "~/atoms/chat-query-atoms"
 import { useChat } from "~/hooks/use-chat"
+import { useScrollToBottom } from "~/hooks/use-scroll-to-bottom"
 
 import { MessageItem } from "./message-item"
 
 export function MessageList() {
 	const { channelId } = useChat()
-	const scrollContainerRef = useRef<HTMLDivElement>(null)
 
 	const messagesResult = useAtomValue(messagesByChannelAtomFamily(channelId))
 	const messages = Result.getOrElse(messagesResult, () => [])
 	const isLoadingMessages = Result.isInitial(messagesResult)
-
-	const isAtBottom = useAtomValue(isAtBottomAtomFamily(channelId))
-	const setIsAtBottom = useAtomSet(isAtBottomAtomFamily(channelId))
-	const messageCount = useAtomValue(messageCountAtomFamily(channelId))
-	const setMessageCount = useAtomSet(messageCountAtomFamily(channelId))
-	const setScrollContainerRef = useAtomSet(scrollContainerRefAtomFamily(channelId))
 
 	const processedMessages = useAtomValue(processedMessagesByChannelAtomFamily(channelId))
 
@@ -40,63 +29,11 @@ export function MessageList() {
 		)
 	}, [processedMessages])
 
-	// Check if user is at bottom of scroll container
-	const checkIfAtBottom = useCallback(() => {
-		const container = scrollContainerRef.current
-		if (!container) return false
-
-		// Consider user at bottom if within 50px of the bottom
-		const threshold = 50
-		const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < threshold
-		return isNearBottom
-	}, [])
-
-	// Handle scroll events to track if user is at bottom
-	const handleScroll = useCallback(() => {
-		const container = scrollContainerRef.current
-		if (!container) return
-
-		const atBottom = checkIfAtBottom()
-		setIsAtBottom(atBottom)
-	}, [checkIfAtBottom, setIsAtBottom])
-
-	// Store scroll container ref in atom for potential future use
-	useEffect(() => {
-		setScrollContainerRef(scrollContainerRef)
-	}, [setScrollContainerRef])
-
-	// Auto-scroll to bottom on initial load
-	// biome-ignore lint/correctness/useExhaustiveDependencies: We only want to scroll on initial load
-	useEffect(() => {
-		if (scrollContainerRef.current && !isLoadingMessages && messages.length > 0) {
-			scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight
-			setIsAtBottom(true)
-		}
-	}, [isLoadingMessages, setIsAtBottom])
-
-	// Track message count changes and auto-scroll when at bottom
-	useEffect(() => {
-		const container = scrollContainerRef.current
-		if (!container) return
-
-		// Update message count in atom
-		setMessageCount(messages.length)
-
-		// Check if new messages were added
-		const messageCountIncreased = messages.length > messageCount
-
-		if (messageCountIncreased && isAtBottom) {
-			// Use requestAnimationFrame to ensure DOM has updated before scrolling
-			requestAnimationFrame(() => {
-				if (container) {
-					container.scrollTop = container.scrollHeight
-					// Re-check if we're at bottom after scroll
-					const atBottom = checkIfAtBottom()
-					setIsAtBottom(atBottom)
-				}
-			})
-		}
-	}, [messages.length, messageCount, isAtBottom, setMessageCount, setIsAtBottom, checkIfAtBottom])
+	// Use the scroll-to-bottom hook for robust scroll management
+	const { scrollContainerRef } = useScrollToBottom({
+		channelId,
+		messages,
+	})
 
 	// Show skeleton loader only when no cached messages exist
 	if (isLoadingMessages && messages.length === 0) {
@@ -135,7 +72,6 @@ export function MessageList() {
 	return (
 		<div
 			ref={scrollContainerRef}
-			onScroll={handleScroll}
 			className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 py-2 transition-opacity duration-200"
 			style={{
 				overflowAnchor: "auto",
