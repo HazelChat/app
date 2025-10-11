@@ -12,8 +12,9 @@ interface UseScrollToBottomOptions {
 	 */
 	messages: any[]
 	/**
-	 * Threshold in pixels to consider "at bottom"
-	 * @default 50
+	 * Threshold in pixels to consider "at bottom" (distance from bottom)
+	 * Larger = more aggressive sticking
+	 * @default 200
 	 */
 	threshold?: number
 }
@@ -25,19 +26,22 @@ interface UseScrollToBottomReturn {
 }
 
 /**
- * A robust hook for managing scroll-to-bottom behavior in a scrollable container.
+ * ULTRA AGGRESSIVE scroll-to-bottom hook.
+ *
+ * Philosophy: Stay glued to the bottom unless user EXPLICITLY scrolls up significantly.
  *
  * Features:
- * - Manual scroll tracking with debouncing for accurate position detection
- * - Synchronous bottom checks before scrolling (no stale state)
- * - Double RAF retry logic for DOM settling after content changes
- * - ResizeObserver for handling dynamic content (images, embeds)
- * - Auto-scroll when new messages arrive if already at bottom
- * - Per-channel state management via Effect Atoms
+ * - Tracks "intentional scroll up" (user must scroll >threshold away to stop auto-scroll)
+ * - MutationObserver to catch ALL DOM changes
+ * - Continuous retry loop (500ms of attempts after each change)
+ * - 8x RAF chaining for maximum DOM settling time
+ * - Large 200px threshold for forgiving "at bottom" detection
+ * - Instant scroll state updates (no debouncing)
+ * - Scrolls on EVERY message change unless user has scrolled away
  *
  * @example
  * ```tsx
- * const { scrollContainerRef, isAtBottom } = useScrollToBottom({
+ * const { scrollContainerRef } = useScrollToBottom({
  *   channelId,
  *   messages,
  * })
@@ -53,21 +57,20 @@ export function useScrollToBottom({
 	channelId,
 	enabled = true,
 	messages,
-	threshold = 50,
+	threshold = 200,
 }: UseScrollToBottomOptions): UseScrollToBottomReturn {
 	const scrollContainerRef = useRef<HTMLDivElement>(null)
 	const isFirstRender = useRef(true)
-	const previousMessageCountRef = useRef(messages.length)
-	const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-	const isScrollingRef = useRef(false)
+	const isScrollingProgrammaticallyRef = useRef(false)
+	const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+	const mutationObserverRef = useRef<MutationObserver | null>(null)
 
 	// Get/set atom state for per-channel scroll position tracking
 	const isAtBottom = useAtomValue(isAtBottomAtomFamily(channelId))
 	const setIsAtBottom = useAtomSet(isAtBottomAtomFamily(channelId))
 
 	/**
-	 * Check if user is at bottom of scroll container
-	 * This is a synchronous check that can be used immediately
+	 * Check if user is at bottom of scroll container (within threshold)
 	 */
 	const checkIfAtBottom = useCallback(() => {
 		const container = scrollContainerRef.current
@@ -78,64 +81,93 @@ export function useScrollToBottom({
 	}, [threshold])
 
 	/**
-	 * Handle scroll events with debouncing to track user position
+	 * Check if user has intentionally scrolled away from bottom
+	 * Only returns true if they're SIGNIFICANTLY far from bottom
 	 */
-	const handleScroll = useCallback(() => {
-		if (isScrollingRef.current) return
+	const hasUserScrolledAway = useCallback(() => {
+		const container = scrollContainerRef.current
+		if (!container) return false
 
-		// Clear any pending timeout
-		if (scrollTimeoutRef.current) {
-			clearTimeout(scrollTimeoutRef.current)
-		}
-
-		// Debounce the state update
-		scrollTimeoutRef.current = setTimeout(() => {
-			const atBottom = checkIfAtBottom()
-			setIsAtBottom(atBottom)
-		}, 100)
-	}, [checkIfAtBottom, setIsAtBottom])
+		const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight
+		// User must be MORE than threshold away to be considered "scrolled away"
+		return distanceFromBottom > threshold
+	}, [threshold])
 
 	/**
-	 * Scroll to bottom with aggressive retry logic
-	 * Uses double RAF to ensure DOM has fully updated
+	 * ULTRA AGGRESSIVE scroll to bottom with continuous retries
+	 * Uses 8x RAF chaining and keeps retrying for 500ms
 	 */
 	const scrollToBottom = useCallback(
 		(smooth = false) => {
 			const container = scrollContainerRef.current
 			if (!container || !enabled) return
 
-			isScrollingRef.current = true
+			// Clear any pending retries
+			if (retryTimeoutRef.current) {
+				clearTimeout(retryTimeoutRef.current)
+			}
+
+			isScrollingProgrammaticallyRef.current = true
 
 			const performScroll = () => {
+				if (!container) return
 				container.scrollTo({
 					top: container.scrollHeight,
 					behavior: smooth ? "smooth" : "auto",
 				})
 			}
 
-			// Double RAF for better DOM settling
-			requestAnimationFrame(() => {
+			let rafCount = 0
+			const maxRafAttempts = 8
+
+			const aggressiveScrollChain = () => {
+				rafCount++
 				requestAnimationFrame(() => {
 					performScroll()
 
-					// Wait a bit then verify and retry if needed
-					requestAnimationFrame(() => {
-						requestAnimationFrame(() => {
-							const stillNotAtBottom = !checkIfAtBottom()
-							if (stillNotAtBottom) {
-								performScroll()
-							}
+					if (rafCount < maxRafAttempts) {
+						aggressiveScrollChain()
+					} else {
+						// After RAF chain completes, update state
+						setIsAtBottom(true)
+						isScrollingProgrammaticallyRef.current = false
 
-							// Update state and reset scrolling flag
-							setIsAtBottom(true)
-							isScrollingRef.current = false
-						})
-					})
+						// CONTINUOUS RETRY: Keep trying to scroll for 500ms
+						// This catches late-loading content
+						const startTime = Date.now()
+						const continuousRetry = () => {
+							if (!container || !enabled) return
+
+							const elapsed = Date.now() - startTime
+							if (elapsed < 500) {
+								// If we're not actually at bottom, try again
+								const stillNotAtBottom = !checkIfAtBottom()
+								if (stillNotAtBottom) {
+									performScroll()
+								}
+								retryTimeoutRef.current = setTimeout(continuousRetry, 50)
+							}
+						}
+						continuousRetry()
+					}
 				})
-			})
+			}
+
+			aggressiveScrollChain()
 		},
 		[enabled, checkIfAtBottom, setIsAtBottom],
 	)
+
+	/**
+	 * Handle scroll events - update state immediately (no debouncing)
+	 */
+	const handleScroll = useCallback(() => {
+		// Ignore if we're scrolling programmatically
+		if (isScrollingProgrammaticallyRef.current) return
+
+		const atBottom = checkIfAtBottom()
+		setIsAtBottom(atBottom)
+	}, [checkIfAtBottom, setIsAtBottom])
 
 	// Attach scroll event listener
 	useEffect(() => {
@@ -146,56 +178,91 @@ export function useScrollToBottom({
 
 		return () => {
 			container.removeEventListener("scroll", handleScroll)
-			if (scrollTimeoutRef.current) {
-				clearTimeout(scrollTimeoutRef.current)
-			}
 		}
 	}, [handleScroll, enabled])
 
-	// Auto-scroll to bottom on initial mount/load
+	// Auto-scroll to bottom on initial mount
 	useEffect(() => {
 		if (isFirstRender.current && messages.length > 0 && enabled) {
 			isFirstRender.current = false
-			// Use timeout to ensure DOM has fully rendered
 			setTimeout(() => {
 				scrollToBottom()
 			}, 100)
 		}
 	}, [messages.length, scrollToBottom, enabled])
 
-	// Auto-scroll when new messages arrive IF user is at bottom
+	// AGGRESSIVE: Auto-scroll when messages change IF user hasn't scrolled away
 	useEffect(() => {
-		const messageCountIncreased = messages.length > previousMessageCountRef.current
-		previousMessageCountRef.current = messages.length
+		if (!enabled || messages.length === 0) return
 
-		if (messageCountIncreased && enabled) {
-			// ALWAYS do a synchronous check - don't trust the atom state alone
-			// The state might be stale due to async updates
-			const actuallyAtBottom = checkIfAtBottom()
+		// Check if user has scrolled significantly away
+		const userScrolledAway = hasUserScrolledAway()
 
-			if (actuallyAtBottom || isAtBottom) {
-				scrollToBottom()
-			}
+		// If user HASN'T scrolled away, ALWAYS scroll to bottom
+		if (!userScrolledAway) {
+			scrollToBottom()
 		}
-	}, [messages.length, isAtBottom, checkIfAtBottom, scrollToBottom, enabled])
+	}, [messages, hasUserScrolledAway, scrollToBottom, enabled])
 
-	// Handle container resize - stay at bottom if already there
-	// This catches images loading, embeds expanding, etc.
+	// Handle container resize - scroll if at bottom
 	const handleResize = useCallback(() => {
 		if (!enabled) return
 
-		// Do synchronous check to avoid stale state
-		const actuallyAtBottom = checkIfAtBottom()
-
-		if (actuallyAtBottom || isAtBottom) {
+		const userScrolledAway = hasUserScrolledAway()
+		if (!userScrolledAway) {
 			scrollToBottom()
 		}
-	}, [checkIfAtBottom, isAtBottom, scrollToBottom, enabled])
+	}, [hasUserScrolledAway, scrollToBottom, enabled])
 
 	useResizeObserver({
 		ref: scrollContainerRef,
 		onResize: handleResize,
 	})
+
+	// MutationObserver: Watch for ANY DOM changes and scroll if at bottom
+	useEffect(() => {
+		const container = scrollContainerRef.current
+		if (!container || !enabled) return
+
+		// Clean up existing observer
+		if (mutationObserverRef.current) {
+			mutationObserverRef.current.disconnect()
+		}
+
+		// Create new observer
+		mutationObserverRef.current = new MutationObserver(() => {
+			const userScrolledAway = hasUserScrolledAway()
+			if (!userScrolledAway) {
+				// Use RAF to avoid excessive scrolling during rapid mutations
+				requestAnimationFrame(() => {
+					scrollToBottom()
+				})
+			}
+		})
+
+		// Observe all changes to container and its children
+		mutationObserverRef.current.observe(container, {
+			childList: true,
+			subtree: true,
+			attributes: true,
+			characterData: true,
+		})
+
+		return () => {
+			if (mutationObserverRef.current) {
+				mutationObserverRef.current.disconnect()
+			}
+		}
+	}, [enabled, hasUserScrolledAway, scrollToBottom])
+
+	// Cleanup
+	useEffect(() => {
+		return () => {
+			if (retryTimeoutRef.current) {
+				clearTimeout(retryTimeoutRef.current)
+			}
+		}
+	}, [])
 
 	return {
 		scrollContainerRef,
