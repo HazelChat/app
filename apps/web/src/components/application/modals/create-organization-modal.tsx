@@ -92,7 +92,8 @@ export const CreateOrganizationModal = ({ isOpen, onOpenChange }: CreateOrganiza
 					} catch (_error) {
 						if (attempts >= maxAttempts) {
 							clearInterval(pollInterval)
-							window.location.href = "/"
+							// Force a hard reload as a last resort if router navigation fails
+							window.location.reload()
 						}
 					}
 				}, 1000)

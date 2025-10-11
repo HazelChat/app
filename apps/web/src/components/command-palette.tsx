@@ -143,7 +143,9 @@ export function CommandPalette(props: Pick<CommandMenuProps, "isOpen" | "onOpenC
 		>
 			<CommandMenuSearch placeholder={searchPlaceholder} />
 			<CommandMenuList>
-				{currentPage === "home" && <HomeView navigateToPage={navigateToPage} />}
+				{currentPage === "home" && (
+					<HomeView navigateToPage={navigateToPage} onClose={closePalette} />
+				)}
 				{currentPage === "channels" && <ChannelsView onClose={closePalette} />}
 				{currentPage === "members" && <MembersView onClose={closePalette} />}
 			</CommandMenuList>
@@ -151,8 +153,15 @@ export function CommandPalette(props: Pick<CommandMenuProps, "isOpen" | "onOpenC
 	)
 }
 
-function HomeView({ navigateToPage }: { navigateToPage: (page: Page) => void }) {
+function HomeView({
+	navigateToPage,
+	onClose,
+}: {
+	navigateToPage: (page: Page) => void
+	onClose: () => void
+}) {
 	const { slug: orgSlug } = useOrganization()
+	const navigate = useNavigate()
 
 	return (
 		<>
@@ -165,47 +174,107 @@ function HomeView({ navigateToPage }: { navigateToPage: (page: Page) => void }) 
 					<IconUsersPlus />
 					<CommandMenuLabel>Browse members...</CommandMenuLabel>
 				</CommandMenuItem>
-				<CommandMenuItem href={`/${orgSlug}/notifications`} textValue="notifications">
+				<CommandMenuItem
+					onAction={() => {
+						navigate({ to: "/$orgSlug/notifications", params: { orgSlug: orgSlug! } })
+						onClose()
+					}}
+					textValue="notifications"
+				>
 					<IconBell />
 					<CommandMenuLabel>Notifications</CommandMenuLabel>
 				</CommandMenuItem>
-				<CommandMenuItem href={`/${orgSlug}/call`} textValue="calls">
+				<CommandMenuItem
+					onAction={() => {
+						navigate({ to: "/$orgSlug/call", params: { orgSlug: orgSlug! } })
+						onClose()
+					}}
+					textValue="calls"
+				>
 					<IconPhone />
 					<CommandMenuLabel>Calls</CommandMenuLabel>
 				</CommandMenuItem>
 			</CommandMenuSection>
 
 			<CommandMenuSection label="Settings">
-				<CommandMenuItem href={`/${orgSlug}/settings`} textValue="general settings">
+				<CommandMenuItem
+					onAction={() => {
+						navigate({ to: "/$orgSlug/settings", params: { orgSlug: orgSlug! } })
+						onClose()
+					}}
+					textValue="general settings"
+				>
 					<IconGear />
 					<CommandMenuLabel>General Settings</CommandMenuLabel>
 				</CommandMenuItem>
-				<CommandMenuItem href={`/${orgSlug}/settings/profile`} textValue="profile">
+				<CommandMenuItem
+					onAction={() => {
+						navigate({ to: "/$orgSlug/settings/profile", params: { orgSlug: orgSlug! } })
+						onClose()
+					}}
+					textValue="profile"
+				>
 					<IconCircleDottedUser />
 					<CommandMenuLabel>Profile</CommandMenuLabel>
 				</CommandMenuItem>
-				<CommandMenuItem href={`/${orgSlug}/settings/team`} textValue="team">
+				<CommandMenuItem
+					onAction={() => {
+						navigate({ to: "/$orgSlug/settings/team", params: { orgSlug: orgSlug! } })
+						onClose()
+					}}
+					textValue="team"
+				>
 					<IconDashboard />
 					<CommandMenuLabel>Team</CommandMenuLabel>
 				</CommandMenuItem>
-				<CommandMenuItem href={`/${orgSlug}/settings/billing`} textValue="billing">
+				<CommandMenuItem
+					onAction={() => {
+						navigate({ to: "/$orgSlug/settings/billing", params: { orgSlug: orgSlug! } })
+						onClose()
+					}}
+					textValue="billing"
+				>
 					<IconDashboard />
 					<CommandMenuLabel>Billing</CommandMenuLabel>
 				</CommandMenuItem>
-				<CommandMenuItem href={`/${orgSlug}/settings/email`} textValue="email">
+				<CommandMenuItem
+					onAction={() => {
+						navigate({ to: "/$orgSlug/settings/email", params: { orgSlug: orgSlug! } })
+						onClose()
+					}}
+					textValue="email"
+				>
 					<IconEnvelope />
 					<CommandMenuLabel>Email</CommandMenuLabel>
 				</CommandMenuItem>
-				<CommandMenuItem href={`/${orgSlug}/settings/integrations`} textValue="integrations">
+				<CommandMenuItem
+					onAction={() => {
+						navigate({ to: "/$orgSlug/settings/integrations", params: { orgSlug: orgSlug! } })
+						onClose()
+					}}
+					textValue="integrations"
+				>
 					<IconIntegration />
 					<CommandMenuLabel>Integrations</CommandMenuLabel>
 				</CommandMenuItem>
-				<CommandMenuItem href={`/${orgSlug}/settings/invitations`} textValue="invitations">
+				<CommandMenuItem
+					onAction={() => {
+						navigate({ to: "/$orgSlug/settings/invitations", params: { orgSlug: orgSlug! } })
+						onClose()
+					}}
+					textValue="invitations"
+				>
 					<IconUsersPlus />
 					<CommandMenuLabel>Invitations</CommandMenuLabel>
 				</CommandMenuItem>
 				<CommandMenuItem
-					href={`/${orgSlug}/settings/notifications`}
+					onAction={() => {
+						navigate({
+							to: "/$orgSlug/settings/notifications",
+							params: { orgSlug: orgSlug! },
+						})
+						onClose()
+					}}
 					textValue="notification settings"
 				>
 					<IconBell />
@@ -247,7 +316,6 @@ function ChannelsView({ onClose }: { onClose: () => void }) {
 			{userChannels?.map(({ channel }) => (
 				<CommandMenuItem
 					key={channel.id}
-					href={`/${orgSlug}/chat/${channel.id}`}
 					textValue={channel.name}
 					onAction={() => {
 						navigate({ to: "/$orgSlug/chat/$id", params: { orgSlug: orgSlug!, id: channel.id } })

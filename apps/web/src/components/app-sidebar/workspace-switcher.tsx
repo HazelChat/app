@@ -1,5 +1,5 @@
 import { eq, useLiveQuery } from "@tanstack/react-db"
-import { useNavigate, useParams } from "@tanstack/react-router"
+import { useLocation, useNavigate, useParams } from "@tanstack/react-router"
 import { useState } from "react"
 import { Button as AriaButton } from "react-aria-components"
 import { organizationCollection, organizationMemberCollection } from "~/db/collections"
@@ -20,6 +20,7 @@ export const WorkspaceSwitcher = () => {
 
 	const { user, login } = useAuth()
 	const navigate = useNavigate()
+	const location = useLocation()
 	const { organization: currentOrg, organizationId } = useOrganization()
 
 	const { data: currentOrgData } = useLiveQuery(
@@ -56,7 +57,7 @@ export const WorkspaceSwitcher = () => {
 			const targetOrg = organizations.find((org) => org.workosId === workosOrgId)
 			if (targetOrg) {
 				// Determine current subpath to maintain it after switching
-				const currentPath = window.location.pathname
+				const currentPath = location.pathname
 				const pathSegments = currentPath.split("/")
 				let subPath: string | undefined
 

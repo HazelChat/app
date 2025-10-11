@@ -38,6 +38,11 @@ export default defineConfig({
 		versionPlugin(),
 	],
 
+	define: {
+		__BUILD_TIME__: Date.now(),
+		__APP_VERSION__: JSON.stringify(process.env.npm_package_version || "1.0.0"),
+	},
+
 	resolve: {
 		alias: {
 			"~": resolve(__dirname, "./src"),
