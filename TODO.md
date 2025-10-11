@@ -10,6 +10,8 @@
 
 - New Version checker not working
 - webhooks for workos
+- Simplify ChatProvider and Message Component with Atoms
+- Make the switch of chats be faster than 100ms
 
 
 ### Core Features

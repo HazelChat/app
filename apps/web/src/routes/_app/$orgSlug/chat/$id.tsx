@@ -5,12 +5,19 @@ import { MessageComposer } from "~/components/chat/message-composer"
 import { MessageList } from "~/components/chat/message-list"
 import { ThreadPanel } from "~/components/chat/thread-panel"
 import { TypingIndicator } from "~/components/chat/typing-indicator"
+import { messageCollection } from "~/db/collections"
 import { useChat } from "~/hooks/use-chat"
 import { useOrganization } from "~/hooks/use-organization"
 import { ChatProvider } from "~/providers/chat-provider"
 
 export const Route = createFileRoute("/_app/$orgSlug/chat/$id")({
 	component: RouteComponent,
+	loader: async ({ params }) => {
+		// Preload messages for this channel before navigation completes
+		// This ensures messages are ready when the component renders
+		await messageCollection.preload()
+		return null
+	},
 })
 
 function ChatContent() {

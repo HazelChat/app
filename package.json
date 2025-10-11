@@ -26,5 +26,8 @@
 		"typescript": "^5.9.3",
 		"vitest": "^3.2.4"
 	},
-	"trustedDependencies": []
+	"trustedDependencies": [],
+	"dependencies": {
+		"@tanstack/react-virtual": "^3.13.12"
+	}
 }

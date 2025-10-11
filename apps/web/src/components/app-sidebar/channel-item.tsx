@@ -1,10 +1,10 @@
 import type { ChannelId } from "@hazel/db/schema"
-import { Link, useNavigate, useParams } from "@tanstack/react-router"
+import { Link, useNavigate, useParams, useRouter } from "@tanstack/react-router"
 import { useCallback, useState } from "react"
 import { toast } from "sonner"
 import IconEdit from "~/components/icons/icon-edit"
 import IconTrash from "~/components/icons/icon-trash"
-import { channelCollection, channelMemberCollection } from "~/db/collections"
+import { channelCollection, channelMemberCollection, messageCollection } from "~/db/collections"
 import { useChannelWithCurrentUser } from "~/db/hooks"
 import { useOrganization } from "~/hooks/use-organization"
 import { useAuth } from "~/lib/auth"
@@ -29,11 +29,24 @@ export interface ChannelItemProps {
 export const ChannelItem = ({ channelId }: ChannelItemProps) => {
 	const { slug: orgSlug } = useOrganization()
 	const navigate = useNavigate()
+	const router = useRouter()
 	const params = useParams({ strict: false })
 	const [isRenameModalOpen, setIsRenameModalOpen] = useState(false)
 	const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
 
 	const { channel } = useChannelWithCurrentUser(channelId)
+
+	// Prefetch messages on hover for instant navigation
+	const handleMouseEnter = useCallback(() => {
+		// Preload the route and messages when user hovers
+		router.preloadRoute({
+			to: "/$orgSlug/chat/$id",
+			params: { orgSlug: orgSlug || "", id: channelId },
+		})
+
+		// Also ensure messages are preloaded
+		messageCollection.preload()
+	}, [router, orgSlug, channelId])
 
 	const handleLeaveChannel = useCallback(() => {
 		if (!channel) return
@@ -93,7 +106,11 @@ export const ChannelItem = ({ channelId }: ChannelItemProps) => {
 	return (
 		<SidebarMenuItem>
 			<SidebarMenuButton asChild>
-				<Link to="/$orgSlug/chat/$id" params={{ orgSlug: orgSlug || "", id: channelId }}>
+				<Link
+					to="/$orgSlug/chat/$id"
+					params={{ orgSlug: orgSlug || "", id: channelId }}
+					onMouseEnter={handleMouseEnter}
+				>
 					<IconHashtag className="size-5" />
 					<p
 						className={cx(
@@ -206,6 +223,7 @@ interface DmChannelLinkProps {
 
 export const DmChannelLink = ({ channelId, userPresence }: DmChannelLinkProps) => {
 	const { slug: orgSlug } = useOrganization()
+	const router = useRouter()
 
 	const { channel } = useChannelWithCurrentUser(channelId)
 
@@ -216,6 +234,15 @@ export const DmChannelLink = ({ channelId, userPresence }: DmChannelLinkProps) =
 	}
 
 	const filteredMembers = (channel.members || []).filter((member) => member.userId !== me?.id)
+
+	// Prefetch messages on hover for instant navigation
+	const handleMouseEnter = useCallback(() => {
+		router.preloadRoute({
+			to: "/$orgSlug/chat/$id",
+			params: { orgSlug: orgSlug || "", id: channelId },
+		})
+		messageCollection.preload()
+	}, [router, orgSlug, channelId])
 
 	const handleToggleMute = useCallback(() => {
 		channelMemberCollection.update(channel.currentUser.id, (member) => {
@@ -238,7 +265,11 @@ export const DmChannelLink = ({ channelId, userPresence }: DmChannelLinkProps) =
 	return (
 		<SidebarMenuItem>
 			<SidebarMenuButton asChild>
-				<Link to="/$orgSlug/chat/$id" params={{ orgSlug: orgSlug || "", id: channelId }}>
+				<Link
+					to="/$orgSlug/chat/$id"
+					params={{ orgSlug: orgSlug || "", id: channelId }}
+					onMouseEnter={handleMouseEnter}
+				>
 					<div className="-space-x-4 flex items-center justify-center">
 						{channel.type === "single" && filteredMembers.length === 1 ? (
 							<div className="flex items-center justify-center gap-3">

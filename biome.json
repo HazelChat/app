@@ -8,15 +8,8 @@
 		}
 	},
 	"files": {
-		"includes": [
-			"apps/**/*.{ts,tsx}",
-			"packages/**/*.{ts,tsx}"
-		],
-		"experimentalScannerIgnores": [
-			".context/**",
-			"node_modules/**",
-			".turbo/**"
-		]
+		"includes": ["apps/**/*.{ts,tsx}", "packages/**/*.{ts,tsx}"],
+		"experimentalScannerIgnores": [".context/**", "node_modules/**", ".turbo/**"]
 	},
 	"linter": {
 		"enabled": true,

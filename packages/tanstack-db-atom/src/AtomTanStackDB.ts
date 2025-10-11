@@ -61,7 +61,36 @@ export const makeCollectionAtom = <T extends object, TKey extends string | numbe
 		// Start sync if not already started
 		collection.startSyncImmediate()
 
-		// Map collection status to Result state
+		// Set up subscription immediately, before checking initial status
+		// This ensures we get notified when async sync completes
+		const subscription = collection.subscribeChanges(() => {
+			const status: CollectionStatus = collection.status
+
+			if (status === "error") {
+				get.setSelf(Result.fail(new Error("Collection failed to load")))
+				return
+			}
+
+			if (status === "loading" || status === "idle") {
+				get.setSelf(Result.initial(true))
+				return
+			}
+
+			if (status === "cleaned-up") {
+				get.setSelf(Result.fail(new Error("Collection has been cleaned up")))
+				return
+			}
+
+			const newData = Array.from(collection.entries()).map(([_, value]) => value)
+			get.setSelf(Result.success(newData))
+		})
+
+		// Cleanup on unmount
+		get.addFinalizer(() => {
+			subscription.unsubscribe()
+		})
+
+		// Return initial state based on current status
 		const status: CollectionStatus = collection.status
 
 		if (status === "error") {
@@ -78,17 +107,6 @@ export const makeCollectionAtom = <T extends object, TKey extends string | numbe
 
 		// Get current data
 		const initialData = Array.from(collection.entries()).map(([_, value]) => value)
-
-		// Subscribe to changes
-		const subscription = collection.subscribeChanges(() => {
-			const newData = Array.from(collection.entries()).map(([_, value]) => value)
-			get.setSelf(Result.success(newData))
-		})
-
-		// Cleanup on unmount
-		get.addFinalizer(() => {
-			subscription.unsubscribe()
-		})
 
 		return Result.success(initialData)
 	})
@@ -114,7 +132,37 @@ export const makeSingleCollectionAtom = <T extends object, TKey extends string |
 		// Start sync if not already started
 		collection.startSyncImmediate()
 
-		// Map collection status to Result state
+		// Set up subscription immediately, before checking initial status
+		// This ensures we get notified when async sync completes
+		const subscription = collection.subscribeChanges(() => {
+			const status: CollectionStatus = collection.status
+
+			if (status === "error") {
+				get.setSelf(Result.fail(new Error("Collection failed to load")))
+				return
+			}
+
+			if (status === "loading" || status === "idle") {
+				get.setSelf(Result.initial(true))
+				return
+			}
+
+			if (status === "cleaned-up") {
+				get.setSelf(Result.fail(new Error("Collection has been cleaned up")))
+				return
+			}
+
+			const entries = Array.from(collection.entries())
+			const newData = entries.length > 0 ? entries[0]![1] : undefined
+			get.setSelf(Result.success(newData))
+		})
+
+		// Cleanup on unmount
+		get.addFinalizer(() => {
+			subscription.unsubscribe()
+		})
+
+		// Return initial state based on current status
 		const status: CollectionStatus = collection.status
 
 		if (status === "error") {
@@ -132,18 +180,6 @@ export const makeSingleCollectionAtom = <T extends object, TKey extends string |
 		// Get current data (single result)
 		const entries = Array.from(collection.entries())
 		const initialData = entries.length > 0 ? entries[0]![1] : undefined
-
-		// Subscribe to changes
-		const subscription = collection.subscribeChanges(() => {
-			const entries = Array.from(collection.entries())
-			const newData = entries.length > 0 ? entries[0]![1] : undefined
-			get.setSelf(Result.success(newData))
-		})
-
-		// Cleanup on unmount
-		get.addFinalizer(() => {
-			subscription.unsubscribe()
-		})
 
 		return Result.success(initialData)
 	})
@@ -178,7 +214,39 @@ export const makeQuery = <TContext extends Context>(
 			gcTime: options?.gcTime ?? 0, // Let atom lifecycle manage GC by default
 		})
 
-		// Map collection status to Result state
+		// Set up subscription immediately, before checking initial status
+		// This ensures we get notified when async sync completes
+		const subscription = collection.subscribeChanges(() => {
+			const status: CollectionStatus = collection.status
+
+			if (status === "error") {
+				get.setSelf(Result.fail(new Error("Query failed to load")))
+				return
+			}
+
+			if (status === "loading" || status === "idle") {
+				get.setSelf(Result.initial(true))
+				return
+			}
+
+			if (status === "cleaned-up") {
+				get.setSelf(Result.fail(new Error("Query collection has been cleaned up")))
+				return
+			}
+
+			// Get current data - handle both single and array results
+			const isSingleResult = (collection as any).config?.singleResult === true
+			const entries = Array.from(collection.entries()).map(([_, value]) => value)
+			const newData = (isSingleResult ? entries[0] : entries) as InferResultType<TContext>
+			get.setSelf(Result.success(newData))
+		})
+
+		// Cleanup on unmount
+		get.addFinalizer(() => {
+			subscription.unsubscribe()
+		})
+
+		// Return initial state based on current status
 		const status: CollectionStatus = collection.status
 
 		if (status === "error") {
@@ -197,18 +265,6 @@ export const makeQuery = <TContext extends Context>(
 		const isSingleResult = (collection as any).config?.singleResult === true
 		const entries = Array.from(collection.entries()).map(([_, value]) => value)
 		const initialData = (isSingleResult ? entries[0] : entries) as InferResultType<TContext>
-
-		// Subscribe to changes
-		const subscription = collection.subscribeChanges(() => {
-			const entries = Array.from(collection.entries()).map(([_, value]) => value)
-			const newData = (isSingleResult ? entries[0] : entries) as InferResultType<TContext>
-			get.setSelf(Result.success(newData))
-		})
-
-		// Cleanup on unmount
-		get.addFinalizer(() => {
-			subscription.unsubscribe()
-		})
 
 		return Result.success(initialData)
 	})

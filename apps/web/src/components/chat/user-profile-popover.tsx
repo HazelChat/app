@@ -24,6 +24,8 @@ interface UserProfilePopoverProps {
 
 export function UserProfilePopover({ userId }: UserProfilePopoverProps) {
 	const { user: currentUser } = useAuth()
+
+	// Query user and presence - matching original pattern from main branch
 	const { data } = useLiveQuery((q) =>
 		q
 			.from({ user: userCollection })
@@ -37,7 +39,6 @@ export function UserProfilePopover({ userId }: UserProfilePopoverProps) {
 	const user = result?.user
 	const presence = result?.presence
 
-	// Internal state for user interactions
 	const [isFavorite, setIsFavorite] = useState(false)
 	const [isMuted, setIsMuted] = useState(false)
 

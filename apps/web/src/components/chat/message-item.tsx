@@ -1,10 +1,10 @@
-import type { Message, PinnedMessage } from "@hazel/db/models"
 import { eq, useLiveQuery } from "@tanstack/react-db"
 import { format } from "date-fns"
 import { useRef, useState } from "react"
 import { Button } from "react-aria-components"
 import { toast } from "sonner"
-import { messageCollection, messageReactionCollection, userCollection } from "~/db/collections"
+import type { MessageWithPinned } from "~/atoms/chat-query-atoms"
+import { messageCollection, messageReactionCollection } from "~/db/collections"
 import { useChat } from "~/hooks/use-chat"
 import { useAuth } from "~/lib/auth"
 import { cx } from "~/utils/cx"
@@ -17,10 +17,6 @@ import { MessageAttachments } from "./message-attachments"
 import { MessageReplySection } from "./message-reply-section"
 import { MessageToolbar } from "./message-toolbar"
 import { UserProfilePopover } from "./user-profile-popover"
-
-type MessageWithPinned = typeof Message.Model.Type & {
-	pinnedMessage: typeof PinnedMessage.Model.Type | null | undefined
-}
 
 interface MessageItemProps {
 	message: MessageWithPinned
@@ -304,7 +300,7 @@ export function MessageItem({
 							setReplyToMessageId(message.id)
 						}}
 						onThread={() => {
-							createThread(message.id)
+							createThread(message.id, message.threadChannelId)
 						}}
 						onForward={() => {
 							// TODO: Implement forward message
@@ -341,22 +337,13 @@ export const MessageAuthorHeader = ({
 	message,
 	isPinned = false,
 }: {
-	message: typeof Message.Model.Type
+	message: MessageWithPinned
 	isPinned?: boolean
 }) => {
-	const { data } = useLiveQuery(
-		(q) =>
-			q
-				.from({ user: userCollection })
-				.where(({ user }) => eq(user.id, message.authorId))
-				.orderBy(({ user }) => user.createdAt, "desc")
-				.limit(1),
-		[message.authorId],
-	)
+	// Author is now directly attached to the message via leftJoin
+	const user = message.author
 
 	const isEdited = message.updatedAt && message.updatedAt.getTime() > message.createdAt.getTime()
-
-	const user = data?.[0]
 
 	if (!user) return null
 

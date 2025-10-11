@@ -41,24 +41,20 @@ const currentVersionAtom = Atom.kvs({
 	defaultValue: () => null,
 })
 
-/**
- * Atom that tracks if the update toast has been shown (in-memory only, resets on page load)
- * This ensures the toast shows on each page load when an update is available
- */
-const updateToastShownAtom = Atom.make(false).pipe(Atom.keepAlive)
 
 /**
  * Atom that periodically checks for new app versions
- * Uses a Stream that polls /version.json every 5 minutes
+ * Checks immediately on load, then polls /version.json every 1 minute
  */
 export const versionCheckAtom = Atom.make((get) =>
-	Stream.fromSchedule(Schedule.spaced(VERSION_CHECK_INTERVAL)).pipe(
+	Stream.fromSchedule(Schedule.fixed(VERSION_CHECK_INTERVAL)).pipe(
 		Stream.mapEffect(() =>
 			Effect.gen(function* () {
 				const latestVersion = yield* fetchVersion
 
 				const storedVersion = get(currentVersionAtom)
 
+				// On first load, store the current version as baseline
 				if (!storedVersion) {
 					get.set(currentVersionAtom, latestVersion)
 					return {
@@ -69,22 +65,19 @@ export const versionCheckAtom = Atom.make((get) =>
 					}
 				}
 
+				// Check if there's a new version by comparing buildTimes
 				const isUpdateAvailable = latestVersion.buildTime > storedVersion.buildTime
 
-				const toastShown = get(updateToastShownAtom)
-				const shouldShowToast = isUpdateAvailable && !toastShown
-
-				console.log("[Version Check] 🎉 New version detected!")
-
-				if (shouldShowToast) {
-					get.set(updateToastShownAtom, true)
+				// Always show toast when update is available (simplified!)
+				if (isUpdateAvailable) {
+					console.log("[Version Check] 🎉 New version detected!")
 				}
 
 				return {
 					current: storedVersion,
 					latest: latestVersion,
 					isUpdateAvailable,
-					shouldShowToast,
+					shouldShowToast: isUpdateAvailable,
 				}
 			}),
 		),
@@ -105,9 +98,8 @@ export const versionCheckAtom = Atom.make((get) =>
 export const checkVersionNow = Effect.gen(function* () {
 	const latestVersion = yield* fetchVersion
 
-	// Read from atoms using Atom.get
+	// Read stored version from atom
 	const storedVersion = yield* Atom.get(currentVersionAtom)
-	const toastShown = yield* Atom.get(updateToastShownAtom)
 
 	if (!storedVersion) {
 		yield* Atom.set(currentVersionAtom, latestVersion)
@@ -120,16 +112,11 @@ export const checkVersionNow = Effect.gen(function* () {
 	}
 
 	const isUpdateAvailable = latestVersion.buildTime > storedVersion.buildTime
-	const shouldShowToast = isUpdateAvailable && !toastShown
-
-	if (shouldShowToast) {
-		yield* Atom.set(updateToastShownAtom, true)
-	}
 
 	return {
 		current: storedVersion,
 		latest: latestVersion,
 		isUpdateAvailable,
-		shouldShowToast,
+		shouldShowToast: isUpdateAvailable,
 	}
 })
