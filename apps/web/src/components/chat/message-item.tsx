@@ -1,9 +1,9 @@
-import type { Message, PinnedMessage } from "@hazel/db/models"
 import { eq, useLiveQuery } from "@tanstack/react-db"
 import { format } from "date-fns"
 import { useRef, useState } from "react"
 import { Button } from "react-aria-components"
 import { toast } from "sonner"
+import type { MessageWithPinned } from "~/atoms/chat-query-atoms"
 import { messageCollection, messageReactionCollection } from "~/db/collections"
 import { useChat } from "~/hooks/use-chat"
 import { useAuth } from "~/lib/auth"
@@ -17,10 +17,6 @@ import { MessageAttachments } from "./message-attachments"
 import { MessageReplySection } from "./message-reply-section"
 import { MessageToolbar } from "./message-toolbar"
 import { UserProfilePopover } from "./user-profile-popover"
-
-type MessageWithPinned = typeof Message.Model.Type & {
-	pinnedMessage: typeof PinnedMessage.Model.Type | null | undefined
-}
 
 interface MessageItemProps {
 	message: MessageWithPinned
@@ -341,12 +337,11 @@ export const MessageAuthorHeader = ({
 	message,
 	isPinned = false,
 }: {
-	message: typeof Message.Model.Type
+	message: MessageWithPinned
 	isPinned?: boolean
 }) => {
-	// Use batched authors from context instead of individual query
-	const { authors } = useChat()
-	const user = authors.get(message.authorId)
+	// Author is now directly attached to the message via leftJoin
+	const user = message.author
 
 	const isEdited = message.updatedAt && message.updatedAt.getTime() > message.createdAt.getTime()
 

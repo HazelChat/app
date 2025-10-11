@@ -1,7 +1,7 @@
 import { eq, useLiveQuery } from "@tanstack/react-db"
 import { format } from "date-fns"
 import { Dialog, DialogTrigger, Popover } from "react-aria-components"
-import { messageCollection, pinnedMessageCollection } from "~/db/collections"
+import { messageCollection, pinnedMessageCollection, userCollection } from "~/db/collections"
 import { useChat } from "~/hooks/use-chat"
 import { ButtonUtility } from "../base/buttons/button-utility"
 import IconClose from "../icons/icon-close"
@@ -20,6 +20,17 @@ export function PinnedMessagesModal() {
 				.innerJoin({ message: messageCollection }, ({ pinned, message }) =>
 					eq(pinned.messageId, message.id),
 				)
+				.leftJoin({ author: userCollection }, ({ message, author }) =>
+					eq(message.authorId, author.id),
+				)
+				.select(({ pinned, message, author }) => ({
+					pinned,
+					message: {
+						...message,
+						pinnedMessage: pinned,
+						author: author,
+					},
+				}))
 				.orderBy(({ pinned }) => pinned.pinnedAt, "desc"),
 		[channelId],
 	)

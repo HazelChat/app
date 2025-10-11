@@ -1,8 +1,8 @@
 import { Atom, Result } from "@effect-atom/atom-react"
-import type { Message, User } from "@hazel/db/models"
-import type { ChannelId, UserId } from "@hazel/db/schema"
+import type { Message, PinnedMessage, User } from "@hazel/db/models"
+import type { ChannelId } from "@hazel/db/schema"
 import { makeQuery } from "@hazel/tanstack-db-atom"
-import { eq, inArray } from "@tanstack/db"
+import { eq } from "@tanstack/db"
 import {
 	channelCollection,
 	messageCollection,
@@ -10,8 +10,9 @@ import {
 	userCollection,
 } from "~/db/collections"
 
-type MessageWithPinned = typeof Message.Model.Type & {
-	pinnedMessage: any
+export type MessageWithPinned = typeof Message.Model.Type & {
+	pinnedMessage: typeof PinnedMessage.Model.Type | null | undefined
+	author: typeof User.Model.Type | null | undefined
 }
 
 export type ProcessedMessage = {
@@ -38,7 +39,7 @@ export const channelByIdAtomFamily = Atom.family((channelId: ChannelId) =>
 
 /**
  * Atom family for fetching messages by channel ID
- * Includes a left join with pinned messages to show pinned status
+ * Includes left joins with pinned messages and user (author) data
  * Returns messages ordered by creation date (most recent first)
  */
 export const messagesByChannelAtomFamily = Atom.family((channelId: ChannelId) =>
@@ -49,38 +50,18 @@ export const messagesByChannelAtomFamily = Atom.family((channelId: ChannelId) =>
 				.leftJoin({ pinned: pinnedMessageCollection }, ({ message, pinned }) =>
 					eq(message.id, pinned.messageId),
 				)
+				.leftJoin({ author: userCollection }, ({ message, author }) =>
+					eq(message.authorId, author.id),
+				)
 				.where(({ message }) => eq(message.channelId, channelId))
-				.select(({ message, pinned }) => ({
+				.select(({ message, pinned, author }) => ({
 					...message,
 					pinnedMessage: pinned,
+					author: author,
 				}))
 				.orderBy(({ message }) => message.createdAt, "desc")
 				.limit(50), // TODO: Implement proper pagination
 	),
-)
-
-/**
- * Atom family for batch fetching users by their IDs
- * This is used to efficiently load all message authors at once
- * instead of making individual queries per message
- */
-export const usersByIdsAtomFamily = Atom.family((userIds: UserId[]) =>
-	makeQuery((q) => {
-		// Only query if we have user IDs
-		if (userIds.length === 0) {
-			return q
-				.from({ user: userCollection })
-				.where(({ user }) => eq(user.id, "" as UserId))
-				.orderBy(({ user }) => user.id, "asc")
-				.limit(0)
-		}
-
-		return q
-			.from({ user: userCollection })
-			.where(({ user }) => inArray(user.id, userIds))
-			.select(({ user }) => user)
-			.orderBy(({ user }) => user.id, "asc")
-	}),
 )
 
 /**
@@ -124,33 +105,5 @@ export const processedMessagesByChannelAtomFamily = Atom.family((channelId: Chan
 				isPinned,
 			}
 		})
-	}),
-)
-
-/**
- * Derived atom: Extracts unique author IDs from messages
- */
-export const authorIdsByChannelAtomFamily = Atom.family((channelId: ChannelId) =>
-	Atom.make((get) => {
-		const messagesResult = get(messagesByChannelAtomFamily(channelId))
-		const messages = Result.getOrElse(messagesResult, () => [])
-		return Array.from(new Set(messages.map((m) => m.authorId)))
-	}),
-)
-
-/**
- * Derived atom: Batch fetches all authors for a channel and returns as Map
- */
-export const authorsByChannelAtomFamily = Atom.family((channelId: ChannelId) =>
-	Atom.make((get) => {
-		const authorIds = get(authorIdsByChannelAtomFamily(channelId))
-		const authorsResult = get(usersByIdsAtomFamily(authorIds))
-		const authorsData = Result.getOrElse(authorsResult, () => [])
-
-		const map = new Map<UserId, typeof User.Model.Type>()
-		for (const author of authorsData) {
-			map.set(author.id, author)
-		}
-		return map
 	}),
 )
