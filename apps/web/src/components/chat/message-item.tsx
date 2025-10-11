@@ -300,7 +300,7 @@ export function MessageItem({
 							setReplyToMessageId(message.id)
 						}}
 						onThread={() => {
-							createThread(message.id)
+							createThread(message.id, message.threadChannelId)
 						}}
 						onForward={() => {
 							// TODO: Implement forward message

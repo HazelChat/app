@@ -9,18 +9,13 @@ import {
 	PinnedMessageId,
 	UserId,
 } from "@hazel/db/schema"
-import { eq } from "@tanstack/db"
-import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useRef } from "react"
+import { createContext, type ReactNode, useCallback, useContext, useMemo } from "react"
 import {
 	activeThreadChannelIdAtom,
 	activeThreadMessageIdAtom,
 	replyToMessageAtomFamily,
 } from "~/atoms/chat-atoms"
-import {
-	channelByIdAtomFamily,
-	type MessageWithPinned,
-	messagesByChannelAtomFamily,
-} from "~/atoms/chat-query-atoms"
+import { channelByIdAtomFamily } from "~/atoms/chat-query-atoms"
 import { sendMessage as sendMessageAction } from "~/db/actions"
 import {
 	channelCollection,
@@ -28,15 +23,12 @@ import {
 	messageReactionCollection,
 	pinnedMessageCollection,
 } from "~/db/collections"
-import { useNotificationSound } from "~/hooks/use-notification-sound"
 import { useAuth } from "~/lib/auth"
 
 interface ChatContextValue {
 	channelId: ChannelId
 	organizationId: OrganizationId
 	channel: typeof Channel.Model.Type | undefined
-	messages: MessageWithPinned[]
-	isLoadingMessages: boolean
 	sendMessage: (props: { content: string; attachments?: AttachmentId[] }) => void
 	editMessage: (messageId: MessageId, content: string) => Promise<void>
 	deleteMessage: (messageId: MessageId) => void
@@ -44,7 +36,7 @@ interface ChatContextValue {
 	removeReaction: (reactionId: MessageReactionId) => void
 	pinMessage: (messageId: MessageId) => void
 	unpinMessage: (pinnedMessageId: PinnedMessageId) => void
-	createThread: (messageId: MessageId) => Promise<void>
+	createThread: (messageId: MessageId, threadChannelId: ChannelId | null) => Promise<void>
 	openThread: (threadChannelId: ChannelId, originalMessageId: MessageId) => void
 	closeThread: () => void
 	activeThreadChannelId: ChannelId | null
@@ -71,7 +63,6 @@ interface ChatProviderProps {
 
 export function ChatProvider({ channelId, organizationId, children }: ChatProviderProps) {
 	const { user } = useAuth()
-	const { playSound } = useNotificationSound()
 
 	// Reply state - per-channel using Atom.family
 	const replyToMessageId = useAtomValue(replyToMessageAtomFamily(channelId))
@@ -83,38 +74,9 @@ export function ChatProvider({ channelId, organizationId, children }: ChatProvid
 	const activeThreadMessageId = useAtomValue(activeThreadMessageIdAtom)
 	const setActiveThreadMessageId = useAtomSet(activeThreadMessageIdAtom)
 
-	const previousMessagesRef = useRef<MessageWithPinned[]>([])
-	const previousChannelIdRef = useRef<ChannelId | null>(null)
-	const prevMessageCountRef = useRef<number>(0)
-
-	// Reset reply state when switching channels
-	useEffect(() => {
-		if (previousChannelIdRef.current && previousChannelIdRef.current !== channelId) {
-			previousMessagesRef.current = []
-			// Reply state is now per-channel via Atom.family, so it auto-resets
-		}
-		previousChannelIdRef.current = channelId
-	}, [channelId])
-
 	// Fetch channel using new tanstack-db-atom
 	const channelResult = useAtomValue(channelByIdAtomFamily(channelId))
 	const channel = Result.getOrElse(channelResult, () => undefined)?.[0]
-
-	// Fetch messages using new tanstack-db-atom (TODO: Add pagination)
-	const messagesResult = useAtomValue(messagesByChannelAtomFamily(channelId))
-	const messagesData = Result.getOrElse(messagesResult, () => [])
-	const messagesLoading = Result.isInitial(messagesResult)
-
-	// Use previous messages during loading states to prevent flashing
-	// Show actual data (even if empty) when successfully loaded
-	const messages = messagesLoading ? previousMessagesRef.current : messagesData
-
-	// Update previous messages when we have valid data (including empty arrays)
-	useEffect(() => {
-		if (!messagesLoading) {
-			previousMessagesRef.current = messagesData
-		}
-	}, [messagesData, messagesLoading])
 
 	// Message operations
 	const sendMessage = useCallback(
@@ -196,18 +158,11 @@ export function ChatProvider({ channelId, organizationId, children }: ChatProvid
 	}, [])
 
 	const createThread = useCallback(
-		async (messageId: MessageId) => {
-			// Find the message to create thread for
-			const message = messages.find((m) => m.id === messageId)
-			if (!message) {
-				console.error("Message not found for thread creation")
-				return
-			}
-
+		async (messageId: MessageId, existingThreadChannelId: ChannelId | null) => {
 			// Check if thread already exists
-			if (message.threadChannelId) {
+			if (existingThreadChannelId) {
 				// Open existing thread
-				setActiveThreadChannelId(message.threadChannelId)
+				setActiveThreadChannelId(existingThreadChannelId)
 				setActiveThreadMessageId(messageId)
 			} else {
 				// Create new thread channel
@@ -230,13 +185,7 @@ export function ChatProvider({ channelId, organizationId, children }: ChatProvid
 				setActiveThreadMessageId(messageId)
 			}
 		},
-		[
-			messages,
-			channelId,
-			organizationId, // Open the newly created thread
-			setActiveThreadChannelId,
-			setActiveThreadMessageId,
-		],
+		[channelId, organizationId, setActiveThreadChannelId, setActiveThreadMessageId],
 	)
 
 	const openThread = useCallback(
@@ -252,44 +201,11 @@ export function ChatProvider({ channelId, organizationId, children }: ChatProvid
 		setActiveThreadMessageId(null)
 	}, [setActiveThreadChannelId, setActiveThreadMessageId])
 
-	// Play sound when new messages arrive from other users (only when window is not focused)
-	// biome-ignore lint/correctness/useExhaustiveDependencies: We intentionally only depend on length changes, not the full array
-	useEffect(() => {
-		// Skip on first render or when switching channels
-		if (prevMessageCountRef.current === 0 || previousChannelIdRef.current !== channelId) {
-			prevMessageCountRef.current = messagesData.length
-			return
-		}
-
-		// Check if we have new messages
-		if (messagesData.length > prevMessageCountRef.current) {
-			// Get the new messages
-			const newMessagesCount = messagesData.length - prevMessageCountRef.current
-			const newMessages = messagesData.slice(0, newMessagesCount)
-
-			// Check if any of the new messages are from other users
-			// TODO: Join with users to get author info
-			const hasOtherUserMessages = newMessages.some((msg) => msg.authorId !== user?.id)
-
-			// Only play sound if window is not focused to avoid duplicate with NotificationManager
-			if (hasOtherUserMessages && document.hidden) {
-				playSound()
-			}
-		}
-
-		prevMessageCountRef.current = messagesData.length
-	}, [messagesData.length, channelId, user?.id, playSound])
-
-	// TODO: Implement pagination for TanStack DB
-	const isLoadingMessages = messagesLoading
-
 	const contextValue = useMemo<ChatContextValue>(
 		() => ({
 			channelId,
 			organizationId,
 			channel,
-			messages,
-			isLoadingMessages,
 			sendMessage,
 			editMessage,
 			deleteMessage,
@@ -309,8 +225,6 @@ export function ChatProvider({ channelId, organizationId, children }: ChatProvid
 			channelId,
 			organizationId,
 			channel,
-			messages,
-			isLoadingMessages,
 			sendMessage,
 			editMessage,
 			deleteMessage,
