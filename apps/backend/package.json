@@ -15,7 +15,7 @@
 	},
 	"devDependencies": {
 		"@effect/language-service": "^0.44.0",
-		"@types/bun": "latest",
+		"@types/bun": "1.2.23",
 		"drizzle-kit": "^0.31.5",
 		"typescript": "^5.9.3"
 	},
