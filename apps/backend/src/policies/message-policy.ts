@@ -2,13 +2,13 @@ import {
 	type ChannelId,
 	type MessageId,
 	policy,
-	policyCompose,
 	UnauthorizedError,
 	withSystemActor,
 } from "@hazel/effect-lib"
-import { Effect, Option, pipe } from "effect"
+import { Effect, Option } from "effect"
 import { ChannelMemberRepo } from "../repositories/channel-member-repo"
 import { ChannelRepo } from "../repositories/channel-repo"
+import { DirectMessageParticipantRepo } from "../repositories/direct-message-participant-repo"
 import { MessageRepo } from "../repositories/message-repo"
 import { OrganizationMemberRepo } from "../repositories/organization-member-repo"
 
@@ -17,9 +17,10 @@ export class MessagePolicy extends Effect.Service<MessagePolicy>()("MessagePolic
 		const policyEntity = "Message" as const
 
 		const messageRepo = yield* MessageRepo
-		const _channelMemberRepo = yield* ChannelMemberRepo
+		const channelMemberRepo = yield* ChannelMemberRepo
 		const channelRepo = yield* ChannelRepo
 		const organizationMemberRepo = yield* OrganizationMemberRepo
+		const dmParticipantRepo = yield* DirectMessageParticipantRepo
 
 		const canCreate = (channelId: ChannelId) =>
 			UnauthorizedError.refail(
@@ -31,25 +32,91 @@ export class MessagePolicy extends Effect.Service<MessagePolicy>()("MessagePolic
 						policyEntity,
 						"create",
 						Effect.fn(`${policyEntity}.create`)(function* (actor) {
-							// Check if user is a member of the organization (for public channels)
+							// Check if user is a member of the organization
 							const orgMember = yield* organizationMemberRepo
 								.findByOrgAndUser(channel.organizationId, actor.id)
 								.pipe(withSystemActor)
 
-							if (Option.isSome(orgMember)) {
+							// Handle based on channel type
+							if (channel.type === "public") {
 								// Org members can post in public channels
-								if (channel.type === "public") {
-									return yield* Effect.succeed(true)
-								}
-
-								// For private channels, would need to check channel membership
-								// Simplified for now - admins can post anywhere
-								if (orgMember.value.role === "admin") {
-									return yield* Effect.succeed(true)
-								}
+								return Option.isSome(orgMember)
 							}
 
-							return yield* Effect.succeed(false)
+							if (channel.type === "private") {
+								// Check if user is a channel member or org admin
+								if (Option.isSome(orgMember) && orgMember.value.role === "admin") {
+									return true
+								}
+
+								const channelMembership = yield* channelMemberRepo
+									.findByChannelAndUser(channelId, actor.id)
+									.pipe(withSystemActor)
+
+								return Option.isSome(channelMembership)
+							}
+
+							if (channel.type === "direct" || channel.type === "single") {
+								// Check if user is a DM participant
+								const participant = yield* dmParticipantRepo
+									.findByChannelAndUser(channelId, actor.id)
+									.pipe(withSystemActor)
+
+								return Option.isSome(participant)
+							}
+
+							if (channel.type === "thread") {
+								// Threads inherit permissions from parent channel
+								if (channel.parentChannelId) {
+									// Check parent channel - get parent channel and check its type
+									const parentChannel = yield* channelRepo
+										.findById(channel.parentChannelId)
+										.pipe(withSystemActor)
+
+									if (Option.isNone(parentChannel)) {
+										return false
+									}
+
+									const parent = parentChannel.value
+
+									// Check parent channel permissions based on its type
+									if (parent.type === "public") {
+										return Option.isSome(orgMember)
+									}
+
+									if (parent.type === "private") {
+										if (Option.isSome(orgMember) && orgMember.value.role === "admin") {
+											return true
+										}
+
+										const parentMembership = yield* channelMemberRepo
+											.findByChannelAndUser(parent.id, actor.id)
+											.pipe(withSystemActor)
+
+										return Option.isSome(parentMembership)
+									}
+
+									if (parent.type === "direct" || parent.type === "single") {
+										const parentParticipant = yield* dmParticipantRepo
+											.findByChannelAndUser(parent.id, actor.id)
+											.pipe(withSystemActor)
+
+										return Option.isSome(parentParticipant)
+									}
+
+									if (parent.type === "thread") {
+										// Nested threads not supported - deny
+										return false
+									}
+
+									// Unknown parent type - deny
+									return false
+								}
+								// Thread without parent - deny
+								return false
+							}
+
+							return false
 						}),
 					),
 				),
@@ -78,29 +145,27 @@ export class MessagePolicy extends Effect.Service<MessagePolicy>()("MessagePolic
 				"delete",
 			)(
 				messageRepo.with(id, (message) =>
-					pipe(
-						channelRepo.with(message.channelId, (channel) =>
-							policy(
-								policyEntity,
-								"delete",
-								Effect.fn(`${policyEntity}.delete`)(function* (actor) {
-									// Author can delete their own message
-									if (actor.id === message.authorId) {
-										return yield* Effect.succeed(true)
-									}
+					channelRepo.with(message.channelId, (channel) =>
+						policy(
+							policyEntity,
+							"delete",
+							Effect.fn(`${policyEntity}.delete`)(function* (actor) {
+								// Author can delete their own message
+								if (actor.id === message.authorId) {
+									return yield* Effect.succeed(true)
+								}
 
-									// Organization admin can delete any message
-									const orgMember = yield* organizationMemberRepo
-										.findByOrgAndUser(channel.organizationId, actor.id)
-										.pipe(withSystemActor)
+								// Organization admin can delete any message
+								const orgMember = yield* organizationMemberRepo
+									.findByOrgAndUser(channel.organizationId, actor.id)
+									.pipe(withSystemActor)
 
-									if (Option.isSome(orgMember) && orgMember.value.role === "admin") {
-										return yield* Effect.succeed(true)
-									}
+								if (Option.isSome(orgMember) && orgMember.value.role === "admin") {
+									return yield* Effect.succeed(true)
+								}
 
-									return yield* Effect.succeed(false)
-								}),
-							),
+								return yield* Effect.succeed(false)
+							}),
 						),
 					),
 				),
@@ -113,6 +178,7 @@ export class MessagePolicy extends Effect.Service<MessagePolicy>()("MessagePolic
 		ChannelMemberRepo.Default,
 		ChannelRepo.Default,
 		OrganizationMemberRepo.Default,
+		DirectMessageParticipantRepo.Default,
 	],
 	accessors: true,
 }) {}

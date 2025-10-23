@@ -83,9 +83,30 @@ export class DirectMessageParticipantRepo extends Effect.Service<DirectMessagePa
 					)({ userId1, userId2, organizationId }, tx)
 					.pipe(Effect.map((results) => Option.fromNullable(results[0]?.channel)))
 
+			const findByChannelAndUser = (channelId: string, userId: UserId, tx?: TxFn) =>
+				db
+					.makeQuery(
+						(execute, data: { channelId: string; userId: UserId }) =>
+							execute((client) =>
+								client
+									.select()
+									.from(schema.directMessageParticipantsTable)
+									.where(
+										and(
+											eq(schema.directMessageParticipantsTable.channelId, data.channelId as any),
+											eq(schema.directMessageParticipantsTable.userId, data.userId),
+										),
+									)
+									.limit(1),
+							),
+						policyRequire("DirectMessageParticipant", "select"),
+					)({ channelId, userId }, tx)
+					.pipe(Effect.map((results) => Option.fromNullable(results[0])))
+
 			return {
 				...baseRepo,
 				findExistingDmChannel,
+				findByChannelAndUser,
 			}
 		}),
 		dependencies: [DatabaseLive],
