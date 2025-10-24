@@ -1,6 +1,7 @@
 import { and, eq, inArray, useLiveQuery } from "@tanstack/react-db"
 import { useParams } from "@tanstack/react-router"
-import { Attachment01, XClose } from "@untitledui/icons"
+import { FileIcon } from "@untitledui/file-icons"
+import { XClose } from "@untitledui/icons"
 import { useMemo, useRef } from "react"
 import { attachmentCollection, channelMemberCollection } from "~/db/collections"
 import { useOrganization } from "~/hooks/use-organization"
@@ -8,6 +9,7 @@ import { useTyping } from "~/hooks/use-typing"
 import { useAuth } from "~/lib/auth"
 import { useChat } from "~/providers/chat-provider"
 import { cx } from "~/utils/cx"
+import { formatFileSize, getFileTypeFromName } from "~/utils/file-utils"
 import { ButtonUtility } from "../base/buttons/button-utility"
 import { MarkdownEditor, type MarkdownEditorRef } from "../markdown-editor"
 import { ReplyIndicator } from "./reply-indicator"
@@ -17,20 +19,12 @@ interface MessageComposerProps {
 }
 
 export const MessageComposer = ({ placeholder = "Type a message..." }: MessageComposerProps) => {
-	const { orgSlug } = useParams({ from: "/_app/$orgSlug" })
-	const { organizationId } = useOrganization()
 	const { user } = useAuth()
-	const {
-		sendMessage,
-		replyToMessageId,
-		setReplyToMessageId,
-		channelId,
-		attachmentIds,
-		removeAttachment,
-	} = useChat()
+	const { sendMessage, replyToMessageId, setReplyToMessageId, channelId, attachmentIds, removeAttachment } =
+		useChat()
+
 	const editorRef = useRef<MarkdownEditorRef | null>(null)
 
-	// Get current user's channel member
 	const { data: channelMembersData } = useLiveQuery(
 		(q) =>
 			q
@@ -71,11 +65,10 @@ export const MessageComposer = ({ placeholder = "Type a message..." }: MessageCo
 	}
 
 	const handleSubmit = async (content: string) => {
-		const _tx = sendMessage({
+		sendMessage({
 			content,
 		})
 
-		// Stop typing when message is sent
 		stopTyping()
 	}
 
@@ -83,7 +76,6 @@ export const MessageComposer = ({ placeholder = "Type a message..." }: MessageCo
 		<div className={"relative flex h-max items-center gap-3"}>
 			<div className="w-full">
 				{/* Container for reply indicator and attachment preview */}
-
 				{replyToMessageId && (
 					<ReplyIndicator
 						replyToMessageId={replyToMessageId}
@@ -95,22 +87,34 @@ export const MessageComposer = ({ placeholder = "Type a message..." }: MessageCo
 				{attachmentIds.length > 0 && (
 					<div
 						className={cx(
-							"rounded-t-md border border-primary px-3 py-2",
-							replyToMessageId && "rounded-none border-primary border-x border-t",
+							"rounded-t-md border border-secondary border-b-0 px-2 py-1",
+							replyToMessageId && "rounded-none border-secondary border-x border-t",
 						)}
 					>
-						<div className="flex flex-wrap gap-2">
+						<div className="grid grid-cols-2 gap-1 md:grid-cols-3 lg:grid-cols-4">
 							{attachmentIds.map((attachmentId) => {
 								const attachment = attachments?.find((a) => a?.id === attachmentId)
 								const fileName = attachment?.fileName || "File"
+								const fileSize = attachment?.fileSize || 0
+								const fileType = getFileTypeFromName(fileName)
 
 								return (
 									<div
 										key={attachmentId}
-										className="inline-flex items-center gap-1 rounded-md bg-primary px-2 py-1"
+										className="group flex items-center gap-2 rounded-lg bg-secondary p-2 transition-colors hover:bg-tertiary"
 									>
-										<Attachment01 className="size-3 text-fg-quaternary" />
-										<span className="text-secondary text-xs">{fileName}</span>
+										<FileIcon
+											type={fileType}
+											className="size-8 shrink-0 text-fg-quaternary"
+										/>
+										<div className="min-w-0 flex-1">
+											<div className="truncate font-medium text-secondary text-sm">
+												{fileName}
+											</div>
+											<div className="text-quaternary text-xs">
+												{formatFileSize(fileSize)}
+											</div>
+										</div>
 										<ButtonUtility
 											icon={XClose}
 											size="xs"

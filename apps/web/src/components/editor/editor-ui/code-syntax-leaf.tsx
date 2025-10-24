@@ -14,11 +14,7 @@ export function CodeSyntaxLeaf({ className, ...props }: PlateLeafProps) {
 		<PlateLeaf
 			{...props}
 			as="span"
-			className={cn(
-				"text-inherit",
-				tokenType && `token ${tokenType}`,
-				className,
-			)}
+			className={cn("text-inherit", tokenType && `token ${tokenType}`, className)}
 		>
 			{children}
 		</PlateLeaf>

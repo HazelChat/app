@@ -1,10 +1,4 @@
-import {
-	type ChannelId,
-	type MessageId,
-	policy,
-	UnauthorizedError,
-	withSystemActor,
-} from "@hazel/effect-lib"
+import { type ChannelId, type MessageId, policy, UnauthorizedError, withSystemActor } from "@hazel/effect-lib"
 import { Effect, Option } from "effect"
 import { ChannelMemberRepo } from "../repositories/channel-member-repo"
 import { ChannelRepo } from "../repositories/channel-repo"

@@ -26,7 +26,7 @@ interface MessageComposerActionsProps {
 }
 
 export const MessageComposerActions = forwardRef<MessageComposerActionsRef, MessageComposerActionsProps>(
-	({ onEmojiSelect }, ref) => {
+	({ onEmojiSelect }, _ref) => {
 		const { organizationId } = useOrganization()
 		const fileInputRef = useRef<HTMLInputElement>(null)
 		const [emojiPickerOpen, setEmojiPickerOpen] = useState(false)

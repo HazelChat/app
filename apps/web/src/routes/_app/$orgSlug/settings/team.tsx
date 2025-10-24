@@ -263,13 +263,16 @@ function RouteComponent() {
 																	`${member.user.firstName} ${member.user.lastName}`,
 																)
 															} else if (action === "change-role") {
-																const currentUserMember = teamMembers.find((m) => m.userId === user?.id)
+																const currentUserMember = teamMembers.find(
+																	(m) => m.userId === user?.id,
+																)
 																openModal("change-role", {
 																	userId: member.userId,
 																	name: `${member.user.firstName} ${member.user.lastName}`,
 																	memberId: member.id,
 																	role: member.role,
-																	currentUserRole: currentUserMember?.role || "member",
+																	currentUserRole:
+																		currentUserMember?.role || "member",
 																})
 															} else if (action === "remove") {
 																setRemoveUserId(member.userId)
