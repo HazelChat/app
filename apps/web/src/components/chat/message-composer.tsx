@@ -45,13 +45,12 @@ export const MessageComposer = ({ placeholder = "Type a message..." }: MessageCo
 		return channelMembersData?.[0] || null
 	}, [channelMembersData])
 
-	// Use the new typing hook
 	const { handleContentChange, stopTyping } = useTyping({
 		channelId,
 		memberId: currentChannelMember?.id || null,
 	})
 
-	const { uploads, removeUpload, retryUpload, clearUploads } = useFileUpload({
+	const { removeUpload } = useFileUpload({
 		organizationId: organizationId!,
 		channelId: channelId,
 		onUploadComplete: (attachmentId) => {
