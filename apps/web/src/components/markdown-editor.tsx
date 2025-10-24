@@ -1,6 +1,5 @@
 "use client"
 
-import type { AttachmentId } from "@hazel/db/schema"
 import { Plate, usePlateEditor } from "platejs/react"
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef } from "react"
 import { Node } from "slate"
@@ -25,30 +24,10 @@ interface MarkdownEditorProps {
 	className?: string
 	onSubmit?: (content: string) => void | Promise<void>
 	onUpdate?: (content: string) => void
-	attachmentIds?: AttachmentId[]
-	setAttachmentIds?: (ids: AttachmentId[]) => void
-	uploads?: Array<{
-		fileId: string
-		fileName: string
-		progress: number
-		status: string
-		attachmentId?: AttachmentId
-	}>
 }
 
 export const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>(
-	(
-		{
-			placeholder = "Type a message...",
-			className,
-			onSubmit,
-			onUpdate,
-			attachmentIds = [],
-			setAttachmentIds,
-			uploads = [],
-		},
-		ref,
-	) => {
+	({ placeholder = "Type a message...", className, onSubmit, onUpdate }, ref) => {
 		const actionsRef = useRef<{ cleanup: () => void } | null>(null)
 
 		const editor = usePlateEditor(
@@ -129,13 +108,6 @@ export const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>
 		const handleSubmit = async () => {
 			if (!onSubmit) return
 
-			// Check if any uploads are in progress
-			const isUploading = uploads.some((upload) => upload.status === "uploading")
-			if (isUploading) {
-				// Don't submit while uploads are in progress
-				return
-			}
-
 			const textContent = editor.api.markdown.serialize().trim()
 
 			function isEffectivelyEmpty(str: string) {
@@ -149,21 +121,13 @@ export const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>
 
 			await onSubmit(textContent)
 
-			setAttachmentIds?.([])
-			actionsRef.current?.cleanup()
-
 			resetAndFocus()
 		}
 
 		const handleKeyDown = (event: React.KeyboardEvent) => {
 			if (event.key === "Enter" && !event.shiftKey) {
 				event.preventDefault()
-
-				// Check if any uploads are in progress
-				const isUploading = uploads.some((upload) => upload.status === "uploading")
-				if (!isUploading) {
-					handleSubmit()
-				}
+				handleSubmit()
 			}
 		}
 
@@ -221,16 +185,11 @@ export const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>
 						placeholder={placeholder}
 						onKeyDown={handleKeyDown}
 					/>
-					{setAttachmentIds && (
-						<MessageComposerActions
-							ref={actionsRef}
-							attachmentIds={attachmentIds}
-							setAttachmentIds={setAttachmentIds}
-							uploads={uploads}
-							onSubmit={handleSubmit}
-							onEmojiSelect={handleEmojiSelect}
-						/>
-					)}
+					<MessageComposerActions
+						ref={actionsRef}
+						onSubmit={handleSubmit}
+						onEmojiSelect={handleEmojiSelect}
+					/>
 				</EditorContainer>
 			</Plate>
 		)

@@ -14,6 +14,7 @@ import {
 	activeThreadChannelIdAtom,
 	activeThreadMessageIdAtom,
 	replyToMessageAtomFamily,
+	uploadedAttachmentsAtomFamily,
 } from "~/atoms/chat-atoms"
 import { channelByIdAtomFamily } from "~/atoms/chat-query-atoms"
 import { sendMessage as sendMessageAction } from "~/db/actions"
@@ -43,6 +44,10 @@ interface ChatContextValue {
 	activeThreadMessageId: MessageId | null
 	replyToMessageId: MessageId | null
 	setReplyToMessageId: (messageId: MessageId | null) => void
+	attachmentIds: AttachmentId[]
+	addAttachment: (attachmentId: AttachmentId) => void
+	removeAttachment: (attachmentId: AttachmentId) => void
+	clearAttachments: () => void
 }
 
 const ChatContext = createContext<ChatContextValue | undefined>(undefined)
@@ -74,14 +79,40 @@ export function ChatProvider({ channelId, organizationId, children }: ChatProvid
 	const activeThreadMessageId = useAtomValue(activeThreadMessageIdAtom)
 	const setActiveThreadMessageId = useAtomSet(activeThreadMessageIdAtom)
 
+	// Attachment state - per-channel using Atom.family
+	const attachmentIds = useAtomValue(uploadedAttachmentsAtomFamily(channelId))
+	const setAttachmentIds = useAtomSet(uploadedAttachmentsAtomFamily(channelId))
+
 	// Fetch channel using new tanstack-db-atom
 	const channelResult = useAtomValue(channelByIdAtomFamily(channelId))
 	const channel = Result.getOrElse(channelResult, () => undefined)?.[0]
+
+	// Attachment operations
+	const addAttachment = useCallback(
+		(attachmentId: AttachmentId) => {
+			setAttachmentIds([...attachmentIds, attachmentId])
+		},
+		[attachmentIds, setAttachmentIds],
+	)
+
+	const removeAttachment = useCallback(
+		(attachmentId: AttachmentId) => {
+			setAttachmentIds(attachmentIds.filter((id) => id !== attachmentId))
+		},
+		[attachmentIds, setAttachmentIds],
+	)
+
+	const clearAttachments = useCallback(() => {
+		setAttachmentIds([])
+	}, [setAttachmentIds])
 
 	// Message operations
 	const sendMessage = useCallback(
 		async ({ content, attachments }: { content: string; attachments?: AttachmentId[] }) => {
 			if (!user?.id) return
+
+			// Use attachments from the atom if not provided
+			const attachmentsToSend = attachments ?? attachmentIds
 
 			// Use the sendMessage action which handles both message creation and attachment linking
 			const tx = sendMessageAction({
@@ -90,17 +121,18 @@ export function ChatProvider({ channelId, organizationId, children }: ChatProvid
 				content,
 				replyToMessageId,
 				threadChannelId: null,
-				attachmentIds: attachments as AttachmentId[] | undefined,
+				attachmentIds: attachmentsToSend as AttachmentId[] | undefined,
 			})
 
-			// Clear reply state immediately for instant UI feedback
+			// Clear reply state and attachments immediately for instant UI feedback
 			setReplyToMessageId(null)
+			clearAttachments()
 
 			await tx.isPersisted.promise
 
 			console.log("tx", tx)
 		},
-		[channelId, user?.id, replyToMessageId, setReplyToMessageId],
+		[channelId, user?.id, replyToMessageId, attachmentIds, setReplyToMessageId, clearAttachments],
 	)
 
 	const editMessage = useCallback(async (messageId: MessageId, content: string) => {
@@ -220,6 +252,10 @@ export function ChatProvider({ channelId, organizationId, children }: ChatProvid
 			activeThreadMessageId,
 			replyToMessageId,
 			setReplyToMessageId,
+			attachmentIds,
+			addAttachment,
+			removeAttachment,
+			clearAttachments,
 		}),
 		[
 			channelId,
@@ -239,6 +275,10 @@ export function ChatProvider({ channelId, organizationId, children }: ChatProvid
 			activeThreadMessageId,
 			replyToMessageId,
 			setReplyToMessageId,
+			attachmentIds,
+			addAttachment,
+			removeAttachment,
+			clearAttachments,
 		],
 	)
 
