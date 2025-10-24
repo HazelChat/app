@@ -32,7 +32,8 @@ export const MessageComposerActions = forwardRef<MessageComposerActionsRef, Mess
 		const [emojiPickerOpen, setEmojiPickerOpen] = useState(false)
 		const { trackEmojiUsage } = useEmojiStats()
 
-		const { channelId, addAttachment, isUploading, setIsUploading } = useChat()
+		const { channelId, addAttachment, isUploading, setIsUploading, addUploadingFile, removeUploadingFile } =
+			useChat()
 
 		const { uploadFile } = useFileUpload({
 			organizationId: organizationId!,
@@ -45,7 +46,23 @@ export const MessageComposerActions = forwardRef<MessageComposerActionsRef, Mess
 				setIsUploading(true)
 				// Upload files sequentially
 				for (const file of Array.from(files)) {
+					// Generate unique file ID for tracking
+					const fileId = crypto.randomUUID()
+
+					// Add to uploading files state (shows loading spinner)
+					addUploadingFile({
+						fileId,
+						fileName: file.name,
+						fileSize: file.size,
+					})
+
+					// Upload the file
 					const attachmentId = await uploadFile(file)
+
+					// Remove from uploading files state
+					removeUploadingFile(fileId)
+
+					// Add to completed attachments if successful
 					if (attachmentId) {
 						addAttachment(attachmentId)
 					}

@@ -6,7 +6,6 @@ import { toast } from "sonner"
 import { IconNotification } from "~/components/application/notifications/notifications"
 import { useAuth } from "~/lib/auth"
 import { HazelApiClient } from "~/lib/services/common/atom-client"
-import { toastExit } from "~/lib/toast-exit"
 
 interface UseFileUploadOptions {
 	organizationId: OrganizationId
@@ -56,20 +55,23 @@ export function useFileUpload({
 			formData.append("organizationId", organizationId)
 			formData.append("channelId", channelId)
 
-			const res = await toastExit(
-				uploadFileMutation({
-					payload: formData,
-				}),
-				{
-					loading: "Uploading file...",
-					success: (result) => `${result.data.fileName} uploaded successfully`,
-					error: "Failed to upload file",
-				},
-			)
+			const res = await uploadFileMutation({
+				payload: formData,
+			})
 
 			if (Exit.isSuccess(res)) {
 				return res.value.data.id
 			}
+
+			// Show error toast if upload failed
+			toast.custom((t) => (
+				<IconNotification
+					title="Upload failed"
+					description="Failed to upload file. Please try again."
+					color="error"
+					onClose={() => toast.dismiss(t)}
+				/>
+			))
 
 			return null
 		},

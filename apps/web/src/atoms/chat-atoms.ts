@@ -45,3 +45,17 @@ export const uploadedAttachmentsAtomFamily = Atom.family((_channelId: ChannelId)
 export const isUploadingAtomFamily = Atom.family((_channelId: ChannelId) =>
 	Atom.make<boolean>(false).pipe(Atom.keepAlive),
 )
+
+/**
+ * Per-channel uploading files
+ * Tracks files currently being uploaded with their metadata for display in composer
+ */
+export interface UploadingFile {
+	fileId: string
+	fileName: string
+	fileSize: number
+}
+
+export const uploadingFilesAtomFamily = Atom.family((_channelId: ChannelId) =>
+	Atom.make<UploadingFile[]>([]).pipe(Atom.keepAlive),
+)

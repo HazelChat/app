@@ -11,11 +11,13 @@ import {
 } from "@hazel/db/schema"
 import { createContext, type ReactNode, useCallback, useContext, useMemo } from "react"
 import {
+	type UploadingFile,
 	activeThreadChannelIdAtom,
 	activeThreadMessageIdAtom,
 	isUploadingAtomFamily,
 	replyToMessageAtomFamily,
 	uploadedAttachmentsAtomFamily,
+	uploadingFilesAtomFamily,
 } from "~/atoms/chat-atoms"
 import { channelByIdAtomFamily } from "~/atoms/chat-query-atoms"
 import { sendMessage as sendMessageAction } from "~/db/actions"
@@ -51,6 +53,9 @@ interface ChatContextValue {
 	clearAttachments: () => void
 	isUploading: boolean
 	setIsUploading: (value: boolean) => void
+	uploadingFiles: UploadingFile[]
+	addUploadingFile: (file: UploadingFile) => void
+	removeUploadingFile: (fileId: string) => void
 }
 
 const ChatContext = createContext<ChatContextValue | undefined>(undefined)
@@ -90,6 +95,10 @@ export function ChatProvider({ channelId, organizationId, children }: ChatProvid
 	const isUploading = useAtomValue(isUploadingAtomFamily(channelId))
 	const setIsUploading = useAtomSet(isUploadingAtomFamily(channelId))
 
+	// Uploading files - per-channel using Atom.family
+	const uploadingFiles = useAtomValue(uploadingFilesAtomFamily(channelId))
+	const setUploadingFiles = useAtomSet(uploadingFilesAtomFamily(channelId))
+
 	// Fetch channel using new tanstack-db-atom
 	const channelResult = useAtomValue(channelByIdAtomFamily(channelId))
 	const channel = Result.getOrElse(channelResult, () => undefined)?.[0]
@@ -112,6 +121,21 @@ export function ChatProvider({ channelId, organizationId, children }: ChatProvid
 	const clearAttachments = useCallback(() => {
 		setAttachmentIds([])
 	}, [setAttachmentIds])
+
+	// Uploading file operations
+	const addUploadingFile = useCallback(
+		(file: UploadingFile) => {
+			setUploadingFiles([...uploadingFiles, file])
+		},
+		[uploadingFiles, setUploadingFiles],
+	)
+
+	const removeUploadingFile = useCallback(
+		(fileId: string) => {
+			setUploadingFiles(uploadingFiles.filter((f) => f.fileId !== fileId))
+		},
+		[uploadingFiles, setUploadingFiles],
+	)
 
 	// Message operations
 	const sendMessage = useCallback(
@@ -265,6 +289,9 @@ export function ChatProvider({ channelId, organizationId, children }: ChatProvid
 			clearAttachments,
 			isUploading,
 			setIsUploading,
+			uploadingFiles,
+			addUploadingFile,
+			removeUploadingFile,
 		}),
 		[
 			channelId,
@@ -290,6 +317,9 @@ export function ChatProvider({ channelId, organizationId, children }: ChatProvid
 			clearAttachments,
 			isUploading,
 			setIsUploading,
+			uploadingFiles,
+			addUploadingFile,
+			removeUploadingFile,
 		],
 	)
 

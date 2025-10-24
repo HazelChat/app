@@ -18,7 +18,7 @@ export function MessageList() {
 		hasNextPage: _hasNextPage,
 		isLoading,
 	} = useLiveInfiniteQuery(messagesInfiniteQuery, {
-		pageSize: 150,
+		pageSize: 50,
 		getNextPageParam: (lastPage) => (lastPage.length === 20 ? lastPage.length : undefined),
 	})
 
