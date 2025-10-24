@@ -93,7 +93,10 @@ export class DirectMessageParticipantRepo extends Effect.Service<DirectMessagePa
 									.from(schema.directMessageParticipantsTable)
 									.where(
 										and(
-											eq(schema.directMessageParticipantsTable.channelId, data.channelId as any),
+											eq(
+												schema.directMessageParticipantsTable.channelId,
+												data.channelId as any,
+											),
 											eq(schema.directMessageParticipantsTable.userId, data.userId),
 										),
 									)

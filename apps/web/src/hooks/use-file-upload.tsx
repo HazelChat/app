@@ -1,193 +1,82 @@
+import { useAtomSet } from "@effect-atom/atom-react"
 import type { AttachmentId, ChannelId, OrganizationId } from "@hazel/db/schema"
-import { AttachmentId as AttachmentIdSchema, UserId } from "@hazel/db/schema"
-import { useCallback, useState } from "react"
+import { Exit } from "effect"
+import { useCallback } from "react"
 import { toast } from "sonner"
 import { IconNotification } from "~/components/application/notifications/notifications"
-import { uploadAttachment } from "~/db/actions"
 import { useAuth } from "~/lib/auth"
-
-export interface FileUploadProgress {
-	fileId: string
-	fileName: string
-	fileSize: number
-	progress: number
-	status: "pending" | "uploading" | "complete" | "failed"
-	attachmentId?: AttachmentId
-	error?: string
-	file?: File
-}
+import { HazelApiClient } from "~/lib/services/common/atom-client"
+import { toastExit } from "~/lib/toast-exit"
 
 interface UseFileUploadOptions {
 	organizationId: OrganizationId
 	channelId: ChannelId
-	onUploadComplete?: (attachmentId: AttachmentId) => void
-	onUploadError?: (error: Error) => void
-	maxFileSize?: number // in bytes
+	maxFileSize?: number
 }
 
 export function useFileUpload({
 	organizationId,
 	channelId,
-	onUploadComplete,
-	onUploadError,
-	maxFileSize = 10 * 1024 * 1024, // 10MB default
+	maxFileSize = 10 * 1024 * 1024,
 }: UseFileUploadOptions) {
-	const [uploads, setUploads] = useState<Map<string, FileUploadProgress>>(new Map())
 	const { user } = useAuth()
+
+	const uploadFileMutation = useAtomSet(HazelApiClient.mutation("attachments", "upload"), {
+		mode: "promiseExit",
+	})
 
 	const uploadFile = useCallback(
 		async (file: File): Promise<AttachmentId | null> => {
 			if (!user?.id) {
-				const error = new Error("User not authenticated")
-				onUploadError?.(error)
+				toast.custom((t) => (
+					<IconNotification
+						title="Authentication required"
+						description="You must be logged in to upload files"
+						color="error"
+						onClose={() => toast.dismiss(t)}
+					/>
+				))
 				return null
 			}
 
-			const fileId = `${file.name}-${Date.now()}`
-
-			// Validate file size
 			if (file.size > maxFileSize) {
-				const error = new Error(`File size exceeds ${maxFileSize / 1024 / 1024}MB limit`)
 				toast.custom((t) => (
 					<IconNotification
 						title="File too large"
-						description={error.message}
+						description={`File size exceeds ${maxFileSize / 1024 / 1024}MB limit`}
 						color="error"
 						onClose={() => toast.dismiss(t)}
 					/>
 				))
-				onUploadError?.(error)
 				return null
 			}
 
-			// Add to uploads tracking
-			setUploads((prev) => {
-				const next = new Map(prev)
-				next.set(fileId, {
-					fileId,
-					fileName: file.name,
-					fileSize: file.size,
-					progress: 0,
-					status: "pending",
-					file: file,
-				})
-				return next
-			})
+			const formData = new FormData()
+			formData.append("file", file, file.name)
+			formData.append("organizationId", organizationId)
+			formData.append("channelId", channelId)
 
-			try {
-				// Update status to uploading
-				setUploads((prev) => {
-					const next = new Map(prev)
-					const upload = next.get(fileId)
-					if (upload) {
-						upload.status = "uploading"
-						upload.progress = 25
-					}
-					return next
-				})
+			const res = await toastExit(
+				uploadFileMutation({
+					payload: formData,
+				}),
+				{
+					loading: "Uploading file...",
+					success: (result) => `${result.data.fileName} uploaded successfully`,
+					error: "Failed to upload file",
+				},
+			)
 
-				// Generate attachment ID
-				const attachmentId = AttachmentIdSchema.make(crypto.randomUUID())
-
-				// Use the uploadAttachment action
-				await uploadAttachment({
-					organizationId,
-					file,
-					channelId: channelId,
-					userId: UserId.make(user.id),
-					attachmentId,
-				})
-
-				// Update progress after upload
-				setUploads((prev) => {
-					const next = new Map(prev)
-					const upload = next.get(fileId)
-					if (upload) {
-						upload.progress = 75
-					}
-					return next
-				})
-
-				// Update status to complete
-				setUploads((prev) => {
-					const next = new Map(prev)
-					const upload = next.get(fileId)
-					if (upload) {
-						upload.status = "complete"
-						upload.progress = 100
-						upload.attachmentId = attachmentId
-					}
-					return next
-				})
-
-				onUploadComplete?.(attachmentId)
-				return attachmentId
-			} catch (error) {
-				console.error("Upload failed:", error)
-
-				// Update status to failed
-				setUploads((prev) => {
-					const next = new Map(prev)
-					const upload = next.get(fileId)
-					if (upload) {
-						upload.status = "failed"
-						upload.error = error instanceof Error ? error.message : "Upload failed"
-					}
-					return next
-				})
-
-				toast.custom((t) => (
-					<IconNotification
-						title="Upload failed"
-						description={error instanceof Error ? error.message : "Failed to upload file"}
-						color="error"
-						onClose={() => toast.dismiss(t)}
-					/>
-				))
-
-				onUploadError?.(error instanceof Error ? error : new Error("Upload failed"))
-				return null
+			if (Exit.isSuccess(res)) {
+				return res.value.data.id
 			}
+
+			return null
 		},
-		[maxFileSize, onUploadComplete, onUploadError, organizationId, channelId, user?.id],
-	)
-
-	const uploadFiles = useCallback(
-		async (files: FileList | File[]): Promise<AttachmentId[]> => {
-			const fileArray = Array.from(files)
-			const results = await Promise.all(fileArray.map(uploadFile))
-			return results.filter((id): id is AttachmentId => id !== null)
-		},
-		[uploadFile],
-	)
-
-	const removeUpload = useCallback((fileId: string) => {
-		setUploads((prev) => {
-			const next = new Map(prev)
-			next.delete(fileId)
-			return next
-		})
-	}, [])
-
-	const clearUploads = useCallback(() => {
-		setUploads(new Map())
-	}, [])
-
-	const retryUpload = useCallback(
-		async (fileId: string, file: File) => {
-			removeUpload(fileId)
-			return uploadFile(file)
-		},
-		[removeUpload, uploadFile],
+		[maxFileSize, organizationId, channelId, user?.id, uploadFileMutation],
 	)
 
 	return {
 		uploadFile,
-		uploadFiles,
-		uploads: Array.from(uploads.values()),
-		removeUpload,
-		clearUploads,
-		retryUpload,
-		isUploading: Array.from(uploads.values()).some((u) => u.status === "uploading"),
 	}
 }

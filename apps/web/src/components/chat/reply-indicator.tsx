@@ -2,20 +2,27 @@ import type { MessageId } from "@hazel/db/schema"
 import { eq, useLiveQuery } from "@tanstack/react-db"
 import { messageCollection, userCollection } from "~/db/collections"
 import { useMessage } from "~/db/hooks"
+import { cn } from "~/lib/utils"
 import { Button } from "../base/buttons/button"
 import IconClose from "../icons/icon-close"
 
 interface ReplyIndicatorProps {
+	className?: string
 	replyToMessageId: MessageId
 	onClose: () => void
 }
 
-export function ReplyIndicator({ replyToMessageId, onClose }: ReplyIndicatorProps) {
+export function ReplyIndicator({ className, replyToMessageId, onClose }: ReplyIndicatorProps) {
 	const { data, isLoading } = useMessage(replyToMessageId)
 
 	if (isLoading) {
 		return (
-			<div className="flex items-center justify-between gap-2 rounded-t-lg border border-primary border-b-0 bg-secondary px-3 py-2">
+			<div
+				className={cn(
+					"flex items-center justify-between gap-2 rounded-t-lg border border-secondary border-b-0 bg-secondary px-3 py-2",
+					className,
+				)}
+			>
 				<div className="flex items-center gap-2 text-sm">
 					<div className="flex animate-pulse items-center gap-2">
 						<div className="h-4 w-16 rounded bg-quaternary" />
@@ -35,7 +42,12 @@ export function ReplyIndicator({ replyToMessageId, onClose }: ReplyIndicatorProp
 	}
 
 	return (
-		<div className="flex items-center justify-between gap-2 rounded-t-lg border border-primary border-b-0 bg-secondary px-3 py-2">
+		<div
+			className={cn(
+				"flex items-center justify-between gap-2 rounded-t-lg border border-secondary border-b-0 bg-secondary px-3 py-2",
+				className,
+			)}
+		>
 			<div className="flex items-center gap-2 text-sm">
 				<span className="text-secondary">Replying to</span>
 				<span className="font-semibold text-primary">

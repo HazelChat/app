@@ -241,7 +241,12 @@ describe("Result Pattern Matching", () => {
 			expect(successMsg).toBe("success: 3")
 
 			// Failure case
-			const { collection: failCol } = createControlledCollection<Todo>("todos2", [], (todo) => todo.id, true)
+			const { collection: failCol } = createControlledCollection<Todo>(
+				"todos2",
+				[],
+				(todo) => todo.id,
+				true,
+			)
 			const failAtom = makeCollectionAtom(failCol)
 
 			await vi.runAllTimersAsync()

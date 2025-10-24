@@ -1,5 +1,5 @@
 import { Atom } from "@effect-atom/atom-react"
-import type { ChannelId, MessageId } from "@hazel/db/schema"
+import type { AttachmentId, ChannelId, MessageId } from "@hazel/db/schema"
 
 /**
  * Per-channel reply state using Atom.family
@@ -28,4 +28,12 @@ export const activeThreadMessageIdAtom = Atom.make<MessageId | null>(null).pipe(
  */
 export const isAtBottomAtomFamily = Atom.family((_channelId: ChannelId) =>
 	Atom.make<boolean>(true).pipe(Atom.keepAlive),
+)
+
+/**
+ * Per-channel uploaded attachments ready to be sent
+ * Stores AttachmentIds of files that have been uploaded and are ready to attach to a message
+ */
+export const uploadedAttachmentsAtomFamily = Atom.family((_channelId: ChannelId) =>
+	Atom.make<AttachmentId[]>([]).pipe(Atom.keepAlive),
 )

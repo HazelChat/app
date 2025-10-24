@@ -37,7 +37,7 @@ export const uploadAttachment = createOptimisticAction<{
 			fileName: props.file.name,
 			fileSize: props.file.size,
 			uploadedBy: props.userId,
-			status: "complete" as const,
+			status: "uploading" as const,
 			uploadedAt: new Date(),
 		})
 
@@ -45,11 +45,9 @@ export const uploadAttachment = createOptimisticAction<{
 	},
 	mutationFn: async (props, _params) => {
 		const formData = new FormData()
-		// Ensure file name is included when appending file
 		formData.append("file", props.file, props.file.name)
 		formData.append("organizationId", props.organizationId)
 		formData.append("channelId", props.channelId)
-		formData.append("fileName", props.file.name) // Also send file name separately
 
 		const { transactionId } = await runtime.runPromise(
 			Effect.gen(function* () {
