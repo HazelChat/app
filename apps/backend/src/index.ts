@@ -140,10 +140,12 @@ HttpLayerRouter.serve(AllRoutes).pipe(
 	Layer.provide(TracerLive),
 	Layer.provide(AuthorizationLive.pipe(Layer.provide(UserRepo.Default), Layer.provide(WorkOS.Default))),
 	Layer.provide(
-		BunHttpServer.layerConfig({
-			port: Config.number("PORT").pipe(Config.withDefault(3003)),
-			idleTimeout: Config.succeed(120),
-		}),
+		BunHttpServer.layerConfig(
+			Config.all({
+				port: Config.number("PORT").pipe(Config.withDefault(3003)),
+				idleTimeout: Config.succeed(120),
+			}),
+		),
 	),
 	Layer.launch,
 	BunRuntime.runMain,
