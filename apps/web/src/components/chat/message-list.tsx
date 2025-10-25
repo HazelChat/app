@@ -1,15 +1,67 @@
 import { LegendList } from "@legendapp/list"
 import { useLiveInfiniteQuery } from "@tanstack/react-db"
-import { useMemo } from "react"
+import { memo, useCallback, useMemo, useRef, useState } from "react"
+import { useOverlayPosition } from "react-aria"
+import { createPortal } from "react-dom"
 import type { MessageWithPinned, ProcessedMessage } from "~/atoms/chat-query-atoms"
 import { useChat } from "~/hooks/use-chat"
 import { useScrollToBottom } from "~/hooks/use-scroll-to-bottom"
 import { Route } from "~/routes/_app/$orgSlug/chat/$id"
 import { MessageItem } from "./message-item"
+import { MessageToolbar } from "./message-toolbar"
+
+// Memoized virtualized list component to prevent re-renders when hover state changes
+interface MessageVirtualListProps {
+	processedMessages: ProcessedMessage[]
+	onHoverChange: (messageId: string | null, ref: HTMLDivElement | null) => void
+	hasNextPage: boolean
+	fetchNextPage: () => void
+}
+
+const MessageVirtualList = memo(
+	({ processedMessages, onHoverChange, hasNextPage, fetchNextPage }: MessageVirtualListProps) => {
+		return (
+			<LegendList<ProcessedMessage>
+				alignItemsAtEnd
+				maintainScrollAtEnd
+				maintainVisibleContentPosition
+				data={processedMessages}
+				onStartReached={() => {
+					if (hasNextPage) {
+						fetchNextPage()
+					}
+				}}
+				recycleItems
+				estimatedItemSize={80}
+				keyExtractor={(it) => it?.message.id}
+				initialScrollIndex={processedMessages.length - 1}
+				renderItem={(props) => (
+					<MessageItem
+						message={props.item.message}
+						isGroupStart={props.item.isGroupStart}
+						isGroupEnd={props.item.isGroupEnd}
+						isFirstNewMessage={props.item.isFirstNewMessage}
+						isPinned={props.item.isPinned}
+						onHoverChange={onHoverChange}
+					/>
+				)}
+				style={{ flex: 1, minHeight: 0 }}
+			/>
+		)
+	},
+)
+
+MessageVirtualList.displayName = "MessageVirtualList"
 
 export function MessageList() {
 	const { channelId } = useChat()
 	const { messagesInfiniteQuery } = Route.useLoaderData()
+
+	// Hover tracking for shared toolbar
+	const [hoveredMessageId, setHoveredMessageId] = useState<string | null>(null)
+	const targetRef = useRef<HTMLDivElement | null>(null)
+	const [isToolbarMenuOpen, setIsToolbarMenuOpen] = useState(false)
+	const overlayRef = useRef<HTMLDivElement>(null)
 
 	const {
 		data,
@@ -24,6 +76,38 @@ export function MessageList() {
 
 	const messages = (data || []) as MessageWithPinned[]
 	const isLoadingMessages = isLoading
+
+	// Find the currently hovered message
+	const hoveredMessage = useMemo(
+		() => messages.find((m) => m.id === hoveredMessageId) || null,
+		[messages, hoveredMessageId],
+	)
+
+	// Use react-aria's positioning for automatic viewport-aware placement
+	const { overlayProps } = useOverlayPosition({
+		targetRef,
+		overlayRef,
+		placement: "top end",
+		offset: 8,
+		shouldFlip: true,
+		isOpen: hoveredMessageId !== null,
+	})
+
+	// Handle hover changes, but don't clear hover when toolbar menu is open
+	// CRITICAL: Use useCallback to prevent MessageVirtualList from re-rendering on every hover
+	// Only recreates when isToolbarMenuOpen changes (rare)
+	const handleHoverChange = useCallback(
+		(messageId: string | null, ref: HTMLDivElement | null) => {
+			if (messageId) {
+				setHoveredMessageId(messageId)
+				targetRef.current = ref
+			} else if (!isToolbarMenuOpen) {
+				setHoveredMessageId(null)
+				targetRef.current = null
+			}
+		},
+		[isToolbarMenuOpen],
+	)
 
 	const processedMessages = useMemo(() => {
 		const timeThreshold = 5 * 60 * 1000
@@ -58,20 +142,6 @@ export function MessageList() {
 			}
 		})
 	}, [messages])
-
-	const groupedMessages = useMemo(() => {
-		return processedMessages.reduce(
-			(groups, processedMessage) => {
-				const date = new Date(processedMessage.message.createdAt).toDateString()
-				if (!groups[date]) {
-					groups[date] = []
-				}
-				groups[date].push(processedMessage)
-				return groups
-			},
-			{} as Record<string, typeof processedMessages>,
-		)
-	}, [processedMessages])
 
 	// Use the scroll-to-bottom hook for robust scroll management
 	const { scrollContainerRef } = useScrollToBottom({
@@ -132,32 +202,24 @@ export function MessageList() {
 			  3. Intersection Observer on first message
 			*/}
 
-			{/* <LegendList<ProcessedMessage>
-				alignItemsAtEnd
-				maintainScrollAtEnd
-				maintainVisibleContentPosition
-				data={processedMessages}
-				onStartReached={() => {
-					if (hasNextPage) {
-						fetchNextPage()
-					}
-				}}
-				estimatedItemSize={80}
-				keyExtractor={(it) => it?.message.id}
-				initialScrollIndex={processedMessages.length - 1}
-				renderItem={(props) => (
-					<MessageItem
-						message={props.item.message}
-						isGroupStart={props.item.isGroupStart}
-						isGroupEnd={props.item.isGroupEnd}
-						isFirstNewMessage={props.item.isFirstNewMessage}
-						isPinned={props.item.isPinned}
-					/>
-				)}
-				style={{ flex: 1, minHeight: 0 }}
-			/> */}
+			<MessageVirtualList
+				processedMessages={processedMessages}
+				onHoverChange={handleHoverChange}
+				hasNextPage={hasNextPage}
+				fetchNextPage={fetchNextPage}
+			/>
 
-			{Object.entries(groupedMessages).map(([date, dateMessages]) => (
+			{/* Shared Toolbar - Portaled to document.body with react-aria positioning */}
+			{(hoveredMessageId || isToolbarMenuOpen) &&
+				hoveredMessage &&
+				createPortal(
+					<div ref={overlayRef} {...overlayProps} style={{ ...overlayProps.style, zIndex: 50 }}>
+						<MessageToolbar message={hoveredMessage} onMenuOpenChange={setIsToolbarMenuOpen} />
+					</div>,
+					document.body,
+				)}
+
+			{/* {Object.entries(groupedMessages).map(([date, dateMessages]) => (
 				<div key={date}>
 					<div className="sticky top-0 z-10 my-4 flex items-center justify-center">
 						<span className="rounded-full bg-muted px-3 py-1 font-mono text-secondary text-xs">
@@ -180,7 +242,7 @@ export function MessageList() {
 						</div>
 					))}
 				</div>
-			))}
+			))} */}
 		</div>
 	)
 }
