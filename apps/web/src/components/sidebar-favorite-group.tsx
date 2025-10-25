@@ -29,9 +29,6 @@ export const SidebarFavoriteGroup = () => {
 		[user?.id, organizationId],
 	)
 
-	// TODO: Add presence state when available
-	const userPresenceState = { presenceList: [] }
-
 	if (data.length === 0) {
 		return null
 	}
@@ -45,13 +42,7 @@ export const SidebarFavoriteGroup = () => {
 						if (channel.type === "private" || channel.type === "public") {
 							return <ChannelItem key={channel.id} channelId={channel.id} />
 						}
-						return (
-							<DmChannelLink
-								key={channel.id}
-								userPresence={userPresenceState.presenceList}
-								channelId={channel.id}
-							/>
-						)
+						return <DmChannelLink key={channel.id} channelId={channel.id} />
 					})}
 				</SidebarMenu>
 			</SidebarGroupContent>

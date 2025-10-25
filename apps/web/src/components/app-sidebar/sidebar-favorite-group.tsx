@@ -65,7 +65,7 @@ export const SidebarFavoriteGroup = () => {
 						<ChannelItem key={channelId} channelId={channelId} />
 					))}
 					{dmChannelIds.map((channelId) => (
-						<DmChannelLink key={channelId} channelId={channelId} userPresence={[]} />
+						<DmChannelLink key={channelId} channelId={channelId} />
 					))}
 				</SidebarMenu>
 			</SidebarGroupContent>
