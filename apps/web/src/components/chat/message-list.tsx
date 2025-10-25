@@ -10,22 +10,28 @@ import { Route } from "~/routes/_app/$orgSlug/chat/$id"
 import { MessageItem } from "./message-item"
 import { MessageToolbar } from "./message-toolbar"
 
+// Message row types for virtualized list with headers
+type MessageRowHeader = { id: string; type: "header"; date: string }
+type MessageRowItem = { id: string; type: "row" } & ProcessedMessage
+type MessageRow = MessageRowHeader | MessageRowItem
+
 // Memoized virtualized list component to prevent re-renders when hover state changes
 interface MessageVirtualListProps {
-	processedMessages: ProcessedMessage[]
+	messageRows: MessageRow[]
+	stickyIndices: number[]
 	onHoverChange: (messageId: string | null, ref: HTMLDivElement | null) => void
 	hasNextPage: boolean
 	fetchNextPage: () => void
 }
 
 const MessageVirtualList = memo(
-	({ processedMessages, onHoverChange, hasNextPage, fetchNextPage }: MessageVirtualListProps) => {
+	({ messageRows, stickyIndices, onHoverChange, hasNextPage, fetchNextPage }: MessageVirtualListProps) => {
 		return (
-			<LegendList<ProcessedMessage>
+			<LegendList<MessageRow>
 				alignItemsAtEnd
 				maintainScrollAtEnd
 				maintainVisibleContentPosition
-				data={processedMessages}
+				data={messageRows}
 				onStartReached={() => {
 					if (hasNextPage) {
 						fetchNextPage()
@@ -33,18 +39,30 @@ const MessageVirtualList = memo(
 				}}
 				recycleItems
 				estimatedItemSize={80}
-				keyExtractor={(it) => it?.message.id}
-				initialScrollIndex={processedMessages.length - 1}
-				renderItem={(props) => (
-					<MessageItem
-						message={props.item.message}
-						isGroupStart={props.item.isGroupStart}
-						isGroupEnd={props.item.isGroupEnd}
-						isFirstNewMessage={props.item.isFirstNewMessage}
-						isPinned={props.item.isPinned}
-						onHoverChange={onHoverChange}
-					/>
-				)}
+				keyExtractor={(it) => it?.id}
+				initialScrollIndex={messageRows.length - 1}
+				stickyIndices={stickyIndices}
+				renderItem={(props) =>
+					props.item.type === "header" ? (
+						<div
+							className="sticky top-0 z-10 my-4 flex items-center justify-center"
+							style={{ background: "var(--color-background)" }}
+						>
+							<span className="rounded-full bg-muted px-3 py-1 font-mono text-secondary text-xs">
+								{props.item.date}
+							</span>
+						</div>
+					) : (
+						<MessageItem
+							message={props.item.message}
+							isGroupStart={props.item.isGroupStart}
+							isGroupEnd={props.item.isGroupEnd}
+							isFirstNewMessage={props.item.isFirstNewMessage}
+							isPinned={props.item.isPinned}
+							onHoverChange={onHoverChange}
+						/>
+					)
+				}
 				style={{ flex: 1, minHeight: 0 }}
 			/>
 		)
@@ -155,6 +173,31 @@ export function MessageList() {
 		})
 	}, [messages])
 
+	// Transform processedMessages into messageRows with date headers
+	const { messageRows, stickyIndices } = useMemo(() => {
+		const rows: MessageRow[] = []
+		const sticky: number[] = []
+		let idx = 0
+		let lastDate = ""
+
+		for (const processedMessage of processedMessages) {
+			const date = new Date(processedMessage.message.createdAt).toDateString()
+			if (date !== lastDate) {
+				rows.push({ id: `header-${date}`, type: "header", date })
+				sticky.push(idx)
+				idx++
+				lastDate = date
+			}
+			rows.push({
+				id: processedMessage.message.id,
+				type: "row",
+				...processedMessage,
+			})
+			idx++
+		}
+		return { messageRows: rows, stickyIndices: sticky }
+	}, [processedMessages])
+
 	// Use the scroll-to-bottom hook for robust scroll management
 	const { scrollContainerRef } = useScrollToBottom({
 		channelId,
@@ -206,7 +249,8 @@ export function MessageList() {
 			}}
 		>
 			<MessageVirtualList
-				processedMessages={processedMessages}
+				messageRows={messageRows}
+				stickyIndices={stickyIndices}
 				onHoverChange={handleHoverChange}
 				hasNextPage={hasNextPage}
 				fetchNextPage={fetchNextPage}
