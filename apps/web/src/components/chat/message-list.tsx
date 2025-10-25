@@ -1,10 +1,10 @@
+import { LegendList } from "@legendapp/list"
 import { useLiveInfiniteQuery } from "@tanstack/react-db"
 import { useMemo } from "react"
 import type { MessageWithPinned, ProcessedMessage } from "~/atoms/chat-query-atoms"
 import { useChat } from "~/hooks/use-chat"
 import { useScrollToBottom } from "~/hooks/use-scroll-to-bottom"
 import { Route } from "~/routes/_app/$orgSlug/chat/$id"
-
 import { MessageItem } from "./message-item"
 
 export function MessageList() {
@@ -14,8 +14,8 @@ export function MessageList() {
 	const {
 		data,
 		pages: _pages,
-		fetchNextPage: _fetchNextPage,
-		hasNextPage: _hasNextPage,
+		fetchNextPage,
+		hasNextPage,
 		isLoading,
 	} = useLiveInfiniteQuery(messagesInfiniteQuery, {
 		pageSize: 50,
@@ -131,6 +131,31 @@ export function MessageList() {
 			  2. Auto-load when user scrolls near top (like Discord)
 			  3. Intersection Observer on first message
 			*/}
+
+			{/* <LegendList<ProcessedMessage>
+				alignItemsAtEnd
+				maintainScrollAtEnd
+				maintainVisibleContentPosition
+				data={processedMessages}
+				onStartReached={() => {
+					if (hasNextPage) {
+						fetchNextPage()
+					}
+				}}
+				estimatedItemSize={80}
+				keyExtractor={(it) => it?.message.id}
+				initialScrollIndex={processedMessages.length - 1}
+				renderItem={(props) => (
+					<MessageItem
+						message={props.item.message}
+						isGroupStart={props.item.isGroupStart}
+						isGroupEnd={props.item.isGroupEnd}
+						isFirstNewMessage={props.item.isFirstNewMessage}
+						isPinned={props.item.isPinned}
+					/>
+				)}
+				style={{ flex: 1, minHeight: 0 }}
+			/> */}
 
 			{Object.entries(groupedMessages).map(([date, dateMessages]) => (
 				<div key={date}>
