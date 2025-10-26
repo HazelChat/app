@@ -52,7 +52,7 @@ export class InvalidWebhookSignature extends Schema.TaggedError<InvalidWebhookSi
 export class WebhookGroup extends HttpApiGroup.make("webhooks")
 	.add(
 		HttpApiEndpoint.post("workos")`/workos`
-			.setPayload(Schema.Unknown) // Raw payload for signature verification
+			.setPayload(Schema.Unknown)
 			.addSuccess(WebhookResponse)
 			.addError(InvalidWebhookSignature)
 			.addError(InternalServerError)

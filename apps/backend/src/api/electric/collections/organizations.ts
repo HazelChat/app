@@ -22,11 +22,25 @@ export class OrganizationNotFoundError extends Schema.TaggedError<OrganizationNo
 	}),
 ) {}
 
+export class OrganizationSlugAlreadyExistsError extends Schema.TaggedError<OrganizationSlugAlreadyExistsError>(
+	"OrganizationSlugAlreadyExistsError",
+)(
+	"OrganizationSlugAlreadyExistsError",
+	{
+		message: Schema.String,
+		slug: Schema.String,
+	},
+	HttpApiSchema.annotations({
+		status: 409,
+	}),
+) {}
+
 export class OrganizationGroup extends HttpApiGroup.make("organizations")
 	.add(
 		HttpApiEndpoint.post("create", `/`)
 			.setPayload(Organization.Model.jsonCreate)
 			.addSuccess(OrganizationResponse)
+			.addError(OrganizationSlugAlreadyExistsError)
 			.addError(UnauthorizedError)
 			.addError(InternalServerError)
 			.annotateContext(
@@ -43,6 +57,7 @@ export class OrganizationGroup extends HttpApiGroup.make("organizations")
 			.setPayload(Organization.Model.jsonUpdate)
 			.addSuccess(OrganizationResponse)
 			.addError(OrganizationNotFoundError)
+			.addError(OrganizationSlugAlreadyExistsError)
 			.addError(UnauthorizedError)
 			.addError(InternalServerError)
 			.annotateContext(
