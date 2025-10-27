@@ -98,7 +98,7 @@ export const sendMessage = createOptimisticAction<{
 
 				// Create the message with attachmentIds using RPC
 				// Note: authorId will be overridden by backend AuthMiddleware with the authenticated user
-				return yield* client.MessageCreate({
+				return yield* client.message.create({
 					channelId: props.channelId,
 					content: props.content,
 					replyToMessageId: props.replyToMessageId || null,

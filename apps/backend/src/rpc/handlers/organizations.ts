@@ -96,7 +96,7 @@ export const OrganizationRpcLive = OrganizationRpcs.toLayer(
 			 * 5. Return organization data and transaction ID
 			 * 6. Handle slug uniqueness violations specifically
 			 */
-			OrganizationCreate: (payload) =>
+			"organization.create": (payload) =>
 				db
 					.transaction(
 						Effect.gen(function* () {
@@ -136,7 +136,7 @@ export const OrganizationRpcLive = OrganizationRpcs.toLayer(
 			 * 5. Return updated organization data and transaction ID
 			 * 6. Handle slug uniqueness violations specifically
 			 */
-			OrganizationUpdate: ({ id, ...payload }) =>
+			"organization.update": ({ id, ...payload }) =>
 				db
 					.transaction(
 						Effect.gen(function* () {
@@ -171,7 +171,7 @@ export const OrganizationRpcLive = OrganizationRpcs.toLayer(
 			 * 4. Generate transaction ID
 			 * 5. Return transaction ID
 			 */
-			OrganizationDelete: ({ id }) =>
+			"organization.delete": ({ id }) =>
 				db
 					.transaction(
 						Effect.gen(function* () {

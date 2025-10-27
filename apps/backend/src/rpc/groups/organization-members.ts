@@ -73,7 +73,7 @@ export class OrganizationMemberRpcs extends RpcGroup.make(
 	 * @throws UnauthorizedError if user lacks permission
 	 * @throws InternalServerError for unexpected errors
 	 */
-	Rpc.make("OrganizationMemberCreate", {
+	Rpc.make("organizationMember.create", {
 		payload: OrganizationMember.Model.jsonCreate,
 		success: OrganizationMemberResponse,
 		error: Schema.Union(OrganizationNotFoundError, UnauthorizedError, InternalServerError),
@@ -91,7 +91,7 @@ export class OrganizationMemberRpcs extends RpcGroup.make(
 	 * @throws UnauthorizedError if user lacks permission
 	 * @throws InternalServerError for unexpected errors
 	 */
-	Rpc.make("OrganizationMemberUpdate", {
+	Rpc.make("organizationMember.update", {
 		payload: Schema.Struct({
 			id: OrganizationMemberId,
 			...OrganizationMember.Model.jsonUpdate.fields,
@@ -112,7 +112,7 @@ export class OrganizationMemberRpcs extends RpcGroup.make(
 	 * @throws UnauthorizedError if user lacks permission
 	 * @throws InternalServerError for unexpected errors
 	 */
-	Rpc.make("OrganizationMemberDelete", {
+	Rpc.make("organizationMember.delete", {
 		payload: Schema.Struct({ id: OrganizationMemberId }),
 		success: Schema.Struct({ transactionId: TransactionId }),
 		error: Schema.Union(OrganizationMemberNotFoundError, UnauthorizedError, InternalServerError),

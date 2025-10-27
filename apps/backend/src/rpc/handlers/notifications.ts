@@ -38,7 +38,7 @@ export const NotificationRpcLive = NotificationRpcs.toLayer(
 			 * 4. Generate transaction ID for optimistic updates
 			 * 5. Return notification data and transaction ID
 			 */
-			NotificationCreate: (payload) =>
+			"notification.create": (payload) =>
 				db
 					.transaction(
 						Effect.gen(function* () {
@@ -73,7 +73,7 @@ export const NotificationRpcLive = NotificationRpcs.toLayer(
 			 * 4. Generate transaction ID
 			 * 5. Return updated notification data and transaction ID
 			 */
-			NotificationUpdate: ({ id, ...payload }) =>
+			"notification.update": ({ id, ...payload }) =>
 				db
 					.transaction(
 						Effect.gen(function* () {
@@ -105,7 +105,7 @@ export const NotificationRpcLive = NotificationRpcs.toLayer(
 			 * 4. Generate transaction ID
 			 * 5. Return transaction ID
 			 */
-			NotificationDelete: ({ id }) =>
+			"notification.delete": ({ id }) =>
 				db
 					.transaction(
 						Effect.gen(function* () {

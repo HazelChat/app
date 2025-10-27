@@ -42,7 +42,7 @@ export class MessageReactionRpcs extends RpcGroup.make(
 	 * @throws UnauthorizedError if user lacks permission
 	 * @throws InternalServerError for unexpected errors
 	 */
-	Rpc.make("MessageReactionCreate", {
+	Rpc.make("messageReaction.create", {
 		payload: MessageReaction.Insert,
 		success: MessageReactionResponse,
 		error: Schema.Union(MessageNotFoundError, UnauthorizedError, InternalServerError),
@@ -60,7 +60,7 @@ export class MessageReactionRpcs extends RpcGroup.make(
 	 * @throws UnauthorizedError if user lacks permission
 	 * @throws InternalServerError for unexpected errors
 	 */
-	Rpc.make("MessageReactionUpdate", {
+	Rpc.make("messageReaction.update", {
 		payload: Schema.Struct({
 			id: MessageReactionId,
 			...MessageReaction.Model.jsonUpdate.fields,
@@ -81,7 +81,7 @@ export class MessageReactionRpcs extends RpcGroup.make(
 	 * @throws UnauthorizedError if user lacks permission
 	 * @throws InternalServerError for unexpected errors
 	 */
-	Rpc.make("MessageReactionDelete", {
+	Rpc.make("messageReaction.delete", {
 		payload: Schema.Struct({ id: MessageReactionId }),
 		success: Schema.Struct({ transactionId: TransactionId }),
 		error: Schema.Union(MessageReactionNotFoundError, UnauthorizedError, InternalServerError),

@@ -70,7 +70,7 @@ export class PinnedMessageRpcs extends RpcGroup.make(
 	 * @throws UnauthorizedError if user lacks permission
 	 * @throws InternalServerError for unexpected errors
 	 */
-	Rpc.make("PinnedMessageCreate", {
+	Rpc.make("pinnedMessage.create", {
 		payload: PinnedMessage.Model.jsonCreate,
 		success: PinnedMessageResponse,
 		error: Schema.Union(MessageNotFoundError, UnauthorizedError, InternalServerError),
@@ -88,7 +88,7 @@ export class PinnedMessageRpcs extends RpcGroup.make(
 	 * @throws UnauthorizedError if user lacks permission
 	 * @throws InternalServerError for unexpected errors
 	 */
-	Rpc.make("PinnedMessageUpdate", {
+	Rpc.make("pinnedMessage.update", {
 		payload: Schema.Struct({
 			id: PinnedMessageId,
 			...PinnedMessage.Model.jsonUpdate.fields,
@@ -109,7 +109,7 @@ export class PinnedMessageRpcs extends RpcGroup.make(
 	 * @throws UnauthorizedError if user lacks permission
 	 * @throws InternalServerError for unexpected errors
 	 */
-	Rpc.make("PinnedMessageDelete", {
+	Rpc.make("pinnedMessage.delete", {
 		payload: Schema.Struct({ id: PinnedMessageId }),
 		success: Schema.Struct({ transactionId: TransactionId }),
 		error: Schema.Union(PinnedMessageNotFoundError, UnauthorizedError, InternalServerError),

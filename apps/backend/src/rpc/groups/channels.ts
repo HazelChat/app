@@ -47,7 +47,7 @@ export class ChannelRpcs extends RpcGroup.make(
 	 * @throws UnauthorizedError if user lacks permission
 	 * @throws InternalServerError for unexpected errors
 	 */
-	Rpc.make("ChannelCreate", {
+	Rpc.make("channel.create", {
 		payload: Channel.Model.jsonCreate,
 		success: ChannelResponse,
 		error: Schema.Union(UnauthorizedError, InternalServerError),
@@ -65,7 +65,7 @@ export class ChannelRpcs extends RpcGroup.make(
 	 * @throws UnauthorizedError if user lacks permission
 	 * @throws InternalServerError for unexpected errors
 	 */
-	Rpc.make("ChannelUpdate", {
+	Rpc.make("channel.update", {
 		payload: Schema.Struct({
 			id: ChannelId,
 			...Channel.Model.jsonUpdate.fields,
@@ -86,7 +86,7 @@ export class ChannelRpcs extends RpcGroup.make(
 	 * @throws UnauthorizedError if user lacks permission
 	 * @throws InternalServerError for unexpected errors
 	 */
-	Rpc.make("ChannelDelete", {
+	Rpc.make("channel.delete", {
 		payload: Schema.Struct({ id: ChannelId }),
 		success: Schema.Struct({ transactionId: TransactionId }),
 		error: Schema.Union(ChannelNotFoundError, UnauthorizedError, InternalServerError),
@@ -105,7 +105,7 @@ export class ChannelRpcs extends RpcGroup.make(
 	 * @throws UnauthorizedError if user lacks permission
 	 * @throws InternalServerError for unexpected errors
 	 */
-	Rpc.make("ChannelCreateDm", {
+	Rpc.make("channel.createDm", {
 		payload: CreateDmChannelRequest,
 		success: ChannelResponse,
 		error: Schema.Union(DmChannelAlreadyExistsError, UnauthorizedError, InternalServerError),

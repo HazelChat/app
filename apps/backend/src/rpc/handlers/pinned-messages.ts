@@ -38,7 +38,7 @@ export const PinnedMessageRpcLive = PinnedMessageRpcs.toLayer(
 			 * 5. Generate transaction ID for optimistic updates
 			 * 6. Return pinned message data and transaction ID
 			 */
-			PinnedMessageCreate: (payload) =>
+			"pinnedMessage.create": (payload) =>
 				db
 					.transaction(
 						Effect.gen(function* () {
@@ -75,7 +75,7 @@ export const PinnedMessageRpcLive = PinnedMessageRpcs.toLayer(
 			 * 4. Generate transaction ID
 			 * 5. Return updated pinned message data and transaction ID
 			 */
-			PinnedMessageUpdate: ({ id, ...payload }) =>
+			"pinnedMessage.update": ({ id, ...payload }) =>
 				db
 					.transaction(
 						Effect.gen(function* () {
@@ -107,7 +107,7 @@ export const PinnedMessageRpcLive = PinnedMessageRpcs.toLayer(
 			 * 4. Generate transaction ID
 			 * 5. Return transaction ID
 			 */
-			PinnedMessageDelete: ({ id }) =>
+			"pinnedMessage.delete": ({ id }) =>
 				db
 					.transaction(
 						Effect.gen(function* () {

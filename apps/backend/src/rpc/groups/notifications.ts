@@ -38,7 +38,7 @@ export class NotificationRpcs extends RpcGroup.make(
 	 * @throws UnauthorizedError if user lacks permission
 	 * @throws InternalServerError for unexpected errors
 	 */
-	Rpc.make("NotificationCreate", {
+	Rpc.make("notification.create", {
 		payload: Notification.Model.jsonCreate,
 		success: NotificationResponse,
 		error: Schema.Union(UnauthorizedError, InternalServerError),
@@ -56,7 +56,7 @@ export class NotificationRpcs extends RpcGroup.make(
 	 * @throws UnauthorizedError if user lacks permission
 	 * @throws InternalServerError for unexpected errors
 	 */
-	Rpc.make("NotificationUpdate", {
+	Rpc.make("notification.update", {
 		payload: Schema.Struct({
 			id: NotificationId,
 			...Notification.Model.jsonUpdate.fields,
@@ -77,7 +77,7 @@ export class NotificationRpcs extends RpcGroup.make(
 	 * @throws UnauthorizedError if user lacks permission
 	 * @throws InternalServerError for unexpected errors
 	 */
-	Rpc.make("NotificationDelete", {
+	Rpc.make("notification.delete", {
 		payload: Schema.Struct({ id: NotificationId }),
 		success: Schema.Struct({ transactionId: TransactionId }),
 		error: Schema.Union(NotificationNotFoundError, UnauthorizedError, InternalServerError),

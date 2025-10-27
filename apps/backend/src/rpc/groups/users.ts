@@ -35,7 +35,7 @@ export class UserRpcs extends RpcGroup.make(
 	 * @throws UnauthorizedError if user lacks permission
 	 * @throws InternalServerError for unexpected errors
 	 */
-	Rpc.make("UserCreate", {
+	Rpc.make("user.create", {
 		payload: User.Insert,
 		success: UserResponse,
 		error: Schema.Union(UnauthorizedError, InternalServerError),
@@ -53,7 +53,7 @@ export class UserRpcs extends RpcGroup.make(
 	 * @throws UnauthorizedError if user lacks permission
 	 * @throws InternalServerError for unexpected errors
 	 */
-	Rpc.make("UserUpdate", {
+	Rpc.make("user.update", {
 		payload: Schema.Struct({
 			id: UserId,
 			...User.Model.jsonUpdate.fields,
@@ -74,7 +74,7 @@ export class UserRpcs extends RpcGroup.make(
 	 * @throws UnauthorizedError if user lacks permission
 	 * @throws InternalServerError for unexpected errors
 	 */
-	Rpc.make("UserDelete", {
+	Rpc.make("user.delete", {
 		payload: Schema.Struct({ id: UserId }),
 		success: Schema.Struct({ transactionId: TransactionId }),
 		error: Schema.Union(UserNotFoundError, UnauthorizedError, InternalServerError),

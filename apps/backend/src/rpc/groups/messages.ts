@@ -69,7 +69,7 @@ export class MessageRpcs extends RpcGroup.make(
 	 * @throws UnauthorizedError if user lacks permission
 	 * @throws InternalServerError for unexpected errors
 	 */
-	Rpc.make("MessageCreate", {
+	Rpc.make("message.create", {
 		payload: Message.Insert,
 		success: MessageResponse,
 		error: Schema.Union(ChannelNotFoundError, UnauthorizedError, InternalServerError),
@@ -87,7 +87,7 @@ export class MessageRpcs extends RpcGroup.make(
 	 * @throws UnauthorizedError if user lacks permission
 	 * @throws InternalServerError for unexpected errors
 	 */
-	Rpc.make("MessageUpdate", {
+	Rpc.make("message.update", {
 		payload: Schema.Struct({
 			id: MessageId,
 			...Message.Model.jsonUpdate.fields,
@@ -108,7 +108,7 @@ export class MessageRpcs extends RpcGroup.make(
 	 * @throws UnauthorizedError if user lacks permission
 	 * @throws InternalServerError for unexpected errors
 	 */
-	Rpc.make("MessageDelete", {
+	Rpc.make("message.delete", {
 		payload: Schema.Struct({ id: MessageId }),
 		success: Schema.Struct({ transactionId: TransactionId }),
 		error: Schema.Union(MessageNotFoundError, UnauthorizedError, InternalServerError),

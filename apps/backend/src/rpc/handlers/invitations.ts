@@ -38,7 +38,7 @@ export const InvitationRpcLive = InvitationRpcs.toLayer(
 			 * 4. Generate transaction ID for optimistic updates
 			 * 5. Return invitation data and transaction ID
 			 */
-			InvitationCreate: (payload) =>
+			"invitation.create": (payload) =>
 				db
 					.transaction(
 						Effect.gen(function* () {
@@ -75,7 +75,7 @@ export const InvitationRpcLive = InvitationRpcs.toLayer(
 			 * 4. Generate transaction ID
 			 * 5. Return updated invitation data and transaction ID
 			 */
-			InvitationUpdate: ({ id, ...payload }) =>
+			"invitation.update": ({ id, ...payload }) =>
 				db
 					.transaction(
 						Effect.gen(function* () {
@@ -113,7 +113,7 @@ export const InvitationRpcLive = InvitationRpcs.toLayer(
 			 * 4. Generate transaction ID
 			 * 5. Return transaction ID
 			 */
-			InvitationDelete: ({ id }) =>
+			"invitation.delete": ({ id }) =>
 				db
 					.transaction(
 						Effect.gen(function* () {

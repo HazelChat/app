@@ -39,7 +39,7 @@ export const OrganizationMemberRpcLive = OrganizationMemberRpcs.toLayer(
 			 * 5. Generate transaction ID for optimistic updates
 			 * 6. Return organization member data and transaction ID
 			 */
-			OrganizationMemberCreate: (payload) =>
+			"organizationMember.create": (payload) =>
 				db
 					.transaction(
 						Effect.gen(function* () {
@@ -77,7 +77,7 @@ export const OrganizationMemberRpcLive = OrganizationMemberRpcs.toLayer(
 			 * 4. Generate transaction ID
 			 * 5. Return updated organization member data and transaction ID
 			 */
-			OrganizationMemberUpdate: ({ id, ...payload }) =>
+			"organizationMember.update": ({ id, ...payload }) =>
 				db
 					.transaction(
 						Effect.gen(function* () {
@@ -112,7 +112,7 @@ export const OrganizationMemberRpcLive = OrganizationMemberRpcs.toLayer(
 			 * 4. Generate transaction ID
 			 * 5. Return transaction ID
 			 */
-			OrganizationMemberDelete: ({ id }) =>
+			"organizationMember.delete": ({ id }) =>
 				db
 					.transaction(
 						Effect.gen(function* () {

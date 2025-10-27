@@ -41,7 +41,7 @@ export const MessageRpcLive = MessageRpcs.toLayer(
 			 * 6. Generate transaction ID for optimistic updates
 			 * 7. Return message data and transaction ID
 			 */
-			MessageCreate: ({ attachmentIds, ...messageData }) =>
+			"message.create": ({ attachmentIds, ...messageData }) =>
 				db
 					.transaction(
 						Effect.gen(function* () {
@@ -89,7 +89,7 @@ export const MessageRpcLive = MessageRpcs.toLayer(
 			 * 4. Generate transaction ID
 			 * 5. Return updated message data and transaction ID
 			 */
-			MessageUpdate: ({ id, ...payload }) =>
+			"message.update": ({ id, ...payload }) =>
 				db
 					.transaction(
 						Effect.gen(function* () {
@@ -121,7 +121,7 @@ export const MessageRpcLive = MessageRpcs.toLayer(
 			 * 4. Generate transaction ID
 			 * 5. Return transaction ID
 			 */
-			MessageDelete: ({ id }) =>
+			"message.delete": ({ id }) =>
 				db
 					.transaction(
 						Effect.gen(function* () {

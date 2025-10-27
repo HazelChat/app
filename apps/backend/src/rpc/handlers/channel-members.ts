@@ -39,7 +39,7 @@ export const ChannelMemberRpcLive = ChannelMemberRpcs.toLayer(
 			 * 6. Generate transaction ID for optimistic updates
 			 * 7. Return channel member data and transaction ID
 			 */
-			ChannelMemberCreate: (payload) =>
+			"channelMember.create": (payload) =>
 				db
 					.transaction(
 						Effect.gen(function* () {
@@ -80,7 +80,7 @@ export const ChannelMemberRpcLive = ChannelMemberRpcs.toLayer(
 			 * 4. Generate transaction ID
 			 * 5. Return updated channel member data and transaction ID
 			 */
-			ChannelMemberUpdate: ({ id, ...payload }) =>
+			"channelMember.update": ({ id, ...payload }) =>
 				db
 					.transaction(
 						Effect.gen(function* () {
@@ -116,7 +116,7 @@ export const ChannelMemberRpcLive = ChannelMemberRpcs.toLayer(
 			 * 4. Generate transaction ID
 			 * 5. Return transaction ID
 			 */
-			ChannelMemberDelete: ({ id }) =>
+			"channelMember.delete": ({ id }) =>
 				db
 					.transaction(
 						Effect.gen(function* () {

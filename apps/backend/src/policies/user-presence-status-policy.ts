@@ -13,21 +13,6 @@ export class UserPresenceStatusPolicy extends Effect.Service<UserPresenceStatusP
 					"select",
 				)(policy(policyEntity, "select", () => Effect.succeed(true)))
 
-			const canCreate = () =>
-				UnauthorizedError.refail(
-					policyEntity,
-					"create",
-				)(
-					policy(
-						policyEntity,
-						"create",
-						Effect.fn(`${policyEntity}.create`)(function* () {
-							// Any authenticated user can create their own status
-							return yield* Effect.succeed(true)
-						}),
-					),
-				)
-
 			const canUpdate = () =>
 				UnauthorizedError.refail(
 					policyEntity,
@@ -47,7 +32,7 @@ export class UserPresenceStatusPolicy extends Effect.Service<UserPresenceStatusP
 					"delete",
 				)(policy(policyEntity, "delete", () => Effect.succeed(true)))
 
-			return { canCreate, canUpdate, canDelete, canRead } as const
+			return { canUpdate, canDelete, canRead } as const
 		}),
 		dependencies: [],
 		accessors: true,

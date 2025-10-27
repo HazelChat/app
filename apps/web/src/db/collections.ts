@@ -17,7 +17,6 @@ import {
 import { effectElectricCollectionOptions } from "@hazel/effect-electric-db-collection"
 import { createCollection } from "@tanstack/react-db"
 import { Effect, Layer, Logger, ManagedRuntime, Schema } from "effect"
-import { ApiClient } from "~/lib/services/common/api-client"
 import { RpcClient } from "~/lib/services/common/rpc-client"
 import { runtime } from "~/lib/services/common/runtime"
 
@@ -43,7 +42,7 @@ export const organizationCollection = createCollection(
 				const { modified: newOrganization } = transaction.mutations[0]
 				const client = yield* RpcClient
 
-				const results = yield* client.OrganizationCreate(newOrganization)
+				const results = yield* client.organization.create(newOrganization)
 
 				return { txid: results.transactionId }
 			}),
@@ -52,7 +51,7 @@ export const organizationCollection = createCollection(
 				const { modified: newOrganization } = transaction.mutations[0]
 				const client = yield* RpcClient
 
-				const results = yield* client.OrganizationUpdate(newOrganization)
+				const results = yield* client.organization.update(newOrganization)
 
 				return { txid: results.transactionId }
 			}),
@@ -61,7 +60,7 @@ export const organizationCollection = createCollection(
 				const { original: deletedOrganization } = transaction.mutations[0]
 				const client = yield* RpcClient
 
-				const results = yield* client.OrganizationDelete({
+				const results = yield* client.organization.delete({
 					id: deletedOrganization.id,
 				})
 
@@ -90,7 +89,7 @@ export const invitationCollection = createCollection(
 				const { modified: newInvitation } = transaction.mutations[0]
 				const client = yield* RpcClient
 
-				const results = yield* client.InvitationCreate(newInvitation)
+				const results = yield* client.invitation.create(newInvitation)
 
 				return { txid: results.transactionId }
 			}),
@@ -99,7 +98,7 @@ export const invitationCollection = createCollection(
 				const { modified: newInvitation } = transaction.mutations[0]
 				const client = yield* RpcClient
 
-				const results = yield* client.InvitationUpdate(newInvitation)
+				const results = yield* client.invitation.update(newInvitation)
 
 				return { txid: results.transactionId }
 			}),
@@ -108,7 +107,7 @@ export const invitationCollection = createCollection(
 				const { original: deletedInvitation } = transaction.mutations[0]
 				const client = yield* RpcClient
 
-				const results = yield* client.InvitationDelete({ id: deletedInvitation.id })
+				const results = yield* client.invitation.delete({ id: deletedInvitation.id })
 
 				return { txid: results.transactionId }
 			}),
@@ -135,7 +134,7 @@ export const messageCollection = createCollection(
 				const { modified: newMessage } = transaction.mutations[0]
 				const client = yield* RpcClient
 
-				const results = yield* client.MessageCreate(newMessage)
+				const results = yield* client.message.create(newMessage)
 
 				return { txid: results.transactionId }
 			}),
@@ -144,7 +143,7 @@ export const messageCollection = createCollection(
 				const { modified: newMessage } = transaction.mutations[0]
 				const client = yield* RpcClient
 
-				const results = yield* client.MessageUpdate(newMessage)
+				const results = yield* client.message.update(newMessage)
 
 				return { txid: results.transactionId }
 			}),
@@ -153,7 +152,7 @@ export const messageCollection = createCollection(
 				const { original: deletedMessage } = transaction.mutations[0]
 				const client = yield* RpcClient
 
-				const results = yield* client.MessageDelete({ id: deletedMessage.id })
+				const results = yield* client.message.delete({ id: deletedMessage.id })
 
 				return { txid: results.transactionId }
 			}),
@@ -180,7 +179,7 @@ export const messageReactionCollection = createCollection(
 				const { modified: newMessageReaction } = transaction.mutations[0]
 				const client = yield* RpcClient
 
-				const results = yield* client.MessageReactionCreate(newMessageReaction)
+				const results = yield* client.messageReaction.create(newMessageReaction)
 
 				return { txid: results.transactionId }
 			}),
@@ -189,7 +188,7 @@ export const messageReactionCollection = createCollection(
 				const { modified: newMessageReaction } = transaction.mutations[0]
 				const client = yield* RpcClient
 
-				const results = yield* client.MessageReactionUpdate(newMessageReaction)
+				const results = yield* client.messageReaction.update(newMessageReaction)
 
 				return { txid: results.transactionId }
 			}),
@@ -198,7 +197,7 @@ export const messageReactionCollection = createCollection(
 				const { original: deletedMessageReaction } = transaction.mutations[0]
 				const client = yield* RpcClient
 
-				const results = yield* client.MessageReactionDelete({
+				const results = yield* client.messageReaction.delete({
 					id: deletedMessageReaction.id,
 				})
 
@@ -227,7 +226,7 @@ export const pinnedMessageCollection = createCollection(
 				const { modified: newPinnedMessage } = transaction.mutations[0]
 				const client = yield* RpcClient
 
-				const results = yield* client.PinnedMessageCreate(newPinnedMessage)
+				const results = yield* client.pinnedMessage.create(newPinnedMessage)
 
 				return { txid: results.transactionId }
 			}),
@@ -236,7 +235,7 @@ export const pinnedMessageCollection = createCollection(
 				const { modified: newPinnedMessage } = transaction.mutations[0]
 				const client = yield* RpcClient
 
-				const results = yield* client.PinnedMessageUpdate(newPinnedMessage)
+				const results = yield* client.pinnedMessage.update(newPinnedMessage)
 
 				return { txid: results.transactionId }
 			}),
@@ -245,7 +244,7 @@ export const pinnedMessageCollection = createCollection(
 				const { original: deletedPinnedMessage } = transaction.mutations[0]
 				const client = yield* RpcClient
 
-				const results = yield* client.PinnedMessageDelete({
+				const results = yield* client.pinnedMessage.delete({
 					id: deletedPinnedMessage.id,
 				})
 
@@ -274,7 +273,7 @@ export const notificationCollection = createCollection(
 				const { modified: newNotification } = transaction.mutations[0]
 				const client = yield* RpcClient
 
-				const results = yield* client.NotificationCreate(newNotification)
+				const results = yield* client.notification.create(newNotification)
 
 				return { txid: results.transactionId }
 			}),
@@ -283,7 +282,7 @@ export const notificationCollection = createCollection(
 				const { modified: newNotification } = transaction.mutations[0]
 				const client = yield* RpcClient
 
-				const results = yield* client.NotificationUpdate(newNotification)
+				const results = yield* client.notification.update(newNotification)
 
 				return { txid: results.transactionId }
 			}),
@@ -292,7 +291,7 @@ export const notificationCollection = createCollection(
 				const { original: deletedNotification } = transaction.mutations[0]
 				const client = yield* RpcClient
 
-				const results = yield* client.NotificationDelete({ id: deletedNotification.id })
+				const results = yield* client.notification.delete({ id: deletedNotification.id })
 
 				return { txid: results.transactionId }
 			}),
@@ -319,7 +318,7 @@ export const userCollection = createCollection(
 				const { modified: newUser } = transaction.mutations[0]
 				const client = yield* RpcClient
 
-				const results = yield* client.UserCreate(newUser)
+				const results = yield* client.user.create(newUser)
 
 				return { txid: results.transactionId }
 			}),
@@ -328,7 +327,7 @@ export const userCollection = createCollection(
 				const { modified: newUser } = transaction.mutations[0]
 				const client = yield* RpcClient
 
-				const results = yield* client.UserUpdate(newUser)
+				const results = yield* client.user.update(newUser)
 
 				return { txid: results.transactionId }
 			}),
@@ -337,7 +336,7 @@ export const userCollection = createCollection(
 				const { original: deletedUser } = transaction.mutations[0]
 				const client = yield* RpcClient
 
-				const results = yield* client.UserDelete({
+				const results = yield* client.user.delete({
 					id: deletedUser.id,
 				})
 
@@ -366,7 +365,7 @@ export const organizationMemberCollection = createCollection(
 				const { modified: newOrganizationMember } = transaction.mutations[0]
 				const client = yield* RpcClient
 
-				const results = yield* client.OrganizationMemberCreate(newOrganizationMember)
+				const results = yield* client.organizationMember.create(newOrganizationMember)
 
 				return { txid: results.transactionId }
 			}),
@@ -375,7 +374,7 @@ export const organizationMemberCollection = createCollection(
 				const { modified: newOrganizationMember } = transaction.mutations[0]
 				const client = yield* RpcClient
 
-				const results = yield* client.OrganizationMemberUpdate(newOrganizationMember)
+				const results = yield* client.organizationMember.update(newOrganizationMember)
 
 				return { txid: results.transactionId }
 			}),
@@ -384,7 +383,7 @@ export const organizationMemberCollection = createCollection(
 				const { original: deletedOrganizationMember } = transaction.mutations[0]
 				const client = yield* RpcClient
 
-				const results = yield* client.OrganizationMemberDelete({
+				const results = yield* client.organizationMember.delete({
 					id: deletedOrganizationMember.id,
 				})
 
@@ -413,7 +412,7 @@ export const channelCollection = createCollection(
 				const { modified: newChannel } = transaction.mutations[0]
 				const client = yield* RpcClient
 
-				const results = yield* client.ChannelCreate(newChannel)
+				const results = yield* client.channel.create(newChannel)
 
 				return { txid: results.transactionId }
 			}),
@@ -422,7 +421,7 @@ export const channelCollection = createCollection(
 				const { modified: newChannel } = transaction.mutations[0]
 				const client = yield* RpcClient
 
-				const results = yield* client.ChannelUpdate(newChannel)
+				const results = yield* client.channel.update(newChannel)
 
 				return { txid: results.transactionId }
 			}),
@@ -431,7 +430,7 @@ export const channelCollection = createCollection(
 				const { original: deletedChannel } = transaction.mutations[0]
 				const client = yield* RpcClient
 
-				const results = yield* client.ChannelDelete({
+				const results = yield* client.channel.delete({
 					id: deletedChannel.id,
 				})
 
@@ -460,7 +459,7 @@ export const channelMemberCollection = createCollection(
 				const { modified: newChannelMember } = transaction.mutations[0]
 				const client = yield* RpcClient
 
-				const results = yield* client.ChannelMemberCreate(newChannelMember)
+				const results = yield* client.channelMember.create(newChannelMember)
 
 				return { txid: results.transactionId }
 			}),
@@ -469,7 +468,7 @@ export const channelMemberCollection = createCollection(
 				const { modified: newChannelMember } = transaction.mutations[0]
 				const client = yield* RpcClient
 
-				const results = yield* client.ChannelMemberUpdate(newChannelMember)
+				const results = yield* client.channelMember.update(newChannelMember)
 
 				return { txid: results.transactionId }
 			}),
@@ -478,7 +477,7 @@ export const channelMemberCollection = createCollection(
 				const { original: deletedChannelMember } = transaction.mutations[0]
 				const client = yield* RpcClient
 
-				const results = yield* client.ChannelMemberDelete({
+				const results = yield* client.channelMember.delete({
 					id: deletedChannelMember.id,
 				})
 
@@ -505,12 +504,10 @@ export const attachmentCollection = createCollection(
 		onDelete: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { original: deletedAttachment } = transaction.mutations[0]
-				const client = yield* ApiClient
+				const client = yield* RpcClient
 
-				const results = yield* client.attachments.delete({
-					path: {
-						id: deletedAttachment.id,
-					},
+				const results = yield* client.attachment.delete({
+					id: deletedAttachment.id,
 				})
 
 				return { txid: results.transactionId }
@@ -533,37 +530,32 @@ export const directMessageParticipantCollection = createCollection(
 		onInsert: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { modified: newDirectMessageParticipant } = transaction.mutations[0]
-				const client = yield* ApiClient
+				const client = yield* RpcClient
 
-				const results = yield* client.directMessageParticipants.create({
-					payload: newDirectMessageParticipant,
-				})
+				const results = yield* client.directMessageParticipant.create(
+					newDirectMessageParticipant,
+				)
 
 				return { txid: results.transactionId }
 			}),
 		onUpdate: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { modified: newDirectMessageParticipant } = transaction.mutations[0]
-				const client = yield* ApiClient
+				const client = yield* RpcClient
 
-				const results = yield* client.directMessageParticipants.update({
-					payload: newDirectMessageParticipant,
-					path: {
-						id: newDirectMessageParticipant.id,
-					},
-				})
+				const results = yield* client.directMessageParticipant.update(
+					newDirectMessageParticipant,
+				)
 
 				return { txid: results.transactionId }
 			}),
 		onDelete: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { original: deletedDirectMessageParticipant } = transaction.mutations[0]
-				const client = yield* ApiClient
+				const client = yield* RpcClient
 
-				const results = yield* client.directMessageParticipants.delete({
-					path: {
-						id: deletedDirectMessageParticipant.id,
-					},
+				const results = yield* client.directMessageParticipant.delete({
+					id: deletedDirectMessageParticipant.id,
 				})
 
 				return { txid: results.transactionId }
@@ -588,7 +580,7 @@ export const typingIndicatorCollection = createCollection(
 				const { modified: newTypingIndicator } = transaction.mutations[0]
 				const client = yield* RpcClient
 
-				const results = yield* client.TypingIndicatorCreate({
+				const results = yield* client.typingIndicator.create({
 					channelId: newTypingIndicator.channelId,
 					memberId: newTypingIndicator.memberId,
 					lastTyped: newTypingIndicator.lastTyped,
@@ -601,7 +593,7 @@ export const typingIndicatorCollection = createCollection(
 				const { modified: newTypingIndicator } = transaction.mutations[0]
 				const client = yield* RpcClient
 
-				const results = yield* client.TypingIndicatorUpdate({
+				const results = yield* client.typingIndicator.update({
 					id: newTypingIndicator.id,
 					lastTyped: newTypingIndicator.lastTyped,
 				})
@@ -613,7 +605,7 @@ export const typingIndicatorCollection = createCollection(
 				const { original: deletedTypingIndicator } = transaction.mutations[0]
 				const client = yield* RpcClient
 
-				const results = yield* client.TypingIndicatorDelete({
+				const results = yield* client.typingIndicator.delete({
 					id: deletedTypingIndicator.id,
 				})
 
@@ -640,13 +632,11 @@ export const userPresenceStatusCollection = createCollection(
 		onInsert: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { modified: newUserPresenceStatus } = transaction.mutations[0]
-				const client = yield* ApiClient
+				const client = yield* RpcClient
 
-				const results = yield* client.presence.updateStatus({
-					payload: {
-						status: newUserPresenceStatus.status,
-						customMessage: newUserPresenceStatus.customMessage,
-					},
+				const results = yield* client.userPresenceStatus.update({
+					status: newUserPresenceStatus.status,
+					customMessage: newUserPresenceStatus.customMessage,
 				})
 
 				return { txid: results.transactionId }
@@ -654,13 +644,11 @@ export const userPresenceStatusCollection = createCollection(
 		onUpdate: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { modified: newUserPresenceStatus } = transaction.mutations[0]
-				const client = yield* ApiClient
+				const client = yield* RpcClient
 
-				const results = yield* client.presence.updateStatus({
-					payload: {
-						status: newUserPresenceStatus.status,
-						customMessage: newUserPresenceStatus.customMessage,
-					},
+				const results = yield* client.userPresenceStatus.update({
+					status: newUserPresenceStatus.status,
+					customMessage: newUserPresenceStatus.customMessage,
 				})
 
 				return { txid: results.transactionId }

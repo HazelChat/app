@@ -1,8 +1,10 @@
 import { HttpClient } from "@effect/platform"
 import * as FetchHttpClient from "@effect/platform/FetchHttpClient"
 import { RpcClient as RpcClientBuilder, RpcSerialization } from "@effect/rpc"
+import { AttachmentRpcs } from "@hazel/backend/rpc/groups/attachments"
 import { ChannelMemberRpcs } from "@hazel/backend/rpc/groups/channel-members"
 import { ChannelRpcs } from "@hazel/backend/rpc/groups/channels"
+import { DirectMessageParticipantRpcs } from "@hazel/backend/rpc/groups/direct-message-participants"
 import { InvitationRpcs } from "@hazel/backend/rpc/groups/invitations"
 import { MessageReactionRpcs } from "@hazel/backend/rpc/groups/message-reactions"
 import { MessageRpcs } from "@hazel/backend/rpc/groups/messages"
@@ -11,6 +13,7 @@ import { OrganizationMemberRpcs } from "@hazel/backend/rpc/groups/organization-m
 import { OrganizationRpcs } from "@hazel/backend/rpc/groups/organizations"
 import { PinnedMessageRpcs } from "@hazel/backend/rpc/groups/pinned-messages"
 import { TypingIndicatorRpcs } from "@hazel/backend/rpc/groups/typing-indicators"
+import { UserPresenceStatusRpcs } from "@hazel/backend/rpc/groups/user-presence-status"
 import { UserRpcs } from "@hazel/backend/rpc/groups/users"
 import { AuthMiddlewareClientLive } from "@hazel/backend/rpc/middleware/client"
 import { Effect, Layer } from "effect"
@@ -44,6 +47,9 @@ const AllRpcs = MessageRpcs.merge(
 	MessageReactionRpcs,
 	TypingIndicatorRpcs,
 	PinnedMessageRpcs,
+	AttachmentRpcs,
+	DirectMessageParticipantRpcs,
+	UserPresenceStatusRpcs,
 )
 
 export class RpcClient extends Effect.Service<RpcClient>()("RpcClient", {

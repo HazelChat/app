@@ -1,7 +1,9 @@
 import { RpcServer } from "@effect/rpc"
 import { Layer } from "effect"
+import { AttachmentRpcs } from "./groups/attachments"
 import { ChannelMemberRpcs } from "./groups/channel-members"
 import { ChannelRpcs } from "./groups/channels"
+import { DirectMessageParticipantRpcs } from "./groups/direct-message-participants"
 import { InvitationRpcs } from "./groups/invitations"
 import { MessageReactionRpcs } from "./groups/message-reactions"
 import { MessageRpcs } from "./groups/messages"
@@ -10,9 +12,12 @@ import { OrganizationMemberRpcs } from "./groups/organization-members"
 import { OrganizationRpcs } from "./groups/organizations"
 import { PinnedMessageRpcs } from "./groups/pinned-messages"
 import { TypingIndicatorRpcs } from "./groups/typing-indicators"
+import { UserPresenceStatusRpcs } from "./groups/user-presence-status"
 import { UserRpcs } from "./groups/users"
+import { AttachmentRpcLive } from "./handlers/attachments"
 import { ChannelMemberRpcLive } from "./handlers/channel-members"
 import { ChannelRpcLive } from "./handlers/channels"
+import { DirectMessageParticipantRpcLive } from "./handlers/direct-message-participants"
 import { InvitationRpcLive } from "./handlers/invitations"
 import { MessageReactionRpcLive } from "./handlers/message-reactions"
 import { MessageRpcLive } from "./handlers/messages"
@@ -21,6 +26,7 @@ import { OrganizationMemberRpcLive } from "./handlers/organization-members"
 import { OrganizationRpcLive } from "./handlers/organizations"
 import { PinnedMessageRpcLive } from "./handlers/pinned-messages"
 import { TypingIndicatorRpcLive } from "./handlers/typing-indicators"
+import { UserPresenceStatusRpcLive } from "./handlers/user-presence-status"
 import { UserRpcLive } from "./handlers/users"
 import { AuthMiddlewareLive } from "./middleware/auth"
 
@@ -45,8 +51,11 @@ import { AuthMiddlewareLive } from "./middleware/auth"
  * - OrganizationRpcs: Organization management (create, update, delete)
  * - OrganizationMemberRpcs: Organization member operations (create, update, delete)
  * - UserRpcs: User operations (create, update, delete)
+ * - UserPresenceStatusRpcs: User presence status operations (update)
  * - ChannelRpcs: Channel operations (create, update, delete, createDm)
  * - ChannelMemberRpcs: Channel member operations (create, update, delete)
+ * - AttachmentRpcs: Attachment operations (delete)
+ * - DirectMessageParticipantRpcs: Direct message participant operations (create, update, delete)
  */
 
 /**
@@ -64,8 +73,11 @@ export const AllRpcs = MessageRpcs.merge(
 	OrganizationRpcs,
 	OrganizationMemberRpcs,
 	UserRpcs,
+	UserPresenceStatusRpcs,
 	ChannelRpcs,
 	ChannelMemberRpcs,
+	AttachmentRpcs,
+	DirectMessageParticipantRpcs,
 )
 
 export const RpcServerLive = Layer.empty.pipe(
@@ -78,7 +90,10 @@ export const RpcServerLive = Layer.empty.pipe(
 	Layer.provideMerge(OrganizationRpcLive),
 	Layer.provideMerge(OrganizationMemberRpcLive),
 	Layer.provideMerge(UserRpcLive),
+	Layer.provideMerge(UserPresenceStatusRpcLive),
 	Layer.provideMerge(ChannelRpcLive),
 	Layer.provideMerge(ChannelMemberRpcLive),
+	Layer.provideMerge(AttachmentRpcLive),
+	Layer.provideMerge(DirectMessageParticipantRpcLive),
 	Layer.provideMerge(AuthMiddlewareLive),
 )

@@ -37,7 +37,7 @@ export const UserRpcLive = UserRpcs.toLayer(
 			 * 4. Generate transaction ID for optimistic updates
 			 * 5. Return user data and transaction ID
 			 */
-			UserCreate: (payload) =>
+			"user.create": (payload) =>
 				db
 					.transaction(
 						Effect.gen(function* () {
@@ -72,7 +72,7 @@ export const UserRpcLive = UserRpcs.toLayer(
 			 * 4. Generate transaction ID
 			 * 5. Return updated user data and transaction ID
 			 */
-			UserUpdate: ({ id, ...payload }) =>
+			"user.update": ({ id, ...payload }) =>
 				db
 					.transaction(
 						Effect.gen(function* () {
@@ -104,7 +104,7 @@ export const UserRpcLive = UserRpcs.toLayer(
 			 * 4. Generate transaction ID
 			 * 5. Return transaction ID
 			 */
-			UserDelete: ({ id }) =>
+			"user.delete": ({ id }) =>
 				db
 					.transaction(
 						Effect.gen(function* () {

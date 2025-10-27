@@ -38,7 +38,7 @@ export class InvitationRpcs extends RpcGroup.make(
 	 * @throws UnauthorizedError if user lacks permission
 	 * @throws InternalServerError for unexpected errors
 	 */
-	Rpc.make("InvitationCreate", {
+	Rpc.make("invitation.create", {
 		payload: Invitation.Model.jsonCreate,
 		success: InvitationResponse,
 		error: Schema.Union(UnauthorizedError, InternalServerError),
@@ -56,7 +56,7 @@ export class InvitationRpcs extends RpcGroup.make(
 	 * @throws UnauthorizedError if user lacks permission
 	 * @throws InternalServerError for unexpected errors
 	 */
-	Rpc.make("InvitationUpdate", {
+	Rpc.make("invitation.update", {
 		payload: Schema.Struct({
 			id: InvitationId,
 			...Invitation.Model.jsonUpdate.fields,
@@ -77,7 +77,7 @@ export class InvitationRpcs extends RpcGroup.make(
 	 * @throws UnauthorizedError if user lacks permission
 	 * @throws InternalServerError for unexpected errors
 	 */
-	Rpc.make("InvitationDelete", {
+	Rpc.make("invitation.delete", {
 		payload: Schema.Struct({ id: InvitationId }),
 		success: Schema.Struct({ transactionId: TransactionId }),
 		error: Schema.Union(InvitationNotFoundError, UnauthorizedError, InternalServerError),

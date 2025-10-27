@@ -40,7 +40,7 @@ export const TypingIndicatorRpcLive = TypingIndicatorRpcs.toLayer(
 			 * 4. Generate transaction ID for optimistic updates
 			 * 5. Return typing indicator data and transaction ID
 			 */
-			TypingIndicatorCreate: (payload) =>
+			"typingIndicator.create": (payload) =>
 				db
 					.transaction(
 						Effect.gen(function* () {
@@ -76,7 +76,7 @@ export const TypingIndicatorRpcLive = TypingIndicatorRpcs.toLayer(
 			 * 4. Generate transaction ID
 			 * 5. Return updated typing indicator data and transaction ID
 			 */
-			TypingIndicatorUpdate: ({ id, ...payload }) =>
+			"typingIndicator.update": ({ id, ...payload }) =>
 				db
 					.transaction(
 						Effect.gen(function* () {
@@ -111,7 +111,7 @@ export const TypingIndicatorRpcLive = TypingIndicatorRpcs.toLayer(
 			 * 6. Generate transaction ID
 			 * 7. Return deleted typing indicator data and transaction ID
 			 */
-			TypingIndicatorDelete: ({ id }) =>
+			"typingIndicator.delete": ({ id }) =>
 				db
 					.transaction(
 						Effect.gen(function* () {

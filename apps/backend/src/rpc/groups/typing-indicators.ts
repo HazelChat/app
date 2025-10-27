@@ -84,7 +84,7 @@ export class TypingIndicatorRpcs extends RpcGroup.make(
 	 * @throws UnauthorizedError if user lacks permission
 	 * @throws InternalServerError for unexpected errors
 	 */
-	Rpc.make("TypingIndicatorCreate", {
+	Rpc.make("typingIndicator.create", {
 		payload: CreateTypingIndicatorPayload,
 		success: TypingIndicatorResponse,
 		error: Schema.Union(UnauthorizedError, InternalServerError),
@@ -102,7 +102,7 @@ export class TypingIndicatorRpcs extends RpcGroup.make(
 	 * @throws UnauthorizedError if user lacks permission
 	 * @throws InternalServerError for unexpected errors
 	 */
-	Rpc.make("TypingIndicatorUpdate", {
+	Rpc.make("typingIndicator.update", {
 		payload: Schema.Struct({
 			id: TypingIndicatorId,
 			lastTyped: Schema.optional(Schema.Number),
@@ -123,7 +123,7 @@ export class TypingIndicatorRpcs extends RpcGroup.make(
 	 * @throws UnauthorizedError if user lacks permission
 	 * @throws InternalServerError for unexpected errors
 	 */
-	Rpc.make("TypingIndicatorDelete", {
+	Rpc.make("typingIndicator.delete", {
 		payload: Schema.Struct({ id: TypingIndicatorId }),
 		success: TypingIndicatorResponse,
 		error: Schema.Union(TypingIndicatorNotFoundError, UnauthorizedError, InternalServerError),
