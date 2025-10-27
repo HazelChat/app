@@ -1,4 +1,4 @@
-import { Atom, Result, useAtomMount, useAtomSet, useAtomValue } from "@effect-atom/atom-react"
+import { Atom, Result, useAtomMount, useAtomValue } from "@effect-atom/atom-react"
 import type { ChannelId, UserId } from "@hazel/db/schema"
 import { makeQuery } from "@hazel/tanstack-db-atom"
 import { eq } from "@tanstack/db"
@@ -6,21 +6,24 @@ import { DateTime, Duration, Effect, Schedule, Stream } from "effect"
 import { useCallback, useEffect, useRef } from "react"
 import { userPresenceStatusCollection } from "~/db/collections"
 import { userAtom } from "~/lib/auth"
-import { HazelApiClient } from "~/lib/services/common/atom-client"
+import { RpcClient } from "~/lib/services/common/rpc-client"
+import { runtime } from "~/lib/services/common/runtime"
 import { router } from "~/main"
 
 type PresenceStatus = "online" | "away" | "busy" | "dnd" | "offline"
 
 const AFK_TIMEOUT = Duration.minutes(5)
-const UPDATE_INTERVAL = Duration.seconds(30)
 
-// TODO: Implement server-side offline detection
-// Server should mark users as offline if no heartbeat received within:
-// - UPDATE_INTERVAL * 2 (60 seconds) - consider user offline
-// This should be implemented as a background job that:
-// 1. Queries users with presence.updatedAt older than 60 seconds
-// 2. Updates their status to 'offline'
-// 3. Runs every 30 seconds
+// WebSocket-based offline detection:
+// With WebSocket RPC, offline detection is automatic:
+// 1. WebSocket close event fires when connection drops
+// 2. Client auto-reconnects (retry every 1s with backoff)
+// 3. Server marks offline if connection doesn't recover after timeout
+//
+// Server-side cleanup job (to implement):
+// - Check for stale WebSocket connections (no ping/pong in 60s)
+// - Mark users offline if connection is dead
+// - Run every 30 seconds as background job
 // Backend file: apps/backend/src/jobs/presence-cleanup.ts
 
 // ============================================================================
@@ -197,20 +200,6 @@ const currentUserPresenceAtom = Atom.make((get) => {
 })
 
 // ============================================================================
-// Mutation Atoms
-// ============================================================================
-
-/**
- * Mutation atom for updating presence status
- */
-const updatePresenceStatusMutation = HazelApiClient.mutation("presence", "updateStatus")
-
-/**
- * Mutation atom for updating active channel
- */
-const updateActiveChannelMutation = HazelApiClient.mutation("presence", "updateActiveChannel")
-
-// ============================================================================
 // Hooks
 // ============================================================================
 
@@ -240,10 +229,6 @@ export function usePresence() {
 
 	const currentChannelId = useAtomValue(currentChannelIdAtom)
 
-	// Get mutation setters
-	const updateStatus = useAtomSet(updatePresenceStatusMutation, { mode: "promiseExit" })
-	const updateActiveChannel = useAtomSet(updateActiveChannelMutation, { mode: "promiseExit" })
-
 	// Track last sent status to avoid redundant updates
 	const lastSentStatusRef = useRef<PresenceStatus | null>(null)
 	const lastSentChannelRef = useRef<string | null>(null)
@@ -255,13 +240,16 @@ export function usePresence() {
 
 		lastSentStatusRef.current = computedStatus
 
-		updateStatus({
-			payload: {
+		// Use WebSocket RPC to update presence status
+		const program = Effect.gen(function* () {
+			const client = yield* RpcClient
+			yield* client.userPresenceStatus.update({
 				status: computedStatus,
-				customMessage: null,
-			},
+			})
 		})
-	}, [computedStatus, user?.id, updateStatus])
+
+		runtime.runPromise(program).catch(console.error)
+	}, [computedStatus, user?.id])
 
 	// Sync active channel to server when it changes
 	useEffect(() => {
@@ -270,28 +258,23 @@ export function usePresence() {
 
 		lastSentChannelRef.current = currentChannelId
 
-		updateActiveChannel({
-			payload: {
+		// Use WebSocket RPC to update active channel
+		const program = Effect.gen(function* () {
+			const client = yield* RpcClient
+			yield* client.userPresenceStatus.update({
 				activeChannelId: currentChannelId ? (currentChannelId as ChannelId) : null,
-			},
-		})
-	}, [currentChannelId, user?.id, updateActiveChannel])
-
-	// Heartbeat: update timestamp periodically
-	useEffect(() => {
-		if (!user?.id || !currentPresence?.id) return
-
-		const interval = setInterval(() => {
-			updateStatus({
-				payload: {
-					status: computedStatus,
-					customMessage: null,
-				},
 			})
-		}, Duration.toMillis(UPDATE_INTERVAL))
+		})
 
-		return () => clearInterval(interval)
-	}, [user?.id, currentPresence?.id, computedStatus, updateStatus])
+		runtime.runPromise(program).catch(console.error)
+	}, [currentChannelId, user?.id])
+
+	// WebSocket Connection Provides Presence
+	// No need for HTTP polling heartbeat - WebSocket connection state indicates online/offline:
+	// - WebSocket connected = user online
+	// - WebSocket disconnected = user offline (after retry timeout)
+	// - Automatic ping/pong frames keep connection alive
+	// - Status changes (AFK, manual) are sent immediately via RPC mutations above
 
 	// Mark user offline when tab closes using atom-based listener
 	// Atom reads from userAtom directly, so it's automatically reactive
@@ -317,15 +300,18 @@ export function usePresence() {
 			// Track for next time
 			previousManualStatusRef.current = status
 
-			// Update on server
-			await updateStatus({
-				payload: {
+			// Update on server via WebSocket RPC
+			const program = Effect.gen(function* () {
+				const client = yield* RpcClient
+				yield* client.userPresenceStatus.update({
 					status,
 					customMessage: customMessage ?? null,
-				},
+				})
 			})
+
+			await runtime.runPromise(program).catch(console.error)
 		},
-		[user?.id, updateStatus],
+		[user?.id],
 	)
 
 	return {
