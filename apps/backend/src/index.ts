@@ -162,7 +162,6 @@ HttpLayerRouter.serve(AllRoutes).pipe(
 			}),
 		),
 	),
-	// @ts-expect-error - Effect type inference limitation with complex layer composition
 	Layer.launch,
 	BunRuntime.runMain,
 )

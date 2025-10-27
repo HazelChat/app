@@ -36,16 +36,13 @@ import { Effect, Layer } from "effect"
 
 // Convert HTTP URL to WebSocket URL (http -> ws, https -> wss)
 const backendUrl = import.meta.env.VITE_BACKEND_URL
-const wsUrl = backendUrl.replace(/^http/, "ws") + "/rpc"
+const wsUrl = `${backendUrl.replace(/^http/, "ws")}/rpc`
 
 export const RpcProtocolLive = RpcClientBuilder.layerProtocolSocket({
 	retryTransientErrors: true, // Auto-reconnect on connection issues
-}).pipe(
-	Layer.provide(BrowserSocket.layerWebSocket(wsUrl)),
-	Layer.provide(RpcSerialization.layerNdjson),
-)
+}).pipe(Layer.provide(BrowserSocket.layerWebSocket(wsUrl)), Layer.provide(RpcSerialization.layerNdjson))
 
-const AllRpcs = MessageRpcs.merge(
+export const AllRpcs = MessageRpcs.merge(
 	NotificationRpcs,
 	InvitationRpcs,
 	ChannelRpcs,

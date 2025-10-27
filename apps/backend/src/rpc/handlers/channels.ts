@@ -18,39 +18,11 @@ import { DirectMessageParticipantRepo } from "../../repositories/direct-message-
 import { UserRepo } from "../../repositories/user-repo"
 import { ChannelRpcs } from "../groups/channels"
 
-/**
- * Channel RPC Handlers
- *
- * Implements the business logic for all channel-related RPC methods.
- * Each handler receives the payload and has access to CurrentUser via Effect context
- * (provided by AuthMiddleware).
- *
- * All handlers use:
- * - Database transactions for atomicity
- * - Policy checks for authorization
- * - Transaction IDs for optimistic updates
- * - Error remapping for consistent error handling
- */
 export const ChannelRpcLive = ChannelRpcs.toLayer(
 	Effect.gen(function* () {
 		const db = yield* Database.Database
 
 		return {
-			/**
-			 * ChannelCreate Handler
-			 *
-			 * Creates a new channel in an organization. The current user is
-			 * automatically added as a member of the newly created channel.
-			 *
-			 * Process:
-			 * 1. Get current user from context (provided by AuthMiddleware)
-			 * 2. Start database transaction
-			 * 3. Create channel with deletedAt set to null
-			 * 4. Check permissions via ChannelPolicy.canCreate
-			 * 5. Add creator as channel member (system operation)
-			 * 6. Generate transaction ID for optimistic updates
-			 * 7. Return channel data and transaction ID
-			 */
 			"channel.create": (payload) =>
 				db
 					.transaction(

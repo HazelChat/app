@@ -14,18 +14,6 @@ type PresenceStatus = "online" | "away" | "busy" | "dnd" | "offline"
 
 const AFK_TIMEOUT = Duration.minutes(5)
 
-// WebSocket-based offline detection:
-// With WebSocket RPC, offline detection is automatic:
-// 1. WebSocket close event fires when connection drops
-// 2. Client auto-reconnects (retry every 1s with backoff)
-// 3. Server marks offline if connection doesn't recover after timeout
-//
-// Server-side cleanup job (to implement):
-// - Check for stale WebSocket connections (no ping/pong in 60s)
-// - Mark users offline if connection is dead
-// - Run every 30 seconds as background job
-// Backend file: apps/backend/src/jobs/presence-cleanup.ts
-
 // ============================================================================
 // Core Atoms
 // ============================================================================

@@ -1,8 +1,8 @@
 import { AtomRpc } from "@effect-atom/atom-react"
-import { MessageRpcs } from "@hazel/backend/rpc/groups/messages"
+
 import { AuthMiddlewareClientLive } from "@hazel/backend/rpc/middleware/client"
 import { Layer } from "effect"
-import { RpcProtocolLive } from "./rpc-client"
+import { AllRpcs, RpcProtocolLive } from "./rpc-client"
 
 /**
  * AtomRpc Protocol Layer
@@ -21,7 +21,7 @@ const AtomRpcProtocolLive = RpcProtocolLive.pipe(Layer.provide(AuthMiddlewareCli
  * Uses a dedicated protocol layer that includes authentication middleware.
  */
 export class HazelRpcClient extends AtomRpc.Tag<HazelRpcClient>()("HazelRpcClient", {
-	group: MessageRpcs,
+	group: AllRpcs,
 	// @ts-expect-error
 	protocol: AtomRpcProtocolLive,
 }) {}
