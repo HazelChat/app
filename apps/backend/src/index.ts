@@ -67,24 +67,6 @@ const DocsRoute = HttpApiScalar.layerHttpLayerRouter({
 	path: "/docs",
 })
 
-/**
- * RPC WebSocket Protocol Route
- *
- * Adds the RPC server on the /rpc endpoint using WebSocket protocol.
- * This runs in parallel with the HttpApi routes during migration.
- *
- * The RPC endpoint uses WebSocket with NDJSON serialization for all operations.
- * Benefits over HTTP:
- * - Instant offline detection (< 1s vs 30-60s polling)
- * - Bi-directional real-time communication
- * - Automatic disconnect detection via WebSocket close events
- * - Lower server overhead (persistent connection vs repeated requests)
- *
- * Authentication is handled via the AuthMiddleware which reads the workos-session cookie.
- *
- * Uses RpcServerLive which includes all RPC groups and handlers:
- * - MessageRpcs, NotificationRpcs, InvitationRpcs, etc.
- */
 const RpcRoute = RpcServer.layerHttpRouter({
 	group: AllRpcs,
 	path: "/rpc",
@@ -180,6 +162,7 @@ HttpLayerRouter.serve(AllRoutes).pipe(
 			}),
 		),
 	),
+	// @ts-expect-error - Effect type inference limitation with complex layer composition
 	Layer.launch,
 	BunRuntime.runMain,
 )

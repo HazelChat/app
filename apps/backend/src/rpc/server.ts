@@ -41,29 +41,8 @@ import { AuthMiddlewareLive } from "./middleware/auth"
  * 3. Combine into server layer (here) - Server setup
  * 4. Add HTTP protocol (in index.ts) - Transport layer
  *
- * Current RPC Groups:
- * - MessageRpcs: Message CRUD operations (create, update, delete)
- * - MessageReactionRpcs: Message reaction operations (create, update, delete)
- * - NotificationRpcs: Notification operations (create, update, delete)
- * - InvitationRpcs: Invitation operations (create, update, delete)
- * - TypingIndicatorRpcs: Typing indicator operations (create, update, delete)
- * - PinnedMessageRpcs: Pinned message operations (create, update, delete)
- * - OrganizationRpcs: Organization management (create, update, delete)
- * - OrganizationMemberRpcs: Organization member operations (create, update, delete)
- * - UserRpcs: User operations (create, update, delete)
- * - UserPresenceStatusRpcs: User presence status operations (update)
- * - ChannelRpcs: Channel operations (create, update, delete, createDm)
- * - ChannelMemberRpcs: Channel member operations (create, update, delete)
- * - AttachmentRpcs: Attachment operations (delete)
- * - DirectMessageParticipantRpcs: Direct message participant operations (create, update, delete)
  */
 
-/**
- * Combined RPC Group
- *
- * Merges all RPC groups into a single group.
- * New RPC groups should be added here as they're migrated from HttpApi.
- */
 export const AllRpcs = MessageRpcs.merge(
 	MessageReactionRpcs,
 	NotificationRpcs,

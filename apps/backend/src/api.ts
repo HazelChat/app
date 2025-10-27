@@ -4,15 +4,6 @@ import { Schema } from "effect"
 import {
 	AttachmentGroup,
 	ChannelGroup,
-	ChannelMemberGroup,
-	DirectMessageParticipantGroup,
-	InvitationGroup,
-	MessageGroup,
-	MessageReactionGroup,
-	NotificationGroup,
-	OrganizationGroup,
-	OrganizationMemberGroup,
-	PinnedMessageGroup,
 	PresenceGroup,
 	PresencePublicGroup,
 	TypingIndicatorGroup,
@@ -169,17 +160,8 @@ export class AuthGroup extends HttpApiGroup.make("auth")
 
 export class HazelApi extends HttpApi.make("HazelApp")
 	.add(ChannelGroup)
-	.add(ChannelMemberGroup)
-	.add(MessageGroup)
-	.add(OrganizationGroup)
-	.add(InvitationGroup)
-	.add(MessageReactionGroup)
-	.add(PinnedMessageGroup)
-	.add(NotificationGroup)
 	.add(UserGroup)
-	.add(OrganizationMemberGroup)
 	.add(AttachmentGroup)
-	.add(DirectMessageParticipantGroup)
 	.add(TypingIndicatorGroup)
 	.add(PresenceGroup)
 	.add(PresencePublicGroup)
