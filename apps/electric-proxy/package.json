@@ -13,8 +13,8 @@
 		"typescript": "^5.9.3"
 	},
 	"dependencies": {
-		"@effect/platform": "^0.92.1",
-		"@effect/platform-bun": "^0.81.1",
+		"@effect/platform": "0.92.1",
+		"@effect/platform-bun": "0.81.1",
 		"@electric-sql/client": "^1.0.14",
 		"effect": "3.18.4"
 	}

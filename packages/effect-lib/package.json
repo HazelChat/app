@@ -14,7 +14,7 @@
 	},
 	"dependencies": {
 		"@effect/experimental": "^0.56.0",
-		"@effect/platform": "^0.92.1",
+		"@effect/platform": "0.92.1",
 		"effect": "3.18.4"
 	}
 }

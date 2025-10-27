@@ -13,9 +13,6 @@ import { MultipartUpload } from "@effect-aws/s3"
 import { Config, Layer } from "effect"
 import { HazelApi } from "./api"
 import { HttpApiRoutes } from "./http"
-import { AuthMiddlewareLive } from "./rpc/middleware/auth"
-import { MessageRpcLive } from "./rpc/handlers/messages"
-import { MessageRpcs } from "./rpc/groups/messages"
 import { AttachmentPolicy } from "./policies/attachment-policy"
 import { ChannelMemberPolicy } from "./policies/channel-member-policy"
 import { ChannelPolicy } from "./policies/channel-policy"
@@ -44,6 +41,11 @@ import { PinnedMessageRepo } from "./repositories/pinned-message-repo"
 import { TypingIndicatorRepo } from "./repositories/typing-indicator-repo"
 import { UserPresenceStatusRepo } from "./repositories/user-presence-status-repo"
 import { UserRepo } from "./repositories/user-repo"
+import { InvitationRpcs } from "./rpc/groups/invitations"
+import { MessageRpcs } from "./rpc/groups/messages"
+import { NotificationRpcs } from "./rpc/groups/notifications"
+import { AuthMiddlewareLive } from "./rpc/middleware/auth"
+import { AllRpcs, RpcServerLive } from "./rpc/server"
 import { AuthorizationLive } from "./services/auth"
 import { DatabaseLive } from "./services/database"
 import { MockDataGenerator } from "./services/mock-data-generator"
@@ -54,7 +56,9 @@ import { WorkOSWebhookVerifier } from "./services/workos-webhook"
 export { HazelApi }
 
 // Export RPC groups for frontend consumption
+export { InvitationRpcs } from "./rpc/groups/invitations"
 export { MessageRpcs } from "./rpc/groups/messages"
+export { NotificationRpcs } from "./rpc/groups/notifications"
 export { AuthMiddleware, AuthMiddlewareClientLive } from "./rpc/middleware/auth"
 
 const HealthRouter = HttpLayerRouter.use((router) =>
@@ -74,16 +78,15 @@ const DocsRoute = HttpApiScalar.layerHttpLayerRouter({
  *
  * The RPC endpoint uses HTTP POST with NDJSON serialization for all operations.
  * Authentication is handled via the AuthMiddleware which reads the workos-session cookie.
+ *
+ * Uses RpcServerLive which includes all RPC groups and handlers:
+ * - MessageRpcs, NotificationRpcs, InvitationRpcs, etc.
  */
 const RpcRoute = RpcServer.layerHttpRouter({
-	group: MessageRpcs,
+	group: AllRpcs,
 	path: "/rpc",
 	protocol: "http",
-}).pipe(
-	Layer.provide(RpcSerialization.layerNdjson),
-	Layer.provide(MessageRpcLive),
-	Layer.provide(AuthMiddlewareLive),
-)
+}).pipe(Layer.provide(RpcSerialization.layerNdjson), Layer.provide(RpcServerLive))
 
 const AllRoutes = Layer.mergeAll(HttpApiRoutes, HealthRouter, DocsRoute, RpcRoute).pipe(
 	Layer.provide(
