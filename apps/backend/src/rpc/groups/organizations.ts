@@ -22,7 +22,7 @@ export class OrganizationResponse extends Schema.Class<OrganizationResponse>("Or
 export class OrganizationNotFoundError extends Schema.TaggedError<OrganizationNotFoundError>()(
 	"OrganizationNotFoundError",
 	{
-		organizationId: Schema.UUID,
+		organizationId: OrganizationId,
 	},
 ) {}
 

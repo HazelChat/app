@@ -20,7 +20,7 @@ export class ChannelResponse extends Schema.Class<ChannelResponse>("ChannelRespo
  * Used in update and delete operations.
  */
 export class ChannelNotFoundError extends Schema.TaggedError<ChannelNotFoundError>()("ChannelNotFoundError", {
-	channelId: Schema.UUID,
+	channelId: ChannelId,
 }) {}
 
 /**

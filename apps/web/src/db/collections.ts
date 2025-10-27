@@ -18,6 +18,7 @@ import { effectElectricCollectionOptions } from "@hazel/effect-electric-db-colle
 import { createCollection } from "@tanstack/react-db"
 import { Effect, Layer, Logger, ManagedRuntime, Schema } from "effect"
 import { ApiClient } from "~/lib/services/common/api-client"
+import { RpcClient } from "~/lib/services/common/rpc-client"
 import { runtime } from "~/lib/services/common/runtime"
 
 const electricUrl: string = import.meta.env.VITE_ELECTRIC_URL
@@ -40,37 +41,28 @@ export const organizationCollection = createCollection(
 		onInsert: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { modified: newOrganization } = transaction.mutations[0]
-				const client = yield* ApiClient
+				const client = yield* RpcClient
 
-				const results = yield* client.organizations.create({
-					payload: newOrganization,
-				})
+				const results = yield* client.OrganizationCreate(newOrganization)
 
 				return { txid: results.transactionId }
 			}),
 		onUpdate: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { modified: newOrganization } = transaction.mutations[0]
-				const client = yield* ApiClient
+				const client = yield* RpcClient
 
-				const results = yield* client.organizations.update({
-					payload: newOrganization,
-					path: {
-						id: newOrganization.id,
-					},
-				})
+				const results = yield* client.OrganizationUpdate(newOrganization)
 
 				return { txid: results.transactionId }
 			}),
 		onDelete: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { original: deletedOrganization } = transaction.mutations[0]
-				const client = yield* ApiClient
+				const client = yield* RpcClient
 
-				const results = yield* client.organizations.delete({
-					path: {
-						id: deletedOrganization.id,
-					},
+				const results = yield* client.OrganizationDelete({
+					id: deletedOrganization.id,
 				})
 
 				return { txid: results.transactionId }
@@ -96,38 +88,27 @@ export const invitationCollection = createCollection(
 		onInsert: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { modified: newInvitation } = transaction.mutations[0]
-				const client = yield* ApiClient
+				const client = yield* RpcClient
 
-				const results = yield* client.invitations.create({
-					payload: newInvitation,
-				})
+				const results = yield* client.InvitationCreate(newInvitation)
 
 				return { txid: results.transactionId }
 			}),
 		onUpdate: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { modified: newInvitation } = transaction.mutations[0]
-				const client = yield* ApiClient
+				const client = yield* RpcClient
 
-				const results = yield* client.invitations.update({
-					payload: newInvitation,
-					path: {
-						id: newInvitation.id,
-					},
-				})
+				const results = yield* client.InvitationUpdate(newInvitation)
 
 				return { txid: results.transactionId }
 			}),
 		onDelete: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { original: deletedInvitation } = transaction.mutations[0]
-				const client = yield* ApiClient
+				const client = yield* RpcClient
 
-				const results = yield* client.invitations.delete({
-					path: {
-						id: deletedInvitation.id,
-					},
-				})
+				const results = yield* client.InvitationDelete({ id: deletedInvitation.id })
 
 				return { txid: results.transactionId }
 			}),
@@ -152,38 +133,27 @@ export const messageCollection = createCollection(
 		onInsert: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { modified: newMessage } = transaction.mutations[0]
-				const client = yield* ApiClient
+				const client = yield* RpcClient
 
-				const results = yield* client.messages.create({
-					payload: newMessage,
-				})
+				const results = yield* client.MessageCreate(newMessage)
 
 				return { txid: results.transactionId }
 			}),
 		onUpdate: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { modified: newMessage } = transaction.mutations[0]
-				const client = yield* ApiClient
+				const client = yield* RpcClient
 
-				const results = yield* client.messages.update({
-					payload: newMessage,
-					path: {
-						id: newMessage.id,
-					},
-				})
+				const results = yield* client.MessageUpdate(newMessage)
 
 				return { txid: results.transactionId }
 			}),
 		onDelete: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { original: deletedMessage } = transaction.mutations[0]
-				const client = yield* ApiClient
+				const client = yield* RpcClient
 
-				const results = yield* client.messages.delete({
-					path: {
-						id: deletedMessage.id,
-					},
-				})
+				const results = yield* client.MessageDelete({ id: deletedMessage.id })
 
 				return { txid: results.transactionId }
 			}),
@@ -208,37 +178,28 @@ export const messageReactionCollection = createCollection(
 		onInsert: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { modified: newMessageReaction } = transaction.mutations[0]
-				const client = yield* ApiClient
+				const client = yield* RpcClient
 
-				const results = yield* client.messageReactions.create({
-					payload: newMessageReaction,
-				})
+				const results = yield* client.MessageReactionCreate(newMessageReaction)
 
 				return { txid: results.transactionId }
 			}),
 		onUpdate: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { modified: newMessageReaction } = transaction.mutations[0]
-				const client = yield* ApiClient
+				const client = yield* RpcClient
 
-				const results = yield* client.messageReactions.update({
-					payload: newMessageReaction,
-					path: {
-						id: newMessageReaction.id,
-					},
-				})
+				const results = yield* client.MessageReactionUpdate(newMessageReaction)
 
 				return { txid: results.transactionId }
 			}),
 		onDelete: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { original: deletedMessageReaction } = transaction.mutations[0]
-				const client = yield* ApiClient
+				const client = yield* RpcClient
 
-				const results = yield* client.messageReactions.delete({
-					path: {
-						id: deletedMessageReaction.id,
-					},
+				const results = yield* client.MessageReactionDelete({
+					id: deletedMessageReaction.id,
 				})
 
 				return { txid: results.transactionId }
@@ -264,37 +225,28 @@ export const pinnedMessageCollection = createCollection(
 		onInsert: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { modified: newPinnedMessage } = transaction.mutations[0]
-				const client = yield* ApiClient
+				const client = yield* RpcClient
 
-				const results = yield* client.pinnedMessages.create({
-					payload: newPinnedMessage,
-				})
+				const results = yield* client.PinnedMessageCreate(newPinnedMessage)
 
 				return { txid: results.transactionId }
 			}),
 		onUpdate: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { modified: newPinnedMessage } = transaction.mutations[0]
-				const client = yield* ApiClient
+				const client = yield* RpcClient
 
-				const results = yield* client.pinnedMessages.update({
-					payload: newPinnedMessage,
-					path: {
-						id: newPinnedMessage.id,
-					},
-				})
+				const results = yield* client.PinnedMessageUpdate(newPinnedMessage)
 
 				return { txid: results.transactionId }
 			}),
 		onDelete: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { original: deletedPinnedMessage } = transaction.mutations[0]
-				const client = yield* ApiClient
+				const client = yield* RpcClient
 
-				const results = yield* client.pinnedMessages.delete({
-					path: {
-						id: deletedPinnedMessage.id,
-					},
+				const results = yield* client.PinnedMessageDelete({
+					id: deletedPinnedMessage.id,
 				})
 
 				return { txid: results.transactionId }
@@ -320,38 +272,27 @@ export const notificationCollection = createCollection(
 		onInsert: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { modified: newNotification } = transaction.mutations[0]
-				const client = yield* ApiClient
+				const client = yield* RpcClient
 
-				const results = yield* client.notifications.create({
-					payload: newNotification,
-				})
+				const results = yield* client.NotificationCreate(newNotification)
 
 				return { txid: results.transactionId }
 			}),
 		onUpdate: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { modified: newNotification } = transaction.mutations[0]
-				const client = yield* ApiClient
+				const client = yield* RpcClient
 
-				const results = yield* client.notifications.update({
-					payload: newNotification,
-					path: {
-						id: newNotification.id,
-					},
-				})
+				const results = yield* client.NotificationUpdate(newNotification)
 
 				return { txid: results.transactionId }
 			}),
 		onDelete: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { original: deletedNotification } = transaction.mutations[0]
-				const client = yield* ApiClient
+				const client = yield* RpcClient
 
-				const results = yield* client.notifications.delete({
-					path: {
-						id: deletedNotification.id,
-					},
-				})
+				const results = yield* client.NotificationDelete({ id: deletedNotification.id })
 
 				return { txid: results.transactionId }
 			}),
@@ -376,37 +317,28 @@ export const userCollection = createCollection(
 		onInsert: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { modified: newUser } = transaction.mutations[0]
-				const client = yield* ApiClient
+				const client = yield* RpcClient
 
-				const results = yield* client.users.create({
-					payload: newUser,
-				})
+				const results = yield* client.UserCreate(newUser)
 
 				return { txid: results.transactionId }
 			}),
 		onUpdate: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { modified: newUser } = transaction.mutations[0]
-				const client = yield* ApiClient
+				const client = yield* RpcClient
 
-				const results = yield* client.users.update({
-					payload: newUser,
-					path: {
-						id: newUser.id,
-					},
-				})
+				const results = yield* client.UserUpdate(newUser)
 
 				return { txid: results.transactionId }
 			}),
 		onDelete: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { original: deletedUser } = transaction.mutations[0]
-				const client = yield* ApiClient
+				const client = yield* RpcClient
 
-				const results = yield* client.users.delete({
-					path: {
-						id: deletedUser.id,
-					},
+				const results = yield* client.UserDelete({
+					id: deletedUser.id,
 				})
 
 				return { txid: results.transactionId }
@@ -432,37 +364,28 @@ export const organizationMemberCollection = createCollection(
 		onInsert: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { modified: newOrganizationMember } = transaction.mutations[0]
-				const client = yield* ApiClient
+				const client = yield* RpcClient
 
-				const results = yield* client.organizationMembers.create({
-					payload: newOrganizationMember,
-				})
+				const results = yield* client.OrganizationMemberCreate(newOrganizationMember)
 
 				return { txid: results.transactionId }
 			}),
 		onUpdate: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { modified: newOrganizationMember } = transaction.mutations[0]
-				const client = yield* ApiClient
+				const client = yield* RpcClient
 
-				const results = yield* client.organizationMembers.update({
-					payload: newOrganizationMember,
-					path: {
-						id: newOrganizationMember.id,
-					},
-				})
+				const results = yield* client.OrganizationMemberUpdate(newOrganizationMember)
 
 				return { txid: results.transactionId }
 			}),
 		onDelete: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { original: deletedOrganizationMember } = transaction.mutations[0]
-				const client = yield* ApiClient
+				const client = yield* RpcClient
 
-				const results = yield* client.organizationMembers.delete({
-					path: {
-						id: deletedOrganizationMember.id,
-					},
+				const results = yield* client.OrganizationMemberDelete({
+					id: deletedOrganizationMember.id,
 				})
 
 				return { txid: results.transactionId }
@@ -488,37 +411,28 @@ export const channelCollection = createCollection(
 		onInsert: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { modified: newChannel } = transaction.mutations[0]
-				const client = yield* ApiClient
+				const client = yield* RpcClient
 
-				const results = yield* client.channels.create({
-					payload: newChannel,
-				})
+				const results = yield* client.ChannelCreate(newChannel)
 
 				return { txid: results.transactionId }
 			}),
 		onUpdate: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { modified: newChannel } = transaction.mutations[0]
-				const client = yield* ApiClient
+				const client = yield* RpcClient
 
-				const results = yield* client.channels.update({
-					payload: newChannel,
-					path: {
-						id: newChannel.id,
-					},
-				})
+				const results = yield* client.ChannelUpdate(newChannel)
 
 				return { txid: results.transactionId }
 			}),
 		onDelete: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { original: deletedChannel } = transaction.mutations[0]
-				const client = yield* ApiClient
+				const client = yield* RpcClient
 
-				const results = yield* client.channels.delete({
-					path: {
-						id: deletedChannel.id,
-					},
+				const results = yield* client.ChannelDelete({
+					id: deletedChannel.id,
 				})
 
 				return { txid: results.transactionId }
@@ -544,37 +458,28 @@ export const channelMemberCollection = createCollection(
 		onInsert: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { modified: newChannelMember } = transaction.mutations[0]
-				const client = yield* ApiClient
+				const client = yield* RpcClient
 
-				const results = yield* client.channelMembers.create({
-					payload: newChannelMember,
-				})
+				const results = yield* client.ChannelMemberCreate(newChannelMember)
 
 				return { txid: results.transactionId }
 			}),
 		onUpdate: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { modified: newChannelMember } = transaction.mutations[0]
-				const client = yield* ApiClient
+				const client = yield* RpcClient
 
-				const results = yield* client.channelMembers.update({
-					payload: newChannelMember,
-					path: {
-						id: newChannelMember.id,
-					},
-				})
+				const results = yield* client.ChannelMemberUpdate(newChannelMember)
 
 				return { txid: results.transactionId }
 			}),
 		onDelete: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { original: deletedChannelMember } = transaction.mutations[0]
-				const client = yield* ApiClient
+				const client = yield* RpcClient
 
-				const results = yield* client.channelMembers.delete({
-					path: {
-						id: deletedChannelMember.id,
-					},
+				const results = yield* client.ChannelMemberDelete({
+					id: deletedChannelMember.id,
 				})
 
 				return { txid: results.transactionId }
@@ -681,10 +586,12 @@ export const typingIndicatorCollection = createCollection(
 		onInsert: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { modified: newTypingIndicator } = transaction.mutations[0]
-				const client = yield* ApiClient
+				const client = yield* RpcClient
 
-				const results = yield* client.typingIndicators.create({
-					payload: newTypingIndicator,
+				const results = yield* client.TypingIndicatorCreate({
+					channelId: newTypingIndicator.channelId,
+					memberId: newTypingIndicator.memberId,
+					lastTyped: newTypingIndicator.lastTyped,
 				})
 
 				return { txid: results.transactionId }
@@ -692,13 +599,11 @@ export const typingIndicatorCollection = createCollection(
 		onUpdate: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { modified: newTypingIndicator } = transaction.mutations[0]
-				const client = yield* ApiClient
+				const client = yield* RpcClient
 
-				const results = yield* client.typingIndicators.update({
-					payload: newTypingIndicator,
-					path: {
-						id: newTypingIndicator.id,
-					},
+				const results = yield* client.TypingIndicatorUpdate({
+					id: newTypingIndicator.id,
+					lastTyped: newTypingIndicator.lastTyped,
 				})
 
 				return { txid: results.transactionId }
@@ -706,12 +611,10 @@ export const typingIndicatorCollection = createCollection(
 		onDelete: ({ transaction }) =>
 			Effect.gen(function* () {
 				const { original: deletedTypingIndicator } = transaction.mutations[0]
-				const client = yield* ApiClient
+				const client = yield* RpcClient
 
-				const results = yield* client.typingIndicators.delete({
-					path: {
-						id: deletedTypingIndicator.id,
-					},
+				const results = yield* client.TypingIndicatorDelete({
+					id: deletedTypingIndicator.id,
 				})
 
 				return { txid: results.transactionId }

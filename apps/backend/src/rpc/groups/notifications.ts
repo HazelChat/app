@@ -22,7 +22,7 @@ export class NotificationResponse extends Schema.Class<NotificationResponse>("No
 export class NotificationNotFoundError extends Schema.TaggedError<NotificationNotFoundError>()(
 	"NotificationNotFoundError",
 	{
-		notificationId: Schema.UUID,
+		notificationId: NotificationId,
 	},
 ) {}
 

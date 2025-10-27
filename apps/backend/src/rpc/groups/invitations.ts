@@ -22,7 +22,7 @@ export class InvitationResponse extends Schema.Class<InvitationResponse>("Invita
 export class InvitationNotFoundError extends Schema.TaggedError<InvitationNotFoundError>()(
 	"InvitationNotFoundError",
 	{
-		invitationId: Schema.UUID,
+		invitationId: InvitationId,
 	},
 ) {}
 

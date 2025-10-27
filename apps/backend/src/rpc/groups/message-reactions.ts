@@ -25,7 +25,7 @@ export class MessageReactionResponse extends Schema.Class<MessageReactionRespons
 export class MessageReactionNotFoundError extends Schema.TaggedError<MessageReactionNotFoundError>()(
 	"MessageReactionNotFoundError",
 	{
-		messageReactionId: Schema.UUID,
+		messageReactionId: MessageReactionId,
 	},
 ) {}
 

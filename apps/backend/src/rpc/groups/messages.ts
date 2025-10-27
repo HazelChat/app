@@ -21,7 +21,7 @@ export class MessageResponse extends Schema.Class<MessageResponse>("MessageRespo
  * Used in update and delete operations.
  */
 export class MessageNotFoundError extends Schema.TaggedError<MessageNotFoundError>()("MessageNotFoundError", {
-	messageId: Schema.UUID,
+	messageId: MessageId,
 }) {}
 
 /**

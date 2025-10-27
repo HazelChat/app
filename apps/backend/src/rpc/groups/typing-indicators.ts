@@ -24,7 +24,7 @@ export class TypingIndicatorResponse extends Schema.Class<TypingIndicatorRespons
 export class TypingIndicatorNotFoundError extends Schema.TaggedError<TypingIndicatorNotFoundError>()(
 	"TypingIndicatorNotFoundError",
 	{
-		typingIndicatorId: Schema.UUID,
+		typingIndicatorId: TypingIndicatorId,
 	},
 ) {}
 

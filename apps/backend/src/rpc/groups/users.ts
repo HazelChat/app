@@ -20,7 +20,7 @@ export class UserResponse extends Schema.Class<UserResponse>("UserResponse")({
  * Used in update and delete operations.
  */
 export class UserNotFoundError extends Schema.TaggedError<UserNotFoundError>()("UserNotFoundError", {
-	userId: Schema.UUID,
+	userId: UserId,
 }) {}
 
 export class UserRpcs extends RpcGroup.make(

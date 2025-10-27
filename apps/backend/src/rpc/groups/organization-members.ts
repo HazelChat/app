@@ -25,7 +25,7 @@ export class OrganizationMemberResponse extends Schema.Class<OrganizationMemberR
 export class OrganizationMemberNotFoundError extends Schema.TaggedError<OrganizationMemberNotFoundError>()(
 	"OrganizationMemberNotFoundError",
 	{
-		organizationMemberId: Schema.UUID,
+		organizationMemberId: OrganizationMemberId,
 	},
 ) {}
 

@@ -23,7 +23,7 @@ export class ChannelMemberResponse extends Schema.Class<ChannelMemberResponse>("
 export class ChannelMemberNotFoundError extends Schema.TaggedError<ChannelMemberNotFoundError>()(
 	"ChannelMemberNotFoundError",
 	{
-		channelMemberId: Schema.UUID,
+		channelMemberId: ChannelMemberId,
 	},
 ) {}
 

@@ -23,7 +23,7 @@ export class PinnedMessageResponse extends Schema.Class<PinnedMessageResponse>("
 export class PinnedMessageNotFoundError extends Schema.TaggedError<PinnedMessageNotFoundError>()(
 	"PinnedMessageNotFoundError",
 	{
-		pinnedMessageId: Schema.UUID,
+		pinnedMessageId: PinnedMessageId,
 	},
 ) {}
 
