@@ -41,10 +41,7 @@ import { PinnedMessageRepo } from "./repositories/pinned-message-repo"
 import { TypingIndicatorRepo } from "./repositories/typing-indicator-repo"
 import { UserPresenceStatusRepo } from "./repositories/user-presence-status-repo"
 import { UserRepo } from "./repositories/user-repo"
-import { InvitationRpcs } from "./rpc/groups/invitations"
-import { MessageRpcs } from "./rpc/groups/messages"
-import { NotificationRpcs } from "./rpc/groups/notifications"
-import { AuthMiddlewareLive } from "./rpc/middleware/auth"
+
 import { AllRpcs, RpcServerLive } from "./rpc/server"
 import { AuthorizationLive } from "./services/auth"
 import { DatabaseLive } from "./services/database"
@@ -59,7 +56,7 @@ export { HazelApi }
 export { InvitationRpcs } from "./rpc/groups/invitations"
 export { MessageRpcs } from "./rpc/groups/messages"
 export { NotificationRpcs } from "./rpc/groups/notifications"
-export { AuthMiddleware, AuthMiddlewareClientLive } from "./rpc/middleware/auth"
+export { AuthMiddleware } from "./rpc/middleware/auth"
 
 const HealthRouter = HttpLayerRouter.use((router) =>
 	router.add("GET", "/health", HttpServerResponse.text("OK")),

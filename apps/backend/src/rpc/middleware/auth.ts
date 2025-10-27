@@ -1,18 +1,4 @@
-/**
- * Auth Middleware Implementation (Server-Only)
- *
- * This file contains the server-side implementation of AuthMiddleware.
- * It should NOT be imported in browser code as it depends on:
- * - UserRepo (database queries)
- * - WorkOS (Node.js SDK)
- *
- * For client-safe imports, use:
- * - `./auth-class` for the middleware class definition
- * - `./client` for the client-side middleware layer
- */
-
 import { Headers } from "@effect/platform"
-import { RpcMiddleware } from "@effect/rpc"
 import { CurrentUser, UnauthorizedError, withSystemActor } from "@hazel/effect-lib"
 import { Config, Effect, FiberRef, Layer, Option } from "effect"
 import { UserPresenceStatusRepo } from "../../repositories/user-presence-status-repo"
@@ -20,20 +6,8 @@ import { UserRepo } from "../../repositories/user-repo"
 import { WorkOS } from "../../services/workos"
 import { AuthMiddleware } from "./auth-class"
 
-// Re-export the class for backward compatibility with server code
 export { AuthMiddleware } from "./auth-class"
 
-/**
- * Server-side implementation of AuthMiddleware.
- *
- * Extracts and verifies the session cookie using WorkOS, then provides the CurrentUser.
- * This implementation mirrors the logic from services/auth.ts but adapted for RPC middleware.
- *
- * WebSocket Disconnect Detection:
- * - Uses a scoped FiberRef to track active WebSocket connections per user
- * - When a connection closes, the finalizer marks the user as offline
- * - This provides instant offline detection (< 1s) without manual heartbeats
- */
 export const AuthMiddlewareLive = Layer.scoped(
 	AuthMiddleware,
 	Effect.gen(function* () {
@@ -177,19 +151,5 @@ export const AuthMiddlewareLive = Layer.scoped(
 				return currentUser
 			}),
 		)
-	}),
-)
-
-/**
- * Client-side implementation of AuthMiddleware.
- *
- * For browser clients, cookies are sent automatically via 'credentials: include'.
- * This layer is required but doesn't need to modify the request.
- */
-export const AuthMiddlewareClientLive = RpcMiddleware.layerClient(AuthMiddleware, ({ request }) =>
-	Effect.succeed({
-		...request,
-		// No changes needed - cookies sent automatically by browser
-		// But you could add custom auth headers here if needed
 	}),
 )
