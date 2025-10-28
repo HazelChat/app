@@ -1,7 +1,8 @@
-import type { ChannelId, ChannelMemberId } from "@hazel/db/schema"
-import { useEffect, useMemo, useRef, useState } from "react"
-import { upsertTypingIndicator } from "~/atoms/typing-indicator-atom"
-import { TypingIndicatorService } from "~/services/typing-indicator-service"
+import { useAtomSet } from "@effect-atom/atom-react"
+import type { ChannelId, ChannelMemberId, TypingIndicatorId } from "@hazel/db/schema"
+import { Exit } from "effect"
+import { useCallback, useEffect, useRef, useState } from "react"
+import { deleteTypingIndicatorMutation, upsertTypingIndicatorMutation } from "~/atoms/typing-indicator-atom"
 
 interface UseTypingOptions {
 	channelId: ChannelId
@@ -28,89 +29,118 @@ export function useTyping({
 	typingTimeout = 3000,
 }: UseTypingOptions): UseTypingResult {
 	const [isTyping, setIsTyping] = useState(false)
-	const serviceRef = useRef<TypingIndicatorService | null>(null)
 	const lastContentRef = useRef("")
-	const isInitializedRef = useRef(false)
+	const lastTypedRef = useRef<number>(0)
+	const debounceTimerRef = useRef<NodeJS.Timeout | null>(null)
+	const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+	const typingIndicatorIdRef = useRef<string | null>(null)
 
-	// Create or update the service when dependencies change
-	useEffect(() => {
-		if (!memberId) {
-			// Cleanup if no member ID
-			if (serviceRef.current) {
-				serviceRef.current.cleanup()
-				serviceRef.current = null
-			}
-			return
+	// Use Effect Atom mutations with proper mode
+	const upsertTypingIndicator = useAtomSet(upsertTypingIndicatorMutation, {
+		mode: "promiseExit",
+	})
+
+	const deleteTypingIndicator = useAtomSet(deleteTypingIndicatorMutation, {
+		mode: "promiseExit",
+	})
+
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+	const startTyping = useCallback(async () => {
+		if (!memberId) return
+
+		const now = Date.now()
+		const timeSinceLastTyped = now - lastTypedRef.current
+
+		// Clear existing timers
+		if (debounceTimerRef.current) {
+			clearTimeout(debounceTimerRef.current)
+		}
+		if (typingTimeoutRef.current) {
+			clearTimeout(typingTimeoutRef.current)
 		}
 
-		// Create new service or update existing
-		if (!serviceRef.current || !isInitializedRef.current) {
-			// Cleanup old service if it exists
-			if (serviceRef.current) {
-				serviceRef.current.cleanup()
-			}
+		// Update local state
+		if (!isTyping) {
+			setIsTyping(true)
+			onTypingStart?.()
+		}
 
-			serviceRef.current = new TypingIndicatorService({
-				channelId,
-				memberId,
-				debounceDelay,
-				typingTimeout,
-				onUpsert: upsertTypingIndicator,
-				onDelete: async () => {
-					// We don't actually delete anymore, we let the backend cleanup handle it
+		// Debounce the server update
+		debounceTimerRef.current = setTimeout(async () => {
+			// Only send update if enough time has passed
+			if (timeSinceLastTyped >= debounceDelay) {
+				lastTypedRef.current = now
+
+				const result = await upsertTypingIndicator({
+					payload: {
+						channelId,
+						memberId,
+						lastTyped: now,
+					},
+				})
+
+				if (Exit.isSuccess(result)) {
+					typingIndicatorIdRef.current = result.value.data.id
+				} else {
+					console.error(
+						"Failed to create typing indicator:",
+						Exit.match(result, {
+							onFailure: (cause) => cause,
+							onSuccess: () => null,
+						}),
+					)
+				}
+			}
+		}, debounceDelay)
+
+		// Set timeout to automatically stop typing
+		typingTimeoutRef.current = setTimeout(() => {
+			stopTyping()
+		}, typingTimeout)
+	}, [channelId, memberId, debounceDelay, typingTimeout, isTyping, onTypingStart, upsertTypingIndicator])
+
+	const stopTyping = useCallback(async () => {
+		// Clear all timers
+		if (debounceTimerRef.current) {
+			clearTimeout(debounceTimerRef.current)
+			debounceTimerRef.current = null
+		}
+		if (typingTimeoutRef.current) {
+			clearTimeout(typingTimeoutRef.current)
+			typingTimeoutRef.current = null
+		}
+
+		// Update local state
+		if (isTyping) {
+			setIsTyping(false)
+			onTypingStop?.()
+		}
+
+		// Delete typing indicator from server if it exists
+		if (typingIndicatorIdRef.current) {
+			const result = await deleteTypingIndicator({
+				payload: {
+					id: typingIndicatorIdRef.current as TypingIndicatorId,
 				},
 			})
 
-			isInitializedRef.current = true
+			if (Exit.isSuccess(result)) {
+				typingIndicatorIdRef.current = null
+				lastTypedRef.current = 0
+			} else {
+				console.error(
+					"Failed to delete typing indicator:",
+					Exit.match(result, {
+						onFailure: (cause) => cause,
+						onSuccess: () => null,
+					}),
+				)
+			}
 		}
+	}, [isTyping, onTypingStop, deleteTypingIndicator])
 
-		// Cleanup on unmount or dependency change
-		return () => {
-			if (serviceRef.current) {
-				serviceRef.current.cleanup()
-				serviceRef.current = null
-				isInitializedRef.current = false
-			}
-			setIsTyping(false)
-		}
-	}, [channelId, memberId, debounceDelay, typingTimeout])
-
-	const startTyping = useMemo(
-		() => async () => {
-			if (!serviceRef.current || !memberId) return
-
-			try {
-				await serviceRef.current.startTyping()
-				if (!isTyping) {
-					setIsTyping(true)
-					onTypingStart?.()
-				}
-			} catch (error) {
-				console.warn("Failed to start typing:", error)
-			}
-		},
-		[isTyping, memberId, onTypingStart],
-	)
-
-	const stopTyping = useMemo(
-		() => async () => {
-			if (!serviceRef.current) return
-
-			try {
-				await serviceRef.current.stopTyping()
-				if (isTyping) {
-					setIsTyping(false)
-					onTypingStop?.()
-				}
-			} catch (error) {
-				console.warn("Failed to stop typing:", error)
-			}
-		},
-		[isTyping, onTypingStop],
-	)
-
-	const handleContentChange = useMemo(
-		() => (content: string) => {
+	const handleContentChange = useCallback(
+		(content: string) => {
 			const wasEmpty = lastContentRef.current === ""
 			const isEmpty = content === ""
 
@@ -130,11 +160,14 @@ export function useTyping({
 		[startTyping, stopTyping],
 	)
 
-	// Cleanup on unmount
+	// Cleanup on unmount or when memberId changes
 	useEffect(() => {
 		return () => {
-			if (serviceRef.current) {
-				serviceRef.current.cleanup()
+			if (debounceTimerRef.current) {
+				clearTimeout(debounceTimerRef.current)
+			}
+			if (typingTimeoutRef.current) {
+				clearTimeout(typingTimeoutRef.current)
 			}
 		}
 	}, [])
