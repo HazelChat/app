@@ -110,8 +110,6 @@ export const sendMessage = createOptimisticAction<{
 			}),
 		)
 
-		console.log(transactionId)
-
 		await messageCollection.utils.awaitTxId(transactionId)
 
 		return { transactionId, data }
