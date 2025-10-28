@@ -202,15 +202,13 @@ export const createDmChannel = createOptimisticAction<{
 	mutationFn: async (props, _params) => {
 		const { transactionId, data } = await runtime.runPromise(
 			Effect.gen(function* () {
-				const client = yield* ApiClient
+				const client = yield* RpcClient
 
-				return yield* client.channels.createDm({
-					payload: {
-						organizationId: props.organizationId,
-						participantIds: props.participantIds,
-						type: props.type,
-						name: props.name,
-					},
+				return yield* client.channel.createDm({
+					organizationId: props.organizationId,
+					participantIds: props.participantIds,
+					type: props.type,
+					name: props.name,
 				})
 			}),
 		)

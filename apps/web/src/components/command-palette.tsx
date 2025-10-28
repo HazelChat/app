@@ -25,9 +25,9 @@ import {
 import { useOrganization } from "~/hooks/use-organization"
 import { useAuth } from "~/lib/auth"
 import { findExistingDmChannel } from "~/lib/channels"
-import { HazelApiClient } from "~/lib/services/common/atom-client"
 import { toastExit } from "~/lib/toast-exit"
 import { Avatar } from "./base/avatar/avatar"
+import { createDmChannelMutation } from "~/atoms/channel-atoms"
 
 import IconBell from "./icons/icon-bell"
 import IconCircleDottedUser from "./icons/icon-circle-dotted-user"
@@ -335,7 +335,7 @@ function MembersView({ onClose }: { onClose: () => void }) {
 	const { user: currentUser } = useAuth()
 	const navigate = useNavigate()
 
-	const createDmChannel = useAtomSet(HazelApiClient.mutation("channels", "createDm"), {
+	const createDmChannel = useAtomSet(createDmChannelMutation, {
 		mode: "promiseExit",
 	})
 

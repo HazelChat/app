@@ -4,7 +4,7 @@ import { MessageId } from "@hazel/db/schema"
 import { CurrentUser, InternalServerError, UnauthorizedError } from "@hazel/effect-lib"
 import { Schema } from "effect"
 import { TransactionId } from "../../../lib/schema"
-import { ChannelNotFoundError } from "./channels"
+import { ChannelNotFoundError } from "../../../rpc/groups/channels"
 
 export class MessageResponse extends Schema.Class<MessageResponse>("MessageResponse")({
 	data: Message.Model.json,

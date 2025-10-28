@@ -20,9 +20,9 @@ import { organizationMemberCollection, userCollection, userPresenceStatusCollect
 import { useAppForm } from "~/hooks/use-app-form"
 import { useOrganization } from "~/hooks/use-organization"
 import { useAuth } from "~/lib/auth"
-import { HazelApiClient } from "~/lib/services/common/atom-client"
 import { toastExit } from "~/lib/toast-exit"
 import { cx } from "~/utils/cx"
+import { createDmChannelMutation } from "~/atoms/channel-atoms"
 
 const dmFormSchema = type({
 	userIds: "string[]",
@@ -42,7 +42,7 @@ export const CreateDmModal = ({ isOpen, onOpenChange }: CreateDmModalProps) => {
 	const navigate = useNavigate()
 	const { organizationId, slug } = useOrganization()
 
-	const createDmChannel = useAtomSet(HazelApiClient.mutation("channels", "createDm"), {
+	const createDmChannel = useAtomSet(createDmChannelMutation, {
 		mode: "promiseExit",
 	})
 

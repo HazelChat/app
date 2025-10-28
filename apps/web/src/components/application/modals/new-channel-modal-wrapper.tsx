@@ -10,8 +10,8 @@ import IconHashtag from "~/components/icons/icon-hashtag"
 import { useAppForm } from "~/hooks/use-app-form"
 import { useOrganization } from "~/hooks/use-organization"
 import { useAuth } from "~/lib/auth"
-import { HazelApiClient } from "~/lib/services/common/atom-client"
 import { toastExit } from "~/lib/toast-exit"
+import { createChannelMutation } from "~/atoms/channel-atoms"
 
 const channelSchema = type({
 	name: "string > 2",
@@ -31,7 +31,7 @@ export const NewChannelModalWrapper = ({ isOpen, setIsOpen }: NewChannelModalWra
 
 	const navigate = useNavigate()
 
-	const createChannel = useAtomSet(HazelApiClient.mutation("channels", "create"), {
+	const createChannel = useAtomSet(createChannelMutation, {
 		mode: "promiseExit",
 	})
 

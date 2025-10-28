@@ -24,24 +24,13 @@ export const DirectMessageParticipantRpcLive = DirectMessageParticipantRpcs.toLa
 		const db = yield* Database.Database
 
 		return {
-			/**
-			 * DirectMessageParticipantCreate Handler
-			 *
-			 * Creates a new direct message participant. Users must have permission
-			 * to add participants to the channel.
-			 *
-			 * Process:
-			 * 1. Start database transaction
-			 * 2. Create participant
-			 * 3. Check permissions via DirectMessageParticipantPolicy.canCreate
-			 * 4. Generate transaction ID
-			 * 5. Return participant data and transaction ID
-			 */
 			"directMessageParticipant.create": (payload) =>
 				db
 					.transaction(
 						Effect.gen(function* () {
-							const createdParticipant = yield* DirectMessageParticipantRepo.insert(payload).pipe(
+							const createdParticipant = yield* DirectMessageParticipantRepo.insert(
+								payload,
+							).pipe(
 								Effect.map((res) => res[0]!),
 								policyUse(DirectMessageParticipantPolicy.canCreate(payload.channelId)),
 							)
