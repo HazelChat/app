@@ -77,33 +77,26 @@ interface ChatProviderProps {
 export function ChatProvider({ channelId, organizationId, children }: ChatProviderProps) {
 	const { user } = useAuth()
 
-	// Reply state - per-channel using Atom.family
 	const replyToMessageId = useAtomValue(replyToMessageAtomFamily(channelId))
 	const setReplyToMessageId = useAtomSet(replyToMessageAtomFamily(channelId))
 
-	// Thread state - global atoms
 	const activeThreadChannelId = useAtomValue(activeThreadChannelIdAtom)
 	const setActiveThreadChannelId = useAtomSet(activeThreadChannelIdAtom)
 	const activeThreadMessageId = useAtomValue(activeThreadMessageIdAtom)
 	const setActiveThreadMessageId = useAtomSet(activeThreadMessageIdAtom)
 
-	// Attachment state - per-channel using Atom.family
 	const attachmentIds = useAtomValue(uploadedAttachmentsAtomFamily(channelId))
 	const setAttachmentIds = useAtomSet(uploadedAttachmentsAtomFamily(channelId))
 
-	// Upload state - per-channel using Atom.family
 	const isUploading = useAtomValue(isUploadingAtomFamily(channelId))
 	const setIsUploading = useAtomSet(isUploadingAtomFamily(channelId))
 
-	// Uploading files - per-channel using Atom.family
 	const uploadingFiles = useAtomValue(uploadingFilesAtomFamily(channelId))
 	const setUploadingFiles = useAtomSet(uploadingFilesAtomFamily(channelId))
 
-	// Fetch channel using new tanstack-db-atom
 	const channelResult = useAtomValue(channelByIdAtomFamily(channelId))
 	const channel = Result.getOrElse(channelResult, () => undefined)?.[0]
 
-	// Attachment operations
 	const addAttachment = useCallback(
 		(attachmentId: AttachmentId) => {
 			setAttachmentIds([...attachmentIds, attachmentId])
@@ -122,7 +115,6 @@ export function ChatProvider({ channelId, organizationId, children }: ChatProvid
 		setAttachmentIds([])
 	}, [setAttachmentIds])
 
-	// Uploading file operations
 	const addUploadingFile = useCallback(
 		(file: UploadingFile) => {
 			setUploadingFiles([...uploadingFiles, file])
@@ -137,15 +129,12 @@ export function ChatProvider({ channelId, organizationId, children }: ChatProvid
 		[uploadingFiles, setUploadingFiles],
 	)
 
-	// Message operations
 	const sendMessage = useCallback(
 		async ({ content, attachments }: { content: string; attachments?: AttachmentId[] }) => {
 			if (!user?.id) return
 
-			// Use attachments from the atom if not provided
 			const attachmentsToSend = attachments ?? attachmentIds
 
-			// Use the sendMessage action which handles both message creation and attachment linking
 			const tx = sendMessageAction({
 				channelId,
 				authorId: UserId.make(user.id),
@@ -155,13 +144,10 @@ export function ChatProvider({ channelId, organizationId, children }: ChatProvid
 				attachmentIds: attachmentsToSend as AttachmentId[] | undefined,
 			})
 
-			// Clear reply state and attachments immediately for instant UI feedback
 			setReplyToMessageId(null)
 			clearAttachments()
 
 			await tx.isPersisted.promise
-
-			console.log("tx", tx)
 		},
 		[channelId, user?.id, replyToMessageId, attachmentIds, setReplyToMessageId, clearAttachments],
 	)
@@ -222,13 +208,10 @@ export function ChatProvider({ channelId, organizationId, children }: ChatProvid
 
 	const createThread = useCallback(
 		async (messageId: MessageId, existingThreadChannelId: ChannelId | null) => {
-			// Check if thread already exists
 			if (existingThreadChannelId) {
-				// Open existing thread
 				setActiveThreadChannelId(existingThreadChannelId)
 				setActiveThreadMessageId(messageId)
 			} else {
-				// Create new thread channel
 				const threadChannelId = ChannelId.make(crypto.randomUUID())
 				const tx = channelCollection.insert({
 					id: threadChannelId,
@@ -243,7 +226,6 @@ export function ChatProvider({ channelId, organizationId, children }: ChatProvid
 
 				await tx.isPersisted.promise
 
-				// Open the newly created thread
 				setActiveThreadChannelId(threadChannelId)
 				setActiveThreadMessageId(messageId)
 			}

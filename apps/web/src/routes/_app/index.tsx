@@ -32,7 +32,7 @@ function RouteComponent() {
 		return <Loader />
 	}
 
-	// If user is not authenticated, let parent layout handle auth redirect
+	// Let parent layout handle auth redirect
 	if (!user) {
 		return null
 	}
@@ -40,7 +40,6 @@ function RouteComponent() {
 	if (organizations && organizations.length > 0) {
 		const org = organizations[0]!
 
-		// If organization doesn't have a slug, redirect to setup
 		if (!org.slug) {
 			return <Navigate to="/onboarding/setup-organization" search={{ orgId: org.id }} />
 		}
@@ -48,6 +47,5 @@ function RouteComponent() {
 		return <Navigate to="/$orgSlug" params={{ orgSlug: org.slug }} />
 	}
 
-	// Redirect to onboarding if user has no organization
 	return <Navigate to="/onboarding" />
 }

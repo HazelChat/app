@@ -1,9 +1,3 @@
-/**
- * TanStack DB utilities for Effect Atom
- * @since 1.0.0
- */
-
-// Export all utilities
 export {
 	makeCollectionAtom,
 	makeQuery,
@@ -12,7 +6,6 @@ export {
 	makeSingleCollectionAtom,
 } from "./AtomTanStackDB"
 
-// Export types
 export type {
 	CollectionStatus,
 	ConditionalQueryFn,

@@ -29,9 +29,6 @@ export interface EffectElectricCollectionUtils extends ElectricCollectionUtils {
 
 /**
  * Creates Electric collection options with Effect-based handlers
- *
- * This function converts Effect-based mutation handlers to Promise-based handlers
- * that are compatible with the standard electricCollectionOptions
  */
 
 // With schema + with runtime (R inferred from runtime)
@@ -101,20 +98,16 @@ export function effectElectricCollectionOptions(
 	utils: EffectElectricCollectionUtils
 	schema?: any
 } {
-	// Convert Effect handlers to Promise handlers
 	const promiseOnInsert = convertInsertHandler(config.onInsert, config.runtime)
 	const promiseOnUpdate = convertUpdateHandler(config.onUpdate, config.runtime)
 	const promiseOnDelete = convertDeleteHandler(config.onDelete, config.runtime)
 
-	// Create the standard electric collection options
 	const standardConfig = electricCollectionOptions({
 		...config,
 		onInsert: promiseOnInsert,
 		onUpdate: promiseOnUpdate,
 		onDelete: promiseOnDelete,
 	} as any)
-
-	// Wrap awaitTxId with Effect version
 	const awaitTxIdEffect = (
 		txid: Txid,
 		timeout: number = 30000,

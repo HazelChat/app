@@ -10,11 +10,9 @@ export function NotificationManager() {
 	const { user } = useAuth()
 	const { playSound } = useNotificationSound()
 
-	// Track previous notification counts per channel
 	const prevNotificationCounts = useRef<Map<string, number>>(new Map())
 	const isFirstRender = useRef(true)
 
-	// Subscribe to channels to monitor notification counts
 	const { data: userChannels } = useLiveQuery(
 		(q) =>
 			q
@@ -37,27 +35,22 @@ export function NotificationManager() {
 	useEffect(() => {
 		if (!userChannels) return
 
-		// Check each channel for notification count changes
 		for (const row of userChannels) {
 			const channelId = row.channel.id
 			const currentCount = row.member.notificationCount || 0
 			const prevCount = prevNotificationCounts.current.get(channelId) || 0
 
-			// Play sound if count increased (and not on first render)
 			if (!isFirstRender.current && currentCount > prevCount && !row.member.isMuted) {
 				playSound()
 			}
 
-			// Update the stored count
 			prevNotificationCounts.current.set(channelId, currentCount)
 		}
 
-		// After first render, allow sounds
 		if (isFirstRender.current) {
 			isFirstRender.current = false
 		}
 	}, [userChannels, playSound])
 
-	// This component doesn't render anything
 	return null
 }

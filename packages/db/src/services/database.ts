@@ -128,8 +128,6 @@ const makeService = (config: Config) =>
 								Effect.tryPromise({
 									try: () => fn(tx),
 									catch: (cause) => {
-										console.log("Cause", cause)
-
 										const error = matchPgError(cause)
 										if (error !== null) {
 											return error
@@ -138,7 +136,6 @@ const makeService = (config: Config) =>
 									},
 								})
 
-							// Provide TransactionContext to the effect
 							const withContext = effect.pipe(
 								Effect.provideService(TransactionContext, { execute: txWrapper }),
 							)
@@ -165,14 +162,6 @@ const makeService = (config: Config) =>
 			),
 		)
 
-		/**
-		 * Creates a query function factory that validates input against a schema.
-		 *
-		 * @param inputSchema The Effect Schema for the input data.
-		 * @param queryFn The function performing the database operation. It receives the validated input.
-		 * @returns A function that takes raw input and an optional transaction executor,
-		 *          returns an Effect that includes Schema.ParseError in its error channel.
-		 */
 		const makeQueryWithSchema = <
 			InputSchema extends Schema.Schema.AnyNoContext,
 			A,
@@ -200,18 +189,15 @@ const makeService = (config: Config) =>
 				return Effect.gen(function* () {
 					const validatedInput = yield* Schema.decode(inputSchema)(rawData)
 
-					// 1. Check explicit tx parameter (highest priority)
 					if (tx) {
 						return yield* queryFn(tx, validatedInput)
 					}
 
-					// 2. Check TransactionContext from Effect Context (auto-propagated)
 					const maybeCtx = yield* Effect.serviceOption(TransactionContext)
 					if (Option.isSome(maybeCtx)) {
 						return yield* queryFn(maybeCtx.value.execute, validatedInput)
 					}
 
-					// 3. Fall back to regular execute
 					return yield* queryFn(execute, validatedInput)
 				}).pipe(
 					policy,
@@ -222,7 +208,6 @@ const makeService = (config: Config) =>
 			}
 		}
 
-		// Generic query maker - should work without changes if execute/transaction are correct
 		const makeQuery = <Input, A, E, R, Action extends string, Entity extends string>(
 			queryFn: (
 				executor: <T>(
@@ -234,11 +219,9 @@ const makeService = (config: Config) =>
 		) => {
 			return (
 				input: Input,
-				// The transaction executor type passed here must match the one defined in `transaction`
 				tx?: <U>(fn: (client: TransactionClient) => Promise<U>) => Effect.Effect<U, DatabaseError>,
 			): Effect.Effect<A, E | DatabaseError, R | AuthorizedActor<Action, Entity>> => {
 				return Effect.gen(function* () {
-					// 1. Check explicit tx parameter (highest priority)
 					if (tx) {
 						return yield* queryFn(
 							tx as <T>(
@@ -248,7 +231,6 @@ const makeService = (config: Config) =>
 						)
 					}
 
-					// 2. Check TransactionContext from Effect Context (auto-propagated)
 					const maybeCtx = yield* Effect.serviceOption(TransactionContext)
 					if (Option.isSome(maybeCtx)) {
 						return yield* queryFn(
@@ -259,7 +241,6 @@ const makeService = (config: Config) =>
 						)
 					}
 
-					// 3. Fall back to regular execute
 					return yield* queryFn(execute, input)
 				}).pipe(policy)
 			}

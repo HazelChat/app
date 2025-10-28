@@ -13,16 +13,11 @@ interface LogoutOptions {
 	redirectTo?: string
 }
 
-// ============================================================================
-// Atoms
-// ============================================================================
-
 /**
  * Atom that tracks whether the current route is a public route
  * (i.e., starts with /auth)
  */
 const isPublicRouteAtom = Atom.make((get) => {
-	// Subscribe to route changes using TanStack Router
 	const unsubscribe = router.subscribe("onResolved", (event) => {
 		get.setSelf(event.toLocation.pathname.startsWith("/auth"))
 	})
@@ -82,10 +77,6 @@ const logoutAtom = Atom.fn(
 		window.location.href = logoutUrl.toString()
 	}),
 )
-
-// ============================================================================
-// Hook
-// ============================================================================
 
 export function useAuth() {
 	const user = useAtomValue(userAtom)

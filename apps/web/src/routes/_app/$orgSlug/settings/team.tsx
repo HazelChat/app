@@ -111,17 +111,14 @@ function RouteComponent() {
 	const handleMessageUser = async (targetUserId: UserId, targetUserName: string) => {
 		if (!user?.id || !organizationId || !orgSlug) return
 
-		// Check if a DM channel already exists
 		const existingChannel = findExistingDmChannel(user.id, targetUserId)
 
 		if (existingChannel) {
-			// Navigate to existing channel
 			navigate({
 				to: "/$orgSlug/chat/$id",
 				params: { orgSlug, id: existingChannel.id },
 			})
 		} else {
-			// Create new DM channel
 			await toastExit(
 				createDmChannel({
 					payload: {
@@ -133,7 +130,6 @@ function RouteComponent() {
 				{
 					loading: `Starting conversation with ${targetUserName}...`,
 					success: (result) => {
-						// Navigate to the created channel
 						if (result.data.id) {
 							navigate({
 								to: "/$orgSlug/chat/$id",

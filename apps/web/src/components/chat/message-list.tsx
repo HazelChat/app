@@ -10,12 +10,10 @@ import { Route } from "~/routes/_app/$orgSlug/chat/$id"
 import { MessageItem } from "./message-item"
 import { MessageToolbar } from "./message-toolbar"
 
-// Message row types for virtualized list with headers
 type MessageRowHeader = { id: string; type: "header"; date: string }
 type MessageRowItem = { id: string; type: "row" } & ProcessedMessage
 type MessageRow = MessageRowHeader | MessageRowItem
 
-// Memoized virtualized list component to prevent re-renders when hover state changes
 interface MessageVirtualListProps {
 	messageRows: MessageRow[]
 	stickyIndices: number[]
@@ -75,7 +73,6 @@ export function MessageList() {
 	const { channelId } = useChat()
 	const { messagesInfiniteQuery } = Route.useLoaderData()
 
-	// Hover tracking for shared toolbar
 	const [hoveredMessageId, setHoveredMessageId] = useState<string | null>(null)
 	const targetRef = useRef<HTMLDivElement | null>(null)
 	const [isToolbarMenuOpen, setIsToolbarMenuOpen] = useState(false)
@@ -97,13 +94,11 @@ export function MessageList() {
 	const messages = (data || []) as MessageWithPinned[]
 	const isLoadingMessages = isLoading
 
-	// Find the currently hovered message
 	const hoveredMessage = useMemo(
 		() => messages.find((m) => m.id === hoveredMessageId) || null,
 		[messages, hoveredMessageId],
 	)
 
-	// Use react-aria's positioning for automatic viewport-aware placement
 	const { overlayProps } = useOverlayPosition({
 		targetRef,
 		overlayRef,
@@ -113,14 +108,9 @@ export function MessageList() {
 		isOpen: hoveredMessageId !== null,
 	})
 
-	// Handle hover changes, but don't clear hover when toolbar menu is open
-	// CRITICAL: Use useCallback to prevent MessageVirtualList from re-rendering on every hover
-	// Only recreates when isToolbarMenuOpen changes (rare)
-	// Uses ref for isToolbarHovered to avoid recreating this callback
 	const handleHoverChange = useCallback(
 		(messageId: string | null, ref: HTMLDivElement | null) => {
 			if (messageId) {
-				// Clear any pending hide timeout when hovering a new message
 				if (hideTimeoutRef.current) {
 					clearTimeout(hideTimeoutRef.current)
 					hideTimeoutRef.current = null
@@ -128,7 +118,6 @@ export function MessageList() {
 				setHoveredMessageId(messageId)
 				targetRef.current = ref
 			} else if (!isToolbarMenuOpen && !isToolbarHoveredRef.current) {
-				// Delay hiding to allow moving mouse to toolbar
 				hideTimeoutRef.current = window.setTimeout(() => {
 					setHoveredMessageId(null)
 					targetRef.current = null
@@ -144,7 +133,6 @@ export function MessageList() {
 		const chronologicalMessages = [...messages].reverse()
 
 		return chronologicalMessages.map((message, index): ProcessedMessage => {
-			// Determine isGroupStart
 			const prevMessage = index > 0 ? chronologicalMessages[index - 1] : null
 			const isGroupStart =
 				!prevMessage ||
@@ -152,7 +140,6 @@ export function MessageList() {
 				message.createdAt.getTime() - prevMessage.createdAt.getTime() > timeThreshold ||
 				!!prevMessage.replyToMessageId
 
-			// Determine isGroupEnd
 			const nextMessage =
 				index < chronologicalMessages.length - 1 ? chronologicalMessages[index + 1] : null
 			const isGroupEnd =
@@ -173,7 +160,6 @@ export function MessageList() {
 		})
 	}, [messages])
 
-	// Transform processedMessages into messageRows with date headers
 	const { messageRows, stickyIndices } = useMemo(() => {
 		const rows: MessageRow[] = []
 		const sticky: number[] = []
@@ -198,17 +184,14 @@ export function MessageList() {
 		return { messageRows: rows, stickyIndices: sticky }
 	}, [processedMessages])
 
-	// Use the scroll-to-bottom hook for robust scroll management
 	const { scrollContainerRef } = useScrollToBottom({
 		channelId,
 		messages,
 	})
 
-	// Show skeleton loader only when no cached messages exist
 	if (isLoadingMessages && messages.length === 0) {
 		return (
 			<div className="flex h-full flex-col gap-4 p-4">
-				{/* Skeleton loader for messages */}
 				{[...Array(5)].map((_, index) => (
 					<div key={index} className="flex animate-pulse gap-3">
 						<div className="size-10 rounded-full bg-muted" />

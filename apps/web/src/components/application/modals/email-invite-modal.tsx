@@ -52,7 +52,6 @@ export const EmailInviteModal = ({ isOpen, onOpenChange }: EmailInviteModalProps
 	}
 
 	const handleSubmit = async () => {
-		// Validate all emails
 		const validInvites = invites.filter((invite) => validateEmail(invite.email))
 
 		if (validInvites.length === 0) {
@@ -66,7 +65,6 @@ export const EmailInviteModal = ({ isOpen, onOpenChange }: EmailInviteModalProps
 
 		for (const invite of validInvites) {
 			try {
-				// TODO: Add invitation here
 				successCount++
 			} catch (error) {
 				errorCount++
@@ -76,11 +74,9 @@ export const EmailInviteModal = ({ isOpen, onOpenChange }: EmailInviteModalProps
 
 		setIsSubmitting(false)
 
-		// Show results
 		if (successCount > 0 && errorCount === 0) {
 			toast.success(`Successfully sent ${successCount} invitation${successCount > 1 ? "s" : ""}`)
 			onOpenChange(false)
-			// Reset form
 			setInvites([{ id: "1", email: "", role: "member" }])
 		} else if (successCount > 0 && errorCount > 0) {
 			toast.warning(

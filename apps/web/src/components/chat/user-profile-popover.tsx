@@ -25,7 +25,6 @@ interface UserProfilePopoverProps {
 export function UserProfilePopover({ userId }: UserProfilePopoverProps) {
 	const { user: currentUser } = useAuth()
 
-	// Use atom for user and presence - automatically deduplicated across all messages
 	const userPresenceResult = useAtomValue(userWithPresenceAtomFamily(userId))
 	const data = Result.getOrElse(userPresenceResult, () => [])
 	const result = data[0]
@@ -85,7 +84,6 @@ export function UserProfilePopover({ userId }: UserProfilePopoverProps) {
 	}
 
 	const handleCall = () => {
-		// TODO: Implement actual calling functionality
 		toast.custom((t) => (
 			<IconNotification
 				title="Calling..."
@@ -111,7 +109,6 @@ export function UserProfilePopover({ userId }: UserProfilePopoverProps) {
 				<PrimitiveDialog className="outline-hidden">
 					{() => (
 						<>
-							{/* user background image */}
 							<div className="relative h-32">
 								{!isOwnProfile && (
 									<div className="absolute top-2 right-2 flex items-center gap-2 p-1">
@@ -201,10 +198,7 @@ export function UserProfilePopover({ userId }: UserProfilePopoverProps) {
 												size="sm"
 												className="w-full"
 												iconLeading={IconEdit}
-												onClick={() => {
-													// TODO: Implement edit profile functionality
-													console.log("Edit profile clicked")
-												}}
+												onClick={() => {}}
 											>
 												Edit profile
 											</StyledButton>

@@ -14,9 +14,6 @@ type PresenceStatus = "online" | "away" | "busy" | "dnd" | "offline"
 
 const AFK_TIMEOUT = Duration.minutes(5)
 
-// ============================================================================
-// Core Atoms
-// ============================================================================
 
 /**
  * Atom that tracks the last user activity timestamp
@@ -187,27 +184,17 @@ const currentUserPresenceAtom = Atom.make((get) => {
 	return get(currentUserPresenceAtomFamily(user.id))
 })
 
-// ============================================================================
-// Hooks
-// ============================================================================
 
 /**
  * Hook for managing the current user's presence status
  */
 export function usePresence() {
-	// Read user directly from atom instead of useAuth hook
 	const user = useAtomValue(userAtom)
-
-	// Query current presence from atom (uses TanStack DB integration)
 	const presenceResult = useAtomValue(currentUserPresenceAtom)
 	const presenceData = Result.getOrElse(presenceResult, () => [])
 	const currentPresence = presenceData?.[0]
-
-	// Read computed status (unwrap Result)
 	const computedStatusResult = useAtomValue(computedPresenceStatusAtom)
 	const computedStatus = Result.getOrElse(computedStatusResult, () => "online" as PresenceStatus)
-
-	// Read AFK state (unwrap Result)
 	const afkStateResult = useAtomValue(afkStateAtom)
 	const afkState = Result.getOrElse(afkStateResult, () => ({
 		isAFK: false,
@@ -217,18 +204,15 @@ export function usePresence() {
 
 	const currentChannelId = useAtomValue(currentChannelIdAtom)
 
-	// Track last sent status to avoid redundant updates
 	const lastSentStatusRef = useRef<PresenceStatus | null>(null)
 	const lastSentChannelRef = useRef<string | null>(null)
 
-	// Sync computed status to server when it changes
 	useEffect(() => {
 		if (!user?.id) return
 		if (lastSentStatusRef.current === computedStatus) return
 
 		lastSentStatusRef.current = computedStatus
 
-		// Use WebSocket RPC to update presence status
 		const program = Effect.gen(function* () {
 			const client = yield* RpcClient
 			yield* client.userPresenceStatus.update({
@@ -239,14 +223,12 @@ export function usePresence() {
 		runtime.runPromise(program).catch(console.error)
 	}, [computedStatus, user?.id])
 
-	// Sync active channel to server when it changes
 	useEffect(() => {
 		if (!user?.id) return
 		if (lastSentChannelRef.current === currentChannelId) return
 
 		lastSentChannelRef.current = currentChannelId
 
-		// Use WebSocket RPC to update active channel
 		const program = Effect.gen(function* () {
 			const client = yield* RpcClient
 			yield* client.userPresenceStatus.update({
@@ -257,26 +239,14 @@ export function usePresence() {
 		runtime.runPromise(program).catch(console.error)
 	}, [currentChannelId, user?.id])
 
-	// WebSocket Connection Provides Presence
-	// No need for HTTP polling heartbeat - WebSocket connection state indicates online/offline:
-	// - WebSocket connected = user online
-	// - WebSocket disconnected = user offline (after retry timeout)
-	// - Automatic ping/pong frames keep connection alive
-	// - Status changes (AFK, manual) are sent immediately via RPC mutations above
-
-	// Mark user offline when tab closes using atom-based listener
-	// Atom reads from userAtom directly, so it's automatically reactive
 	useAtomMount(beforeUnloadAtom)
 
-	// Ref to track previous status for manual updates
 	const previousManualStatusRef = useRef<PresenceStatus>("online")
 
-	// Manual status setter
 	const setStatus = useCallback(
 		async (status: PresenceStatus, customMessage?: string) => {
 			if (!user?.id) return
 
-			// Update local atom state imperatively via batch
 			Atom.batch(() => {
 				Atom.set(manualStatusAtom, {
 					status,
@@ -285,10 +255,8 @@ export function usePresence() {
 				})
 			})
 
-			// Track for next time
 			previousManualStatusRef.current = status
 
-			// Update on server via WebSocket RPC
 			const program = Effect.gen(function* () {
 				const client = yield* RpcClient
 				yield* client.userPresenceStatus.update({
@@ -315,7 +283,6 @@ export function usePresence() {
  * Hook to get another user's presence
  */
 export function useUserPresence(userId: UserId) {
-	// Use the atom family to query this user's presence
 	const presenceResult = useAtomValue(currentUserPresenceAtomFamily(userId))
 	const presenceData = Result.getOrElse(presenceResult, () => [])
 	const presence = presenceData?.[0]

@@ -20,39 +20,8 @@ import { constUndefined } from "effect/Function"
 import type { CollectionStatus, ConditionalQueryFn, QueryFn, QueryOptions } from "./types"
 
 /**
- * Utility functions for creating Effect Atoms from TanStack DB collections and queries
- *
- * @example
- * ```typescript
- * // Create an atom from a query
- * const todosAtom = makeQuery((q) =>
- *   q.from({ todos: todoCollection })
- *    .where(({ todos }) => eq(todos.completed, false))
- * )
- *
- * // Use in React
- * const todos = useAtom(todosAtom)
- * ```
- */
-
-/**
  * Creates an Atom from a TanStack DB collection
  * Returns a Result that tracks the collection's lifecycle state
- *
- * @param collection - TanStack DB collection to wrap
- * @returns Atom that emits Result<Array<T>>
- *
- * @example
- * ```typescript
- * const todosAtom = makeCollectionAtom(todosCollection)
- * const result = useAtom(todosAtom)
- *
- * Result.match(result, {
- *   onWaiting: () => <Loading />,
- *   onFailure: (error) => <Error error={error} />,
- *   onSuccess: (todos) => <TodoList todos={todos} />
- * })
- * ```
  */
 export const makeCollectionAtom = <T extends object, TKey extends string | number>(
 	collection: Collection<T, TKey, any> & NonSingleResult,
@@ -115,15 +84,6 @@ export const makeCollectionAtom = <T extends object, TKey extends string | numbe
 /**
  * Creates an Atom from a TanStack DB collection with single result
  * Returns a Result that contains a single item or undefined
- *
- * @param collection - TanStack DB collection with singleResult: true
- * @returns Atom that emits Result<T | undefined>
- *
- * @example
- * ```typescript
- * const currentUserAtom = makeSingleCollectionAtom(currentUserCollection)
- * const result = useAtom(currentUserAtom)
- * ```
  */
 export const makeSingleCollectionAtom = <T extends object, TKey extends string | number>(
 	collection: Collection<T, TKey, any> & SingleResult,
@@ -188,19 +148,6 @@ export const makeSingleCollectionAtom = <T extends object, TKey extends string |
 /**
  * Creates an Atom from a TanStack DB query function
  * Automatically creates a live query collection and manages its lifecycle
- *
- * @param queryFn - Query builder function
- * @param options - Optional configuration
- * @returns Atom that emits Result<InferResultType<TContext>>
- *
- * @example
- * ```typescript
- * const activeTodosAtom = makeQuery((q) =>
- *   q.from({ todos: todosCollection })
- *    .where(({ todos }) => eq(todos.completed, false))
- *    .select(({ todos }) => ({ id: todos.id, text: todos.text }))
- * )
- * ```
  */
 export const makeQuery = <TContext extends Context>(
 	queryFn: QueryFn<TContext>,
@@ -273,19 +220,6 @@ export const makeQuery = <TContext extends Context>(
 /**
  * Creates an Atom from a TanStack DB query function (unsafe version)
  * Returns undefined instead of Result for simpler usage when you don't need error handling
- *
- * @param queryFn - Query builder function
- * @param options - Optional configuration
- * @returns Atom that emits InferResultType<TContext> | undefined
- *
- * @example
- * ```typescript
- * const todosAtom = makeQueryUnsafe((q) =>
- *   q.from({ todos: todosCollection })
- * )
- *
- * const todos = useAtom(todosAtom) // Array<Todo> | undefined
- * ```
  */
 export const makeQueryUnsafe = <TContext extends Context>(
 	queryFn: QueryFn<TContext>,
@@ -300,21 +234,6 @@ export const makeQueryUnsafe = <TContext extends Context>(
 /**
  * Creates an Atom from a conditional TanStack DB query function
  * The query function can return null/undefined to disable the query
- *
- * @param queryFn - Conditional query builder function
- * @param options - Optional configuration
- * @returns Atom that emits Result<InferResultType<TContext>> | undefined
- *
- * @example
- * ```typescript
- * const userTodosAtom = makeQueryConditional((q) => {
- *   const userId = getCurrentUserId()
- *   if (!userId) return null
- *
- *   return q.from({ todos: todosCollection })
- *           .where(({ todos }) => eq(todos.userId, userId))
- * })
- * ```
  */
 export const makeQueryConditional = <TContext extends Context>(
 	queryFn: ConditionalQueryFn<TContext>,

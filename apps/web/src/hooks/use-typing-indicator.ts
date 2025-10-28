@@ -18,28 +18,7 @@ interface UseTypingIndicatorOptions {
 }
 
 /**
- * Hook for managing typing indicators with proper Effect Atom patterns
- *
- * @example
- * ```tsx
- * function ChatInput({ channelId }: { channelId: ChannelId }) {
- *   const { user } = useAuth()
- *   const currentMember = useCurrentChannelMember(channelId)
- *   const { startTyping, stopTyping } = useTypingIndicator({
- *     channelId,
- *     memberId: currentMember?.id
- *   })
- *
- *   const handleChange = (e) => {
- *     startTyping()
- *     // ... rest of logic
- *   }
- *
- *   const handleBlur = () => {
- *     stopTyping()
- *   }
- * }
- * ```
+ * Hook for managing typing indicators with Effect Atom patterns
  */
 export function useTypingIndicator({
 	channelId,
@@ -59,9 +38,7 @@ export function useTypingIndicator({
 	const debounceTimerRef = useRef<NodeJS.Timeout | null>(null)
 	const typingIndicatorIdRef = useRef<string | null>(null)
 
-	/**
-	 * Start typing indicator with debouncing to prevent excessive RPC calls
-	 */
+	// Start typing indicator with debouncing to prevent excessive RPC calls
 	const startTyping = useCallback(async () => {
 		if (!memberId) return
 
@@ -95,9 +72,7 @@ export function useTypingIndicator({
 		}
 	}, [channelId, memberId, debounceMs, upsertTypingIndicator])
 
-	/**
-	 * Stop typing indicator and clean up
-	 */
+	// Stop typing indicator and clean up
 	const stopTyping = useCallback(async () => {
 		if (!typingIndicatorIdRef.current) return
 

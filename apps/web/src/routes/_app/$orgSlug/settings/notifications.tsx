@@ -21,7 +21,6 @@ export const Route = createFileRoute("/_app/$orgSlug/settings/notifications")({
 function NotificationsSettings() {
 	const { settings, updateSettings, testSound } = useNotificationSound()
 	const {
-		// Values
 		desktopNotifications,
 		messagePreference,
 		emailNotifications,
@@ -30,7 +29,6 @@ function NotificationsSettings() {
 		quietHoursStart,
 		quietHoursEnd,
 		isSubmitting,
-		// Setters
 		setDesktopNotifications,
 		setMessagePreference,
 		setEmailNotifications,
@@ -38,7 +36,6 @@ function NotificationsSettings() {
 		setDoNotDisturb,
 		setQuietHoursStart,
 		setQuietHoursEnd,
-		// Actions
 		saveSettings,
 	} = useNotificationSettings()
 
@@ -62,7 +59,6 @@ function NotificationsSettings() {
 			</SectionHeader.Root>
 
 			<div className="flex flex-col gap-y-6">
-				{/* Desktop Notifications */}
 				<NotificationSection>
 					<SectionLabel.Root
 						size="sm"
@@ -74,7 +70,6 @@ function NotificationsSettings() {
 					<Toggle
 						size="sm"
 						label="Enable desktop notifications"
-						// hint="Show system notifications for new messages when the app is in the background"
 						isSelected={desktopNotifications}
 						onChange={setDesktopNotifications}
 					/>
@@ -82,7 +77,6 @@ function NotificationsSettings() {
 
 				<Separator className="my-3" />
 
-				{/* Sound Settings */}
 				<NotificationSection>
 					<SectionLabel.Root
 						size="sm"
@@ -95,7 +89,6 @@ function NotificationsSettings() {
 						<Toggle
 							size="sm"
 							label="Enable notification sounds"
-							// hint="Play a sound when you receive new messages"
 							isSelected={settings.enabled}
 							onChange={(checked) => updateSettings({ enabled: checked })}
 						/>
@@ -176,7 +169,6 @@ function NotificationsSettings() {
 
 				<Separator className="my-3" />
 
-				{/* Message Preferences */}
 				<NotificationSection>
 					<SectionLabel.Root
 						size="sm"
@@ -217,7 +209,6 @@ function NotificationsSettings() {
 
 				<Separator className="my-3" />
 
-				{/* Email Notifications */}
 				<NotificationSection>
 					<SectionLabel.Root
 						size="sm"
@@ -230,7 +221,6 @@ function NotificationsSettings() {
 						<Toggle
 							size="sm"
 							label="Enable email notifications"
-							// hint="Receive email notifications for messages and updates"
 							isSelected={emailNotifications}
 							onChange={setEmailNotifications}
 						/>
@@ -273,7 +263,6 @@ function NotificationsSettings() {
 
 				<Separator className="my-3" />
 
-				{/* Quiet Hours */}
 				<NotificationSection>
 					<SectionLabel.Root
 						size="sm"
@@ -286,7 +275,6 @@ function NotificationsSettings() {
 						<Toggle
 							size="sm"
 							label="Enable quiet hours"
-							// hint="Mute all notifications during specified times"
 							isSelected={doNotDisturb}
 							onChange={setDoNotDisturb}
 						/>

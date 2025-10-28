@@ -35,7 +35,6 @@ export function useTyping({
 	const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 	const typingIndicatorIdRef = useRef<string | null>(null)
 
-	// Use Effect Atom mutations with proper mode
 	const upsertTypingIndicator = useAtomSet(upsertTypingIndicatorMutation, {
 		mode: "promiseExit",
 	})
@@ -43,7 +42,6 @@ export function useTyping({
 	const deleteTypingIndicator = useAtomSet(deleteTypingIndicatorMutation, {
 		mode: "promiseExit",
 	})
-
 	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	const startTyping = useCallback(async () => {
 		if (!memberId) return
@@ -51,7 +49,6 @@ export function useTyping({
 		const now = Date.now()
 		const timeSinceLastTyped = now - lastTypedRef.current
 
-		// Clear existing timers
 		if (debounceTimerRef.current) {
 			clearTimeout(debounceTimerRef.current)
 		}
@@ -59,15 +56,12 @@ export function useTyping({
 			clearTimeout(typingTimeoutRef.current)
 		}
 
-		// Update local state
 		if (!isTyping) {
 			setIsTyping(true)
 			onTypingStart?.()
 		}
 
-		// Debounce the server update
 		debounceTimerRef.current = setTimeout(async () => {
-			// Only send update if enough time has passed
 			if (timeSinceLastTyped >= debounceDelay) {
 				lastTypedRef.current = now
 
@@ -93,14 +87,12 @@ export function useTyping({
 			}
 		}, debounceDelay)
 
-		// Set timeout to automatically stop typing
 		typingTimeoutRef.current = setTimeout(() => {
 			stopTyping()
 		}, typingTimeout)
 	}, [channelId, memberId, debounceDelay, typingTimeout, isTyping, onTypingStart, upsertTypingIndicator])
 
 	const stopTyping = useCallback(async () => {
-		// Clear all timers
 		if (debounceTimerRef.current) {
 			clearTimeout(debounceTimerRef.current)
 			debounceTimerRef.current = null
@@ -110,13 +102,11 @@ export function useTyping({
 			typingTimeoutRef.current = null
 		}
 
-		// Update local state
 		if (isTyping) {
 			setIsTyping(false)
 			onTypingStop?.()
 		}
 
-		// Delete typing indicator from server if it exists
 		if (typingIndicatorIdRef.current) {
 			const result = await deleteTypingIndicator({
 				payload: {
@@ -147,20 +137,16 @@ export function useTyping({
 			lastContentRef.current = content
 
 			if (isEmpty && !wasEmpty) {
-				// Content was cleared
 				stopTyping()
 			} else if (!isEmpty && wasEmpty) {
-				// Started typing from empty
 				startTyping()
 			} else if (!isEmpty) {
-				// Still typing (content changed but not empty)
-				startTyping() // This will reset the timeout
+				startTyping()
 			}
 		},
 		[startTyping, stopTyping],
 	)
 
-	// Cleanup on unmount or when memberId changes
 	useEffect(() => {
 		return () => {
 			if (debounceTimerRef.current) {

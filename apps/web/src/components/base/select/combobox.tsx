@@ -143,7 +143,6 @@ export const ComboBox = ({
 	const placeholderRef = useRef<HTMLDivElement>(null)
 	const [popoverWidth, setPopoverWidth] = useState("")
 
-	// Resize observer for popover width
 	const onResize = useCallback(() => {
 		if (!placeholderRef.current) return
 
@@ -175,8 +174,7 @@ export const ComboBox = ({
 							shortcut={shortcut}
 							shortcutClassName={shortcutClassName}
 							size={size}
-							// This is a workaround to correctly calculating the trigger width
-							// while using ResizeObserver wasn't 100% reliable.
+							// Workaround: ResizeObserver alone wasn't reliable for width calculation
 							onFocus={onResize}
 							onPointerEnter={onResize}
 						/>

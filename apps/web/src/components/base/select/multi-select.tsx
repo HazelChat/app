@@ -156,7 +156,6 @@ export const MultiSelectBase = ({
 	const placeholderRef = useRef<HTMLDivElement>(null)
 	const [popoverWidth, setPopoverWidth] = useState("")
 
-	// Resize observer for popover width
 	const onResize = useCallback(() => {
 		if (!placeholderRef.current) return
 		const divRect = placeholderRef.current?.getBoundingClientRect()
@@ -202,8 +201,6 @@ export const MultiSelectBase = ({
 							shortcut={shortcut}
 							ref={placeholderRef}
 							placeholder={placeholder}
-							// This is a workaround to correctly calculating the trigger width
-							// while using ResizeObserver wasn't 100% reliable.
 							onFocus={onResize}
 							onPointerEnter={onResize}
 						/>
@@ -302,7 +299,6 @@ const InnerMultiSelect = ({
 							size="md"
 							isDisabled={isDisabled}
 							className="ml-0.75"
-							// For workaround, onKeyDown is added to the button
 							onKeyDown={(event) => handleTagKeyDown(event, value.id)}
 							onPress={() => selectContext.onRemove(new Set([value.id]))}
 						/>

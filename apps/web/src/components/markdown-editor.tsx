@@ -48,7 +48,6 @@ export const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>
 
 		const focusEditor = useCallback(() => {
 			requestAnimationFrame(() => {
-				// Don't steal focus if a modal is open and focused
 				const dialog = document.querySelector('[role="dialog"]')
 				const activeElement = document.activeElement
 				if (dialog && activeElement && dialog.contains(activeElement)) return
@@ -61,17 +60,13 @@ export const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>
 
 		const focusAndInsertTextInternal = useCallback(
 			(text: string) => {
-				// Use requestAnimationFrame to ensure DOM is ready
 				requestAnimationFrame(() => {
-					// Don't steal focus if a modal is open and focused
 					const dialog = document.querySelector('[role="dialog"]')
 					const activeElement = document.activeElement
 					if (dialog && activeElement && dialog.contains(activeElement)) return
 
-					// First focus the editor
 					editor.tf.focus()
 
-					// Then insert the text at the current cursor position
 					requestAnimationFrame(() => {
 						editor.transforms.insertText(text)
 					})
@@ -83,7 +78,6 @@ export const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>
 		const resetAndFocus = useCallback(() => {
 			editor.tf.reset()
 			setTimeout(() => {
-				// Don't steal focus if a modal is open and focused
 				const dialog = document.querySelector('[role="dialog"]')
 				const activeElement = document.activeElement
 				if (dialog && activeElement && dialog.contains(activeElement)) return
@@ -109,13 +103,12 @@ export const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>
 		const handleSubmit = async () => {
 			if (!onSubmit) return
 
-			// Don't submit while uploads are in progress
 			if (isUploading) return
 
 			const textContent = editor.api.markdown.serialize().trim()
 
 			function isEffectivelyEmpty(str: string) {
-				if (!str) return true // null, undefined, or ""
+				if (!str) return true
 				// Remove normal whitespace + zero-width + non-breaking spaces
 				const cleaned = str.replace(/[\s\u200B-\u200D\uFEFF\u00A0]/g, "")
 				return cleaned.length === 0
@@ -131,7 +124,6 @@ export const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>
 		const handleKeyDown = (event: React.KeyboardEvent) => {
 			if (event.key === "Enter" && !event.shiftKey) {
 				event.preventDefault()
-				// Don't submit while uploads are in progress
 				if (!isUploading) {
 					handleSubmit()
 				}
@@ -145,7 +137,6 @@ export const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>
 
 		useEffect(() => {
 			const handleGlobalKeyDown = (event: KeyboardEvent) => {
-				// Skip if target is an input, textarea, or contenteditable element
 				const target = event.target as HTMLElement
 				if (
 					target.tagName === "INPUT" ||
@@ -157,12 +148,10 @@ export const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>
 
 				if (document.querySelector('[role="dialog"]')) return
 
-				// Skip if user is pressing modifier keys
 				if (event.ctrlKey || event.altKey || event.metaKey) {
 					return
 				}
 
-				// Check if it's a printable character or space
 				const isPrintableChar = event.key.length === 1
 
 				if (isPrintableChar) {
