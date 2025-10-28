@@ -1,7 +1,7 @@
 import { Rpc, RpcGroup } from "@effect/rpc"
 import { User } from "@hazel/db/models"
 import { UserId } from "@hazel/db/schema"
-import { InternalServerError, UnauthorizedError } from "@hazel/effect-lib"
+import { CurrentUser, InternalServerError, UnauthorizedError } from "@hazel/effect-lib"
 import { Schema } from "effect"
 import { TransactionId } from "../../lib/schema"
 import { AuthMiddleware } from "../middleware/auth-class"
@@ -24,6 +24,21 @@ export class UserNotFoundError extends Schema.TaggedError<UserNotFoundError>()("
 }) {}
 
 export class UserRpcs extends RpcGroup.make(
+	/**
+	 * UserMe
+	 *
+	 * Get the currently authenticated user.
+	 *
+	 * @returns Current user data
+	 * @throws UnauthorizedError if user is not authenticated
+	 * @throws InternalServerError for unexpected errors
+	 */
+	Rpc.make("user.me", {
+		payload: Schema.Void,
+		success: CurrentUser.Schema,
+		error: Schema.Union(UnauthorizedError, InternalServerError),
+	}).middleware(AuthMiddleware),
+
 	/**
 	 * UserCreate
 	 *

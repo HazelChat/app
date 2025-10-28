@@ -1,5 +1,5 @@
 import { Database } from "@hazel/db"
-import { policyUse, withRemapDbErrors } from "@hazel/effect-lib"
+import { CurrentUser, policyUse, withRemapDbErrors } from "@hazel/effect-lib"
 import { Effect } from "effect"
 import { generateTransactionId } from "../../lib/create-transactionId"
 import { UserPolicy } from "../../policies/user-policy"
@@ -24,19 +24,8 @@ export const UserRpcLive = UserRpcs.toLayer(
 		const db = yield* Database.Database
 
 		return {
-			/**
-			 * UserCreate Handler
-			 *
-			 * Creates a new user. Only users with appropriate permissions
-			 * can create new users.
-			 *
-			 * Process:
-			 * 1. Start database transaction
-			 * 2. Create user with provided data
-			 * 3. Check permissions via UserPolicy.canCreate
-			 * 4. Generate transaction ID for optimistic updates
-			 * 5. Return user data and transaction ID
-			 */
+			"user.me": () => CurrentUser.Context,
+
 			"user.create": (payload) =>
 				db
 					.transaction(
@@ -59,19 +48,6 @@ export const UserRpcLive = UserRpcs.toLayer(
 					)
 					.pipe(withRemapDbErrors("User", "create")),
 
-			/**
-			 * UserUpdate Handler
-			 *
-			 * Updates an existing user. Only users with appropriate permissions
-			 * can update user data.
-			 *
-			 * Process:
-			 * 1. Start database transaction
-			 * 2. Update user
-			 * 3. Check permissions via UserPolicy.canUpdate
-			 * 4. Generate transaction ID
-			 * 5. Return updated user data and transaction ID
-			 */
 			"user.update": ({ id, ...payload }) =>
 				db
 					.transaction(
@@ -91,19 +67,6 @@ export const UserRpcLive = UserRpcs.toLayer(
 					)
 					.pipe(withRemapDbErrors("User", "update")),
 
-			/**
-			 * UserDelete Handler
-			 *
-			 * Deletes a user (soft delete). Only users with appropriate
-			 * permissions can delete users.
-			 *
-			 * Process:
-			 * 1. Start database transaction
-			 * 2. Delete user (sets deletedAt timestamp)
-			 * 3. Check permissions via UserPolicy.canDelete
-			 * 4. Generate transaction ID
-			 * 5. Return transaction ID
-			 */
 			"user.delete": ({ id }) =>
 				db
 					.transaction(

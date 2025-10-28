@@ -45,19 +45,6 @@ export const DirectMessageParticipantRpcLive = DirectMessageParticipantRpcs.toLa
 					)
 					.pipe(withRemapDbErrors("DirectMessageParticipant", "create")),
 
-			/**
-			 * DirectMessageParticipantUpdate Handler
-			 *
-			 * Updates an existing direct message participant. Only users with
-			 * appropriate permissions can update a participant.
-			 *
-			 * Process:
-			 * 1. Start database transaction
-			 * 2. Update participant
-			 * 3. Check permissions via DirectMessageParticipantPolicy.canUpdate
-			 * 4. Generate transaction ID
-			 * 5. Return updated participant data and transaction ID
-			 */
 			"directMessageParticipant.update": ({ id, ...payload }) =>
 				db
 					.transaction(
@@ -77,19 +64,6 @@ export const DirectMessageParticipantRpcLive = DirectMessageParticipantRpcs.toLa
 					)
 					.pipe(withRemapDbErrors("DirectMessageParticipant", "update")),
 
-			/**
-			 * DirectMessageParticipantDelete Handler
-			 *
-			 * Deletes a direct message participant. Only users with appropriate
-			 * permissions can delete a participant (typically leaving a DM conversation).
-			 *
-			 * Process:
-			 * 1. Start database transaction
-			 * 2. Delete participant
-			 * 3. Check permissions via DirectMessageParticipantPolicy.canDelete
-			 * 4. Generate transaction ID
-			 * 5. Return transaction ID
-			 */
 			"directMessageParticipant.delete": ({ id }) =>
 				db
 					.transaction(

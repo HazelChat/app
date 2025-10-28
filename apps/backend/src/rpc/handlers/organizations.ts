@@ -81,21 +81,6 @@ export const OrganizationRpcLive = OrganizationRpcs.toLayer(
 		const db = yield* Database.Database
 
 		return {
-			/**
-			 * OrganizationCreate Handler
-			 *
-			 * Creates a new organization with the provided data.
-			 * Checks permissions via OrganizationPolicy.canCreate.
-			 * Handles duplicate slug errors with a specific error type.
-			 *
-			 * Process:
-			 * 1. Start database transaction
-			 * 2. Create organization with provided data
-			 * 3. Check permissions via OrganizationPolicy.canCreate
-			 * 4. Generate transaction ID for optimistic updates
-			 * 5. Return organization data and transaction ID
-			 * 6. Handle slug uniqueness violations specifically
-			 */
 			"organization.create": (payload) =>
 				db
 					.transaction(
@@ -121,21 +106,6 @@ export const OrganizationRpcLive = OrganizationRpcs.toLayer(
 					)
 					.pipe(handleOrganizationDbErrors("Organization", "create")),
 
-			/**
-			 * OrganizationUpdate Handler
-			 *
-			 * Updates an existing organization. Only users with appropriate
-			 * permissions can update an organization.
-			 * Handles duplicate slug errors with a specific error type.
-			 *
-			 * Process:
-			 * 1. Start database transaction
-			 * 2. Update organization
-			 * 3. Check permissions via OrganizationPolicy.canUpdate
-			 * 4. Generate transaction ID
-			 * 5. Return updated organization data and transaction ID
-			 * 6. Handle slug uniqueness violations specifically
-			 */
 			"organization.update": ({ id, ...payload }) =>
 				db
 					.transaction(
@@ -158,19 +128,6 @@ export const OrganizationRpcLive = OrganizationRpcs.toLayer(
 					)
 					.pipe(handleOrganizationDbErrors("Organization", "update")),
 
-			/**
-			 * OrganizationDelete Handler
-			 *
-			 * Deletes an organization (soft delete). Only users with
-			 * appropriate permissions can delete an organization.
-			 *
-			 * Process:
-			 * 1. Start database transaction
-			 * 2. Delete organization (sets deletedAt timestamp)
-			 * 3. Check permissions via OrganizationPolicy.canDelete
-			 * 4. Generate transaction ID
-			 * 5. Return transaction ID
-			 */
 			"organization.delete": ({ id }) =>
 				db
 					.transaction(

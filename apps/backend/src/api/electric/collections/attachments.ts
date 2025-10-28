@@ -1,6 +1,6 @@
-import { HttpApiEndpoint, HttpApiGroup, HttpApiSchema, Multipart, OpenApi } from "@effect/platform"
+import { HttpApiEndpoint, HttpApiGroup, HttpApiSchema, Multipart } from "@effect/platform"
 import { Attachment } from "@hazel/db/models"
-import { AttachmentId, ChannelId, OrganizationId } from "@hazel/db/schema"
+import { ChannelId, OrganizationId } from "@hazel/db/schema"
 import { CurrentUser, InternalServerError, UnauthorizedError } from "@hazel/effect-lib"
 import { Schema } from "effect"
 import { TransactionId } from "../../../lib/schema"
@@ -9,18 +9,6 @@ export class AttachmentResponse extends Schema.Class<AttachmentResponse>("Attach
 	data: Attachment.Model.json,
 	transactionId: TransactionId,
 }) {}
-
-export class AttachmentNotFoundError extends Schema.TaggedError<AttachmentNotFoundError>(
-	"AttachmentNotFoundError",
-)(
-	"AttachmentNotFoundError",
-	{
-		attachmentId: Schema.UUID,
-	},
-	HttpApiSchema.annotations({
-		status: 404,
-	}),
-) {}
 
 export class AttachmentUploadError extends Schema.TaggedError<AttachmentUploadError>("AttachmentUploadError")(
 	"AttachmentUploadError",
@@ -48,21 +36,6 @@ export class AttachmentGroup extends HttpApiGroup.make("attachments")
 			.addError(AttachmentUploadError)
 			.addError(UnauthorizedError)
 			.addError(InternalServerError),
-	)
-	.add(
-		HttpApiEndpoint.del("delete", "/:id")
-			.setPath(Schema.Struct({ id: AttachmentId }))
-			.addSuccess(Schema.Struct({ transactionId: TransactionId }))
-			.addError(AttachmentNotFoundError)
-			.addError(UnauthorizedError)
-			.addError(InternalServerError)
-			.annotateContext(
-				OpenApi.annotations({
-					title: "Delete Attachment",
-					description: "Delete an existing attachment",
-					summary: "Delete an attachment",
-				}),
-			),
 	)
 	.prefix("/attachments")
 	.middleware(CurrentUser.Authorization) {}

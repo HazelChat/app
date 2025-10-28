@@ -6,13 +6,11 @@ import { HttpAuthLive } from "./routes/auth.http"
 import { HttpMockDataLive } from "./routes/mock-data.http"
 import { HttpPresencePublicLive } from "./routes/presence.http"
 import { HttpRootLive } from "./routes/root.http"
-import { HttpUserLive } from "./routes/users.http"
 import { HttpWebhookLive } from "./routes/webhooks.http"
 
 export const HttpApiRoutes = HttpLayerRouter.addHttpApi(HazelApi).pipe(
 	Layer.provide(HttpRootLive),
 	Layer.provide(HttpAuthLive),
-	Layer.provide(HttpUserLive),
 	Layer.provide(HttpAttachmentLive),
 	Layer.provide(HttpPresencePublicLive),
 	Layer.provide(HttpWebhookLive),

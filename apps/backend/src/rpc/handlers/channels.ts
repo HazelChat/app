@@ -60,19 +60,6 @@ export const ChannelRpcLive = ChannelRpcs.toLayer(
 					)
 					.pipe(withRemapDbErrors("Channel", "create")),
 
-			/**
-			 * ChannelUpdate Handler
-			 *
-			 * Updates an existing channel. Only users with appropriate permissions
-			 * can update a channel.
-			 *
-			 * Process:
-			 * 1. Start database transaction
-			 * 2. Update channel
-			 * 3. Check permissions via ChannelPolicy.canUpdate
-			 * 4. Generate transaction ID
-			 * 5. Return updated channel data and transaction ID
-			 */
 			"channel.update": ({ id, ...payload }) =>
 				db
 					.transaction(
@@ -92,19 +79,6 @@ export const ChannelRpcLive = ChannelRpcs.toLayer(
 					)
 					.pipe(withRemapDbErrors("Channel", "update")),
 
-			/**
-			 * ChannelDelete Handler
-			 *
-			 * Deletes a channel (soft delete). Only users with appropriate
-			 * permissions can delete a channel.
-			 *
-			 * Process:
-			 * 1. Start database transaction
-			 * 2. Delete channel (sets deletedAt timestamp)
-			 * 3. Check permissions via ChannelPolicy.canDelete
-			 * 4. Generate transaction ID
-			 * 5. Return transaction ID
-			 */
 			"channel.delete": ({ id }) =>
 				db
 					.transaction(
@@ -118,27 +92,6 @@ export const ChannelRpcLive = ChannelRpcs.toLayer(
 					)
 					.pipe(policyUse(ChannelPolicy.canDelete(id)), withRemapDbErrors("Channel", "delete")),
 
-			/**
-			 * ChannelCreateDm Handler
-			 *
-			 * Creates a direct message or group channel with specified participants.
-			 * For single DMs, checks if a DM already exists between the users.
-			 * Automatically generates channel name for DMs based on participant names.
-			 * All participants are added as channel members.
-			 *
-			 * Process:
-			 * 1. Get current user from context
-			 * 2. Start database transaction
-			 * 3. Validate participant count for single DMs
-			 * 4. Check for existing DM (for single type)
-			 * 5. Generate channel name from participant names
-			 * 6. Create channel
-			 * 7. Add creator as member
-			 * 8. Add all participants as members
-			 * 9. For DMs, add to direct_message_participants table
-			 * 10. Generate transaction ID
-			 * 11. Return channel data and transaction ID
-			 */
 			"channel.createDm": (payload) =>
 				db
 					.transaction(

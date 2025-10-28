@@ -24,20 +24,6 @@ export const NotificationRpcLive = NotificationRpcs.toLayer(
 		const db = yield* Database.Database
 
 		return {
-			/**
-			 * NotificationCreate Handler
-			 *
-			 * Creates a new notification for a member. Checks permissions via
-			 * NotificationPolicy.canCreate to ensure the user can create notifications
-			 * for the target member.
-			 *
-			 * Process:
-			 * 1. Start database transaction
-			 * 2. Create notification
-			 * 3. Check permissions via NotificationPolicy.canCreate
-			 * 4. Generate transaction ID for optimistic updates
-			 * 5. Return notification data and transaction ID
-			 */
 			"notification.create": (payload) =>
 				db
 					.transaction(
@@ -59,20 +45,6 @@ export const NotificationRpcLive = NotificationRpcs.toLayer(
 					)
 					.pipe(withRemapDbErrors("Notification", "create")),
 
-			/**
-			 * NotificationUpdate Handler
-			 *
-			 * Updates an existing notification. Typically used to mark notifications
-			 * as read. Only the notification owner or users with appropriate
-			 * permissions can update.
-			 *
-			 * Process:
-			 * 1. Start database transaction
-			 * 2. Update notification
-			 * 3. Check permissions via NotificationPolicy.canUpdate
-			 * 4. Generate transaction ID
-			 * 5. Return updated notification data and transaction ID
-			 */
 			"notification.update": ({ id, ...payload }) =>
 				db
 					.transaction(
@@ -92,19 +64,6 @@ export const NotificationRpcLive = NotificationRpcs.toLayer(
 					)
 					.pipe(withRemapDbErrors("Notification", "update")),
 
-			/**
-			 * NotificationDelete Handler
-			 *
-			 * Deletes a notification. Only the notification owner or users with
-			 * appropriate permissions can delete.
-			 *
-			 * Process:
-			 * 1. Start database transaction
-			 * 2. Delete notification
-			 * 3. Check permissions via NotificationPolicy.canDelete
-			 * 4. Generate transaction ID
-			 * 5. Return transaction ID
-			 */
 			"notification.delete": ({ id }) =>
 				db
 					.transaction(

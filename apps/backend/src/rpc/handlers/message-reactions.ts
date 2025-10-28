@@ -24,20 +24,6 @@ export const MessageReactionRpcLive = MessageReactionRpcs.toLayer(
 		const db = yield* Database.Database
 
 		return {
-			/**
-			 * MessageReactionCreate Handler
-			 *
-			 * Creates a new reaction on a message. The userId is automatically set
-			 * from the authenticated user.
-			 *
-			 * Process:
-			 * 1. Get current user from context (provided by AuthMiddleware)
-			 * 2. Start database transaction
-			 * 3. Create message reaction with userId set to current user
-			 * 4. Check permissions via MessageReactionPolicy.canCreate
-			 * 5. Generate transaction ID for optimistic updates
-			 * 6. Return message reaction data and transaction ID
-			 */
 			"messageReaction.create": (payload) =>
 				db
 					.transaction(
@@ -62,19 +48,6 @@ export const MessageReactionRpcLive = MessageReactionRpcs.toLayer(
 					)
 					.pipe(withRemapDbErrors("MessageReaction", "create")),
 
-			/**
-			 * MessageReactionUpdate Handler
-			 *
-			 * Updates an existing message reaction. Only the reaction creator or users
-			 * with appropriate permissions can update a reaction.
-			 *
-			 * Process:
-			 * 1. Start database transaction
-			 * 2. Update message reaction
-			 * 3. Check permissions via MessageReactionPolicy.canUpdate
-			 * 4. Generate transaction ID
-			 * 5. Return updated message reaction data and transaction ID
-			 */
 			"messageReaction.update": ({ id, ...payload }) =>
 				db
 					.transaction(
@@ -94,19 +67,6 @@ export const MessageReactionRpcLive = MessageReactionRpcs.toLayer(
 					)
 					.pipe(withRemapDbErrors("MessageReaction", "update")),
 
-			/**
-			 * MessageReactionDelete Handler
-			 *
-			 * Deletes a message reaction. Only the reaction creator or users with
-			 * appropriate permissions can delete a reaction.
-			 *
-			 * Process:
-			 * 1. Start database transaction
-			 * 2. Delete message reaction
-			 * 3. Check permissions via MessageReactionPolicy.canDelete
-			 * 4. Generate transaction ID
-			 * 5. Return transaction ID
-			 */
 			"messageReaction.delete": ({ id }) =>
 				db
 					.transaction(

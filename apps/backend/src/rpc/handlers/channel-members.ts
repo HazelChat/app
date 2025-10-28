@@ -24,21 +24,6 @@ export const ChannelMemberRpcLive = ChannelMemberRpcs.toLayer(
 		const db = yield* Database.Database
 
 		return {
-			/**
-			 * ChannelMemberCreate Handler
-			 *
-			 * Adds the current user to a channel. The userId is automatically set
-			 * from the authenticated user. Requires permission to join the channel.
-			 *
-			 * Process:
-			 * 1. Get current user from context (provided by AuthMiddleware)
-			 * 2. Start database transaction
-			 * 3. Create channel member with userId set to current user
-			 * 4. Set default values for notificationCount, joinedAt, and deletedAt
-			 * 5. Check permissions via ChannelMemberPolicy.canCreate
-			 * 6. Generate transaction ID for optimistic updates
-			 * 7. Return channel member data and transaction ID
-			 */
 			"channelMember.create": (payload) =>
 				db
 					.transaction(
@@ -66,20 +51,6 @@ export const ChannelMemberRpcLive = ChannelMemberRpcs.toLayer(
 						withRemapDbErrors("ChannelMember", "create"),
 					),
 
-			/**
-			 * ChannelMemberUpdate Handler
-			 *
-			 * Updates channel member preferences and settings.
-			 * Members can update their own preferences (mute, hide, favorite).
-			 * Organization admins can update any member's settings.
-			 *
-			 * Process:
-			 * 1. Start database transaction
-			 * 2. Update channel member
-			 * 3. Check permissions via ChannelMemberPolicy.canUpdate
-			 * 4. Generate transaction ID
-			 * 5. Return updated channel member data and transaction ID
-			 */
 			"channelMember.update": ({ id, ...payload }) =>
 				db
 					.transaction(
@@ -102,20 +73,6 @@ export const ChannelMemberRpcLive = ChannelMemberRpcs.toLayer(
 						withRemapDbErrors("ChannelMember", "update"),
 					),
 
-			/**
-			 * ChannelMemberDelete Handler
-			 *
-			 * Removes a user from a channel (soft delete).
-			 * Members can leave channels themselves.
-			 * Organization admins can remove any member from a channel.
-			 *
-			 * Process:
-			 * 1. Start database transaction
-			 * 2. Delete channel member (sets deletedAt timestamp)
-			 * 3. Check permissions via ChannelMemberPolicy.canDelete
-			 * 4. Generate transaction ID
-			 * 5. Return transaction ID
-			 */
 			"channelMember.delete": ({ id }) =>
 				db
 					.transaction(

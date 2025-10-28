@@ -24,21 +24,6 @@ export const OrganizationMemberRpcLive = OrganizationMemberRpcs.toLayer(
 		const db = yield* Database.Database
 
 		return {
-			/**
-			 * OrganizationMemberCreate Handler
-			 *
-			 * Adds a user to an organization. The userId is automatically set
-			 * from the authenticated user. Checks permissions via
-			 * OrganizationMemberPolicy.canCreate.
-			 *
-			 * Process:
-			 * 1. Get current user from context (provided by AuthMiddleware)
-			 * 2. Start database transaction
-			 * 3. Create organization member with userId set to current user
-			 * 4. Check permissions via OrganizationMemberPolicy.canCreate
-			 * 5. Generate transaction ID for optimistic updates
-			 * 6. Return organization member data and transaction ID
-			 */
 			"organizationMember.create": (payload) =>
 				db
 					.transaction(
@@ -64,19 +49,6 @@ export const OrganizationMemberRpcLive = OrganizationMemberRpcs.toLayer(
 						withRemapDbErrors("OrganizationMember", "create"),
 					),
 
-			/**
-			 * OrganizationMemberUpdate Handler
-			 *
-			 * Updates an existing organization member's role and settings.
-			 * Only users with appropriate permissions can update organization members.
-			 *
-			 * Process:
-			 * 1. Start database transaction
-			 * 2. Update organization member
-			 * 3. Check permissions via OrganizationMemberPolicy.canUpdate
-			 * 4. Generate transaction ID
-			 * 5. Return updated organization member data and transaction ID
-			 */
 			"organizationMember.update": ({ id, ...payload }) =>
 				db
 					.transaction(
@@ -99,19 +71,6 @@ export const OrganizationMemberRpcLive = OrganizationMemberRpcs.toLayer(
 						withRemapDbErrors("OrganizationMember", "update"),
 					),
 
-			/**
-			 * OrganizationMemberDelete Handler
-			 *
-			 * Removes a user from an organization (soft delete). Only users with
-			 * appropriate permissions can remove organization members.
-			 *
-			 * Process:
-			 * 1. Start database transaction
-			 * 2. Delete organization member (sets deletedAt timestamp)
-			 * 3. Check permissions via OrganizationMemberPolicy.canDelete
-			 * 4. Generate transaction ID
-			 * 5. Return transaction ID
-			 */
 			"organizationMember.delete": ({ id }) =>
 				db
 					.transaction(

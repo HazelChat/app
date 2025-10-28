@@ -24,19 +24,6 @@ export const AttachmentRpcLive = AttachmentRpcs.toLayer(
 		const db = yield* Database.Database
 
 		return {
-			/**
-			 * AttachmentDelete Handler
-			 *
-			 * Deletes an attachment (soft delete). Only users with appropriate
-			 * permissions can delete an attachment.
-			 *
-			 * Process:
-			 * 1. Start database transaction
-			 * 2. Delete attachment (sets deletedAt timestamp)
-			 * 3. Check permissions via AttachmentPolicy.canDelete
-			 * 4. Generate transaction ID
-			 * 5. Return transaction ID
-			 */
 			"attachment.delete": ({ id }) =>
 				db
 					.transaction(
@@ -48,7 +35,10 @@ export const AttachmentRpcLive = AttachmentRpcs.toLayer(
 							return { transactionId: txid }
 						}),
 					)
-					.pipe(policyUse(AttachmentPolicy.canDelete(id)), withRemapDbErrors("Attachment", "delete")),
+					.pipe(
+						policyUse(AttachmentPolicy.canDelete(id)),
+						withRemapDbErrors("Attachment", "delete"),
+					),
 		}
 	}),
 )

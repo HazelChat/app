@@ -16,100 +16,75 @@ export const HttpAttachmentLive = HttpApiBuilder.group(HazelApi, "attachments", 
 		const db = yield* Database.Database
 		const mu = yield* MultipartUpload.MultipartUpload
 
-		return handlers
-			.handle(
-				"upload",
-				Effect.fn(function* ({ payload }) {
-					const user = yield* CurrentUser.Context
-					const fs = yield* FileSystem.FileSystem
+		return handlers.handle(
+			"upload",
+			Effect.fn(function* ({ payload }) {
+				const user = yield* CurrentUser.Context
+				const fs = yield* FileSystem.FileSystem
 
-					yield* Effect.log("Uploading attachment...")
+				yield* Effect.log("Uploading attachment...")
 
-					const attachmentId = AttachmentId.make(randomUUIDv7())
+				const attachmentId = AttachmentId.make(randomUUIDv7())
 
-					const bucketName = yield* Config.string("R2_BUCKET_NAME").pipe(Effect.orDie)
+				const bucketName = yield* Config.string("R2_BUCKET_NAME").pipe(Effect.orDie)
 
-					yield* mu
-						.uploadObject(
-							{
-								Bucket: bucketName,
-								Key: attachmentId,
-								Body: fs.stream(payload.file.path),
-							},
-							{ queueSize: 3 },
-						)
-						.pipe(
-							Effect.mapError(
-								(error) =>
-									new AttachmentUploadError({
-										message: `Failed to upload file to R2: ${error}`,
-									}),
-							),
-						)
-
-					const stats = yield* fs.stat(payload.file.path).pipe(
+				yield* mu
+					.uploadObject(
+						{
+							Bucket: bucketName,
+							Key: attachmentId,
+							Body: fs.stream(payload.file.path),
+						},
+						{ queueSize: 3 },
+					)
+					.pipe(
 						Effect.mapError(
 							(error) =>
 								new AttachmentUploadError({
-									message: `Failed to read file stats: ${error}`,
+									message: `Failed to upload file to R2: ${error}`,
 								}),
 						),
 					)
 
-					const { createdAttachment, txid } = yield* db
-						.transaction(
-							Effect.gen(function* () {
-								const createdAttachment = yield* AttachmentRepo.insert({
-									id: attachmentId,
-									uploadedBy: user.id,
-									organizationId: payload.organizationId,
-									status: "complete",
-									channelId: payload.channelId,
-									messageId: null,
-									fileName: payload.file.name,
-									fileSize: Number(stats.size),
-									uploadedAt: new Date(),
-								}).pipe(Effect.map((res) => res[0]!))
-
-								const txid = yield* generateTransactionId()
-
-								return { createdAttachment, txid }
+				const stats = yield* fs.stat(payload.file.path).pipe(
+					Effect.mapError(
+						(error) =>
+							new AttachmentUploadError({
+								message: `Failed to read file stats: ${error}`,
 							}),
-						)
-						.pipe(
-							withRemapDbErrors("AttachmentRepo", "create"),
-							policyUse(AttachmentPolicy.canCreate()),
-						)
+					),
+				)
 
-					return {
-						data: createdAttachment,
-						transactionId: txid,
-					}
-				}),
-			)
+				const { createdAttachment, txid } = yield* db
+					.transaction(
+						Effect.gen(function* () {
+							const createdAttachment = yield* AttachmentRepo.insert({
+								id: attachmentId,
+								uploadedBy: user.id,
+								organizationId: payload.organizationId,
+								status: "complete",
+								channelId: payload.channelId,
+								messageId: null,
+								fileName: payload.file.name,
+								fileSize: Number(stats.size),
+								uploadedAt: new Date(),
+							}).pipe(Effect.map((res) => res[0]!))
 
-			.handle(
-				"delete",
-				Effect.fn(function* ({ path }) {
-					const { txid } = yield* db
-						.transaction(
-							Effect.gen(function* () {
-								yield* AttachmentRepo.deleteById(path.id)
+							const txid = yield* generateTransactionId()
 
-								const txid = yield* generateTransactionId()
+							return { createdAttachment, txid }
+						}),
+					)
+					.pipe(
+						withRemapDbErrors("AttachmentRepo", "create"),
+						policyUse(AttachmentPolicy.canCreate()),
+					)
 
-								return { txid }
-							}),
-						)
-						.pipe(
-							policyUse(AttachmentPolicy.canDelete(path.id)),
-							withRemapDbErrors("AttachmentRepo", "delete"),
-						)
-
-					return {
-						transactionId: txid,
-					}
-				}),
-			)
+				return {
+					data: createdAttachment,
+					transactionId: txid,
+				}
+			}),
+		)
 	}),
 )

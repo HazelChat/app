@@ -27,19 +27,6 @@ export const TypingIndicatorRpcLive = TypingIndicatorRpcs.toLayer(
 		const db = yield* Database.Database
 
 		return {
-			/**
-			 * TypingIndicatorCreate Handler
-			 *
-			 * Creates or updates a typing indicator for a user in a channel.
-			 * Uses upsert logic to handle cases where the typing indicator already exists.
-			 *
-			 * Process:
-			 * 1. Start database transaction
-			 * 2. Upsert typing indicator by channelId and memberId
-			 * 3. Check permissions via TypingIndicatorPolicy.canCreate
-			 * 4. Generate transaction ID for optimistic updates
-			 * 5. Return typing indicator data and transaction ID
-			 */
 			"typingIndicator.create": (payload) =>
 				db
 					.transaction(
@@ -63,19 +50,6 @@ export const TypingIndicatorRpcLive = TypingIndicatorRpcs.toLayer(
 					)
 					.pipe(withRemapDbErrors("TypingIndicator", "create")),
 
-			/**
-			 * TypingIndicatorUpdate Handler
-			 *
-			 * Updates an existing typing indicator's timestamp.
-			 * Automatically sets lastTyped to current time.
-			 *
-			 * Process:
-			 * 1. Start database transaction
-			 * 2. Update typing indicator
-			 * 3. Check permissions via TypingIndicatorPolicy.canUpdate
-			 * 4. Generate transaction ID
-			 * 5. Return updated typing indicator data and transaction ID
-			 */
 			"typingIndicator.update": ({ id, ...payload }) =>
 				db
 					.transaction(
@@ -96,21 +70,6 @@ export const TypingIndicatorRpcLive = TypingIndicatorRpcs.toLayer(
 					)
 					.pipe(withRemapDbErrors("TypingIndicator", "update")),
 
-			/**
-			 * TypingIndicatorDelete Handler
-			 *
-			 * Deletes a typing indicator when the user stops typing.
-			 * Returns the deleted typing indicator data for optimistic updates.
-			 *
-			 * Process:
-			 * 1. Start database transaction
-			 * 2. Find existing typing indicator
-			 * 3. Check read permissions to verify access
-			 * 4. Delete typing indicator
-			 * 5. Check delete permissions
-			 * 6. Generate transaction ID
-			 * 7. Return deleted typing indicator data and transaction ID
-			 */
 			"typingIndicator.delete": ({ id }) =>
 				db
 					.transaction(

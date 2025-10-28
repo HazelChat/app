@@ -24,20 +24,6 @@ export const InvitationRpcLive = InvitationRpcs.toLayer(
 		const db = yield* Database.Database
 
 		return {
-			/**
-			 * InvitationCreate Handler
-			 *
-			 * Creates a new invitation to an organization. Checks permissions via
-			 * InvitationPolicy.canCreate to ensure the user can invite others to
-			 * the organization.
-			 *
-			 * Process:
-			 * 1. Start database transaction
-			 * 2. Create invitation
-			 * 3. Check permissions via InvitationPolicy.canCreate
-			 * 4. Generate transaction ID for optimistic updates
-			 * 5. Return invitation data and transaction ID
-			 */
 			"invitation.create": (payload) =>
 				db
 					.transaction(
@@ -62,19 +48,6 @@ export const InvitationRpcLive = InvitationRpcs.toLayer(
 						})),
 					),
 
-			/**
-			 * InvitationUpdate Handler
-			 *
-			 * Updates an existing invitation. Only the invitation creator or users
-			 * with appropriate permissions can update invitations.
-			 *
-			 * Process:
-			 * 1. Start database transaction
-			 * 2. Update invitation
-			 * 3. Check permissions via InvitationPolicy.canUpdate
-			 * 4. Generate transaction ID
-			 * 5. Return updated invitation data and transaction ID
-			 */
 			"invitation.update": ({ id, ...payload }) =>
 				db
 					.transaction(
@@ -100,19 +73,6 @@ export const InvitationRpcLive = InvitationRpcs.toLayer(
 						})),
 					),
 
-			/**
-			 * InvitationDelete Handler
-			 *
-			 * Deletes an invitation. Only the invitation creator or users with
-			 * appropriate permissions can delete invitations.
-			 *
-			 * Process:
-			 * 1. Start database transaction
-			 * 2. Delete invitation
-			 * 3. Check permissions via InvitationPolicy.canDelete
-			 * 4. Generate transaction ID
-			 * 5. Return transaction ID
-			 */
 			"invitation.delete": ({ id }) =>
 				db
 					.transaction(
