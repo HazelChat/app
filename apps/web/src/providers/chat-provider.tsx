@@ -9,7 +9,9 @@ import {
 	PinnedMessageId,
 	UserId,
 } from "@hazel/db/schema"
+import { Cause, Exit } from "effect"
 import { createContext, type ReactNode, useCallback, useContext, useMemo } from "react"
+import { toast } from "sonner"
 import {
 	activeThreadChannelIdAtom,
 	activeThreadMessageIdAtom,
@@ -20,7 +22,7 @@ import {
 	uploadingFilesAtomFamily,
 } from "~/atoms/chat-atoms"
 import { channelByIdAtomFamily } from "~/atoms/chat-query-atoms"
-import { sendMessage as sendMessageAction } from "~/db/actions"
+import { sendMessageEffect as sendMessageAction } from "~/db/actions"
 import {
 	channelCollection,
 	messageCollection,
@@ -76,6 +78,8 @@ interface ChatProviderProps {
 
 export function ChatProvider({ channelId, organizationId, children }: ChatProviderProps) {
 	const { user } = useAuth()
+
+	const sendMessageMutation = useAtomSet(sendMessageAction, { mode: "promiseExit" })
 
 	const replyToMessageId = useAtomValue(replyToMessageAtomFamily(channelId))
 	const setReplyToMessageId = useAtomSet(replyToMessageAtomFamily(channelId))
@@ -135,7 +139,7 @@ export function ChatProvider({ channelId, organizationId, children }: ChatProvid
 
 			const attachmentsToSend = attachments ?? attachmentIds
 
-			const tx = sendMessageAction({
+			const tx = await sendMessageMutation({
 				channelId,
 				authorId: UserId.make(user.id),
 				content,
@@ -144,12 +148,27 @@ export function ChatProvider({ channelId, organizationId, children }: ChatProvid
 				attachmentIds: attachmentsToSend as AttachmentId[] | undefined,
 			})
 
-			setReplyToMessageId(null)
-			clearAttachments()
-
-			await tx.isPersisted.promise
+			Exit.match(tx, {
+				onSuccess: () => {
+					setReplyToMessageId(null)
+					clearAttachments()
+				},
+				onFailure: (error) => {
+					toast.error("Failed to send message", {
+						description: Cause.pretty(error),
+					})
+				},
+			})
 		},
-		[channelId, user?.id, replyToMessageId, attachmentIds, setReplyToMessageId, clearAttachments],
+		[
+			channelId,
+			user?.id,
+			replyToMessageId,
+			attachmentIds,
+			sendMessageMutation,
+			setReplyToMessageId,
+			clearAttachments,
+		],
 	)
 
 	const editMessage = useCallback(async (messageId: MessageId, content: string) => {

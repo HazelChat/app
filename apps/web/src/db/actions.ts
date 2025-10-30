@@ -7,6 +7,7 @@ import {
 	type OrganizationId,
 	type UserId,
 } from "@hazel/db/schema"
+import { createEffectOptimisticAction } from "@hazel/effect-electric-db-collection"
 import { createOptimisticAction } from "@tanstack/react-db"
 import { Effect } from "effect"
 import { ApiClient } from "~/lib/services/common/api-client"
@@ -114,6 +115,65 @@ export const sendMessage = createOptimisticAction<{
 
 		return { transactionId, data }
 	},
+})
+
+export const sendMessageEffect = createEffectOptimisticAction({
+	onMutate: (props: {
+		channelId: ChannelId
+		authorId: UserId
+		content: string
+		replyToMessageId?: MessageId | null
+		threadChannelId?: ChannelId | null
+		attachmentIds?: AttachmentId[]
+	}) => {
+		const messageId = MessageId.make(crypto.randomUUID())
+
+		messageCollection.insert({
+			id: messageId,
+			channelId: props.channelId,
+			authorId: props.authorId,
+			content: props.content,
+			replyToMessageId: props.replyToMessageId || null,
+			threadChannelId: props.threadChannelId || null,
+			createdAt: new Date(),
+			updatedAt: null,
+			deletedAt: null,
+		})
+
+		return { messageId }
+	},
+	mutationFn: (
+		props: {
+			channelId: ChannelId
+			authorId: UserId
+			content: string
+			replyToMessageId?: MessageId | null
+			threadChannelId?: ChannelId | null
+			attachmentIds?: AttachmentId[]
+		},
+		_params,
+	) =>
+		Effect.gen(function* () {
+			const client = yield* RpcClient
+
+			// Create the message with attachmentIds using RPC
+			// Note: authorId will be overridden by backend AuthMiddleware with the authenticated user
+			const result = yield* client.message.create({
+				channelId: props.channelId,
+				content: props.content,
+				replyToMessageId: props.replyToMessageId || null,
+				threadChannelId: props.threadChannelId || null,
+				attachmentIds: props.attachmentIds || [],
+				deletedAt: null,
+				authorId: props.authorId,
+			})
+
+			// Wait for the transaction to sync
+			yield* Effect.promise(() => messageCollection.utils.awaitTxId(result.transactionId))
+
+			return result
+		}),
+	runtime: runtime,
 })
 
 export const createDmChannel = createOptimisticAction<{

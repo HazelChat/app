@@ -1,3 +1,4 @@
+import { useAtomSet } from "@effect-atom/atom-react"
 import { OrganizationId } from "@hazel/db/schema"
 import { useNavigate } from "@tanstack/react-router"
 import { Building02 } from "@untitledui/icons"
@@ -5,6 +6,7 @@ import { type } from "arktype"
 import { useCallback, useEffect } from "react"
 import { Heading as AriaHeading } from "react-aria-components"
 import { toast } from "sonner"
+import { createOrganizationMutation } from "~/atoms/organization-atoms"
 import { Dialog, Modal, ModalOverlay } from "~/components/application/modals/modal"
 import { Button } from "~/components/base/buttons/button"
 import { CloseButton } from "~/components/base/buttons/close-button"
@@ -12,6 +14,7 @@ import { FeaturedIcon } from "~/components/foundations/featured-icon/featured-ic
 import { BackgroundPattern } from "~/components/shared-assets/background-patterns"
 import { organizationCollection } from "~/db/collections"
 import { useAppForm } from "~/hooks/use-app-form"
+import { HazelRpcClient } from "~/lib/services/common/rpc-atom-client"
 
 const organizationSchema = type({
 	name: "string.trim",
@@ -28,6 +31,8 @@ interface CreateOrganizationModalProps {
 
 export const CreateOrganizationModal = ({ isOpen, onOpenChange }: CreateOrganizationModalProps) => {
 	const navigate = useNavigate()
+
+	const _createOrganizationMutation = useAtomSet(HazelRpcClient.mutation("organization.create"))
 
 	const generateSlug = useCallback((name: string) => {
 		let slug = name

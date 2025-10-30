@@ -70,3 +70,14 @@ export class SyncConfigError extends Schema.TaggedError<SyncConfigError>()("Sync
 	message: Schema.String,
 	cause: Schema.optional(Schema.Unknown),
 }) {}
+
+/**
+ * Error thrown when an optimistic action fails
+ */
+export class OptimisticActionError extends Schema.TaggedError<OptimisticActionError>()(
+	"OptimisticActionError",
+	{
+		message: Schema.String,
+		cause: Schema.optional(Schema.Unknown),
+	},
+) {}

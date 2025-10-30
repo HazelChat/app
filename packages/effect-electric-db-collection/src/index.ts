@@ -13,6 +13,7 @@ export {
 	InsertError,
 	InvalidTxIdError,
 	MissingTxIdError,
+	OptimisticActionError,
 	SyncConfigError,
 	TxIdTimeoutError,
 	UpdateError,
@@ -36,3 +37,10 @@ export type {
 	EffectInsertHandler,
 	EffectUpdateHandler,
 } from "./types"
+// Optimistic Actions
+export {
+	createEffectOptimisticAction,
+	type EffectOptimisticActionOptions,
+	type MutationParams,
+	type OptimisticMutateResult,
+} from "./optimistic-action"
