@@ -8,6 +8,7 @@ import {
 	withSystemActor,
 } from "@hazel/effect-lib"
 import { Effect, Option, pipe } from "effect"
+import { isAdminOrOwner } from "../lib/policy-utils"
 import { InvitationRepo } from "../repositories/invitation-repo"
 import { OrganizationMemberRepo } from "../repositories/organization-member-repo"
 
@@ -32,7 +33,7 @@ export class InvitationPolicy extends Effect.Service<InvitationPolicy>()("Invita
 							.findByOrgAndUser(organizationId, actor.id)
 							.pipe(withSystemActor)
 
-						if (Option.isSome(orgMember) && orgMember.value.role === "admin") {
+						if (Option.isSome(orgMember) && isAdminOrOwner(orgMember.value.role)) {
 							return yield* Effect.succeed(true)
 						}
 

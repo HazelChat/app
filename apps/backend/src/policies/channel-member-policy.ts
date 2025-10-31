@@ -6,6 +6,7 @@ import {
 	withSystemActor,
 } from "@hazel/effect-lib"
 import { Effect, Option } from "effect"
+import { isAdminOrOwner } from "../lib/policy-utils"
 import { ChannelMemberRepo } from "../repositories/channel-member-repo"
 import { ChannelRepo } from "../repositories/channel-repo"
 import { OrganizationMemberRepo } from "../repositories/organization-member-repo"
@@ -49,7 +50,7 @@ export class ChannelMemberPolicy extends Effect.Service<ChannelMemberPolicy>()("
 								.findByOrgAndUser(channel.organizationId, actor.id)
 								.pipe(withSystemActor)
 
-							if (Option.isSome(orgMember) && orgMember.value.role === "admin") {
+							if (Option.isSome(orgMember) && isAdminOrOwner(orgMember.value.role)) {
 								return yield* Effect.succeed(true)
 							}
 

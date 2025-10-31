@@ -1,6 +1,8 @@
 import { type AttachmentId, policy, UnauthorizedError, withSystemActor } from "@hazel/effect-lib"
 import { Effect, Option } from "effect"
+import { isAdminOrOwner } from "../lib/policy-utils"
 import { AttachmentRepo } from "../repositories/attachment-repo"
+import { ChannelMemberRepo } from "../repositories/channel-member-repo"
 import { ChannelRepo } from "../repositories/channel-repo"
 import { MessageRepo } from "../repositories/message-repo"
 import { OrganizationMemberRepo } from "../repositories/organization-member-repo"
@@ -13,6 +15,7 @@ export class AttachmentPolicy extends Effect.Service<AttachmentPolicy>()("Attach
 		const messageRepo = yield* MessageRepo
 		const channelRepo = yield* ChannelRepo
 		const organizationMemberRepo = yield* OrganizationMemberRepo
+		const channelMemberRepo = yield* ChannelMemberRepo
 
 		const canCreate = () =>
 			UnauthorizedError.refail(
@@ -82,12 +85,12 @@ export class AttachmentPolicy extends Effect.Service<AttachmentPolicy>()("Attach
 										return yield* Effect.succeed(true)
 									}
 
-									// Organization admins can delete any attachment
+									// Organization admins/owners can delete any attachment
 									const orgMember = yield* organizationMemberRepo
 										.findByOrgAndUser(channel.organizationId, actor.id)
 										.pipe(withSystemActor)
 
-									if (Option.isSome(orgMember) && orgMember.value.role === "admin") {
+									if (Option.isSome(orgMember) && isAdminOrOwner(orgMember.value.role)) {
 										return yield* Effect.succeed(true)
 									}
 
@@ -136,13 +139,22 @@ export class AttachmentPolicy extends Effect.Service<AttachmentPolicy>()("Attach
 										}
 									}
 
-									// For private channels, only admins can view
-									// Simplified - would need to check channel membership
+									// For private channels, check if user is a channel member or org admin
 									const orgMember = yield* organizationMemberRepo
 										.findByOrgAndUser(channel.organizationId, actor.id)
 										.pipe(withSystemActor)
 
-									if (Option.isSome(orgMember) && orgMember.value.role === "admin") {
+									// Organization admins/owners can view all attachments
+									if (Option.isSome(orgMember) && isAdminOrOwner(orgMember.value.role)) {
+										return yield* Effect.succeed(true)
+									}
+
+									// Check if user is a member of the private channel
+									const channelMembership = yield* channelMemberRepo
+										.findByChannelAndUser(channel.id, actor.id)
+										.pipe(withSystemActor)
+
+									if (Option.isSome(channelMembership)) {
 										return yield* Effect.succeed(true)
 									}
 
@@ -161,6 +173,7 @@ export class AttachmentPolicy extends Effect.Service<AttachmentPolicy>()("Attach
 		MessageRepo.Default,
 		ChannelRepo.Default,
 		OrganizationMemberRepo.Default,
+		ChannelMemberRepo.Default,
 	],
 	accessors: true,
 }) {}

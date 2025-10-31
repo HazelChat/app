@@ -6,6 +6,7 @@ import {
 	withSystemActor,
 } from "@hazel/effect-lib"
 import { Effect, Option } from "effect"
+import { isAdminOrOwner } from "../lib/policy-utils"
 import { ChannelRepo } from "../repositories/channel-repo"
 import { OrganizationMemberRepo } from "../repositories/organization-member-repo"
 import { PinnedMessageRepo } from "../repositories/pinned-message-repo"
@@ -39,10 +40,7 @@ export class PinnedMessagePolicy extends Effect.Service<PinnedMessagePolicy>()("
 									.findByOrgAndUser(channel.organizationId, actor.id)
 									.pipe(withSystemActor)
 
-								if (
-									Option.isSome(orgMember) &&
-									(orgMember.value.role === "admin" || orgMember.value.role === "owner")
-								) {
+								if (Option.isSome(orgMember) && isAdminOrOwner(orgMember.value.role)) {
 									return yield* Effect.succeed(true)
 								}
 
@@ -72,8 +70,8 @@ export class PinnedMessagePolicy extends Effect.Service<PinnedMessagePolicy>()("
 								return yield* Effect.succeed(false)
 							}
 
-							// Org admins can pin messages in any channel
-							if (orgMember.value.role === "admin") {
+							// Org admins/owners can pin messages in any channel
+							if (isAdminOrOwner(orgMember.value.role)) {
 								return yield* Effect.succeed(true)
 							}
 
@@ -105,12 +103,12 @@ export class PinnedMessagePolicy extends Effect.Service<PinnedMessagePolicy>()("
 									return yield* Effect.succeed(true)
 								}
 
-								// Organization admins can unpin any message
+								// Organization admins/owners can unpin any message
 								const orgMember = yield* organizationMemberRepo
 									.findByOrgAndUser(channel.organizationId, actor.id)
 									.pipe(withSystemActor)
 
-								if (Option.isSome(orgMember) && orgMember.value.role === "admin") {
+								if (Option.isSome(orgMember) && isAdminOrOwner(orgMember.value.role)) {
 									return yield* Effect.succeed(true)
 								}
 

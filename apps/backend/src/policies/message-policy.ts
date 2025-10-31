@@ -1,5 +1,6 @@
 import { type ChannelId, type MessageId, policy, UnauthorizedError, withSystemActor } from "@hazel/effect-lib"
 import { Effect, Option } from "effect"
+import { isAdminOrOwner } from "../lib/policy-utils"
 import { ChannelMemberRepo } from "../repositories/channel-member-repo"
 import { ChannelRepo } from "../repositories/channel-repo"
 import { DirectMessageParticipantRepo } from "../repositories/direct-message-participant-repo"
@@ -39,7 +40,7 @@ export class MessagePolicy extends Effect.Service<MessagePolicy>()("MessagePolic
 
 							if (channel.type === "private") {
 								// Check if user is a channel member or org admin
-								if (Option.isSome(orgMember) && orgMember.value.role === "admin") {
+								if (Option.isSome(orgMember) && isAdminOrOwner(orgMember.value.role)) {
 									return true
 								}
 
@@ -154,7 +155,7 @@ export class MessagePolicy extends Effect.Service<MessagePolicy>()("MessagePolic
 									.findByOrgAndUser(channel.organizationId, actor.id)
 									.pipe(withSystemActor)
 
-								if (Option.isSome(orgMember) && orgMember.value.role === "admin") {
+								if (Option.isSome(orgMember) && isAdminOrOwner(orgMember.value.role)) {
 									return yield* Effect.succeed(true)
 								}
 
