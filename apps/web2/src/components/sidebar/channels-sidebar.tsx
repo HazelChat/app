@@ -18,8 +18,9 @@ import {
 	WrenchScrewdriverIcon,
 } from "@heroicons/react/20/solid"
 import { and, eq, or, useLiveQuery } from "@tanstack/react-db"
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 import { Button as PrimitiveButton } from "react-aria-components"
+import { CreateChannelModal } from "~/components/modals/create-channel-modal"
 import { SwitchServerMenu } from "~/components/sidebar/switch-server-menu"
 import { UserMenu } from "~/components/sidebar/user-menu"
 import { Avatar } from "~/components/ui/avatar"
@@ -51,7 +52,7 @@ import { useOrganization } from "~/hooks/use-organization"
 import { useAuth } from "~/lib/auth"
 import IconHashtag from "../icons/icon-hashtag"
 
-const ChannelGroup = (props: { organizationId: OrganizationId }) => {
+const ChannelGroup = (props: { organizationId: OrganizationId; onCreateChannel: () => void }) => {
 	const { user } = useAuth()
 	const { slug } = useOrganization()
 
@@ -86,7 +87,7 @@ const ChannelGroup = (props: { organizationId: OrganizationId }) => {
 		<SidebarSection>
 			<div className="col-span-full flex items-center justify-between gap-x-2 pl-2.5 text-muted-fg text-xs/5">
 				<Strong>Channels</Strong>
-				<Button intent="plain" isCircle size="sq-sm">
+				<Button intent="plain" isCircle size="sq-sm" onPress={props.onCreateChannel}>
 					<PlusIcon />
 				</Button>
 			</div>
@@ -153,129 +154,140 @@ const DmChannelGroup = (props: { organizationId: OrganizationId }) => {
 export function ChannelsSidebar() {
 	const { isMobile } = useSidebar()
 	const { organizationId, organization } = useOrganization()
+	const [showCreateChannelModal, setShowCreateChannelModal] = useState(false)
 
 	return (
-		<Sidebar collapsible="none" className="flex flex-1">
-			<SidebarHeader className="border-b py-4">
-				<Menu>
-					<PrimitiveButton className="relative flex items-center justify-between gap-x-2 font-semibold outline-hidden focus-visible:ring focus-visible:ring-primary">
-						<div className="flex w-full items-center gap-1">
-							<span className="flex gap-x-2 font-medium text-sm/6">
-								<Avatar
-									isSquare
-									size="sm"
-									src={
-										organization?.logoUrl || `https://avatar.vercel.sh/${organizationId}`
-									}
-								/>
-								{organization?.name}
-							</span>
-							<ChevronUpDownIcon className="ml-auto size-4 text-muted-fg" />
-						</div>
-					</PrimitiveButton>
-					<MenuContent className="min-w-(--trigger-width)">
-						{isMobile ? (
-							<SwitchServerMenu />
-						) : (
+		<>
+			<Sidebar collapsible="none" className="flex flex-1">
+				<SidebarHeader className="border-b py-4">
+					<Menu>
+						<PrimitiveButton className="relative flex items-center justify-between gap-x-2 font-semibold outline-hidden focus-visible:ring focus-visible:ring-primary">
+							<div className="flex w-full items-center gap-1">
+								<span className="flex gap-x-2 font-medium text-sm/6">
+									<Avatar
+										isSquare
+										size="sm"
+										src={
+											organization?.logoUrl || `https://avatar.vercel.sh/${organizationId}`
+										}
+									/>
+									{organization?.name}
+								</span>
+								<ChevronUpDownIcon className="ml-auto size-4 text-muted-fg" />
+							</div>
+						</PrimitiveButton>
+						<MenuContent className="min-w-(--trigger-width)">
+							{isMobile ? (
+								<SwitchServerMenu />
+							) : (
+								<>
+									<MenuSection>
+										<MenuItem href="/">
+											<UserPlusIcon />
+											<MenuLabel>Invite people</MenuLabel>
+										</MenuItem>
+										<MenuItem href="/">
+											<UserGroupIcon />
+											<MenuLabel>Manage members</MenuLabel>
+										</MenuItem>
+									</MenuSection>
+
+									<MenuSubMenu>
+										<MenuItem>
+											<UserGroupIcon />
+											<MenuLabel>Switch Server</MenuLabel>
+										</MenuItem>
+										<MenuContent>
+											<SwitchServerMenu />
+										</MenuContent>
+									</MenuSubMenu>
+
+									<MenuSeparator />
+
+									<MenuSection>
+										<MenuItem onAction={() => setShowCreateChannelModal(true)}>
+											<PlusCircleIcon />
+											<MenuLabel>Create channel</MenuLabel>
+										</MenuItem>
+										<MenuItem href="/">
+											<FolderPlusIcon />
+											<MenuLabel>Create category</MenuLabel>
+										</MenuItem>
+										<MenuItem href="/">
+											<CalendarDaysIcon />
+											<MenuLabel>Create event</MenuLabel>
+										</MenuItem>
+									</MenuSection>
+
+									<MenuSeparator />
+
+									<MenuSection>
+										<MenuItem href="/">
+											<Cog6ToothIcon />
+											<MenuLabel>Server settings</MenuLabel>
+										</MenuItem>
+										<MenuItem href="/">
+											<ShieldCheckIcon />
+											<MenuLabel>Roles & permissions</MenuLabel>
+										</MenuItem>
+										<MenuItem href="/">
+											<AdjustmentsHorizontalIcon />
+											<MenuLabel>Notification settings</MenuLabel>
+										</MenuItem>
+										<MenuItem href="/">
+											<FaceSmileIcon />
+											<MenuLabel>Custom emojis</MenuLabel>
+										</MenuItem>
+										<MenuItem href="/">
+											<WrenchScrewdriverIcon />
+											<MenuLabel>Integrations</MenuLabel>
+										</MenuItem>
+									</MenuSection>
+								</>
+							)}
+						</MenuContent>
+					</Menu>
+				</SidebarHeader>
+				<SidebarContent>
+					<SidebarSectionGroup>
+						<SidebarSection aria-label="Goto">
+							<SidebarItem href="/">
+								<CalendarDaysIcon />
+								<SidebarLabel>Events</SidebarLabel>
+							</SidebarItem>
+							<SidebarItem>
+								<MagnifyingGlassIcon />
+								<SidebarLabel>Browse channels</SidebarLabel>
+								<Keyboard className="-translate-y-1/2 absolute top-1/2 right-2 font-mono text-muted-fg text-xs">
+									⌘K
+								</Keyboard>
+							</SidebarItem>
+							<SidebarItem href="/">
+								<UsersIcon />
+								<SidebarLabel>Members</SidebarLabel>
+							</SidebarItem>
+						</SidebarSection>
+
+						{organizationId && (
 							<>
-								<MenuSection>
-									<MenuItem href="/">
-										<UserPlusIcon />
-										<MenuLabel>Invite people</MenuLabel>
-									</MenuItem>
-									<MenuItem href="/">
-										<UserGroupIcon />
-										<MenuLabel>Manage members</MenuLabel>
-									</MenuItem>
-								</MenuSection>
-
-								<MenuSubMenu>
-									<MenuItem>
-										<UserGroupIcon />
-										<MenuLabel>Switch Server</MenuLabel>
-									</MenuItem>
-									<MenuContent>
-										<SwitchServerMenu />
-									</MenuContent>
-								</MenuSubMenu>
-
-								<MenuSeparator />
-
-								<MenuSection>
-									<MenuItem href="/">
-										<PlusCircleIcon />
-										<MenuLabel>Create channel</MenuLabel>
-									</MenuItem>
-									<MenuItem href="/">
-										<FolderPlusIcon />
-										<MenuLabel>Create category</MenuLabel>
-									</MenuItem>
-									<MenuItem href="/">
-										<CalendarDaysIcon />
-										<MenuLabel>Create event</MenuLabel>
-									</MenuItem>
-								</MenuSection>
-
-								<MenuSeparator />
-
-								<MenuSection>
-									<MenuItem href="/">
-										<Cog6ToothIcon />
-										<MenuLabel>Server settings</MenuLabel>
-									</MenuItem>
-									<MenuItem href="/">
-										<ShieldCheckIcon />
-										<MenuLabel>Roles & permissions</MenuLabel>
-									</MenuItem>
-									<MenuItem href="/">
-										<AdjustmentsHorizontalIcon />
-										<MenuLabel>Notification settings</MenuLabel>
-									</MenuItem>
-									<MenuItem href="/">
-										<FaceSmileIcon />
-										<MenuLabel>Custom emojis</MenuLabel>
-									</MenuItem>
-									<MenuItem href="/">
-										<WrenchScrewdriverIcon />
-										<MenuLabel>Integrations</MenuLabel>
-									</MenuItem>
-								</MenuSection>
+								<ChannelGroup
+									organizationId={organizationId}
+									onCreateChannel={() => setShowCreateChannelModal(true)}
+								/>
+								<DmChannelGroup organizationId={organizationId} />
 							</>
 						)}
-					</MenuContent>
-				</Menu>
-			</SidebarHeader>
-			<SidebarContent>
-				<SidebarSectionGroup>
-					<SidebarSection aria-label="Goto">
-						<SidebarItem href="/">
-							<CalendarDaysIcon />
-							<SidebarLabel>Events</SidebarLabel>
-						</SidebarItem>
-						<SidebarItem>
-							<MagnifyingGlassIcon />
-							<SidebarLabel>Browse channels</SidebarLabel>
-							<Keyboard className="-translate-y-1/2 absolute top-1/2 right-2 font-mono text-muted-fg text-xs">
-								⌘K
-							</Keyboard>
-						</SidebarItem>
-						<SidebarItem href="/">
-							<UsersIcon />
-							<SidebarLabel>Members</SidebarLabel>
-						</SidebarItem>
-					</SidebarSection>
+					</SidebarSectionGroup>
+				</SidebarContent>
+				<SidebarFooter className="flex flex-row justify-between gap-4 group-data-[state=collapsed]:flex-col">
+					<UserMenu />
+				</SidebarFooter>
+			</Sidebar>
 
-					{organizationId && (
-						<>
-							<ChannelGroup organizationId={organizationId} />
-							<DmChannelGroup organizationId={organizationId} />
-						</>
-					)}
-				</SidebarSectionGroup>
-			</SidebarContent>
-			<SidebarFooter className="flex flex-row justify-between gap-4 group-data-[state=collapsed]:flex-col">
-				<UserMenu />
-			</SidebarFooter>
-		</Sidebar>
+			<CreateChannelModal
+				isOpen={showCreateChannelModal}
+				onOpenChange={setShowCreateChannelModal}
+			/>
+		</>
 	)
 }
