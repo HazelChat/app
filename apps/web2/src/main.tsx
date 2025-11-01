@@ -11,10 +11,9 @@ import "./styles/styles.css"
 // Initialize app registry and mount runtimes
 import "./lib/registry.ts"
 
-import { Toaster } from "./components/application/notifications/toaster.tsx"
-import { Loader } from "./components/loader.tsx"
-import { ThemeProvider } from "./components/theme-provider.tsx"
-
+import { Loader } from "./components/loader"
+import { ThemeProvider } from "./components/theme-provider"
+import { Toast } from "./components/ui/toast.tsx"
 import reportWebVitals from "./reportWebVitals.ts"
 
 export const router = createRouter({
@@ -29,7 +28,7 @@ export const router = createRouter({
 	defaultPendingComponent: Loader,
 	Wrap: ({ children }) => (
 		<ThemeProvider>
-			<Toaster />
+			<Toast />
 
 			{children}
 		</ThemeProvider>

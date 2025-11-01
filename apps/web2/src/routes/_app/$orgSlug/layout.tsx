@@ -1,10 +1,7 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router"
 import { useState } from "react"
-import { ErrorBoundary } from "react-error-boundary"
-import { AppSidebar } from "~/components/app-sidebar/app-sidebar"
-import { SidebarMobile } from "~/components/app-sidebar/sidebar-mobile"
+import { AppSidebar } from "~/components/app-sidebar"
 import { CommandPalette } from "~/components/command-palette"
-import { NotificationManager } from "~/components/notification-manager"
 import { SidebarInset, SidebarProvider } from "~/components/ui/sidebar"
 import {
 	attachmentCollection,
@@ -35,16 +32,16 @@ function RouteComponent() {
 	const [openCmd, setOpenCmd] = useState(false)
 
 	return (
-		<SidebarProvider>
-			<NotificationManager />
-			<AppSidebar setOpenCmd={setOpenCmd} />
-			<SidebarInset>
-				<ErrorBoundary fallback={<></>}>
-					<SidebarMobile />
-				</ErrorBoundary>
-				<Outlet />
-				<CommandPalette isOpen={openCmd} onOpenChange={setOpenCmd} />
-			</SidebarInset>
+		<SidebarProvider
+			style={
+				{
+					"--sidebar-width": "350px",
+				} as React.CSSProperties
+			}
+		>
+			<CommandPalette isOpen={openCmd} onOpenChange={setOpenCmd} />
+			<AppSidebar openCmd={setOpenCmd} />
+			<SidebarInset>{/* <Outlet /> */}</SidebarInset>
 		</SidebarProvider>
 	)
 }

@@ -1,6 +1,5 @@
 import { Cause, Chunk, Exit, Option } from "effect"
 import { toast } from "sonner"
-import { IconNotification } from "~/components/application/notifications/notifications"
 
 /**
  * Extracts a user-friendly error message from a Cause.
@@ -71,29 +70,16 @@ export async function toastExit<A, E>(
 	promiseExit: Promise<Exit.Exit<A, E>>,
 	options: ToastExitOptions<A, E>,
 ): Promise<Exit.Exit<A, E>> {
-	const loadingToast = toast.custom(() => (
-		<IconNotification
-			title={options.loading}
-			description="Please wait..."
-			color="brand"
-			hideDismissLabel
-		/>
-	))
+	const loadingToast = toast.loading(options.loading)
 
 	const exit = await promiseExit
 
 	return Exit.match(exit, {
 		onSuccess: (value) => {
 			const message = typeof options.success === "function" ? options.success(value) : options.success
-			toast.custom(
-				(t) => (
-					<IconNotification
-						title="Success"
-						description={message}
-						color="success"
-						onClose={() => toast.dismiss(t)}
-					/>
-				),
+			toast.success(
+				message,
+
 				{ id: loadingToast },
 			)
 			return exit
@@ -104,17 +90,7 @@ export async function toastExit<A, E>(
 					? options.error(cause)
 					: options.error
 				: formatCauseMessage(cause)
-			toast.custom(
-				(t) => (
-					<IconNotification
-						title="Error"
-						description={message}
-						color="error"
-						onClose={() => toast.dismiss(t)}
-					/>
-				),
-				{ id: loadingToast },
-			)
+			toast.error(message, { id: loadingToast })
 			return exit
 		},
 	})

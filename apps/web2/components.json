@@ -17,7 +17,7 @@
     "lib": "~/lib",
     "hooks": "~/hooks"
   },
-  "iconLibrary": "lucide",
+  "iconLibrary": "@heroicons/react",
   "registries": {
     "@intentui": "https://intentui.com/r/{name}",
     "@irsyadadl": {

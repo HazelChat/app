@@ -1,4 +1,7 @@
+"use client"
+
 import type {
+  DialogProps,
   DialogTriggerProps,
   PopoverProps as PopoverPrimitiveProps,
 } from "react-aria-components"
@@ -9,6 +12,7 @@ import {
 } from "react-aria-components"
 import { cx } from "~/lib/primitive"
 import {
+  Dialog,
   DialogBody,
   DialogClose,
   DialogDescription,
@@ -28,7 +32,9 @@ const PopoverHeader = DialogHeader
 const PopoverBody = DialogBody
 const PopoverFooter = DialogFooter
 
-interface PopoverContentProps extends PopoverPrimitiveProps {
+interface PopoverContentProps
+  extends Omit<PopoverPrimitiveProps, "children">,
+    Pick<DialogProps, "children"> {
   arrow?: boolean
   ref?: React.Ref<HTMLDivElement>
 }
@@ -56,23 +62,23 @@ const PopoverContent = ({
       )}
       {...props}
     >
-      {(values) => (
-        <>
-          {arrow && (
-            <OverlayArrow className="group">
-              <svg
-                width={12}
-                height={12}
-                viewBox="0 0 12 12"
-                className="group-placement-left:-rotate-90 block fill-overlay stroke-border group-placement-bottom:rotate-180 group-placement-right:rotate-90 forced-colors:fill-[Canvas] forced-colors:stroke-[ButtonBorder]"
-              >
-                <path d="M0 0 L6 6 L12 0" />
-              </svg>
-            </OverlayArrow>
-          )}
-          {typeof children === "function" ? children(values) : children}
-        </>
-      )}
+      <>
+        {arrow && (
+          <OverlayArrow className="group">
+            <svg
+              width={12}
+              height={12}
+              viewBox="0 0 12 12"
+              className="group-placement-left:-rotate-90 block fill-overlay stroke-border group-placement-bottom:rotate-180 group-placement-right:rotate-90 forced-colors:fill-[Canvas] forced-colors:stroke-[ButtonBorder]"
+            >
+              <path d="M0 0 L6 6 L12 0" />
+            </svg>
+          </OverlayArrow>
+        )}
+        <Dialog>
+          {(values) => <>{typeof children === "function" ? children(values) : children}</>}
+        </Dialog>
+      </>
     </PopoverPrimitive>
   )
 }
