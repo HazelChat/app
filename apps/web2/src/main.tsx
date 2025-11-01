@@ -1,4 +1,4 @@
-import { createRouter, RouterProvider } from "@tanstack/react-router"
+import { createRouter, type NavigateOptions, RouterProvider, type ToOptions } from "@tanstack/react-router"
 import { StrictMode } from "react"
 import ReactDOM from "react-dom/client"
 
@@ -38,6 +38,13 @@ export const router = createRouter({
 declare module "@tanstack/react-router" {
 	interface Register {
 		router: typeof router
+	}
+}
+
+declare module "react-aria-components" {
+	interface RouterConfig {
+		href: ToOptions["to"]
+		routerOptions: Omit<NavigateOptions, keyof ToOptions>
 	}
 }
 

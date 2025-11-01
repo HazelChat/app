@@ -1,4 +1,3 @@
-import { twJoin } from "tailwind-merge"
 import IconDashboard from "~/components/icons/icon-dashboard"
 import IconMsgs from "~/components/icons/icon-msgs"
 import { Logo } from "~/components/logo"
@@ -85,13 +84,14 @@ export const servers = [
 
 export function NavSidebar() {
 	const { isMobile } = useSidebar()
+
 	return (
 		<Sidebar
 			collapsible="none"
 			className="hidden w-[calc(var(--sidebar-width-dock)+1px)] md:flex md:border-r"
 		>
 			<SidebarHeader className="h-14 px-3 py-4">
-				<Link href="#" className="flex items-center justify-center">
+				<Link href="/" className="flex items-center justify-center">
 					<Logo className="size-7" />
 				</Link>
 			</SidebarHeader>
@@ -100,7 +100,7 @@ export function NavSidebar() {
 				<SidebarSectionGroup>
 					<SidebarSection className="p-2! *:data-[slot=sidebar-section-inner]:gap-y-2">
 						<SidebarItem
-							href="#"
+							href="/"
 							aria-label="Home"
 							className="size-9 justify-items-center"
 							tooltip={{
@@ -111,7 +111,7 @@ export function NavSidebar() {
 							<IconDashboard className="size-5" />
 						</SidebarItem>
 						<SidebarItem
-							href="#"
+							href="/"
 							aria-label="Chat"
 							className="size-9 justify-items-center"
 							tooltip={{
