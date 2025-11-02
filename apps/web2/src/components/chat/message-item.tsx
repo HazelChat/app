@@ -107,7 +107,7 @@ export function MessageItem({
 				{showAvatar ? (
 					<UserProfilePopover userId={message.authorId} />
 				) : (
-					<div className="flex w-10 items-center justify-end pr-1 text-[10px] text-muted-fg leading-tight opacity-0 group-hover:opacity-100">
+					<div className="flex w-[40px] items-center justify-end pr-1 text-[10px] text-muted-fg leading-tight opacity-0 group-hover:opacity-100">
 						{format(message.createdAt, "HH:mm")}
 					</div>
 				)}
@@ -139,18 +139,19 @@ export function MessageItem({
 					{aggregatedReactions.length > 0 && (
 						<div className="mt-2 flex flex-wrap gap-1">
 							{aggregatedReactions.map(([emoji, data]) => (
-								<Button onPress={() => handleReaction(emoji)} key={emoji}>
-									<span
-										className={cn(
-											"inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs",
-											data.hasReacted
-												? "border-primary bg-primary text-primary-fg"
-												: "border-border bg-secondary text-fg",
-										)}
-									>
-										{emoji} {data.count}
-									</span>
-								</Button>
+								<button
+									type="button"
+									onClick={() => handleReaction(emoji)}
+									key={emoji}
+									className={cn(
+										"inline-flex size-max cursor-pointer items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-0.5 font-medium text-sm ring ring-inset transition-colors",
+										data.hasReacted
+											? "bg-primary/10 text-primary ring-primary/20 hover:bg-primary/20"
+											: "bg-secondary text-fg ring-border hover:bg-secondary/80",
+									)}
+								>
+									{emoji} {data.count}
+								</button>
 							))}
 						</div>
 					)}

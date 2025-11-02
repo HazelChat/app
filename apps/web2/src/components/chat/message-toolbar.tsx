@@ -1,7 +1,7 @@
 import { Flag01 } from "@untitledui/icons"
 import { useEffect, useState } from "react"
-import { Dialog, DialogTrigger, Popover } from "react-aria-components"
 import type { MessageWithPinned } from "~/atoms/chat-query-atoms"
+import { EmojiPicker } from "~/components/emoji-picker"
 import { Button } from "~/components/ui/button"
 import { Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger, MenuLabel } from "~/components/ui/menu"
 import { useChat } from "~/hooks/use-chat"
@@ -27,7 +27,6 @@ interface MessageToolbarProps {
 export function MessageToolbar({ message, onMenuOpenChange }: MessageToolbarProps) {
 	const { addReaction } = useChat()
 	const { topEmojis, trackEmojiUsage } = useEmojiStats()
-	const [emojiPickerOpen, setEmojiPickerOpen] = useState(false)
 	const [deleteModalOpen, setDeleteModalOpen] = useState(false)
 	const [dropdownOpen, setDropdownOpen] = useState(false)
 
@@ -69,9 +68,9 @@ export function MessageToolbar({ message, onMenuOpenChange }: MessageToolbarProp
 
 	// Notify parent when any menu is open
 	useEffect(() => {
-		const isAnyMenuOpen = emojiPickerOpen || deleteModalOpen || dropdownOpen
+		const isAnyMenuOpen = deleteModalOpen || dropdownOpen
 		onMenuOpenChange?.(isAnyMenuOpen)
-	}, [emojiPickerOpen, deleteModalOpen, dropdownOpen, onMenuOpenChange])
+	}, [deleteModalOpen, dropdownOpen, onMenuOpenChange])
 
 	return (
 		<div
@@ -95,7 +94,7 @@ export function MessageToolbar({ message, onMenuOpenChange }: MessageToolbarProp
 			<div className="mx-0.5 h-4 w-px bg-border" />
 
 			{/* More Reactions Button */}
-			<DialogTrigger isOpen={emojiPickerOpen} onOpenChange={setEmojiPickerOpen}>
+			<EmojiPicker onPick={handleReaction}>
 				<Button
 					size="sq-sm"
 					intent="plain"
@@ -104,15 +103,7 @@ export function MessageToolbar({ message, onMenuOpenChange }: MessageToolbarProp
 				>
 					<IconEmojiAdd data-slot="icon" className="size-3.5" />
 				</Button>
-				<Popover>
-					<Dialog className="rounded-lg">
-						{/* Note: EmojiPicker component needs to be migrated separately */}
-						<div className="h-[342px] w-80 bg-bg p-4">
-							<p className="text-muted-fg text-sm">Emoji picker to be implemented</p>
-						</div>
-					</Dialog>
-				</Popover>
-			</DialogTrigger>
+			</EmojiPicker>
 
 			{/* Copy Button */}
 			<Button

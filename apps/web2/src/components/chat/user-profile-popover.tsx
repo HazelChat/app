@@ -89,7 +89,7 @@ export function UserProfilePopover({ userId }: UserProfilePopoverProps) {
 	return (
 		<Popover>
 			<PrimitiveButton className="size-fit outline-hidden">
-				<Avatar size="md" alt={fullName} src={user.avatarUrl} />
+				<Avatar size="lg" alt={fullName} src={user.avatarUrl} />
 			</PrimitiveButton>
 			<PopoverContent placement="right top" className="w-72 p-0 lg:w-80">
 				<div className="relative h-32 rounded-t-xl bg-gradient-to-br from-primary/10 to-accent/10">
