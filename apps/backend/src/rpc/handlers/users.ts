@@ -57,7 +57,9 @@ export const UserRpcLive = UserRpcs.toLayer(
 				db
 					.transaction(
 						Effect.gen(function* () {
-							const userOption = yield* UserRepo.findById(id)
+							const userOption = yield* UserRepo.findById(id).pipe(
+								policyUse(UserPolicy.canRead(id)),
+							)
 
 							const user = yield* Option.match(userOption, {
 								onNone: () => Effect.fail(new UserNotFoundError({ userId: id })),

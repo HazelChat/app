@@ -6,19 +6,6 @@ import { ChannelMemberPolicy } from "../../policies/channel-member-policy"
 import { ChannelMemberRepo } from "../../repositories/channel-member-repo"
 import { ChannelMemberRpcs } from "../groups/channel-members"
 
-/**
- * Channel Member RPC Handlers
- *
- * Implements the business logic for all channel member-related RPC methods.
- * Each handler receives the payload and has access to CurrentUser via Effect context
- * (provided by AuthMiddleware).
- *
- * All handlers use:
- * - Database transactions for atomicity
- * - Policy checks for authorization
- * - Transaction IDs for optimistic updates
- * - Error remapping for consistent error handling
- */
 export const ChannelMemberRpcLive = ChannelMemberRpcs.toLayer(
 	Effect.gen(function* () {
 		const db = yield* Database.Database
