@@ -5,7 +5,7 @@ import IconHashtag from "~/components/icons/icon-hashtag"
 import IconLock from "~/components/icons/icon-lock"
 import { Avatar } from "~/components/ui/avatar"
 import { SectionHeader } from "~/components/ui/section-header"
-import { TabList, TabPanel, Tabs } from "~/components/ui/tabs"
+import { Tab, TabList, TabPanel, Tabs } from "~/components/ui/tabs"
 import { channelCollection, channelMemberCollection, userCollection } from "~/db/collections"
 import { useOrganization } from "~/hooks/use-organization"
 import { useUserPresence } from "~/hooks/use-presence"
@@ -101,19 +101,16 @@ function RouteComponent() {
 					</div>
 				</SectionHeader.Group>
 			</SectionHeader.Root>
-			<Tabs>
-				<TabList
-					className="mb-2 w-auto rounded-lg border border-primary p-1"
-					items={[
-						{ label: "Public", id: "public" },
-						{ label: "Private", id: "private" },
-						{ label: "Direct message", id: "dms" },
-					]}
-				/>
+			<Tabs defaultSelectedKey="public">
+				<TabList className="w-full">
+					<Tab id="public">Public</Tab>
+					<Tab id="private">Private</Tab>
+					<Tab id="dms">Direct message</Tab>
+				</TabList>
 
 				<TabPanel id="public">
 					{publicChannels.length > 0 && (
-						<div className="w-full rounded-lg border border-primary p-2">
+						<div className="w-full rounded-lg border border-border p-2">
 							<h2 className="sr-only">Public Channels</h2>
 							<div className="space-y-2">
 								{publicChannels.map((channel) => (
@@ -125,7 +122,7 @@ function RouteComponent() {
 				</TabPanel>
 				<TabPanel id="private">
 					{privateChannels.length > 0 && (
-						<div className="w-full rounded-lg border border-primary p-2">
+						<div className="w-full rounded-lg border border-border p-2">
 							<h2 className="sr-only">Private Channels</h2>
 							<div className="space-y-2">
 								{privateChannels.map((channel) => (
@@ -137,7 +134,7 @@ function RouteComponent() {
 				</TabPanel>
 				<TabPanel id="dms">
 					{dmChannels.length > 0 && (
-						<div className="w-full rounded-lg border border-primary p-2">
+						<div className="w-full rounded-lg border border-border p-2">
 							<div className="space-y-2">
 								{dmChannels.length > 0 && (
 									<div className="w-full">
@@ -161,7 +158,7 @@ function RouteComponent() {
 
 			{!publicChannels.length && !privateChannels.length && !dmChannels.length && (
 				<div className="flex h-64 items-center justify-center">
-					<p className="text-secondary">No channels available</p>
+					<p className="text-muted-fg">No channels available</p>
 				</div>
 			)}
 		</div>
@@ -192,9 +189,9 @@ function ChannelCard({ channel, isPrivate = false }: { channel: any; isPrivate?:
 						{channel.isFavorite && <span className="text-amber-500">★</span>}
 					</div>
 					{channel.description && (
-						<p className="line-clamp-1 text-secondary text-sm">{channel.description}</p>
+						<p className="line-clamp-1 text-secondary-fg text-sm">{channel.description}</p>
 					)}
-					<div className="mt-1 flex items-center gap-4 text-secondary text-xs">
+					<div className="mt-1 flex items-center gap-4 text-secondary-fg text-xs">
 						<span>{channel.members?.length || 0} members</span>
 						{channel.isMuted && <span>Muted</span>}
 					</div>
