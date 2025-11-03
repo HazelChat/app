@@ -1,3 +1,5 @@
+"use client"
+
 import { CheckIcon, ChevronRightIcon } from "@heroicons/react/20/solid"
 import { createLink } from "@tanstack/react-router"
 import type {
@@ -74,7 +76,7 @@ interface MenuContentProps<T> extends MenuPrimitiveProps<T>, Pick<PopoverContent
 }
 
 const menuContentStyles = tv({
-	base: "grid max-h-[inherit] grid-cols-[auto_1fr] overflow-y-auto overflow-x-hidden overscroll-contain p-1 outline-hidden [clip-path:inset(0_0_0_0_round_calc(var(--radius-xl)-(--spacing(1))))] *:[[role='group']+[role=group]]:mt-3 *:[[role='group']+[role=separator]]:mt-1",
+	base: "grid max-h-[inherit] grid-cols-[auto_1fr] overflow-y-auto overflow-x-hidden overscroll-contain p-1 outline-hidden [clip-path:inset(0_0_0_0_round_calc(var(--radius-xl)-(--spacing(1))))] *:[[role='group']+[role=group]]:mt-1 *:[[role='group']+[role=separator]]:mt-1",
 })
 
 const MenuContent = <T extends object>({ className, placement, popover, ...props }: MenuContentProps<T>) => {
@@ -138,7 +140,6 @@ const MenuItem = ({ className, intent, children, ...props }: MenuItemProps) => {
 		</MenuItemPrimitive>
 	)
 }
-
 const MenuItemLink = createLink(MenuItem)
 
 export interface MenuHeaderProps extends React.ComponentProps<typeof Header> {

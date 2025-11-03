@@ -10,7 +10,14 @@ function IconClose({ fill = "currentColor", secondaryfill, title = "badge 13", .
 	secondaryfill = secondaryfill || fill
 
 	return (
-		<svg height="12" width="12" {...props} viewBox="0 0 12 12" xmlns="http://www.w3.org/2000/svg">
+		<svg
+			height="12"
+			width="12"
+			{...props}
+			data-slot="icon"
+			viewBox="0 0 12 12"
+			xmlns="http://www.w3.org/2000/svg"
+		>
 			<title>{title}</title>
 			<g fill={fill}>
 				<line

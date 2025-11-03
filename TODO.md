@@ -3,9 +3,10 @@
 
 # UI REWORK
 - Settings Pages (TEST TES TEST)
+- Fix Theme colors not working
 - Onboarding
-- DM Channels to use Channel Item
 - Highlight active link in sidebar
+- channel overview page
 
 ## High Priority Features
 

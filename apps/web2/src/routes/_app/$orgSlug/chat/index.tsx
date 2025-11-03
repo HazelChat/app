@@ -1,11 +1,11 @@
 import { eq, useLiveQuery } from "@tanstack/react-db"
 import { createFileRoute, Link, useParams } from "@tanstack/react-router"
 import { useMemo } from "react"
+import IconHashtag from "~/components/icons/icon-hashtag"
+import IconLock from "~/components/icons/icon-lock"
 import { Avatar } from "~/components/ui/avatar"
 import { SectionHeader } from "~/components/ui/section-header"
 import { TabList, TabPanel, Tabs } from "~/components/ui/tabs"
-import IconHashtag from "~/components/icons/icon-hashtag"
-import IconLock from "~/components/icons/icon-lock"
 import { channelCollection, channelMemberCollection, userCollection } from "~/db/collections"
 import { useOrganization } from "~/hooks/use-organization"
 import { useUserPresence } from "~/hooks/use-presence"
@@ -233,7 +233,7 @@ function DmCard({ channel, currentUserId }: { channel: any; currentUserId?: stri
 						{/* Status badge */}
 						<span
 							className={cn(
-								"absolute bottom-0 right-0 size-3 rounded-full border-2 border-bg",
+								"absolute right-0 bottom-0 size-3 rounded-full border-2 border-bg",
 								isOnline ? "bg-success" : "bg-muted",
 							)}
 						/>
@@ -291,7 +291,7 @@ function DmCard({ channel, currentUserId }: { channel: any; currentUserId?: stri
 							<span className="text-muted">+{otherMembers.length - 3} more</span>
 						)}
 					</h3>
-					<p className="text-sm text-muted">{otherMembers.length} participants</p>
+					<p className="text-muted text-sm">{otherMembers.length} participants</p>
 				</div>
 			</div>
 			{channel.currentUser?.notificationCount > 0 && (
