@@ -1,12 +1,14 @@
 import type { OrganizationId } from "@hazel/db/schema"
 import { eq, useLiveQuery } from "@tanstack/react-db"
 import { toast } from "sonner"
+import { openModal } from "~/atoms/modal-atoms"
+import IconPlus from "~/components/icons/icon-plus"
 import { organizationCollection, organizationMemberCollection } from "~/db/collections"
 import { useOrganization } from "~/hooks/use-organization"
 import { useAuth } from "~/lib/auth"
 import { getOrganizationRoute } from "~/utils/organization-navigation"
 import { Avatar } from "../ui/avatar"
-import { MenuItem, MenuSection } from "../ui/menu"
+import { MenuItem, MenuSection, MenuSeparator } from "../ui/menu"
 import { SidebarLabel } from "../ui/sidebar"
 
 export const SwitchServerMenu = () => {
@@ -50,23 +52,36 @@ export const SwitchServerMenu = () => {
 	}
 
 	return (
-		<MenuSection
-			items={userOrganizations}
-			disallowEmptySelection
-			selectionMode="single"
-			selectedKeys={currentOrgId ? new Set([currentOrgId]) : undefined}
-			onSelectionChange={handleSelectionChange}
-		>
-			{({ org }) => (
-				<MenuItem id={org.id} textValue={org.name}>
-					<Avatar
-						size="xs"
-						src={org.logoUrl || `https://avatar.vercel.sh/${org.id}`}
-						alt={org.name}
-					/>
-					<SidebarLabel>{org.name}</SidebarLabel>
-				</MenuItem>
-			)}
-		</MenuSection>
+		<>
+			<MenuSection
+				items={userOrganizations}
+				disallowEmptySelection
+				selectionMode="single"
+				selectedKeys={currentOrgId ? new Set([currentOrgId]) : undefined}
+				onSelectionChange={handleSelectionChange}
+			>
+				{({ org }) => (
+					<MenuItem id={org.id} textValue={org.name}>
+						<Avatar
+							size="xs"
+							src={org.logoUrl || `https://avatar.vercel.sh/${org.id}`}
+							alt={org.name}
+						/>
+						<SidebarLabel>{org.name}</SidebarLabel>
+					</MenuItem>
+				)}
+			</MenuSection>
+
+			<MenuSeparator />
+
+			<MenuItem
+				id="create-server"
+				textValue="Create server"
+				onAction={() => openModal("create-organization")}
+			>
+				<IconPlus data-slot="icon" />
+				<SidebarLabel>Create server</SidebarLabel>
+			</MenuItem>
+		</>
 	)
 }

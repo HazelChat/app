@@ -194,7 +194,7 @@ export function MessageList() {
 					<img
 						src="/images/squirrle_ocean.png"
 						alt="squirrel"
-						className="mask-size-[110%_90%] mask-linear-to-r mask-from-black mask-to-transparent mask-center mask-no-repeat mask-[url(/images/image-mask.png)] h-full w-full rounded-md bg-center bg-cover bg-no-repeat object-cover"
+						className="mask-size-[110%_90%] mask-linear-to-r mask-from-black mask-to-transparent mask-center mask-no-repeat mask-[url(/images/image-mask.png)] h-full w-full rounded-md bg-center bg-cover bg-no-repeat object-cover opacity-50"
 					/>
 				</div>
 				<p className="font-bold font-mono text-fg text-xl">Quiet as an ocean gazing squirrel...</p>
