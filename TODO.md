@@ -1,22 +1,27 @@
 # Project TODOs
 
 
-# UI REWORK
+# Before release
 - Settings Pages (TEST TES TEST)
 - Fix Theme colors not working
 - Onboarding
-- channel overview page
+- Create Organizatio Modal not opening
+  - Setup Organization should display better errors 
+- Electric proxy
+
+- Migrate the missing icons to nucleo
+
+- setup webhooks for workos
+- connect app.hazel.sh to production
+
+
 
 ## High Priority Features
 
-- Electric proxy
 
 ## Medium Priority Features
 
-- Setup Organization should display better errors 
-- Migrate the missing icons to nucleo
 
-- webhooks for workos
 
 
 ### Core Features
