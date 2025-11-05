@@ -204,8 +204,6 @@ export const SlateMessageEditor = forwardRef<SlateMessageEditorRef, SlateMessage
 
 		// Clear content and focus
 		const resetAndFocus = useCallback(() => {
-			setValue(createEmptyValue())
-
 			// Reset the editor
 			Transforms.delete(editor, {
 				at: {
@@ -214,8 +212,8 @@ export const SlateMessageEditor = forwardRef<SlateMessageEditorRef, SlateMessage
 				},
 			})
 
-			// Insert new empty paragraph
-			Transforms.insertNodes(editor, createEmptyValue())
+			// Set the value to empty (this updates React state)
+			setValue(createEmptyValue())
 
 			setTimeout(() => {
 				const dialog = document.querySelector('[role="dialog"]')
@@ -557,7 +555,7 @@ export const SlateMessageEditor = forwardRef<SlateMessageEditorRef, SlateMessage
 							"focus:border-primary focus:outline-hidden",
 							"caret-primary",
 							"placeholder:text-muted-fg",
-							"min-h-16",
+							"min-h-10",
 							"leading-normal",
 							"**:data-slate-placeholder:top-2!",
 							"**:data-slate-placeholder:translate-y-0!",
