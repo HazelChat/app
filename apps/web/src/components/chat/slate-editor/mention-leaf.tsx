@@ -46,11 +46,20 @@ export function MentionLeaf({ interactive = false, leaf, children, ...props }: M
 	const user = result?.user
 	const presence = result?.presence
 
-	// If not interactive or not a mention, or is special mention, just use the regular MarkdownLeaf
-	if (!interactive || !isMention || isSpecialMention) {
+	// If not interactive or not a mention, just use the regular MarkdownLeaf
+	if (!interactive || !isMention) {
 		return (
 			<MarkdownLeaf {...props} leaf={leaf}>
 				{children}
+			</MarkdownLeaf>
+		)
+	}
+
+	// For special mentions (@channel, @here), render with the display name
+	if (isSpecialMention) {
+		return (
+			<MarkdownLeaf {...props} leaf={leaf}>
+				@{mention?.displayName || children}
 			</MarkdownLeaf>
 		)
 	}
@@ -79,7 +88,7 @@ export function MentionLeaf({ interactive = false, leaf, children, ...props }: M
 				onPress={() => setIsOpen(!isOpen)}
 			>
 				<MarkdownLeaf {...props} leaf={leaf}>
-					{children}
+					@{fullName}
 				</MarkdownLeaf>
 			</PrimitiveButton>
 
