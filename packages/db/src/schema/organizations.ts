@@ -35,6 +35,7 @@ export const organizationMembersTable = pgTable(
 			.$type<OrganizationId>(),
 		userId: uuid().notNull().$type<UserId>(),
 		role: organizationRoleEnum().notNull().default("member"),
+		nickname: varchar({ length: 100 }),
 		joinedAt: timestamp({ mode: "date", withTimezone: true }).notNull().defaultNow(),
 		invitedBy: uuid().$type<UserId>(),
 		createdAt: timestamp({ mode: "date", withTimezone: true }).notNull().defaultNow(),

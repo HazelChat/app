@@ -289,6 +289,7 @@ export class WorkOSSync extends Effect.Service<WorkOSSync>()("WorkOSSync", {
 									organizationId: organizationId,
 									userId: user.id,
 									role,
+									nickname: undefined,
 									joinedAt: new Date(),
 									invitedBy: null,
 									deletedAt: null,
@@ -625,6 +626,7 @@ export class WorkOSSync extends Effect.Service<WorkOSSync>()("WorkOSSync", {
 							if (Option.isSome(org) && Option.isSome(user)) {
 								yield* orgMemberRepo.upsertByOrgAndUser({
 									organizationId: org.value.id,
+									nickname: null,
 									userId: user.value.id,
 									role: (typedEvent.data.role.slug || "member") as
 										| "admin"

@@ -11,6 +11,7 @@ export class Model extends M.Class<Model>("OrganizationMember")({
 	organizationId: OrganizationId,
 	userId: M.GeneratedByApp(UserId),
 	role: OrganizationRole,
+	nickname: Schema.NullishOr(Schema.String),
 	joinedAt: JsonDate,
 	invitedBy: Schema.NullOr(UserId),
 	deletedAt: Schema.NullOr(JsonDate),

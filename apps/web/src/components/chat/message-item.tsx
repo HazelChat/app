@@ -244,11 +244,11 @@ export const MessageAuthorHeader = ({
 
 	if (!user) return null
 
+	const fullName = `${user.firstName} ${user.lastName}`
+
 	return (
 		<div className="flex items-baseline gap-2">
-			<span className="font-semibold text-fg">
-				{user ? `${user.firstName} ${user.lastName}` : "Unknown"}
-			</span>
+			<span className="font-semibold text-fg">{fullName}</span>
 			<span className="text-muted-fg text-xs">
 				{format(message.createdAt, "HH:mm")}
 				{isEdited && " (edited)"}

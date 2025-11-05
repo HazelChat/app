@@ -168,6 +168,7 @@ export const OrganizationRpcLive = OrganizationRpcs.toLayer(
 								organizationId: createdOrganization.id,
 								userId: currentUser.id,
 								role: "owner",
+								nickname: undefined,
 								joinedAt: new Date(),
 								invitedBy: null,
 								deletedAt: null,

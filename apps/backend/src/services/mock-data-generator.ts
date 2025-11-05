@@ -45,6 +45,7 @@ export class MockDataGenerator extends Effect.Service<MockDataGenerator>()("Mock
 				const orgMembers = yield* Effect.forEach(
 					users.map((user, i) => ({
 						organizationId,
+						nickname: undefined,
 						userId: user[0]!.id,
 						role: (i === 0 ? "owner" : i === 1 ? "admin" : "member") as
 							| "owner"
