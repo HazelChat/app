@@ -17,7 +17,7 @@ import { cn } from "~/lib/utils"
 import { InlineThreadPreview } from "./inline-thread-preview"
 import { MessageAttachments } from "./message-attachments"
 import { MessageReplySection } from "./message-reply-section"
-import { SlateMessageViewer } from "./slate-message-viewer"
+import { SlateMessageViewer } from "./slate-editor/slate-message-viewer"
 import { UserProfilePopover } from "./user-profile-popover"
 
 interface MessageItemProps {

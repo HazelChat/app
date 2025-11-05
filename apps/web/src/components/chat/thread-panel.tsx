@@ -6,8 +6,8 @@ import IconClose from "../icons/icon-close"
 import { Avatar } from "../ui/avatar"
 import { Button } from "../ui/button"
 import { MessageList } from "./message-list"
-import { SlateMessageComposer } from "./slate-message-composer"
-import { SlateMessageViewer } from "./slate-message-viewer"
+import { SlateMessageComposer } from "./slate-editor/slate-message-composer"
+import { SlateMessageViewer } from "./slate-editor/slate-message-viewer"
 import { TypingIndicator } from "./typing-indicator"
 
 interface ThreadPanelProps {

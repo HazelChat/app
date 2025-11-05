@@ -10,8 +10,8 @@ import { useAuth } from "~/lib/auth"
 import { cn } from "~/lib/utils"
 import { useChat } from "~/providers/chat-provider"
 import { formatFileSize, getFileTypeFromName } from "~/utils/file-utils"
-import { MessageComposerActions } from "./message-composer-actions"
-import { ReplyIndicator } from "./reply-indicator"
+import { MessageComposerActions } from "../message-composer-actions"
+import { ReplyIndicator } from "../reply-indicator"
 import { SlateMessageEditor, type SlateMessageEditorRef } from "./slate-message-editor"
 
 interface SlateMessageComposerProps {
