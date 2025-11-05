@@ -2,7 +2,6 @@ import {
 	Attachment,
 	Channel,
 	ChannelMember,
-	DirectMessageParticipant,
 	Invitation,
 	Message,
 	MessageReaction,
@@ -497,50 +496,6 @@ export const attachmentCollection = createCollection(
 
 				const results = yield* client("attachment.delete", {
 					id: deletedAttachment.id,
-				})
-
-				return { txid: results.transactionId }
-			}),
-	}),
-)
-
-export const directMessageParticipantCollection = createCollection(
-	effectElectricCollectionOptions({
-		id: "direct_message_participants",
-		runtime: runtime,
-		shapeOptions: {
-			url: electricUrl,
-			params: {
-				table: "direct_message_participants",
-			},
-		},
-		schema: Schema.standardSchemaV1(DirectMessageParticipant.Model.json),
-		getKey: (item) => item.id,
-		onInsert: ({ transaction }) =>
-			Effect.gen(function* () {
-				const { modified: newDirectMessageParticipant } = transaction.mutations[0]
-				const client = yield* HazelRpcClient
-
-				const results = yield* client("directMessageParticipant.create", newDirectMessageParticipant)
-
-				return { txid: results.transactionId }
-			}),
-		onUpdate: ({ transaction }) =>
-			Effect.gen(function* () {
-				const { modified: newDirectMessageParticipant } = transaction.mutations[0]
-				const client = yield* HazelRpcClient
-
-				const results = yield* client("directMessageParticipant.update", newDirectMessageParticipant)
-
-				return { txid: results.transactionId }
-			}),
-		onDelete: ({ transaction }) =>
-			Effect.gen(function* () {
-				const { original: deletedDirectMessageParticipant } = transaction.mutations[0]
-				const client = yield* HazelRpcClient
-
-				const results = yield* client("directMessageParticipant.delete", {
-					id: deletedDirectMessageParticipant.id,
 				})
 
 				return { txid: results.transactionId }

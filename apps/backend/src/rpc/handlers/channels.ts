@@ -14,7 +14,6 @@ import { ChannelPolicy } from "../../policies/channel-policy"
 import { UserPolicy } from "../../policies/user-policy"
 import { ChannelMemberRepo } from "../../repositories/channel-member-repo"
 import { ChannelRepo } from "../../repositories/channel-repo"
-import { DirectMessageParticipantRepo } from "../../repositories/direct-message-participant-repo"
 import { UserRepo } from "../../repositories/user-repo"
 import { ChannelRpcs } from "../groups/channels"
 
@@ -186,23 +185,6 @@ export const ChannelRpcLive = ChannelRpcs.toLayer(
 									notificationCount: 0,
 									joinedAt: new Date(),
 									deletedAt: null,
-								}).pipe(withSystemActor)
-							}
-
-							// For DMs, add to direct_message_participants
-							if (payload.type === "direct") {
-								// Add creator
-								yield* DirectMessageParticipantRepo.insert({
-									channelId: createdChannel.id,
-									userId: user.id,
-									organizationId: OrganizationId.make(payload.organizationId),
-								}).pipe(withSystemActor)
-
-								// Add other participant
-								yield* DirectMessageParticipantRepo.insert({
-									channelId: createdChannel.id,
-									userId: payload.participantIds[0],
-									organizationId: OrganizationId.make(payload.organizationId),
 								}).pipe(withSystemActor)
 							}
 

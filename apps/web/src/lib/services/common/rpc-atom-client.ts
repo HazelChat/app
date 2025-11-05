@@ -3,7 +3,6 @@ import { AtomRpc } from "@effect-atom/atom-react"
 import { AttachmentRpcs } from "@hazel/backend/rpc/groups/attachments"
 import { ChannelMemberRpcs } from "@hazel/backend/rpc/groups/channel-members"
 import { ChannelRpcs } from "@hazel/backend/rpc/groups/channels"
-import { DirectMessageParticipantRpcs } from "@hazel/backend/rpc/groups/direct-message-participants"
 import { InvitationRpcs } from "@hazel/backend/rpc/groups/invitations"
 import { MessageReactionRpcs } from "@hazel/backend/rpc/groups/message-reactions"
 import { MessageRpcs } from "@hazel/backend/rpc/groups/messages"
@@ -39,7 +38,6 @@ const AllRpcs = MessageRpcs.merge(
 	TypingIndicatorRpcs,
 	PinnedMessageRpcs,
 	AttachmentRpcs,
-	DirectMessageParticipantRpcs,
 	UserPresenceStatusRpcs,
 )
 

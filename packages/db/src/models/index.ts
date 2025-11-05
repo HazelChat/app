@@ -1,7 +1,6 @@
 export * as Attachment from "./attachment-model"
 export * as ChannelMember from "./channel-member-model"
 export * as Channel from "./channel-model"
-export * as DirectMessageParticipant from "./direct-message-participant-model"
 export * as Invitation from "./invitation-model"
 export * as Message from "./message-model"
 export * as MessageReaction from "./message-reaction-model"

@@ -1,6 +1,6 @@
 "use client"
 
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react"
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useState } from "react"
 import type { BaseEditor, Descendant } from "slate"
 import { createEditor, Editor, Range, Element as SlateElement, Transforms } from "slate"
 import type { HistoryEditor } from "slate-history"
@@ -376,7 +376,7 @@ export const SlateMessageEditor = forwardRef<SlateMessageEditorRef, SlateMessage
 				})
 
 				if (block) {
-					const [node, _path] = block
+					const [node, path] = block
 					const element = node as CustomElement
 
 					// In code blocks, Shift+Enter also inserts a newline (same as Enter)
@@ -386,10 +386,53 @@ export const SlateMessageEditor = forwardRef<SlateMessageEditorRef, SlateMessage
 						return
 					}
 
-					// In blockquotes, Shift+Enter inserts a line break
+					// In blockquotes, Shift+Enter behavior:
+					// - If current line is empty, break out to paragraph
+					// - Otherwise, insert a newline to continue the blockquote
 					if (element.type === "blockquote") {
 						event.preventDefault()
-						Editor.insertText(editor, "\n")
+
+						// Get text before cursor on current line
+						const lineStart = Editor.before(editor, selection.anchor, { unit: "line" })
+						const beforeRange = {
+							anchor: lineStart || Editor.start(editor, path),
+							focus: selection.anchor,
+						}
+						const beforeText = Editor.string(editor, beforeRange)
+
+						// Get text after cursor on current line
+						const lineEnd = Editor.after(editor, selection.anchor, { unit: "line" })
+						const afterRange = {
+							anchor: selection.anchor,
+							focus: lineEnd || Editor.end(editor, path),
+						}
+						const afterText = Editor.string(editor, afterRange)
+
+						// Check if current line is empty (only whitespace before and after cursor)
+						const isCurrentLineEmpty = beforeText.trim() === "" && afterText.trim() === ""
+
+						if (isCurrentLineEmpty && typeof path[0] === "number") {
+							// Break out of blockquote - insert paragraph below and move cursor there
+							const nextPath = path[0] + 1
+
+							Transforms.insertNodes(
+								editor,
+								{
+									type: "paragraph",
+									children: [{ text: "" }],
+								} as CustomElement,
+								{ at: [nextPath] },
+							)
+
+							Transforms.select(editor, {
+								anchor: { path: [nextPath, 0], offset: 0 },
+								focus: { path: [nextPath, 0], offset: 0 },
+							})
+						} else {
+							// Continue blockquote - insert newline
+							Editor.insertText(editor, "\n")
+						}
+
 						return
 					}
 				}

@@ -3,7 +3,6 @@ import { Effect, Option } from "effect"
 import { isAdminOrOwner } from "../lib/policy-utils"
 import { ChannelMemberRepo } from "../repositories/channel-member-repo"
 import { ChannelRepo } from "../repositories/channel-repo"
-import { DirectMessageParticipantRepo } from "../repositories/direct-message-participant-repo"
 import { MessageRepo } from "../repositories/message-repo"
 import { OrganizationMemberRepo } from "../repositories/organization-member-repo"
 
@@ -15,7 +14,6 @@ export class MessagePolicy extends Effect.Service<MessagePolicy>()("MessagePolic
 		const channelMemberRepo = yield* ChannelMemberRepo
 		const channelRepo = yield* ChannelRepo
 		const organizationMemberRepo = yield* OrganizationMemberRepo
-		const dmParticipantRepo = yield* DirectMessageParticipantRepo
 
 		const canCreate = (channelId: ChannelId) =>
 			UnauthorizedError.refail(
@@ -52,12 +50,12 @@ export class MessagePolicy extends Effect.Service<MessagePolicy>()("MessagePolic
 							}
 
 							if (channel.type === "direct" || channel.type === "single") {
-								// Check if user is a DM participant
-								const participant = yield* dmParticipantRepo
+								// Check if user is a channel member
+								const channelMembership = yield* channelMemberRepo
 									.findByChannelAndUser(channelId, actor.id)
 									.pipe(withSystemActor)
 
-								return Option.isSome(participant)
+								return Option.isSome(channelMembership)
 							}
 
 							if (channel.type === "thread") {
@@ -92,11 +90,11 @@ export class MessagePolicy extends Effect.Service<MessagePolicy>()("MessagePolic
 									}
 
 									if (parent.type === "direct" || parent.type === "single") {
-										const parentParticipant = yield* dmParticipantRepo
+										const parentMembership = yield* channelMemberRepo
 											.findByChannelAndUser(parent.id, actor.id)
 											.pipe(withSystemActor)
 
-										return Option.isSome(parentParticipant)
+										return Option.isSome(parentMembership)
 									}
 
 									if (parent.type === "thread") {
@@ -173,7 +171,6 @@ export class MessagePolicy extends Effect.Service<MessagePolicy>()("MessagePolic
 		ChannelMemberRepo.Default,
 		ChannelRepo.Default,
 		OrganizationMemberRepo.Default,
-		DirectMessageParticipantRepo.Default,
 	],
 	accessors: true,
 }) {}

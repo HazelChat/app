@@ -1,7 +1,6 @@
 import type {
 	ChannelId,
 	ChannelMemberId,
-	DirectMessageParticipantId,
 	MessageId,
 	OrganizationId,
 	UserId,
@@ -68,29 +67,8 @@ export const channelMembersTable = pgTable(
 	],
 )
 
-// Direct message participants table - for ensuring unique DM channels
-// This replaces the participantHash pattern from Convex
-export const directMessageParticipantsTable = pgTable(
-	"direct_message_participants",
-	{
-		id: uuid().primaryKey().defaultRandom().$type<DirectMessageParticipantId>(),
-		channelId: uuid().notNull().$type<ChannelId>(),
-		userId: uuid().notNull().$type<UserId>(),
-		organizationId: uuid().notNull().$type<OrganizationId>(),
-	},
-	(table) => [
-		index("dm_participants_channel_id_idx").on(table.channelId),
-		index("dm_participants_user_id_idx").on(table.userId),
-		index("dm_participants_org_id_idx").on(table.organizationId),
-		// Ensure each user can only be in a DM channel once
-		uniqueIndex("dm_participants_unique_idx").on(table.channelId, table.userId),
-	],
-)
-
 // Type exports
 export type Channel = typeof channelsTable.$inferSelect
 export type NewChannel = typeof channelsTable.$inferInsert
 export type ChannelMember = typeof channelMembersTable.$inferSelect
 export type NewChannelMember = typeof channelMembersTable.$inferInsert
-export type DirectMessageParticipant = typeof directMessageParticipantsTable.$inferSelect
-export type NewDirectMessageParticipant = typeof directMessageParticipantsTable.$inferInsert

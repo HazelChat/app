@@ -1,6 +1,6 @@
 import { relations } from "drizzle-orm"
 import { attachmentsTable } from "./attachments"
-import { channelMembersTable, channelsTable, directMessageParticipantsTable } from "./channels"
+import { channelMembersTable, channelsTable } from "./channels"
 import { invitationsTable } from "./invitations"
 import { messageReactionsTable, messagesTable } from "./messages"
 import { notificationsTable } from "./notifications"
@@ -19,7 +19,6 @@ export const usersRelations = relations(usersTable, ({ many }) => ({
 	invitationsSent: many(invitationsTable),
 	invitationsAccepted: many(invitationsTable),
 	pinnedMessages: many(pinnedMessagesTable),
-	directMessageParticipations: many(directMessageParticipantsTable),
 }))
 
 // Organizations relations
@@ -28,7 +27,6 @@ export const organizationsRelations = relations(organizationsTable, ({ many }) =
 	channels: many(channelsTable),
 	invitations: many(invitationsTable),
 	attachments: many(attachmentsTable),
-	directMessageChannels: many(directMessageParticipantsTable),
 }))
 
 // Organization members relations
@@ -67,7 +65,6 @@ export const channelsRelations = relations(channelsTable, ({ one, many }) => ({
 	messages: many(messagesTable),
 	threadMessages: many(messagesTable),
 	pinnedMessages: many(pinnedMessagesTable),
-	directMessageParticipants: many(directMessageParticipantsTable),
 	attachments: many(attachmentsTable),
 	typingIndicators: many(typingIndicatorsTable),
 }))
@@ -85,22 +82,6 @@ export const channelMembersRelations = relations(channelMembersTable, ({ one }) 
 	lastSeenMessage: one(messagesTable, {
 		fields: [channelMembersTable.lastSeenMessageId],
 		references: [messagesTable.id],
-	}),
-}))
-
-// Direct message participants relations
-export const directMessageParticipantsRelations = relations(directMessageParticipantsTable, ({ one }) => ({
-	channel: one(channelsTable, {
-		fields: [directMessageParticipantsTable.channelId],
-		references: [channelsTable.id],
-	}),
-	user: one(usersTable, {
-		fields: [directMessageParticipantsTable.userId],
-		references: [usersTable.id],
-	}),
-	organization: one(organizationsTable, {
-		fields: [directMessageParticipantsTable.organizationId],
-		references: [organizationsTable.id],
 	}),
 }))
 

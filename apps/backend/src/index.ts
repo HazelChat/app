@@ -16,7 +16,6 @@ import { HttpApiRoutes } from "./http"
 import { AttachmentPolicy } from "./policies/attachment-policy"
 import { ChannelMemberPolicy } from "./policies/channel-member-policy"
 import { ChannelPolicy } from "./policies/channel-policy"
-import { DirectMessageParticipantPolicy } from "./policies/direct-message-participant-policy"
 import { InvitationPolicy } from "./policies/invitation-policy"
 import { MessagePolicy } from "./policies/message-policy"
 import { MessageReactionPolicy } from "./policies/message-reaction-policy"
@@ -30,7 +29,6 @@ import { UserPresenceStatusPolicy } from "./policies/user-presence-status-policy
 import { AttachmentRepo } from "./repositories/attachment-repo"
 import { ChannelMemberRepo } from "./repositories/channel-member-repo"
 import { ChannelRepo } from "./repositories/channel-repo"
-import { DirectMessageParticipantRepo } from "./repositories/direct-message-participant-repo"
 import { InvitationRepo } from "./repositories/invitation-repo"
 import { MessageReactionRepo } from "./repositories/message-reaction-repo"
 import { MessageRepo } from "./repositories/message-repo"
@@ -104,7 +102,6 @@ const RepoLive = Layer.mergeAll(
 	NotificationRepo.Default,
 	TypingIndicatorRepo.Default,
 	MessageReactionRepo.Default,
-	DirectMessageParticipantRepo.Default,
 	UserPresenceStatusRepo.Default,
 )
 
@@ -116,7 +113,6 @@ const PolicyLive = Layer.mergeAll(
 	AttachmentPolicy.Default,
 	OrganizationMemberPolicy.Default,
 	ChannelMemberPolicy.Default,
-	DirectMessageParticipantPolicy.Default,
 	MessageReactionPolicy.Default,
 	UserPolicy.Default,
 	AttachmentPolicy.Default,

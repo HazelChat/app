@@ -76,14 +76,6 @@ export const OrganizationMemberId = Schema.UUID.pipe(
 })
 export type OrganizationMemberId = Schema.Schema.Type<typeof OrganizationMemberId>
 
-export const DirectMessageParticipantId = Schema.UUID.pipe(
-	Schema.brand("@HazelChat/DirectMessageParticipantId"),
-).annotations({
-	description: "The ID of the direct message participant",
-	title: "Direct Message Participant ID",
-})
-export type DirectMessageParticipantId = Schema.Schema.Type<typeof DirectMessageParticipantId>
-
 export const TypingIndicatorId = Schema.UUID.pipe(Schema.brand("@HazelChat/TypingIndicatorId")).annotations({
 	description: "The ID of the typing indicator",
 	title: "Typing Indicator ID",

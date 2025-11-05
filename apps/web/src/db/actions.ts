@@ -2,7 +2,6 @@ import {
 	type AttachmentId,
 	ChannelId,
 	ChannelMemberId,
-	DirectMessageParticipantId,
 	MessageId,
 	MessageReactionId,
 	OrganizationId,
@@ -15,7 +14,6 @@ import { runtime } from "~/lib/services/common/runtime"
 import {
 	channelCollection,
 	channelMemberCollection,
-	directMessageParticipantCollection,
 	messageCollection,
 	messageReactionCollection,
 	organizationCollection,
@@ -139,25 +137,6 @@ export const createDmChannel = createEffectOptimisticAction({
 			})
 		}
 
-		// For DMs, add to direct_message_participants
-		if (props.type === "direct" && props.participantIds.length > 0) {
-			// Add current user
-			directMessageParticipantCollection.insert({
-				id: DirectMessageParticipantId.make(crypto.randomUUID()),
-				channelId: channelId,
-				userId: props.currentUserId,
-				organizationId: props.organizationId,
-			})
-
-			// Add other participant
-			directMessageParticipantCollection.insert({
-				id: DirectMessageParticipantId.make(crypto.randomUUID()),
-				channelId: channelId,
-				userId: props.participantIds[0]!,
-				organizationId: props.organizationId,
-			})
-		}
-
 		return { channelId }
 	},
 	mutationFn: (
@@ -183,9 +162,6 @@ export const createDmChannel = createEffectOptimisticAction({
 			// Wait for all collections to sync
 			yield* Effect.all([
 				Effect.promise(() => channelCollection.utils.awaitTxId(result.transactionId)),
-				Effect.promise(() =>
-					directMessageParticipantCollection.utils.awaitTxId(result.transactionId),
-				),
 				Effect.promise(() => channelMemberCollection.utils.awaitTxId(result.transactionId)),
 			])
 

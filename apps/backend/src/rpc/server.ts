@@ -3,7 +3,6 @@ import { Layer } from "effect"
 import { AttachmentRpcs } from "./groups/attachments"
 import { ChannelMemberRpcs } from "./groups/channel-members"
 import { ChannelRpcs } from "./groups/channels"
-import { DirectMessageParticipantRpcs } from "./groups/direct-message-participants"
 import { InvitationRpcs } from "./groups/invitations"
 import { MessageReactionRpcs } from "./groups/message-reactions"
 import { MessageRpcs } from "./groups/messages"
@@ -17,7 +16,6 @@ import { UserRpcs } from "./groups/users"
 import { AttachmentRpcLive } from "./handlers/attachments"
 import { ChannelMemberRpcLive } from "./handlers/channel-members"
 import { ChannelRpcLive } from "./handlers/channels"
-import { DirectMessageParticipantRpcLive } from "./handlers/direct-message-participants"
 import { InvitationRpcLive } from "./handlers/invitations"
 import { MessageReactionRpcLive } from "./handlers/message-reactions"
 import { MessageRpcLive } from "./handlers/messages"
@@ -58,7 +56,6 @@ export const AllRpcs = MessageRpcs.merge(
 	ChannelRpcs,
 	ChannelMemberRpcs,
 	AttachmentRpcs,
-	DirectMessageParticipantRpcs,
 ).middleware(RpcLoggingMiddleware)
 
 export const RpcServerLive = Layer.empty.pipe(
@@ -75,7 +72,6 @@ export const RpcServerLive = Layer.empty.pipe(
 	Layer.provideMerge(ChannelRpcLive),
 	Layer.provideMerge(ChannelMemberRpcLive),
 	Layer.provideMerge(AttachmentRpcLive),
-	Layer.provideMerge(DirectMessageParticipantRpcLive),
 	Layer.provideMerge(AuthMiddlewareLive),
 	Layer.provideMerge(RpcLoggingMiddlewareLive),
 )

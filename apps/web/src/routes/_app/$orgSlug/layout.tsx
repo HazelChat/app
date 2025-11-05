@@ -8,7 +8,6 @@ import {
 	attachmentCollection,
 	channelCollection,
 	channelMemberCollection,
-	directMessageParticipantCollection,
 	organizationCollection,
 	organizationMemberCollection,
 } from "~/db/collections"
@@ -21,7 +20,6 @@ export const Route = createFileRoute("/_app/$orgSlug")({
 		await channelCollection.preload()
 		await channelMemberCollection.preload()
 		await attachmentCollection.preload()
-		await directMessageParticipantCollection.preload()
 
 		await organizationCollection.preload()
 		await organizationMemberCollection.preload()

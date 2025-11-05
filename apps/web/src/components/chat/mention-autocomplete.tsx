@@ -1,6 +1,7 @@
 "use client"
 
 import {
+	Combobox,
 	ComboboxItem,
 	ComboboxPopover,
 	ComboboxProvider,
@@ -36,6 +37,7 @@ interface MentionOption {
 export function MentionAutocomplete({ editor, search, onSelect }: MentionAutocompleteProps) {
 	const { id: channelId } = useParams({ from: "/_app/$orgSlug/chat/$id" })
 	const anchorRef = useRef<HTMLSpanElement | null>(null)
+	const comboboxInputRef = useRef<HTMLInputElement>(null)
 	const [anchorRect, setAnchorRect] = useState<{ x: number; y: number; width: number; height: number } | null>(
 		null,
 	)
@@ -119,7 +121,29 @@ export function MentionAutocomplete({ editor, search, onSelect }: MentionAutocom
 	const combobox = useComboboxStore({
 		open: filteredOptions.length > 0,
 		value: search,
+		// Handle Enter key selection
+		setValue: (value) => {
+			const option = filteredOptions.find((opt) => opt.id === value)
+			if (option) {
+				onSelect(option.id, option.displayName, option.type)
+				combobox.setOpen(false)
+			}
+		},
 	})
+
+	// Auto-select first item when menu opens or items change
+	useEffect(() => {
+		if (filteredOptions.length > 0 && !combobox.getState().activeId) {
+			combobox.setActiveId(combobox.first())
+		}
+	}, [combobox, filteredOptions])
+
+	// Focus the hidden combobox input when menu opens
+	useEffect(() => {
+		if (filteredOptions.length > 0) {
+			comboboxInputRef.current?.focus()
+		}
+	}, [filteredOptions.length])
 
 	// Update anchor position based on cursor location
 	useEffect(() => {
@@ -165,6 +189,20 @@ export function MentionAutocomplete({ editor, search, onSelect }: MentionAutocom
 
 	return (
 		<>
+			{/* Hidden Combobox input for keyboard navigation */}
+			<Combobox
+				ref={comboboxInputRef}
+				store={combobox}
+				autoSelect
+				style={{
+					position: "fixed",
+					opacity: 0,
+					pointerEvents: "none",
+					width: 0,
+					height: 0,
+				}}
+			/>
+
 			{/* Hidden anchor element for positioning */}
 			<span
 				ref={anchorRef}
