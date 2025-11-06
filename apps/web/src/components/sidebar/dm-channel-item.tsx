@@ -176,7 +176,7 @@ export const DmChannelItem = ({ channelId }: DmChannelItemProps) => {
 							<MenuContent placement="right top" className="w-42">
 								<MenuItem
 									onAction={() => {
-										console.log("TODO: Implement call")
+										// Call feature not yet implemented
 									}}
 								>
 									<IconPhone className="size-4" />
