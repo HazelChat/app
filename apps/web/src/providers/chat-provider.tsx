@@ -104,16 +104,16 @@ export function ChatProvider({ channelId, organizationId, children }: ChatProvid
 
 	const addAttachment = useCallback(
 		(attachmentId: AttachmentId) => {
-			setAttachmentIds([...attachmentIds, attachmentId])
+			setAttachmentIds((prev) => [...prev, attachmentId])
 		},
-		[attachmentIds, setAttachmentIds],
+		[setAttachmentIds],
 	)
 
 	const removeAttachment = useCallback(
 		(attachmentId: AttachmentId) => {
-			setAttachmentIds(attachmentIds.filter((id) => id !== attachmentId))
+			setAttachmentIds((prev) => prev.filter((id) => id !== attachmentId))
 		},
-		[attachmentIds, setAttachmentIds],
+		[setAttachmentIds],
 	)
 
 	const clearAttachments = useCallback(() => {
@@ -122,16 +122,16 @@ export function ChatProvider({ channelId, organizationId, children }: ChatProvid
 
 	const addUploadingFile = useCallback(
 		(file: UploadingFile) => {
-			setUploadingFiles([...uploadingFiles, file])
+			setUploadingFiles((prev) => [...prev, file])
 		},
-		[uploadingFiles, setUploadingFiles],
+		[setUploadingFiles],
 	)
 
 	const removeUploadingFile = useCallback(
 		(fileId: string) => {
-			setUploadingFiles(uploadingFiles.filter((f) => f.fileId !== fileId))
+			setUploadingFiles((prev) => prev.filter((f) => f.fileId !== fileId))
 		},
-		[uploadingFiles, setUploadingFiles],
+		[setUploadingFiles],
 	)
 
 	const sendMessage = useCallback(
