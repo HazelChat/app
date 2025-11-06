@@ -62,7 +62,6 @@ function AttachmentItem({ attachment }: AttachmentItemProps) {
 						</Button>
 					</div>
 				</div>
-				<div className="mt-1 text-muted-fg text-xs">{attachment.fileName}</div>
 			</div>
 		)
 	}
@@ -124,22 +123,58 @@ export function MessageAttachments({ messageId }: MessageAttachmentsProps) {
 		return null
 	}
 
-	// Check if all attachments are images/videos for grid layout
-	const allMedia = attachments.every((attachment) => {
+	// Separate attachments by type
+	const images = attachments.filter((attachment) => {
 		const fileType = getFileTypeFromName(attachment.fileName)
-		return ["jpg", "png", "gif", "webp", "svg", "mp4", "webm"].includes(fileType)
+		return ["jpg", "png", "gif", "webp", "svg"].includes(fileType)
 	})
 
+	const videos = attachments.filter((attachment) => {
+		const fileType = getFileTypeFromName(attachment.fileName)
+		return ["mp4", "webm"].includes(fileType)
+	})
+
+	const otherFiles = attachments.filter((attachment) => {
+		const fileType = getFileTypeFromName(attachment.fileName)
+		return !["jpg", "png", "gif", "webp", "svg", "mp4", "webm"].includes(fileType)
+	})
+
+	// Discord-style grid classes based on image count
+	const getImageGridClass = (count: number) => {
+		if (count === 1) return "grid max-w-2xl grid-cols-1 gap-2"
+		if (count === 2) return "grid max-w-2xl grid-cols-2 gap-2"
+		// 3 or more images use 2-column grid
+		return "grid max-w-2xl grid-cols-2 gap-2"
+	}
+
 	return (
-		<div
-			className={cn(
-				"mt-2",
-				allMedia ? "grid max-w-2xl grid-cols-2 gap-2" : "flex max-w-md flex-col gap-2",
+		<div className="mt-2 flex flex-col gap-2">
+			{/* Images in Discord-style grid */}
+			{images.length > 0 && (
+				<div className={getImageGridClass(images.length)}>
+					{images.map((attachment) => (
+						<AttachmentItem key={attachment.id} attachment={attachment} />
+					))}
+				</div>
 			)}
-		>
-			{attachments.map((attachment) => (
-				<AttachmentItem key={attachment.id} attachment={attachment} />
-			))}
+
+			{/* Videos separately */}
+			{videos.length > 0 && (
+				<div className="flex max-w-md flex-col gap-2">
+					{videos.map((attachment) => (
+						<AttachmentItem key={attachment.id} attachment={attachment} />
+					))}
+				</div>
+			)}
+
+			{/* Other files */}
+			{otherFiles.length > 0 && (
+				<div className="flex max-w-md flex-col gap-2">
+					{otherFiles.map((attachment) => (
+						<AttachmentItem key={attachment.id} attachment={attachment} />
+					))}
+				</div>
+			)}
 		</div>
 	)
 }

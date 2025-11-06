@@ -2,7 +2,6 @@
 
 import { Result, useAtomValue } from "@effect-atom/atom-react"
 import type { UserId } from "@hazel/db/schema"
-import { useState } from "react"
 import { Button as PrimitiveButton } from "react-aria-components"
 import type { RenderLeafProps } from "slate-react"
 import { userWithPresenceAtomFamily } from "~/atoms/message-atoms"
@@ -23,9 +22,7 @@ interface MentionLeafProps extends RenderLeafProps {
  * Extends MarkdownLeaf to add click handlers and popovers for mentions
  */
 export function MentionLeaf({ interactive = false, leaf, children, ...props }: MentionLeafProps) {
-	const [isOpen, setIsOpen] = useState(false)
-
-	// Check if this leaf is a mention
+	// Check if this leaf is a mention - MUST be before any hooks
 	const markdownType = (leaf as any).type as MarkdownDecorationType | undefined
 	const isMention = markdownType === "mention"
 
@@ -38,16 +35,21 @@ export function MentionLeaf({ interactive = false, leaf, children, ...props }: M
 	// Skip popover for special mentions
 	const isSpecialMention = userId === "channel" || userId === "here"
 
-	// Fetch user data if this is a user mention (not special mentions)
-	const userPresenceResult =
-		userId && !isSpecialMention ? useAtomValue(userWithPresenceAtomFamily(userId as UserId)) : null
-	const data = userPresenceResult ? Result.getOrElse(userPresenceResult, () => []) : []
+	// Determine if we should fetch user data
+	const shouldFetchUser = isMention && userId && !isSpecialMention
+
+	// IMPORTANT: Hooks must be called unconditionally
+	// Always call hooks in the same order, but only use the result if needed
+	const userPresenceResult = useAtomValue(
+		userWithPresenceAtomFamily((shouldFetchUser ? userId : "dummy-id") as UserId)
+	)
+	const data = shouldFetchUser && userPresenceResult ? Result.getOrElse(userPresenceResult, () => []) : []
 	const result = data[0]
 	const user = result?.user
 	const presence = result?.presence
 
-	// If not interactive or not a mention, just use the regular MarkdownLeaf
-	if (!interactive || !isMention) {
+	// If not a mention, just use the regular MarkdownLeaf
+	if (!isMention) {
 		return (
 			<MarkdownLeaf {...props} leaf={leaf}>
 				{children}
@@ -66,6 +68,15 @@ export function MentionLeaf({ interactive = false, leaf, children, ...props }: M
 
 	const fullName = user ? `${user.firstName} ${user.lastName}` : mention?.displayName || "Unknown"
 
+	// If not interactive, just render the mention text without popover
+	if (!interactive) {
+		return (
+			<MarkdownLeaf {...props} leaf={leaf}>
+				@{fullName}
+			</MarkdownLeaf>
+		)
+	}
+
 	const getStatusColor = (status?: string) => {
 		switch (status) {
 			case "online":
@@ -83,10 +94,7 @@ export function MentionLeaf({ interactive = false, leaf, children, ...props }: M
 	// Render interactive mention with popover
 	return (
 		<Popover>
-			<PrimitiveButton
-				className="inline cursor-pointer outline-hidden"
-				onPress={() => setIsOpen(!isOpen)}
-			>
+			<PrimitiveButton className="inline cursor-pointer outline-hidden">
 				<MarkdownLeaf {...props} leaf={leaf}>
 					@{fullName}
 				</MarkdownLeaf>

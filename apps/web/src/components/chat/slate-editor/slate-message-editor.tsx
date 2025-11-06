@@ -15,7 +15,7 @@ import {
 } from "slate-react"
 import { cx } from "~/utils/cx"
 import { MentionAutocomplete } from "./mention-autocomplete"
-import { decorateMarkdown, MarkdownLeaf } from "./slate-markdown-decorators"
+import { decorateMarkdown } from "./slate-markdown-decorators"
 import {
 	type CustomDescendant,
 	type CustomElement,
@@ -23,6 +23,7 @@ import {
 	isValueEmpty,
 	serializeToMarkdown,
 } from "./slate-markdown-serializer"
+import { MentionLeaf } from "./mention-leaf"
 import { insertMention, type MentionEditor, withMentions } from "./slate-mention-plugin"
 
 // Extend the editor type with all plugins
@@ -166,9 +167,9 @@ const Element = ({ attributes, children, element }: RenderElementProps) => {
 	}
 }
 
-// Define custom leaf renderer with markdown highlighting
+// Define custom leaf renderer with markdown highlighting and mention display
 const Leaf = (props: RenderLeafProps) => {
-	return <MarkdownLeaf {...props} />
+	return <MentionLeaf {...props} interactive={false} />
 }
 
 // Check if placeholder should be hidden based on element types
@@ -594,6 +595,8 @@ export const SlateMessageEditor = forwardRef<SlateMessageEditorRef, SlateMessage
 							search={editor.mentionState.search}
 							onSelect={(id, displayName, type) => {
 								insertMention(editor, id, displayName, type)
+								// Restore focus to the editor
+								ReactEditor.focus(editor)
 								// Force re-render after mention selection
 								setValue([...value])
 							}}
