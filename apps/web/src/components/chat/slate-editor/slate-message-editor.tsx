@@ -1,5 +1,6 @@
 "use client"
 
+import { pipe } from "effect"
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useState } from "react"
 import type { Descendant } from "slate"
 import { createEditor, Editor, Range, Element as SlateElement, Transforms } from "slate"
@@ -228,7 +229,7 @@ export const SlateMessageEditor = forwardRef<SlateMessageEditorRef, SlateMessage
 	({ placeholder = "Type a message...", className, onSubmit, onUpdate, isUploading = false }, ref) => {
 		// Create Slate editor with React, History, Autoformat, and Mentions plugins
 		const editor = useMemo(
-			() => withAutoformat(withMentions(withReact(withHistory(createEditor())))) as CustomEditor,
+			() => pipe(createEditor(), withHistory, withReact, withMentions, withAutoformat) as CustomEditor,
 			[],
 		)
 
