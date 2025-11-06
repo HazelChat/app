@@ -6,6 +6,7 @@ import { routeTree } from "./routeTree.gen.ts"
 
 import "@fontsource/inter/400.css"
 import "@fontsource/inter/400-italic.css"
+import "./styles/code-syntax.css"
 import "./styles/styles.css"
 
 // Initialize app registry and mount runtimes

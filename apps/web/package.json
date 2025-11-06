@@ -67,10 +67,10 @@
 		"effect": "3.18.4",
 		"frimousse": "^0.3.0",
 		"input-otp": "^1.4.2",
-		"lowlight": "^3.3.0",
 		"motion": "^12.23.24",
 		"next-themes": "^0.4.6",
 		"platejs": "^51.0.0",
+		"prismjs": "^1.30.0",
 		"react": "19.2.0",
 		"react-aria": "^3.44.0",
 		"react-aria-components": "^1.13.0",
@@ -96,6 +96,7 @@
 		"@tailwindcss/postcss": "^4.1.16",
 		"@testing-library/dom": "^10.4.1",
 		"@testing-library/react": "^16.3.0",
+		"@types/prismjs": "^1.26.5",
 		"@types/react": "^19.2.2",
 		"@types/react-dom": "^19.2.2",
 		"@vitejs/plugin-react": "5.1.0",
@@ -105,6 +106,7 @@
 		"typescript": "^5.9.3",
 		"vite": "7.1.12",
 		"vitest": "^4.0.6",
+		"web": "^0.0.2",
 		"web-vitals": "^5.1.0"
 	}
 }

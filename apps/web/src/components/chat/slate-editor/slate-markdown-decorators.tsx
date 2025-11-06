@@ -132,47 +132,60 @@ export function decorateMarkdown(entry: [node: any, path: number[]], parentEleme
 }
 
 /**
- * Render leaf with markdown styling
- * Markers are dimmed, content is styled
+ * Render leaf with markdown styling and code syntax highlighting
+ * Markers are dimmed, content is styled, code tokens get Prism classes
  */
 export function MarkdownLeaf({ attributes, children, leaf }: RenderLeafProps) {
 	// Base classes for all markdown leaves
 	let className = ""
 
-	// Check if this leaf has markdown decoration
-	const markdownType = (leaf as any).type as MarkdownDecorationType | undefined
-	const isMarker = (leaf as any).isMarker as boolean | undefined
+	// Check if this is a code token from Prism decoration
+	const leafRecord = leaf as any
+	if (leafRecord.token) {
+		// Build className from all token types (e.g., "token keyword", "token function")
+		const tokenClasses: string[] = ["token"]
+		for (const key in leafRecord) {
+			if (key !== "text" && key !== "token" && leafRecord[key] === true) {
+				tokenClasses.push(key)
+			}
+		}
+		className = tokenClasses.join(" ")
+	} else {
+		// Check if this leaf has markdown decoration
+		const markdownType = (leaf as any).type as MarkdownDecorationType | undefined
+		const isMarker = (leaf as any).isMarker as boolean | undefined
 
-	if (markdownType) {
-		if (isMarker) {
-			// Style the markers (**, *, ~~, `, etc.) - make them dimmed
-			className = "text-muted-fg/50 select-none"
-		} else {
-			// Style the content based on type
-			switch (markdownType) {
-				case "bold":
-					className = "font-bold"
-					break
-				case "italic":
-					className = "italic"
-					break
-				case "strikethrough":
-					className = "line-through"
-					break
-				case "code":
-					className = "bg-accent/50 rounded px-1 py-0.5 font-mono text-sm"
-					break
-				case "underline":
-					className = "underline"
-					break
-				case "spoiler":
-					className = "bg-muted blur-sm hover:blur-none transition-all"
-					break
-				case "mention":
-					// Style mentions with blue background and text
-					className =
-						"bg-primary/10 text-primary rounded px-1 py-0.5 font-medium cursor-pointer hover:bg-primary/20 transition-colors"
-					break
+		if (markdownType) {
+			if (isMarker) {
+				// Style the markers (**, *, ~~, `, etc.) - make them dimmed
+				className = "text-muted-fg/50 select-none"
+			} else {
+				// Style the content based on type
+				switch (markdownType) {
+					case "bold":
+						className = "font-bold"
+						break
+					case "italic":
+						className = "italic"
+						break
+					case "strikethrough":
+						className = "line-through"
+						break
+					case "code":
+						className = "bg-accent/50 rounded px-1 py-0.5 font-mono text-sm"
+						break
+					case "underline":
+						className = "underline"
+						break
+					case "spoiler":
+						className = "bg-muted blur-sm hover:blur-none transition-all"
+						break
+					case "mention":
+						// Style mentions with blue background and text
+						className =
+							"bg-primary/10 text-primary rounded px-1 py-0.5 font-medium cursor-pointer hover:bg-primary/20 transition-colors"
+						break
+				}
 			}
 		}
 	}

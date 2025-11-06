@@ -1,12 +1,14 @@
 "use client"
 
 import { memo, useCallback, useMemo } from "react"
-import { createEditor, Editor } from "slate"
+import { createEditor, Editor, Element as SlateElement } from "slate"
 import { withHistory } from "slate-history"
 import { Editable, type RenderElementProps, type RenderLeafProps, Slate, withReact } from "slate-react"
 import { isEmojiOnly } from "~/lib/emoji-utils"
 import { cx } from "~/utils/cx"
+import { CodeBlockElement } from "./code-block-element"
 import { MentionLeaf } from "./mention-leaf"
+import { decorateCodeBlock } from "./slate-code-decorator"
 import { decorateMarkdown } from "./slate-markdown-decorators"
 import { type CustomElement, deserializeFromMarkdown } from "./slate-markdown-serializer"
 
@@ -16,7 +18,8 @@ interface SlateMessageViewerProps {
 }
 
 // Define custom element renderer (same as editor but readonly optimized)
-const Element = ({ attributes, children, element }: RenderElementProps) => {
+const Element = (props: RenderElementProps) => {
+	const { attributes, children, element } = props
 	const customElement = element as CustomElement
 
 	switch (customElement.type) {
@@ -37,15 +40,7 @@ const Element = ({ attributes, children, element }: RenderElementProps) => {
 				</blockquote>
 			)
 		case "code-block":
-			return (
-				<pre
-					{...attributes}
-					className="my-2 overflow-x-auto whitespace-pre-wrap rounded-lg bg-muted p-4 font-mono text-sm"
-					data-language={customElement.language}
-				>
-					<code>{children}</code>
-				</pre>
-			)
+			return <CodeBlockElement {...props} />
 		default:
 			return <p {...attributes}>{children}</p>
 	}
@@ -66,12 +61,17 @@ export const SlateMessageViewer = memo(({ content, className }: SlateMessageView
 	// Check if content contains only emojis
 	const isOnlyEmojis = useMemo(() => isEmojiOnly(content), [content])
 
-	// Custom decorator that checks parent element type
+	// Custom decorator that handles both markdown and code syntax highlighting
 	const decorate = useCallback(
 		(entry: [node: any, path: number[]]) => {
-			const [, nodePath] = entry
+			const [node, nodePath] = entry
 
-			// Get parent element
+			// Check if this node is a code-block element
+			if (SlateElement.isElement(node) && (node as any).type === "code-block") {
+				return decorateCodeBlock(entry)
+			}
+
+			// Get parent element for markdown decoration
 			const parentPath = nodePath.slice(0, -1)
 			const parentEntry = Editor.node(editor, parentPath)
 			const parentElement = parentEntry ? parentEntry[0] : null

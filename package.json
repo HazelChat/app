@@ -22,9 +22,13 @@
 	"devDependencies": {
 		"@biomejs/biome": "2.3.3",
 		"@vitest/coverage-v8": "^4.0.6",
+		"hast": "^1.0.0",
 		"turbo": "^2.6.0",
 		"typescript": "^5.9.3",
 		"vitest": "^4.0.6"
 	},
-	"trustedDependencies": []
+	"trustedDependencies": [],
+	"dependencies": {
+		"lucide-react": "^0.552.0"
+	}
 }
