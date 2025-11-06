@@ -15,13 +15,15 @@ import { extractMentions } from "./slate-mention-plugin"
 interface MentionLeafProps extends RenderLeafProps {
 	/** Whether to make mentions interactive (clickable) */
 	interactive?: boolean
+	/** Render mode: "composer" shows markdown syntax, "viewer" hides markers */
+	mode?: "composer" | "viewer"
 }
 
 /**
  * Leaf renderer with interactive mentions support
  * Extends MarkdownLeaf to add click handlers and popovers for mentions
  */
-export function MentionLeaf({ interactive = false, leaf, children, ...props }: MentionLeafProps) {
+export function MentionLeaf({ interactive = false, mode = "composer", leaf, children, ...props }: MentionLeafProps) {
 	// Check if this leaf is a mention - MUST be before any hooks
 	const markdownType = (leaf as any).type as MarkdownDecorationType | undefined
 	const isMention = markdownType === "mention"
@@ -51,7 +53,7 @@ export function MentionLeaf({ interactive = false, leaf, children, ...props }: M
 	// If not a mention, just use the regular MarkdownLeaf
 	if (!isMention) {
 		return (
-			<MarkdownLeaf {...props} leaf={leaf}>
+			<MarkdownLeaf {...props} leaf={leaf} mode={mode}>
 				{children}
 			</MarkdownLeaf>
 		)
@@ -60,7 +62,7 @@ export function MentionLeaf({ interactive = false, leaf, children, ...props }: M
 	// For special mentions (@channel, @here), render with the display name
 	if (isSpecialMention) {
 		return (
-			<MarkdownLeaf {...props} leaf={leaf}>
+			<MarkdownLeaf {...props} leaf={leaf} mode={mode}>
 				@{mention?.displayName || children}
 			</MarkdownLeaf>
 		)
@@ -71,7 +73,7 @@ export function MentionLeaf({ interactive = false, leaf, children, ...props }: M
 	// If not interactive, just render the mention text without popover
 	if (!interactive) {
 		return (
-			<MarkdownLeaf {...props} leaf={leaf}>
+			<MarkdownLeaf {...props} leaf={leaf} mode={mode}>
 				@{fullName}
 			</MarkdownLeaf>
 		)
@@ -95,7 +97,7 @@ export function MentionLeaf({ interactive = false, leaf, children, ...props }: M
 	return (
 		<Popover>
 			<PrimitiveButton className="inline cursor-pointer outline-hidden">
-				<MarkdownLeaf {...props} leaf={leaf}>
+				<MarkdownLeaf {...props} leaf={leaf} mode={mode}>
 					@{fullName}
 				</MarkdownLeaf>
 			</PrimitiveButton>

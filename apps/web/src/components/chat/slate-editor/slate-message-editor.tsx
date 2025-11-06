@@ -1,9 +1,8 @@
 "use client"
 
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useState } from "react"
-import type { BaseEditor, Descendant } from "slate"
-import { createEditor, Editor, Element as SlateElement, Range, Transforms } from "slate"
-import type { HistoryEditor } from "slate-history"
+import type { Descendant } from "slate"
+import { createEditor, Editor, Range, Element as SlateElement, Transforms } from "slate"
 import { withHistory } from "slate-history"
 import {
 	Editable,
@@ -16,6 +15,7 @@ import {
 import { cx } from "~/utils/cx"
 import { CodeBlockElement } from "./code-block-element"
 import { MentionAutocomplete } from "./mention-autocomplete"
+import { MentionLeaf } from "./mention-leaf"
 import { decorateCodeBlock } from "./slate-code-decorator"
 import { decorateMarkdown } from "./slate-markdown-decorators"
 import {
@@ -25,7 +25,6 @@ import {
 	isValueEmpty,
 	serializeToMarkdown,
 } from "./slate-markdown-serializer"
-import { MentionLeaf } from "./mention-leaf"
 import { insertMention, type MentionEditor, withMentions } from "./slate-mention-plugin"
 
 // Extend the editor type with all plugins
@@ -149,14 +148,14 @@ const Element = (props: RenderElementProps) => {
 			return (
 				<blockquote {...attributes} className="relative my-1 pl-4 italic">
 					<span
-						className="absolute top-0 left-0 h-full w-1 rounded-[2px] bg-primary"
+						className="absolute top-0 left-0 h-full w-1 rounded-xs bg-primary"
 						aria-hidden="true"
 					/>
 					{children}
 				</blockquote>
 			)
 		case "code-block":
-			return <CodeBlockElement {...props} />
+			return <CodeBlockElement {...props} showControls={false} />
 		default:
 			return <p {...attributes}>{children}</p>
 	}
@@ -164,7 +163,7 @@ const Element = (props: RenderElementProps) => {
 
 // Define custom leaf renderer with markdown highlighting and mention display
 const Leaf = (props: RenderLeafProps) => {
-	return <MentionLeaf {...props} interactive={false} />
+	return <MentionLeaf {...props} interactive={false} mode="composer" />
 }
 
 // Check if placeholder should be hidden based on element types
@@ -260,6 +259,39 @@ export const SlateMessageEditor = forwardRef<SlateMessageEditorRef, SlateMessage
 		// Handle key down
 		const handleKeyDown = (event: React.KeyboardEvent) => {
 			const { selection } = editor
+
+			// Handle Command+A / Ctrl+A for select all
+			if ((event.metaKey || event.ctrlKey) && event.key === "a") {
+				if (!selection) return
+
+				// Get the current block
+				const block = Editor.above(editor, {
+					match: (n) => SlateElement.isElement(n) && Editor.isBlock(editor, n),
+				})
+
+				if (block) {
+					const [node, path] = block
+					const element = node as CustomElement
+
+					// For code blocks and blockquotes, select all content within the block
+					if (element.type === "code-block" || element.type === "blockquote") {
+						event.preventDefault()
+						Transforms.select(editor, {
+							anchor: Editor.start(editor, path),
+							focus: Editor.end(editor, path),
+						})
+						return
+					}
+				}
+
+				// For paragraphs or other blocks, select entire editor content
+				event.preventDefault()
+				Transforms.select(editor, {
+					anchor: Editor.start(editor, []),
+					focus: Editor.end(editor, []),
+				})
+				return
+			}
 
 			// Handle Backspace at start of blockquote (convert to paragraph)
 			if (event.key === "Backspace" && selection && Range.isCollapsed(selection)) {

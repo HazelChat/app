@@ -131,11 +131,16 @@ export function decorateMarkdown(entry: [node: any, path: number[]], parentEleme
 	return ranges
 }
 
+export interface MarkdownLeafProps extends RenderLeafProps {
+	/** Render mode: "composer" shows markdown syntax, "viewer" hides markers */
+	mode?: "composer" | "viewer"
+}
+
 /**
  * Render leaf with markdown styling and code syntax highlighting
  * Markers are dimmed, content is styled, code tokens get Prism classes
  */
-export function MarkdownLeaf({ attributes, children, leaf }: RenderLeafProps) {
+export function MarkdownLeaf({ attributes, children, leaf, mode = "composer" }: MarkdownLeafProps) {
 	// Base classes for all markdown leaves
 	let className = ""
 
@@ -157,8 +162,13 @@ export function MarkdownLeaf({ attributes, children, leaf }: RenderLeafProps) {
 
 		if (markdownType) {
 			if (isMarker) {
-				// Style the markers (**, *, ~~, `, etc.) - make them dimmed
-				className = "text-muted-fg/50 select-none"
+				// In viewer mode, hide markers completely
+				if (mode === "viewer") {
+					className = "hidden"
+				} else {
+					// In composer mode, style the markers (**, *, ~~, `, etc.) - make them dimmed
+					className = "text-muted-fg/50 select-none"
+				}
 			} else {
 				// Style the content based on type
 				switch (markdownType) {

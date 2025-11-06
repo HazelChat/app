@@ -33,14 +33,14 @@ const Element = (props: RenderElementProps) => {
 			return (
 				<blockquote {...attributes} className="relative my-1 pl-4 italic">
 					<span
-						className="absolute top-0 left-0 h-full w-1 rounded-[2px] bg-primary"
+						className="absolute top-0 left-0 h-full w-1 rounded-xs bg-primary"
 						aria-hidden="true"
 					/>
 					{children}
 				</blockquote>
 			)
 		case "code-block":
-			return <CodeBlockElement {...props} />
+			return <CodeBlockElement {...props} showControls={true} />
 		default:
 			return <p {...attributes}>{children}</p>
 	}
@@ -48,7 +48,7 @@ const Element = (props: RenderElementProps) => {
 
 // Define custom leaf renderer with markdown highlighting and interactive mentions
 const Leaf = (props: RenderLeafProps) => {
-	return <MentionLeaf {...props} interactive={true} />
+	return <MentionLeaf {...props} interactive={true} mode="viewer" />
 }
 
 export const SlateMessageViewer = memo(({ content, className }: SlateMessageViewerProps) => {
@@ -86,7 +86,7 @@ export const SlateMessageViewer = memo(({ content, className }: SlateMessageView
 			<Slate editor={editor} initialValue={value}>
 				<Editable
 					className={cx(
-						"w-full cursor-text select-text whitespace-pre-wrap break-words",
+						"wrap-break-word w-full cursor-text select-text whitespace-pre-wrap",
 						isOnlyEmojis ? "text-2xl" : "text-sm",
 						"[&_strong]:font-bold",
 					)}
