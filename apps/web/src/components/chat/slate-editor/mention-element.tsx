@@ -50,7 +50,7 @@ export function MentionElement({ attributes, children, element, interactive = fa
 				{...attributes}
 				contentEditable={false}
 				className={cn(
-					"inline-block align-baseline bg-primary/10 text-primary rounded px-1 py-0.5 font-medium cursor-pointer transition-colors",
+					"inline-block cursor-pointer rounded bg-primary/10 px-1 py-0.5 align-baseline font-medium text-primary transition-colors",
 					selected && focused && "ring-2 ring-primary ring-offset-1",
 				)}
 			>
@@ -70,7 +70,7 @@ export function MentionElement({ attributes, children, element, interactive = fa
 				{...attributes}
 				contentEditable={false}
 				className={cn(
-					"inline-block align-baseline bg-primary/10 text-primary rounded px-1 py-0.5 font-medium cursor-pointer hover:bg-primary/20 transition-colors",
+					"inline-block cursor-pointer rounded bg-primary/10 px-1 py-0.5 align-baseline font-medium text-primary transition-colors hover:bg-primary/20",
 					selected && focused && "ring-2 ring-primary ring-offset-1",
 				)}
 			>
@@ -99,9 +99,8 @@ export function MentionElement({ attributes, children, element, interactive = fa
 		<Popover>
 			<PrimitiveButton
 				{...attributes}
-				contentEditable={false}
 				className={cn(
-					"inline-block align-baseline bg-primary/10 text-primary rounded px-1 py-0.5 font-medium cursor-pointer hover:bg-primary/20 transition-colors outline-hidden",
+					"inline-block cursor-pointer rounded bg-primary/10 px-1 py-0.5 align-baseline font-medium text-primary outline-hidden transition-colors hover:bg-primary/20",
 					selected && focused && "ring-2 ring-primary ring-offset-1",
 				)}
 			>
@@ -135,7 +134,9 @@ export function MentionElement({ attributes, children, element, interactive = fa
 
 					{/* Custom status message */}
 					{presence?.customMessage && (
-						<div className="rounded-lg bg-muted/50 px-3 py-2 text-xs">{presence.customMessage}</div>
+						<div className="rounded-lg bg-muted/50 px-3 py-2 text-xs">
+							{presence.customMessage}
+						</div>
 					)}
 
 					{/* Action button */}
