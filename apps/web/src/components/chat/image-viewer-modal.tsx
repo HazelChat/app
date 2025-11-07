@@ -187,7 +187,7 @@ export function ImageViewerModal({
 		// biome-ignore lint/a11y/noStaticElementInteractions: <explanation>
 		// biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
 		<div
-			className="isolate fixed inset-0 z-[100] flex items-center justify-center bg-black/90 transition-opacity duration-200"
+			className="fixed inset-0 isolate z-9999 flex items-center justify-center bg-black/90 transition-opacity duration-200"
 			onClick={(e) => {
 				if (e.target === e.currentTarget) {
 					onOpenChange(false)
