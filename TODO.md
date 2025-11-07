@@ -8,8 +8,7 @@
 - Create Organizatio Modal not opening
   - Setup Organization should display better errors 
 - Electric proxy
-- Image Modal
-  - Fix Icons + Actions
+
 
 - Migrate the missing icons to nucleo
 

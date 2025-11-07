@@ -1,10 +1,5 @@
 import type { Attachment, User } from "@hazel/db/models"
-import {
-	ArrowDownTrayIcon,
-	ArrowTopRightOnSquareIcon,
-	ChevronLeftIcon,
-	ChevronRightIcon,
-} from "@heroicons/react/24/solid"
+import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/solid"
 import useEmblaCarousel from "embla-carousel-react"
 import { useCallback, useEffect, useState } from "react"
 import { createPortal } from "react-dom"
@@ -14,6 +9,8 @@ import IconCopy from "~/components/icons/icon-copy"
 import { Avatar } from "~/components/ui/avatar/avatar"
 import { Button } from "~/components/ui/button"
 import { Tooltip, TooltipContent, TooltipTrigger } from "~/components/ui/tooltip"
+import { IconDownload } from "../icons/icon-download"
+import { IconExternalLink } from "../icons/icon-link-external"
 
 interface ImageViewerModalProps {
 	isOpen: boolean
@@ -121,7 +118,7 @@ export function ImageViewerModal({
 		})
 	}
 
-	const handleCopyImage = async () => {
+	const _handleCopyImage = async () => {
 		try {
 			const response = await fetch(currentImageUrl)
 			const blob = await response.blob()
@@ -156,13 +153,8 @@ export function ImageViewerModal({
 	const imageActions = [
 		{
 			label: "Download",
-			icon: ArrowDownTrayIcon,
+			icon: IconDownload,
 			onClick: handleDownload,
-		},
-		{
-			label: "Copy Image",
-			icon: IconCopy,
-			onClick: handleCopyImage,
 		},
 		{
 			label: "Copy URL",
@@ -171,7 +163,7 @@ export function ImageViewerModal({
 		},
 		{
 			label: "Open in Browser",
-			icon: ArrowTopRightOnSquareIcon,
+			icon: IconExternalLink,
 			onClick: handleOpenInBrowser,
 		},
 		{
