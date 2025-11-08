@@ -148,7 +148,14 @@ export function MessageItem({
 										{/* Render all tweet embeds */}
 										{tweetUrls.map((url) => {
 											const tweetId = extractTweetId(url)
-											return tweetId ? <TweetEmbed key={url} id={tweetId} /> : null
+											return tweetId ? (
+												<TweetEmbed
+													key={url}
+													id={tweetId}
+													author={message.author ?? undefined}
+													messageCreatedAt={message.createdAt.getTime()}
+												/>
+											) : null
 										})}
 										{/* Render last non-tweet URL as link preview */}
 										{nonTweetUrls.length > 0 && nonTweetUrls[nonTweetUrls.length - 1] && (

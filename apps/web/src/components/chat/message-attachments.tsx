@@ -7,7 +7,7 @@ import { useAttachments, useMessage } from "~/db/hooks"
 import { formatFileSize, getFileTypeFromName } from "~/utils/file-utils"
 import { IconDownload } from "../icons/icon-download"
 import { Button } from "../ui/button"
-import { ImageViewerModal } from "./image-viewer-modal"
+import { ImageViewerModal, type ViewerImage } from "./image-viewer-modal"
 
 interface MessageAttachmentsProps {
 	messageId: MessageId
@@ -205,16 +205,26 @@ export function MessageAttachments({ messageId }: MessageAttachmentsProps) {
 			)}
 
 			{/* Image Viewer Modal */}
-			{images.length > 0 && message && (
-				<ImageViewerModal
-					isOpen={isModalOpen}
-					onOpenChange={setIsModalOpen}
-					images={images}
-					initialIndex={selectedImageIndex}
-					author={message.author}
-					createdAt={message.createdAt.getTime()}
-				/>
-			)}
+			{images.length > 0 &&
+				message &&
+				(() => {
+					// Convert attachments to ViewerImage format
+					const viewerImages: ViewerImage[] = images.map((attachment) => ({
+						type: "attachment" as const,
+						attachment,
+					}))
+
+					return (
+						<ImageViewerModal
+							isOpen={isModalOpen}
+							onOpenChange={setIsModalOpen}
+							images={viewerImages}
+							initialIndex={selectedImageIndex}
+							author={message.author}
+							createdAt={message.createdAt.getTime()}
+						/>
+					)
+				})()}
 		</div>
 	)
 }

@@ -12,10 +12,22 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "~/components/ui/tooltip
 import { IconDownload } from "../icons/icon-download"
 import { IconExternalLink } from "../icons/icon-link-external"
 
+// Discriminated union for image types
+export type ViewerImage =
+	| {
+			type: "attachment"
+			attachment: typeof Attachment.Model.Type
+	  }
+	| {
+			type: "url"
+			url: string
+			alt: string
+	  }
+
 interface ImageViewerModalProps {
 	isOpen: boolean
 	onOpenChange: (open: boolean) => void
-	images: Array<typeof Attachment.Model.Type>
+	images: ViewerImage[]
 	initialIndex: number
 	author?: typeof User.Model.Type
 	createdAt: number
@@ -100,14 +112,19 @@ export function ImageViewerModal({
 	const scrollTo = useCallback((index: number) => emblaApi?.scrollTo(index), [emblaApi])
 
 	const currentImage = images[selectedIndex]
-	const currentImageUrl = currentImage ? `${publicUrl}/${currentImage.id}` : ""
+	const currentImageUrl = currentImage
+		? currentImage.type === "attachment"
+			? `${publicUrl}/${currentImage.attachment.id}`
+			: currentImage.url
+		: ""
 
 	const handleDownload = () => {
 		if (!currentImage) return
 
 		const link = document.createElement("a")
 		link.href = currentImageUrl
-		link.download = currentImage.fileName
+		link.download =
+			currentImage.type === "attachment" ? currentImage.attachment.fileName : currentImage.alt
 		link.target = "_blank"
 		document.body.appendChild(link)
 		link.click()
@@ -176,8 +193,8 @@ export function ImageViewerModal({
 	if (!isOpen) return null
 
 	const content = (
-		// biome-ignore lint/a11y/noStaticElementInteractions: <explanation>
-		// biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
+		// biome-ignore lint/a11y/noStaticElementInteractions: clickable overlay to close modal
+		// biome-ignore lint/a11y/useKeyWithClickEvents: keyboard close handled via Escape key
 		<div
 			className="fixed inset-0 isolate z-9999 flex items-center justify-center bg-black/90 transition-opacity duration-200"
 			onClick={(e) => {
@@ -205,20 +222,31 @@ export function ImageViewerModal({
 			<div className="relative mx-36 w-full max-w-[90vw]">
 				<div className="overflow-hidden" ref={emblaRef}>
 					<div className="flex">
-						{images.map((image, _index) => (
-							<div
-								key={image.id}
-								className="flex min-w-0 flex-[0_0_100%] items-center justify-center"
-							>
-								{/** biome-ignore lint/a11y/useKeyWithClickEvents: <explanation> */}
-								<img
-									src={`${publicUrl}/${image.id}`}
-									alt={image.fileName}
-									className="max-h-[70vh] max-w-full rounded-md"
-									onClick={(e) => e.stopPropagation()}
-								/>
-							</div>
-						))}
+						{images.map((image, index) => {
+							const imageUrl =
+								image.type === "attachment"
+									? `${publicUrl}/${image.attachment.id}`
+									: image.url
+							const imageAlt =
+								image.type === "attachment" ? image.attachment.fileName : image.alt
+							const key =
+								image.type === "attachment" ? image.attachment.id : `${image.url}-${index}`
+
+							return (
+								<div
+									key={key}
+									className="flex min-w-0 flex-[0_0_100%] items-center justify-center"
+								>
+									{/** biome-ignore lint/a11y/useKeyWithClickEvents: false positive */}
+									<img
+										src={imageUrl}
+										alt={imageAlt}
+										className="max-h-[70vh] max-w-full rounded-md"
+										onClick={(e) => e.stopPropagation()}
+									/>
+								</div>
+							)
+						})}
 					</div>
 				</div>
 
@@ -276,24 +304,37 @@ export function ImageViewerModal({
 				<div className="-translate-x-1/2 absolute bottom-5 left-1/2 w-full max-w-2xl px-8">
 					<div className="overflow-hidden rounded-md" ref={emblaThumbsRef}>
 						<div className="flex gap-2">
-							{images.map((image, index) => (
-								<button
-									key={image.id}
-									type="button"
-									onClick={() => scrollTo(index)}
-									className={`relative min-w-0 flex-[0_0_80px] cursor-pointer overflow-hidden rounded border-2 transition-all ${
-										index === selectedIndex
-											? "border-white opacity-100"
-											: "border-transparent opacity-50 hover:opacity-75"
-									}`}
-								>
-									<img
-										src={`${publicUrl}/${image.id}`}
-										alt={image.fileName}
-										className="h-16 w-20 object-cover"
-									/>
-								</button>
-							))}
+							{images.map((image, index) => {
+								const thumbUrl =
+									image.type === "attachment"
+										? `${publicUrl}/${image.attachment.id}`
+										: image.url
+								const thumbAlt =
+									image.type === "attachment" ? image.attachment.fileName : image.alt
+								const thumbKey =
+									image.type === "attachment"
+										? image.attachment.id
+										: `${image.url}-${index}`
+
+								return (
+									<button
+										key={thumbKey}
+										type="button"
+										onClick={() => scrollTo(index)}
+										className={`relative min-w-0 flex-[0_0_80px] cursor-pointer overflow-hidden rounded border-2 transition-all ${
+											index === selectedIndex
+												? "border-white opacity-100"
+												: "border-transparent opacity-50 hover:opacity-75"
+										}`}
+									>
+										<img
+											src={thumbUrl}
+											alt={thumbAlt}
+											className="h-16 w-20 object-cover"
+										/>
+									</button>
+								)
+							})}
 						</div>
 					</div>
 				</div>

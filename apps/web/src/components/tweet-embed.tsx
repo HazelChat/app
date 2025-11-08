@@ -1,10 +1,13 @@
 "use client"
 
 import { Atom, Result, useAtomValue } from "@effect-atom/atom-react"
+import type { User } from "@hazel/db/models"
 import { Effect } from "effect"
+import { useState } from "react"
 import { type EnrichedTweet, enrichTweet } from "react-tweet"
 import type { Tweet } from "react-tweet/api"
 import { ApiClient } from "~/lib/services/common/api-client"
+import { ImageViewerModal, type ViewerImage } from "./chat/image-viewer-modal"
 import IconHeart from "./icons/icon-heart"
 
 // Atom family for per-tweet-ID caching using typesafe API client
@@ -156,7 +159,13 @@ function TweetBody({ tweet }: { tweet: EnrichedTweet }) {
 	)
 }
 
-function TweetMedia({ tweet }: { tweet: EnrichedTweet }) {
+function TweetMedia({
+	tweet,
+	onPhotoClick,
+}: {
+	tweet: EnrichedTweet
+	onPhotoClick?: (index: number) => void
+}) {
 	if (!tweet.video && !tweet.photos) return null
 
 	return (
@@ -177,15 +186,21 @@ function TweetMedia({ tweet }: { tweet: EnrichedTweet }) {
 			{tweet.photos && (
 				<div className="relative flex transform-gpu snap-x snap-mandatory gap-4 overflow-x-auto">
 					<div className="shrink-0 snap-center sm:w-2" />
-					{tweet.photos.map((photo) => (
-						<img
+					{tweet.photos.map((photo, index) => (
+						<button
 							key={photo.url}
-							src={photo.url}
-							width={photo.width}
-							height={photo.height}
-							alt={tweet.text}
-							className="h-64 w-5/6 shrink-0 snap-center snap-always rounded-lg border border-fg/15 object-cover shadow-sm"
-						/>
+							type="button"
+							onClick={() => onPhotoClick?.(index)}
+							className="shrink-0 snap-center snap-always"
+						>
+							<img
+								src={photo.url}
+								width={photo.width}
+								height={photo.height}
+								alt={tweet.text}
+								className="h-64 w-5/6 rounded-lg border border-fg/15 object-cover shadow-sm transition-opacity hover:opacity-90"
+							/>
+						</button>
 					))}
 					<div className="shrink-0 snap-center sm:w-2" />
 				</div>
@@ -231,22 +246,58 @@ function TweetMetrics({ tweet }: { tweet: EnrichedTweet }) {
 	)
 }
 
-export function TweetEmbed({ id }: { id: string }) {
+interface TweetEmbedProps {
+	id: string
+	author?: typeof User.Model.Type
+	messageCreatedAt?: number
+}
+
+export function TweetEmbed({ id, author, messageCreatedAt }: TweetEmbedProps) {
 	const tweetResult = useAtomValue(tweetAtomFamily(id))
 	const tweet = Result.getOrElse(tweetResult, () => null)
 	const isLoading = Result.isInitial(tweetResult)
+
+	const [isModalOpen, setIsModalOpen] = useState(false)
+	const [selectedImageIndex, setSelectedImageIndex] = useState(0)
 
 	if (isLoading) return <TweetSkeleton />
 	if (!tweet) return <TweetNotFound />
 
 	const enrichedTweet = enrichTweet(tweet)
 
+	// Convert tweet photos to ViewerImage format
+	const viewerImages: ViewerImage[] =
+		enrichedTweet.photos?.map((photo) => ({
+			type: "url" as const,
+			url: photo.url,
+			alt: enrichedTweet.text || "Tweet image",
+		})) || []
+
+	const handlePhotoClick = (index: number) => {
+		setSelectedImageIndex(index)
+		setIsModalOpen(true)
+	}
+
 	return (
-		<div className="mt-2 flex max-w-sm flex-col gap-2 overflow-hidden rounded-lg border border-fg/15 pressed:border-fg/15 bg-muted/40 pressed:bg-muted p-4 hover:border-fg/15 hover:bg-muted">
-			<TweetHeader tweet={enrichedTweet} />
-			<TweetBody tweet={enrichedTweet} />
-			<TweetMedia tweet={enrichedTweet} />
-			<TweetMetrics tweet={enrichedTweet} />
-		</div>
+		<>
+			<div className="mt-2 flex max-w-sm flex-col gap-2 overflow-hidden rounded-lg border border-fg/15 pressed:border-fg/15 bg-muted/40 pressed:bg-muted p-4 hover:border-fg/15 hover:bg-muted">
+				<TweetHeader tweet={enrichedTweet} />
+				<TweetBody tweet={enrichedTweet} />
+				<TweetMedia tweet={enrichedTweet} onPhotoClick={handlePhotoClick} />
+				<TweetMetrics tweet={enrichedTweet} />
+			</div>
+
+			{/* Image Modal - only show if we have author and messageCreatedAt */}
+			{author && messageCreatedAt && viewerImages.length > 0 && (
+				<ImageViewerModal
+					isOpen={isModalOpen}
+					onOpenChange={setIsModalOpen}
+					images={viewerImages}
+					initialIndex={selectedImageIndex}
+					author={author}
+					createdAt={messageCreatedAt}
+				/>
+			)}
+		</>
 	)
 }
