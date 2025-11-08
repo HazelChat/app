@@ -30,7 +30,7 @@ export function CodeBlockElement({ attributes, children, element, showControls =
 			{showControls && (
 				<div className="absolute right-2 top-2 z-10 flex items-center gap-2">
 					{language && language !== "plaintext" && (
-						<span className="rounded bg-accent-9/10 px-2 py-1 text-xs font-medium text-accent-11">
+						<span className="rounded-md bg-info-subtle px-2 py-0.5 text-xs font-medium text-info-subtle-fg">
 							{language}
 						</span>
 					)}
