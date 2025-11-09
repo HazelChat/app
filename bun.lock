@@ -71,6 +71,14 @@
       "dependencies": {
         "@effect/platform": "^0.93.0",
         "effect": "^3.19.3",
+        "metascraper": "^5.49.5",
+        "metascraper-description": "^5.49.5",
+        "metascraper-image": "^5.49.5",
+        "metascraper-logo": "^5.49.5",
+        "metascraper-publisher": "^5.49.5",
+        "metascraper-title": "^5.49.5",
+        "metascraper-url": "^5.49.5",
+        "react-tweet": "^3.2.2",
       },
       "devDependencies": {
         "@cloudflare/vitest-pool-workers": "^0.8.19",

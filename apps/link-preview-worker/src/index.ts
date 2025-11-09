@@ -1,9 +1,11 @@
 import { HttpApiBuilder, HttpPlatform, HttpServer } from "@effect/platform"
 import { Layer, Logger, pipe } from "effect"
 import { MyHttpApi } from "./api"
-import { HttpAppLive } from "./handle"
+import { HttpAppLive, HttpLinkPreviewLive, HttpTweetLive } from "./handle"
 
-const HttpLive = HttpApiBuilder.api(MyHttpApi).pipe(Layer.provide([HttpAppLive]))
+const HttpLive = HttpApiBuilder.api(MyHttpApi).pipe(
+	Layer.provide([HttpAppLive, HttpLinkPreviewLive, HttpTweetLive]),
+)
 
 const Live = pipe(
 	HttpApiBuilder.Router.Live,
