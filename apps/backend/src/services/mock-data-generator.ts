@@ -30,6 +30,7 @@ export class MockDataGenerator extends Effect.Service<MockDataGenerator>()("Mock
 					firstName: ["Alice", "Bob", "Charlie", "Diana", "Eve"][i % 5] || "Test",
 					lastName: `User${i}`,
 					avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${i}`,
+					userType: "user" as const,
 					status: (["online", "offline", "away"] as const)[i % 3],
 					lastSeen: new Date(),
 

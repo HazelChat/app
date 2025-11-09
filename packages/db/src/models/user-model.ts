@@ -6,6 +6,9 @@ import { baseFields, JsonDate } from "./utils"
 export const UserStatus = Schema.Literal("online", "offline", "away")
 export type UserStatus = Schema.Schema.Type<typeof UserStatus>
 
+export const UserType = Schema.Literal("user", "machine")
+export type UserType = Schema.Schema.Type<typeof UserType>
+
 export class Model extends M.Class<Model>("User")({
 	id: M.Generated(UserId),
 	externalId: Schema.String,
@@ -13,6 +16,7 @@ export class Model extends M.Class<Model>("User")({
 	firstName: Schema.String,
 	lastName: Schema.String,
 	avatarUrl: Schema.String,
+	userType: UserType,
 	status: UserStatus,
 	lastSeen: JsonDate,
 	settings: Schema.NullOr(

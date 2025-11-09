@@ -130,6 +130,7 @@ export const HttpAuthLive = HttpApiBuilder.group(HazelApi, "auth", (handlers) =>
 						firstName: workosUser.firstName || "",
 						lastName: workosUser.lastName || "",
 						avatarUrl: workosUser.profilePictureUrl || "",
+						userType: "user",
 						status: "online" as const,
 						lastSeen: new Date(),
 						settings: null,

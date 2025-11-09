@@ -1,10 +1,10 @@
 import type { UserId } from "@hazel/effect-lib"
 import { index, jsonb, pgEnum, pgTable, text, timestamp, uuid, varchar } from "drizzle-orm/pg-core"
 
-// User status enum
 export const userStatusEnum = pgEnum("user_status", ["online", "offline", "away"])
 
-// Users table - stores user profiles
+export const userTypeEnum = pgEnum("user_type", ["user", "machine"])
+
 export const usersTable = pgTable(
 	"users",
 	{
@@ -14,6 +14,7 @@ export const usersTable = pgTable(
 		firstName: varchar({ length: 100 }).notNull(),
 		lastName: varchar({ length: 100 }).notNull(),
 		avatarUrl: text().notNull(),
+		userType: userTypeEnum().notNull().default("user"),
 		status: userStatusEnum().notNull().default("offline"),
 		lastSeen: timestamp({ mode: "date", withTimezone: true }).notNull().defaultNow(),
 		settings: jsonb().$type<Record<string, any>>(),
@@ -24,6 +25,7 @@ export const usersTable = pgTable(
 	(table) => [
 		index("users_external_id_idx").on(table.externalId),
 		index("users_email_idx").on(table.email),
+		index("users_user_type_idx").on(table.userType),
 		index("users_deleted_at_idx").on(table.deletedAt),
 	],
 )

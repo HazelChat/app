@@ -2,6 +2,7 @@
 
 export * from "@hazel/effect-lib"
 export * from "./attachments"
+export * from "./bots"
 export * from "./channels"
 export * from "./invitations"
 export * from "./messages"

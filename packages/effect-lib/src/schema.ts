@@ -12,6 +12,12 @@ export const UserId = Schema.UUID.pipe(Schema.brand("@HazelChat/UserId")).annota
 })
 export type UserId = Schema.Schema.Type<typeof UserId>
 
+export const BotId = Schema.UUID.pipe(Schema.brand("@HazelChat/BotId")).annotations({
+	description: "The ID of a bot",
+	title: "Bot ID",
+})
+export type BotId = Schema.Schema.Type<typeof BotId>
+
 export const MessageId = Schema.UUID.pipe(Schema.brand("@HazelChat/MessageId")).annotations({
 	description: "The ID of the message being replied to",
 	title: "Reply To Message ID",

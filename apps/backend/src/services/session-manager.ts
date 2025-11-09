@@ -176,6 +176,7 @@ export class SessionManager extends Effect.Service<SessionManager>()("SessionMan
 							firstName: sessionData.user.firstName || "",
 							lastName: sessionData.user.lastName || "",
 							avatarUrl: sessionData.user.profilePictureUrl || "",
+							userType: "user",
 							status: "online" as const,
 							lastSeen: new Date(),
 							settings: null,

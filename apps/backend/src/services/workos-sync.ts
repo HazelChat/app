@@ -98,6 +98,7 @@ export class WorkOSSync extends Effect.Service<WorkOSSync>()("WorkOSSync", {
 								avatarUrl:
 									workosUser.profilePictureUrl ||
 									`https://avatar.vercel.sh/${workosUser.id}.svg`,
+								userType: "user",
 								status: "offline" as const,
 								lastSeen: new Date(),
 								settings: null,
@@ -120,10 +121,14 @@ export class WorkOSSync extends Effect.Service<WorkOSSync>()("WorkOSSync", {
 			)
 
 			// Soft delete users that no longer exist in WorkOS
+			// Skip mock users and machine/bot users (they're not managed by WorkOS)
 			yield* Effect.all(
 				existingUsers
 					.filter(
-						(user) => !workosUserIds.has(user.externalId) && !user.externalId.startsWith("mock_"),
+						(user) =>
+							!workosUserIds.has(user.externalId) &&
+							!user.externalId.startsWith("mock_") &&
+							user.userType !== "machine",
 					)
 					.map((user) =>
 						collectResult(
@@ -313,12 +318,15 @@ export class WorkOSSync extends Effect.Service<WorkOSSync>()("WorkOSSync", {
 				)
 
 				// Soft delete memberships that no longer exist in WorkOS
+				// Skip mock users and machine/bot users (they're not managed by WorkOS)
 				yield* Effect.all(
 					existingMemberships
 						.filter((membership) => {
 							const user = users.find((u) => u.id === membership.userId)
 							return (
-								!seenUserIds.has(membership.userId) && !user?.externalId.startsWith("mock_")
+								!seenUserIds.has(membership.userId) &&
+								!user?.externalId.startsWith("mock_") &&
+								user?.userType !== "machine"
 							)
 						})
 						.map((membership) =>
@@ -547,6 +555,7 @@ export class WorkOSSync extends Effect.Service<WorkOSSync>()("WorkOSSync", {
 								avatarUrl:
 									typedEvent.data.profilePictureUrl ||
 									`https://avatar.vercel.sh/${typedEvent.data.id}.svg`,
+								userType: "user" as const,
 								status: "offline" as const,
 								lastSeen: new Date(),
 								settings: null,
