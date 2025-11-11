@@ -1,8 +1,8 @@
 import { HttpApiEndpoint, HttpApiGroup, HttpApiSchema, Multipart } from "@effect/platform"
-import { Attachment } from "@hazel/db/models"
-import { CurrentUser, InternalServerError, TransactionId, UnauthorizedError } from "@hazel/domain"
-import { ChannelId, OrganizationId } from "@hazel/domain/ids"
 import { Schema } from "effect"
+import { CurrentUser, InternalServerError, TransactionId, UnauthorizedError } from "../"
+import { ChannelId, OrganizationId } from "../ids"
+import { Attachment } from "../models"
 
 export class AttachmentResponse extends Schema.Class<AttachmentResponse>("AttachmentResponse")({
 	data: Attachment.Model.json,
