@@ -107,7 +107,6 @@ const PolicyLive = Layer.mergeAll(
 	ChannelPolicy.Default,
 	MessagePolicy.Default,
 	InvitationPolicy.Default,
-	AttachmentPolicy.Default,
 	OrganizationMemberPolicy.Default,
 	ChannelMemberPolicy.Default,
 	MessageReactionPolicy.Default,
