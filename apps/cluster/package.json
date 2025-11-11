@@ -1,0 +1,23 @@
+{
+  "name": "cluster",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "bun run src/index.ts --hot"
+  },
+  "devDependencies": {
+    "@types/bun": "1.3.2"
+  },
+  "peerDependencies": {
+    "typescript": "5.9.3"
+  },
+  "dependencies": {
+    "@effect/cluster": "^0.52.8",
+    "@effect/platform": "^0.93.0",
+    "@effect/platform-bun": "^0.83.0",
+    "@effect/sql-pg": "^0.49.3",
+    "@effect/workflow": "^0.12.2",
+    "effect": "^3.19.3"
+  }
+}
