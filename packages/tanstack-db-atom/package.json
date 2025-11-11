@@ -8,12 +8,12 @@
 		".": "./src/index.ts"
 	},
 	"dependencies": {
-		"@effect-atom/atom-react": "^0.4.0",
+		"@effect-atom/atom-react": "catalog:effect",
 		"@tanstack/db": "0.4.20",
-		"effect": "^3.19.3"
+		"effect": "catalog:effect"
 	},
 	"devDependencies": {
-		"@effect/language-service": "^0.55.2",
+		"@effect/language-service": "catalog:effect",
 		"typescript": "^5.9.3"
 	}
 }

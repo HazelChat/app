@@ -13,17 +13,17 @@
 		"db": "drizzle-kit"
 	},
 	"devDependencies": {
-		"@effect/language-service": "^0.55.2",
+		"@effect/language-service": "catalog:effect",
 		"@types/node": "^24.10.0",
 		"drizzle-kit": "^0.31.6",
 		"typescript": "^5.9.3"
 	},
 	"dependencies": {
-		"@effect/experimental": "^0.57.0",
+		"@effect/experimental": "catalog:effect",
 		"@hazel/domain": "workspace:*",
 		"@hazel/schema": "workspace:*",
 		"drizzle-orm": "^0.44.7",
-		"effect": "^3.19.3",
+		"effect": "catalog:effect",
 		"postgres": "^3.4.7"
 	}
 }

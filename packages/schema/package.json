@@ -8,10 +8,10 @@
 		".": "./src/index.ts"
 	},
 	"dependencies": {
-		"effect": "^3.19.3"
+		"effect": "catalog:effect"
 	},
 	"devDependencies": {
-		"@effect/language-service": "^0.55.2",
+		"@effect/language-service": "catalog:effect",
 		"@types/node": "^24.10.0",
 		"typescript": "^5.9.3"
 	}

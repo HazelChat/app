@@ -11,14 +11,14 @@
 	},
 	"devDependencies": {
 		"@cloudflare/vitest-pool-workers": "^0.8.19",
-		"@effect/language-service": "^0.55.2",
+		"@effect/language-service": "catalog:effect",
 		"typescript": "^5.9.3",
 		"vitest": "^4.0.8",
 		"wrangler": "^4.46.0"
 	},
 	"dependencies": {
-		"@effect/platform": "0.93.0",
-		"effect": "^3.19.3",
+		"@effect/platform": "catalog:effect",
+		"effect": "catalog:effect",
 		"metascraper": "^5.49.5",
 		"metascraper-description": "^5.49.5",
 		"metascraper-image": "^5.49.5",
