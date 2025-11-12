@@ -44,8 +44,13 @@ const WorkflowApiLive = HttpApiBuilder.api(Cluster.WorkflowApi).pipe(
 
 const port = 3020
 
-// Main server layer
-const ServerLayer = HttpApiBuilder.serve(HttpMiddleware.logger).pipe(
+// Main server layer with CORS enabled
+const ServerLayer = HttpApiBuilder.serve(
+	HttpMiddleware.cors({
+		allowedOrigins: ["http://localhost:3000", "https://app.hazel.sh"],
+		credentials: true,
+	}),
+).pipe(
 	Layer.provide(WorkflowApiLive),
 	Layer.provide(AllWorkflows),
 	Layer.provide(Logger.pretty),
