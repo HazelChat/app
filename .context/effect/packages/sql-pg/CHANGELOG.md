@@ -1,5 +1,59 @@
 # @effect/sql-pg
 
+## 0.49.4
+
+### Patch Changes
+
+- [#5725](https://github.com/Effect-TS/effect/pull/5725) [`06b49b9`](https://github.com/Effect-TS/effect/commit/06b49b9b6ab8cb445a426aa13123795c4914b953) Thanks @janglad! - Fix: populate PgClient config with values parsed from URL if not provided
+
+## 0.49.3
+
+### Patch Changes
+
+- [#5717](https://github.com/Effect-TS/effect/pull/5717) [`d277a32`](https://github.com/Effect-TS/effect/commit/d277a32b6c9e095553263eac204c026ecd2711fe) Thanks @tim-smart! - improve pg client error handling
+
+## 0.49.2
+
+### Patch Changes
+
+- [#5705](https://github.com/Effect-TS/effect/pull/5705) [`84d22eb`](https://github.com/Effect-TS/effect/commit/84d22eb75985da4f3c626a59bcfa2b5a19a17fa2) Thanks @tim-smart! - only cancel postgres queries on a best effort basis
+
+## 0.49.1
+
+### Patch Changes
+
+- [#5701](https://github.com/Effect-TS/effect/pull/5701) [`c00268d`](https://github.com/Effect-TS/effect/commit/c00268d6ae82fcceda6d71a99e1ec4c5072c1deb) Thanks @tim-smart! - support query interuption in sql-pg
+
+## 0.49.0
+
+### Minor Changes
+
+- [#5686](https://github.com/Effect-TS/effect/pull/5686) [`571025c`](https://github.com/Effect-TS/effect/commit/571025ceaff6ef432a61bf65735a5a0f45118313) Thanks @tim-smart! - allow any type to be used as sql parameters
+
+### Patch Changes
+
+- [#5690](https://github.com/Effect-TS/effect/pull/5690) [`106abe0`](https://github.com/Effect-TS/effect/commit/106abe042658ebe12b221d00fe704fc2ee9b9be8) Thanks @lucas-barake! - fix handling of multi-statement queries (pg returns an array of results)
+
+- Updated dependencies [[`571025c`](https://github.com/Effect-TS/effect/commit/571025ceaff6ef432a61bf65735a5a0f45118313)]:
+  - @effect/sql@0.48.0
+  - @effect/experimental@0.57.0
+
+## 0.48.0
+
+### Minor Changes
+
+- [#5606](https://github.com/Effect-TS/effect/pull/5606) [`24a1685`](https://github.com/Effect-TS/effect/commit/24a1685c70a9ed157468650f95a5c3da3f2c2433) Thanks @tim-smart! - Use "pg" npm library for @effect/sql-pg backend
+
+### Patch Changes
+
+- [#5606](https://github.com/Effect-TS/effect/pull/5606) [`24a1685`](https://github.com/Effect-TS/effect/commit/24a1685c70a9ed157468650f95a5c3da3f2c2433) Thanks @tim-smart! - disable pg onnotice by default
+
+- Updated dependencies [[`3c15d5f`](https://github.com/Effect-TS/effect/commit/3c15d5f99fb8d8470a00c5a33d9ba3cac89dfe4c), [`3863fa8`](https://github.com/Effect-TS/effect/commit/3863fa89f61e63e5529fd961e37333bddf7db64a), [`2a03c76`](https://github.com/Effect-TS/effect/commit/2a03c76c2781ca7e9e228e838eab2eb0d0795b1d), [`24a1685`](https://github.com/Effect-TS/effect/commit/24a1685c70a9ed157468650f95a5c3da3f2c2433)]:
+  - effect@3.19.0
+  - @effect/platform@0.93.0
+  - @effect/experimental@0.57.0
+  - @effect/sql@0.47.0
+
 ## 0.47.0
 
 ### Patch Changes

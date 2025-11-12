@@ -9,14 +9,13 @@ import type { DurationInput } from "effect/Duration"
 import * as Effect from "effect/Effect"
 import * as Equal from "effect/Equal"
 import * as Exit from "effect/Exit"
-import * as FiberId from "effect/FiberId"
+import type * as Fiber from "effect/Fiber"
 import * as FiberRef from "effect/FiberRef"
 import { identity } from "effect/Function"
-import * as Function from "effect/Function"
 import * as HashMap from "effect/HashMap"
-import * as HashSet from "effect/HashSet"
 import * as Metric from "effect/Metric"
 import * as Option from "effect/Option"
+import * as Runtime from "effect/Runtime"
 import * as Schedule from "effect/Schedule"
 import * as Schema from "effect/Schema"
 import * as Scope from "effect/Scope"
@@ -37,6 +36,7 @@ import type { Sharding } from "../Sharding.js"
 import { ShardingConfig } from "../ShardingConfig.js"
 import * as Snowflake from "../Snowflake.js"
 import { EntityReaper } from "./entityReaper.js"
+import { joinAllDiscard } from "./fiber.js"
 import { internalInterruptors } from "./interruptors.js"
 import { ResourceMap } from "./resourceMap.js"
 import { ResourceRef } from "./resourceRef.js"
@@ -54,6 +54,7 @@ export interface EntityManager {
   readonly isProcessingFor: (message: Message.Incoming<any>, options?: {
     readonly excludeReplies?: boolean
   }) => boolean
+  readonly clearProcessed: () => void
 
   readonly interruptShard: (shardId: ShardId) => Effect.Effect<void>
 
@@ -108,13 +109,15 @@ export const make = Effect.fnUntraced(function*<
   )
 
   const activeServers = new Map<EntityId, EntityState>()
+  const serverCloseLatches = new Map<EntityAddress, Effect.Latch>()
+  const processedRequestIds = new Set<Snowflake.Snowflake>()
 
   const entities: ResourceMap<
     EntityAddress,
     EntityState,
     EntityNotAssignedToRunner
   > = yield* ResourceMap.make(Effect.fnUntraced(function*(address: EntityAddress) {
-    if (yield* options.sharding.isShutdown) {
+    if (!options.sharding.hasShardId(address.shardId)) {
       return yield* new EntityNotAssignedToRunner({ address })
     }
 
@@ -122,9 +125,13 @@ export const make = Effect.fnUntraced(function*<
     const endLatch = yield* Effect.makeLatch()
 
     // on shutdown, reset the storage for the entity
-    yield* Scope.addFinalizer(
+    yield* Scope.addFinalizerExit(
       scope,
-      Effect.ignore(options.storage.resetAddress(address))
+      () => {
+        serverCloseLatches.get(address)?.unsafeOpen()
+        serverCloseLatches.delete(address)
+        return Effect.void
+      }
     )
 
     const activeRequests: EntityState["activeRequests"] = new Map()
@@ -173,9 +180,22 @@ export const make = Effect.fnUntraced(function*<
                   Context.get(request.rpc.annotations, Persisted) &&
                   Exit.isFailure(response.exit) &&
                   Exit.isInterrupted(response.exit) &&
-                  (isShuttingDown || Context.get(request.rpc.annotations, Uninterruptible) ||
-                    isInterruptIgnore(response.exit.cause))
+                  (isShuttingDown || Uninterruptible.forServer(request.rpc.annotations))
                 ) {
+                  if (!isShuttingDown) {
+                    return server.write(0, {
+                      ...request.message.envelope,
+                      id: RequestId(request.message.envelope.requestId),
+                      tag: request.message.envelope.tag as any,
+                      payload: new Request({
+                        ...request.message.envelope,
+                        lastSentChunk: request.lastSentChunk
+                      } as any) as any
+                    }).pipe(
+                      Effect.forkIn(scope)
+                    )
+                  }
+                  activeRequests.delete(response.requestId)
                   return options.storage.unregisterReplyHandler(request.message.envelope.requestId)
                 }
                 return retryRespond(
@@ -191,6 +211,7 @@ export const make = Effect.fnUntraced(function*<
                   )
                 ).pipe(
                   Effect.flatMap(() => {
+                    processedRequestIds.add(request.message.envelope.requestId)
                     activeRequests.delete(response.requestId)
 
                     // ensure that the reaper does not remove the entity as we haven't
@@ -304,6 +325,7 @@ export const make = Effect.fnUntraced(function*<
       scope,
       Effect.withFiberRuntime((fiber) => {
         activeServers.delete(address.entityId)
+        serverCloseLatches.set(address, Effect.unsafeMakeLatch(false))
         internalInterruptors.add(fiber.id())
         return state.write(0, { _tag: "Eof" }).pipe(
           Effect.andThen(Effect.interruptible(endLatch.await)),
@@ -349,7 +371,7 @@ export const make = Effect.fnUntraced(function*<
               // one sender for the same request. In this case, the other senders
               // should resume from storage only.
               let entry = server.activeRequests.get(message.envelope.requestId)
-              if (entry) {
+              if (entry || processedRequestIds.has(message.envelope.requestId)) {
                 return Effect.fail(
                   new AlreadyProcessingMessage({
                     envelopeId: message.envelope.requestId,
@@ -415,31 +437,35 @@ export const make = Effect.fnUntraced(function*<
     )
   }
 
-  const interruptShard = (shardId: ShardId) =>
-    Effect.suspend(function loop(): Effect.Effect<void> {
-      const toInterrupt = new Set<EntityState>()
-      for (const state of activeServers.values()) {
-        if (shardId[Equal.symbol](state.address.shardId)) {
-          toInterrupt.add(state)
-        }
-      }
-      if (toInterrupt.size === 0) {
-        return Effect.void
-      }
-      return Effect.flatMap(
-        Effect.forEach(toInterrupt, (state) => entities.removeIgnore(state.address), {
-          concurrency: "unbounded",
-          discard: true
-        }),
-        loop
-      )
-    })
-
   const decodeMessage = Schema.decode(makeMessageSchema(entity))
 
+  const runFork = Runtime.runFork(
+    yield* Effect.runtime<never>().pipe(
+      Effect.interruptible
+    )
+  )
+
   return identity<EntityManager>({
-    interruptShard,
+    interruptShard: (shardId: ShardId) =>
+      Effect.suspend(function loop(): Effect.Effect<void> {
+        const fibers = Arr.empty<Fiber.RuntimeFiber<void>>()
+        activeServers.forEach((state) => {
+          if (shardId[Equal.symbol](state.address.shardId)) {
+            fibers.push(runFork(entities.removeIgnore(state.address)))
+          }
+        })
+        serverCloseLatches.forEach((latch, address) => {
+          if (shardId[Equal.symbol](address.shardId)) {
+            fibers.push(runFork(latch.await))
+          }
+        })
+        if (fibers.length === 0) return Effect.void
+        return Effect.flatMap(joinAllDiscard(fibers), loop)
+      }),
     isProcessingFor(message, options) {
+      if (options?.excludeReplies !== true && processedRequestIds.has(message.envelope.requestId)) {
+        return true
+      }
       const state = activeServers.get(message.envelope.address.entityId)
       if (!state) return false
       const request = state.activeRequests.get(message.envelope.requestId)
@@ -449,6 +475,9 @@ export const make = Effect.fnUntraced(function*<
         return false
       }
       return true
+    },
+    clearProcessed() {
+      processedRequestIds.clear()
     },
     sendLocal,
     send: (message) =>
@@ -553,17 +582,3 @@ const retryRespond = <A, E, R>(times: number, effect: Effect.Effect<A, E, R>): E
   times === 0 ?
     effect :
     Effect.catchAll(effect, () => Effect.delay(retryRespond(times - 1, effect), 200))
-
-const IsInterruptedIgnoreReducer: Cause.CauseReducer<unknown, unknown, boolean> = {
-  emptyCase: Function.constFalse,
-  failCase: Function.constFalse,
-  dieCase: Function.constFalse,
-  interruptCase: (_, fiberId) => HashSet.has(FiberId.ids(fiberId), -1),
-  sequentialCase: (_, left, right) => left || right,
-  parallelCase: (_, left, right) => left || right
-}
-
-const isInterruptIgnore: (self: Cause.Cause<unknown>) => boolean = Cause.reduceWithContext(
-  undefined,
-  IsInterruptedIgnoreReducer
-)

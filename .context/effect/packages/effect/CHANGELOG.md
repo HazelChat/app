@@ -1,5 +1,53 @@
 # effect
 
+## 3.19.3
+
+### Patch Changes
+
+- [#5712](https://github.com/Effect-TS/effect/pull/5712) [`7d28a90`](https://github.com/Effect-TS/effect/commit/7d28a908f965854cff386a19515141aea5b39eb7) Thanks @gcanti! - Use standard formatting function in Config error messages, closes #5709
+
+## 3.19.2
+
+### Patch Changes
+
+- [#5703](https://github.com/Effect-TS/effect/pull/5703) [`374f58c`](https://github.com/Effect-TS/effect/commit/374f58c10799109b61d8a131a025f3d03ce5aab5) Thanks @tim-smart! - preserve Layer.mergeAll context order
+
+- [#5703](https://github.com/Effect-TS/effect/pull/5703) [`374f58c`](https://github.com/Effect-TS/effect/commit/374f58c10799109b61d8a131a025f3d03ce5aab5) Thanks @tim-smart! - ensure FiberHandle.run state transition is atomic
+
+## 3.19.1
+
+### Patch Changes
+
+- [#5695](https://github.com/Effect-TS/effect/pull/5695) [`63f2bf3`](https://github.com/Effect-TS/effect/commit/63f2bf393ef4bb3e46db59abdf1b2160e8ee71d4) Thanks @tim-smart! - allow parallel finalization of merged layers
+
+## 3.19.0
+
+### Minor Changes
+
+- [#5606](https://github.com/Effect-TS/effect/pull/5606) [`3863fa8`](https://github.com/Effect-TS/effect/commit/3863fa89f61e63e5529fd961e37333bddf7db64a) Thanks @mikearnaldi! - Add Effect.fn.Return to allow typing returns on Effect.fn
+
+- [#5606](https://github.com/Effect-TS/effect/pull/5606) [`2a03c76`](https://github.com/Effect-TS/effect/commit/2a03c76c2781ca7e9e228e838eab2eb0d0795b1d) Thanks @fubhy! - Backport `Graph` module updates
+
+- [#5606](https://github.com/Effect-TS/effect/pull/5606) [`24a1685`](https://github.com/Effect-TS/effect/commit/24a1685c70a9ed157468650f95a5c3da3f2c2433) Thanks @tim-smart! - add experimental HashRing module
+
+### Patch Changes
+
+- [#5679](https://github.com/Effect-TS/effect/pull/5679) [`3c15d5f`](https://github.com/Effect-TS/effect/commit/3c15d5f99fb8d8470a00c5a33d9ba3cac89dfe4c) Thanks @KhraksMamtsov! - `Array.window` signature has been improved
+
+## 3.18.5
+
+### Patch Changes
+
+- [#5669](https://github.com/Effect-TS/effect/pull/5669) [`a537469`](https://github.com/Effect-TS/effect/commit/a5374696bdabee005bf75d7b1b57f8bee7763cba) Thanks @fubhy! - Fix Graph.neighbors() returning self-loops in undirected graphs.
+
+  Graph.neighbors() now correctly returns the other endpoint for undirected graphs instead of always returning edge.target, which caused nodes to appear as their own neighbors when queried from the target side of an edge.
+
+- [#5628](https://github.com/Effect-TS/effect/pull/5628) [`52d5963`](https://github.com/Effect-TS/effect/commit/52d59635f35406bd27874ca0090f8642432928f4) Thanks @mikearnaldi! - Make sure AsEffect is computed
+
+- [#5671](https://github.com/Effect-TS/effect/pull/5671) [`463345d`](https://github.com/Effect-TS/effect/commit/463345d734fb462dc284d590193b7843dc104d78) Thanks @gcanti! - JSON Schema generation: add `jsonSchema2020-12` target and fix tuple output for:
+  - JSON Schema 2019-09
+  - OpenAPI 3.1
+
 ## 3.18.4
 
 ### Patch Changes

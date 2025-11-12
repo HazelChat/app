@@ -20,6 +20,7 @@ import { Route as AppOrgSlugNotificationsRouteImport } from './routes/_app/$orgS
 import { Route as AppOrgSlugSettingsLayoutRouteImport } from './routes/_app/$orgSlug/settings/layout'
 import { Route as AppOrgSlugSettingsIndexRouteImport } from './routes/_app/$orgSlug/settings/index'
 import { Route as AppOrgSlugChatIndexRouteImport } from './routes/_app/$orgSlug/chat/index'
+import { Route as AppOrgSlugSettingsWorkflowsRouteImport } from './routes/_app/$orgSlug/settings/workflows'
 import { Route as AppOrgSlugSettingsTeamRouteImport } from './routes/_app/$orgSlug/settings/team'
 import { Route as AppOrgSlugSettingsProfileRouteImport } from './routes/_app/$orgSlug/settings/profile'
 import { Route as AppOrgSlugSettingsInvitationsRouteImport } from './routes/_app/$orgSlug/settings/invitations'
@@ -83,6 +84,12 @@ const AppOrgSlugChatIndexRoute = AppOrgSlugChatIndexRouteImport.update({
   path: '/chat/',
   getParentRoute: () => AppOrgSlugLayoutRoute,
 } as any)
+const AppOrgSlugSettingsWorkflowsRoute =
+  AppOrgSlugSettingsWorkflowsRouteImport.update({
+    id: '/workflows',
+    path: '/workflows',
+    getParentRoute: () => AppOrgSlugSettingsLayoutRoute,
+  } as any)
 const AppOrgSlugSettingsTeamRoute = AppOrgSlugSettingsTeamRouteImport.update({
   id: '/team',
   path: '/team',
@@ -132,6 +139,7 @@ export interface FileRoutesByFullPath {
   '/$orgSlug/settings/invitations': typeof AppOrgSlugSettingsInvitationsRoute
   '/$orgSlug/settings/profile': typeof AppOrgSlugSettingsProfileRoute
   '/$orgSlug/settings/team': typeof AppOrgSlugSettingsTeamRoute
+  '/$orgSlug/settings/workflows': typeof AppOrgSlugSettingsWorkflowsRoute
   '/$orgSlug/chat': typeof AppOrgSlugChatIndexRoute
   '/$orgSlug/settings/': typeof AppOrgSlugSettingsIndexRoute
 }
@@ -148,6 +156,7 @@ export interface FileRoutesByTo {
   '/$orgSlug/settings/invitations': typeof AppOrgSlugSettingsInvitationsRoute
   '/$orgSlug/settings/profile': typeof AppOrgSlugSettingsProfileRoute
   '/$orgSlug/settings/team': typeof AppOrgSlugSettingsTeamRoute
+  '/$orgSlug/settings/workflows': typeof AppOrgSlugSettingsWorkflowsRoute
   '/$orgSlug/chat': typeof AppOrgSlugChatIndexRoute
   '/$orgSlug/settings': typeof AppOrgSlugSettingsIndexRoute
 }
@@ -168,6 +177,7 @@ export interface FileRoutesById {
   '/_app/$orgSlug/settings/invitations': typeof AppOrgSlugSettingsInvitationsRoute
   '/_app/$orgSlug/settings/profile': typeof AppOrgSlugSettingsProfileRoute
   '/_app/$orgSlug/settings/team': typeof AppOrgSlugSettingsTeamRoute
+  '/_app/$orgSlug/settings/workflows': typeof AppOrgSlugSettingsWorkflowsRoute
   '/_app/$orgSlug/chat/': typeof AppOrgSlugChatIndexRoute
   '/_app/$orgSlug/settings/': typeof AppOrgSlugSettingsIndexRoute
 }
@@ -188,6 +198,7 @@ export interface FileRouteTypes {
     | '/$orgSlug/settings/invitations'
     | '/$orgSlug/settings/profile'
     | '/$orgSlug/settings/team'
+    | '/$orgSlug/settings/workflows'
     | '/$orgSlug/chat'
     | '/$orgSlug/settings/'
   fileRoutesByTo: FileRoutesByTo
@@ -204,6 +215,7 @@ export interface FileRouteTypes {
     | '/$orgSlug/settings/invitations'
     | '/$orgSlug/settings/profile'
     | '/$orgSlug/settings/team'
+    | '/$orgSlug/settings/workflows'
     | '/$orgSlug/chat'
     | '/$orgSlug/settings'
   id:
@@ -223,6 +235,7 @@ export interface FileRouteTypes {
     | '/_app/$orgSlug/settings/invitations'
     | '/_app/$orgSlug/settings/profile'
     | '/_app/$orgSlug/settings/team'
+    | '/_app/$orgSlug/settings/workflows'
     | '/_app/$orgSlug/chat/'
     | '/_app/$orgSlug/settings/'
   fileRoutesById: FileRoutesById
@@ -311,6 +324,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppOrgSlugChatIndexRouteImport
       parentRoute: typeof AppOrgSlugLayoutRoute
     }
+    '/_app/$orgSlug/settings/workflows': {
+      id: '/_app/$orgSlug/settings/workflows'
+      path: '/workflows'
+      fullPath: '/$orgSlug/settings/workflows'
+      preLoaderRoute: typeof AppOrgSlugSettingsWorkflowsRouteImport
+      parentRoute: typeof AppOrgSlugSettingsLayoutRoute
+    }
     '/_app/$orgSlug/settings/team': {
       id: '/_app/$orgSlug/settings/team'
       path: '/team'
@@ -362,6 +382,7 @@ interface AppOrgSlugSettingsLayoutRouteChildren {
   AppOrgSlugSettingsInvitationsRoute: typeof AppOrgSlugSettingsInvitationsRoute
   AppOrgSlugSettingsProfileRoute: typeof AppOrgSlugSettingsProfileRoute
   AppOrgSlugSettingsTeamRoute: typeof AppOrgSlugSettingsTeamRoute
+  AppOrgSlugSettingsWorkflowsRoute: typeof AppOrgSlugSettingsWorkflowsRoute
   AppOrgSlugSettingsIndexRoute: typeof AppOrgSlugSettingsIndexRoute
 }
 
@@ -372,6 +393,7 @@ const AppOrgSlugSettingsLayoutRouteChildren: AppOrgSlugSettingsLayoutRouteChildr
     AppOrgSlugSettingsInvitationsRoute: AppOrgSlugSettingsInvitationsRoute,
     AppOrgSlugSettingsProfileRoute: AppOrgSlugSettingsProfileRoute,
     AppOrgSlugSettingsTeamRoute: AppOrgSlugSettingsTeamRoute,
+    AppOrgSlugSettingsWorkflowsRoute: AppOrgSlugSettingsWorkflowsRoute,
     AppOrgSlugSettingsIndexRoute: AppOrgSlugSettingsIndexRoute,
   }
 

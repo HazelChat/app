@@ -11,3 +11,5 @@ export * from "./policy"
 // RPC contracts
 export * as Rpc from "./rpc"
 export * from "./transaction-id"
+// Cluster contracts
+export * as Cluster from "./cluster"

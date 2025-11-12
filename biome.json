@@ -1,5 +1,5 @@
 {
-	"$schema": "https://biomejs.dev/schemas/2.3.3/schema.json",
+	"$schema": "https://biomejs.dev/schemas/2.3.5/schema.json",
 	"assist": {
 		"actions": {
 			"source": {
@@ -8,8 +8,15 @@
 		}
 	},
 	"files": {
-		"includes": ["apps/**/*.{ts,tsx}", "packages/**/*.{ts,tsx}"],
-		"experimentalScannerIgnores": [".context/**", "node_modules/**", ".turbo/**"]
+		"includes": [
+			"apps/**/*.{ts,tsx}",
+			"packages/**/*.{ts,tsx}"
+		],
+		"experimentalScannerIgnores": [
+			".context/**",
+			"node_modules/**",
+			".turbo/**"
+		]
 	},
 	"linter": {
 		"enabled": true,

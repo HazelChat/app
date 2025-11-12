@@ -1,5 +1,24 @@
 # @effect/cli
 
+## 0.72.1
+
+### Patch Changes
+
+- [#5677](https://github.com/Effect-TS/effect/pull/5677) [`f8273c9`](https://github.com/Effect-TS/effect/commit/f8273c9de13ffa6d96c08686f28951177b59f430) Thanks @nemmtor! - fix log level cli arg infinite loop
+
+- Updated dependencies [[`7d28a90`](https://github.com/Effect-TS/effect/commit/7d28a908f965854cff386a19515141aea5b39eb7)]:
+  - effect@3.19.3
+
+## 0.72.0
+
+### Patch Changes
+
+- Updated dependencies [[`3c15d5f`](https://github.com/Effect-TS/effect/commit/3c15d5f99fb8d8470a00c5a33d9ba3cac89dfe4c), [`3863fa8`](https://github.com/Effect-TS/effect/commit/3863fa89f61e63e5529fd961e37333bddf7db64a), [`2a03c76`](https://github.com/Effect-TS/effect/commit/2a03c76c2781ca7e9e228e838eab2eb0d0795b1d), [`24a1685`](https://github.com/Effect-TS/effect/commit/24a1685c70a9ed157468650f95a5c3da3f2c2433)]:
+  - effect@3.19.0
+  - @effect/platform@0.93.0
+  - @effect/printer@0.47.0
+  - @effect/printer-ansi@0.47.0
+
 ## 0.71.0
 
 ### Patch Changes

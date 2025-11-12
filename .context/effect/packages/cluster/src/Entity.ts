@@ -7,14 +7,13 @@ import * as RpcGroup from "@effect/rpc/RpcGroup"
 import * as RpcServer from "@effect/rpc/RpcServer"
 import * as Arr from "effect/Array"
 import type { Brand } from "effect/Brand"
-import * as Cause from "effect/Cause"
+import type * as Cause from "effect/Cause"
 import * as Context from "effect/Context"
 import * as Data from "effect/Data"
 import type { DurationInput } from "effect/Duration"
 import * as Effect from "effect/Effect"
 import * as Equal from "effect/Equal"
 import * as Exit from "effect/Exit"
-import * as FiberId from "effect/FiberId"
 import { identity } from "effect/Function"
 import * as Hash from "effect/Hash"
 import * as Layer from "effect/Layer"
@@ -24,12 +23,7 @@ import * as Predicate from "effect/Predicate"
 import type * as Schedule from "effect/Schedule"
 import { Scope } from "effect/Scope"
 import type * as Stream from "effect/Stream"
-import type {
-  AlreadyProcessingMessage,
-  EntityNotManagedByRunner,
-  MailboxFull,
-  PersistenceError
-} from "./ClusterError.js"
+import type { AlreadyProcessingMessage, MailboxFull, PersistenceError } from "./ClusterError.js"
 import { ShardGroup } from "./ClusterSchema.js"
 import { EntityAddress } from "./EntityAddress.js"
 import type { EntityId } from "./EntityId.js"
@@ -114,7 +108,7 @@ export interface Entity<
       entityId: string
     ) => RpcClient.RpcClient.From<
       Rpcs,
-      MailboxFull | AlreadyProcessingMessage | PersistenceError | EntityNotManagedByRunner
+      MailboxFull | AlreadyProcessingMessage | PersistenceError
     >,
     never,
     Sharding
@@ -271,7 +265,7 @@ const Proto = {
           options
         )
       ),
-      Layer.effectDiscard
+      Layer.scopedDiscard
     )
   },
   of: identity,
@@ -492,18 +486,6 @@ export class Request<Rpc extends Rpc.Any> extends Data.Class<
 }
 
 const shardingTag = Context.GenericTag<Sharding, Sharding["Type"]>("@effect/cluster/Sharding")
-
-/**
- * @since 1.0.0
- * @category Interruption
- */
-export const fiberIdIgnored = FiberId.make(-1, 0)
-
-/**
- * @since 1.0.0
- * @category Interruption
- */
-export const interruptIgnored = Effect.failCause(Cause.interrupt(fiberIdIgnored))
 
 /**
  * @since 1.0.0

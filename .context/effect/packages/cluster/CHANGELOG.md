@@ -1,5 +1,127 @@
 # @effect/cluster
 
+## 0.52.9
+
+### Patch Changes
+
+- [#5726](https://github.com/Effect-TS/effect/pull/5726) [`d34476e`](https://github.com/Effect-TS/effect/commit/d34476eebf1b61ce80b2127689d95d3b0c703aab) Thanks @tim-smart! - support and test against vitess for SqlRunnerStorage
+
+## 0.52.8
+
+### Patch Changes
+
+- [#5719](https://github.com/Effect-TS/effect/pull/5719) [`3689a18`](https://github.com/Effect-TS/effect/commit/3689a183c5ace2fc31faec1910347a12b0e70364) Thanks @tim-smart! - re-use resume parent messages for child workflows
+
+## 0.52.7
+
+### Patch Changes
+
+- [#5716](https://github.com/Effect-TS/effect/pull/5716) [`629b98d`](https://github.com/Effect-TS/effect/commit/629b98d3b696df6c928f0930b867ca3f27829af0) Thanks @tim-smart! - optimize Sharding shard release
+
+- Updated dependencies [[`7d28a90`](https://github.com/Effect-TS/effect/commit/7d28a908f965854cff386a19515141aea5b39eb7)]:
+  - effect@3.19.3
+
+## 0.52.6
+
+### Patch Changes
+
+- [#5705](https://github.com/Effect-TS/effect/pull/5705) [`84d22eb`](https://github.com/Effect-TS/effect/commit/84d22eb75985da4f3c626a59bcfa2b5a19a17fa2) Thanks @tim-smart! - use FiberMap to release shards concurrently
+
+- [#5705](https://github.com/Effect-TS/effect/pull/5705) [`84d22eb`](https://github.com/Effect-TS/effect/commit/84d22eb75985da4f3c626a59bcfa2b5a19a17fa2) Thanks @tim-smart! - if a shard lock fails to release, release all locks
+
+## 0.52.5
+
+### Patch Changes
+
+- [#5703](https://github.com/Effect-TS/effect/pull/5703) [`374f58c`](https://github.com/Effect-TS/effect/commit/374f58c10799109b61d8a131a025f3d03ce5aab5) Thanks @tim-smart! - close release FiberHandle after acquisition fiber
+
+- Updated dependencies [[`374f58c`](https://github.com/Effect-TS/effect/commit/374f58c10799109b61d8a131a025f3d03ce5aab5), [`374f58c`](https://github.com/Effect-TS/effect/commit/374f58c10799109b61d8a131a025f3d03ce5aab5)]:
+  - effect@3.19.2
+
+## 0.52.4
+
+### Patch Changes
+
+- [#5701](https://github.com/Effect-TS/effect/pull/5701) [`c00268d`](https://github.com/Effect-TS/effect/commit/c00268d6ae82fcceda6d71a99e1ec4c5072c1deb) Thanks @tim-smart! - add timeout to pg lock queries
+
+## 0.52.3
+
+### Patch Changes
+
+- [#5698](https://github.com/Effect-TS/effect/pull/5698) [`19e14ec`](https://github.com/Effect-TS/effect/commit/19e14ec89065ed938f0b3d27a9e8838dac81f3c8) Thanks @tim-smart! - add premptiveShutdown option to ShardingConfig
+
+## 0.52.2
+
+### Patch Changes
+
+- [#5695](https://github.com/Effect-TS/effect/pull/5695) [`63f2bf3`](https://github.com/Effect-TS/effect/commit/63f2bf393ef4bb3e46db59abdf1b2160e8ee71d4) Thanks @tim-smart! - tie cluster Entity lifetimes to Layer scope
+
+- Updated dependencies [[`63f2bf3`](https://github.com/Effect-TS/effect/commit/63f2bf393ef4bb3e46db59abdf1b2160e8ee71d4), [`63f2bf3`](https://github.com/Effect-TS/effect/commit/63f2bf393ef4bb3e46db59abdf1b2160e8ee71d4)]:
+  - effect@3.19.1
+  - @effect/workflow@0.12.2
+
+## 0.52.1
+
+### Patch Changes
+
+- [#5693](https://github.com/Effect-TS/effect/pull/5693) [`c7e572c`](https://github.com/Effect-TS/effect/commit/c7e572c3504ea9115df5fa1256d4791b03f33133) Thanks @tim-smart! - change workflow re-registration defect to a warning
+
+## 0.52.0
+
+### Patch Changes
+
+- [#5684](https://github.com/Effect-TS/effect/pull/5684) [`15100f6`](https://github.com/Effect-TS/effect/commit/15100f6ed1ae554c295fb8034623e942dcdc6a72) Thanks @tim-smart! - retry interrupted workflow activities
+
+- [#5689](https://github.com/Effect-TS/effect/pull/5689) [`0d77928`](https://github.com/Effect-TS/effect/commit/0d779286eec84e679b55e0dbcd7d0dd981c28f18) Thanks @tim-smart! - only store client interrupts as suspends
+
+- [#5691](https://github.com/Effect-TS/effect/pull/5691) [`c2133fa`](https://github.com/Effect-TS/effect/commit/c2133fad3a5c3f73c0e0920be779390d24aa253f) Thanks @tim-smart! - prevent interrupt suspends from propagating
+
+- Updated dependencies [[`15100f6`](https://github.com/Effect-TS/effect/commit/15100f6ed1ae554c295fb8034623e942dcdc6a72), [`571025c`](https://github.com/Effect-TS/effect/commit/571025ceaff6ef432a61bf65735a5a0f45118313), [`d43577b`](https://github.com/Effect-TS/effect/commit/d43577be59ae510812287b1cbffe6da15c040452)]:
+  - @effect/workflow@0.12.1
+  - @effect/sql@0.48.0
+  - @effect/rpc@0.72.1
+
+## 0.51.0
+
+### Minor Changes
+
+- [#5606](https://github.com/Effect-TS/effect/pull/5606) [`24a1685`](https://github.com/Effect-TS/effect/commit/24a1685c70a9ed157468650f95a5c3da3f2c2433) Thanks @tim-smart! - backport @effect/cluster from effect v4
+
+  @effect/cluster no longer requires a Shard Manager, and instead relies on the
+  `RunnerStorage` service to track runner state.
+
+  To migrate, remove any Shard Manager deployments and use the updated layers in
+  `@effect/platform-node` or `@effect/platform-bun`.
+
+  # Breaking Changes
+  - `ShardManager` module has been removed
+  - `EntityNotManagedByRunner` error has been removed
+  - Shard locks now use database advisory locks, which requires stable sessions
+    for database connections. This means load balancers or proxies that rotate
+    connections may cause issues.
+  - `@effect/platform-node/NodeClusterSocketRunner` is now
+    `@effect/cluster/NodeClusterSocket`
+  - `@effect/platform-node/NodeClusterHttpRunner` is now
+    `@effect/cluster/NodeClusterHttp`
+  - `@effect/platform-bun/BunClusterSocketRunner` is now
+    `@effect/cluster/BunClusterSocket`
+  - `@effect/platform-bun/BunClusterHttpRunner` is now
+    `@effect/cluster/BunClusterHttp`
+
+  # New Features
+  - `RunnerHealth.layerK8s` has been added, which uses the Kubernetes API to track
+    runner health and liveness. To use it, you will need a service account with
+    permissions to read pod information.
+
+### Patch Changes
+
+- Updated dependencies [[`27863ab`](https://github.com/Effect-TS/effect/commit/27863abed9047a3cb5d47b4136ff69d5456e2c74), [`3c15d5f`](https://github.com/Effect-TS/effect/commit/3c15d5f99fb8d8470a00c5a33d9ba3cac89dfe4c), [`3863fa8`](https://github.com/Effect-TS/effect/commit/3863fa89f61e63e5529fd961e37333bddf7db64a), [`2a03c76`](https://github.com/Effect-TS/effect/commit/2a03c76c2781ca7e9e228e838eab2eb0d0795b1d), [`24a1685`](https://github.com/Effect-TS/effect/commit/24a1685c70a9ed157468650f95a5c3da3f2c2433), [`24a1685`](https://github.com/Effect-TS/effect/commit/24a1685c70a9ed157468650f95a5c3da3f2c2433)]:
+  - @effect/workflow@0.12.0
+  - effect@3.19.0
+  - @effect/rpc@0.72.0
+  - @effect/platform@0.93.0
+  - @effect/sql@0.47.0
+
 ## 0.50.6
 
 ### Patch Changes
