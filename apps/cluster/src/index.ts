@@ -53,7 +53,6 @@ const ServerLayer = HttpApiBuilder.serve(
 			Config.all({
 				hostname: Config.succeed("::"),
 				port: Config.number("PORT").pipe(Config.withDefault(3020)),
-				ipv6Only: Config.succeed(true),
 				idleTimeout: Config.succeed(120),
 			}),
 		),
