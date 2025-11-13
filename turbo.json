@@ -3,6 +3,7 @@
 	"globalEnv": [
 		"PORT",
 		"LISTEN_PORT",
+		"LISTEN_HOST",
 		"DATABASE_URL",
 		"CLUSTER_URL",
 		"EFFECT_DATABASE_URL",
