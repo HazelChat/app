@@ -164,9 +164,6 @@ export const HttpWebhookLive = HttpApiBuilder.group(HazelApi, "webhooks", (handl
 												}),
 											),
 									}),
-									// Fork to avoid blocking the webhook response
-									// Errors are already caught and remapped above
-									Effect.fork,
 								)
 
 							yield* Effect.logInfo("Event processed successfully", {
