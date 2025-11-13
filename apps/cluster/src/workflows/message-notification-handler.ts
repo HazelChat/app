@@ -1,5 +1,5 @@
 import { Activity } from "@effect/workflow"
-import { and, Database, eq, isNull, ne, schema, sql } from "@hazel/db"
+import { and, Database, eq, isNull, ne, or, schema, sql } from "@hazel/db"
 import { Cluster, type NotificationId } from "@hazel/domain"
 import { Effect, Schema } from "effect"
 
@@ -24,6 +24,7 @@ export const MessageNotificationWorkflowLayer = Cluster.MessageNotificationWorkf
 				// 2. Have notifications enabled (isMuted = false)
 				// 3. Are not the author
 				// 4. Are not deleted
+				// 5. Are not currently ONLINE and viewing this channel
 				const channelMembers = yield* db
 					.execute((client) =>
 						client
@@ -35,12 +36,22 @@ export const MessageNotificationWorkflowLayer = Cluster.MessageNotificationWorkf
 								notificationCount: schema.channelMembersTable.notificationCount,
 							})
 							.from(schema.channelMembersTable)
+							.leftJoin(
+								schema.userPresenceStatusTable,
+								eq(schema.channelMembersTable.userId, schema.userPresenceStatusTable.userId),
+							)
 							.where(
 								and(
 									eq(schema.channelMembersTable.channelId, payload.channelId),
 									eq(schema.channelMembersTable.isMuted, false),
 									ne(schema.channelMembersTable.userId, payload.authorId),
 									isNull(schema.channelMembersTable.deletedAt),
+									or(
+										// No presence record - send notification
+										isNull(schema.userPresenceStatusTable.userId),
+										ne(schema.userPresenceStatusTable.activeChannelId, payload.channelId),
+										ne(schema.userPresenceStatusTable.status, "online"),
+									),
 								),
 							),
 					)

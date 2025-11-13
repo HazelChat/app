@@ -1,5 +1,5 @@
-import { index, pgEnum, pgTable, timestamp, uuid, varchar } from "drizzle-orm/pg-core"
 import type { ChannelId, UserId, UserPresenceStatusId } from "@hazel/schema"
+import { index, pgEnum, pgTable, timestamp, uuid, varchar } from "drizzle-orm/pg-core"
 
 // User presence status enum - user-settable statuses
 export const userPresenceStatusEnum = pgEnum("user_presence_status_enum", [
