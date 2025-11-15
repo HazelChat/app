@@ -1,4 +1,5 @@
 import type { ReactNode } from "react"
+import { Match } from "effect"
 import { Logo } from "~/components/logo"
 import { Link } from "~/components/ui/link"
 
@@ -14,16 +15,18 @@ function getOnboardingImage() {
 	const hour = now.getHours() // 0-23
 
 	// Determine season based on month
-	let season: string
-	if (month >= 2 && month <= 4)
-		season = "spring" // Mar-May
-	else if (month >= 5 && month <= 7)
-		season = "summer" // Jun-Aug
-	else if (month >= 8 && month <= 10) season = "autumn"
-	else season = "winter" // Dec-Feb
+	const season = Match.value(month).pipe(
+		Match.when((m) => m >= 2 && m <= 4, () => "spring" as const), // Mar-May
+		Match.when((m) => m >= 5 && m <= 7, () => "summer" as const), // Jun-Aug
+		Match.when((m) => m >= 8 && m <= 10, () => "autumn" as const), // Sep-Nov
+		Match.orElse(() => "winter" as const), // Dec-Feb
+	)
 
 	// Determine time of day (day = 6AM-6PM, night = 6PM-6AM)
-	const timeOfDay = hour >= 6 && hour < 18 ? "day" : "night"
+	const timeOfDay = Match.value(hour).pipe(
+		Match.when((h) => h >= 6 && h < 18, () => "day" as const),
+		Match.orElse(() => "night" as const),
+	)
 
 	return `/images/onboarding/${season}-${timeOfDay}.png`
 }
