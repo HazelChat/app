@@ -1,12 +1,10 @@
-import { BuildingOfficeIcon, UserIcon, UserGroupIcon, UsersIcon } from "@heroicons/react/24/outline"
 import { useState } from "react"
+import { IconCircleDottedUser } from "~/components/icons/icon-circle-dotted-user"
+import { IconOffice } from "~/components/icons/icon-company"
+import { IconUsers } from "~/components/icons/icon-users"
+import { IconUsersPlus } from "~/components/icons/icon-users-plus"
 import { CardDescription, CardHeader, CardTitle } from "~/components/ui/card"
-import {
-	ChoiceBox,
-	ChoiceBoxDescription,
-	ChoiceBoxItem,
-	ChoiceBoxLabel,
-} from "~/components/ui/choice-box"
+import { ChoiceBox, ChoiceBoxDescription, ChoiceBoxItem, ChoiceBoxLabel } from "~/components/ui/choice-box"
 import { OnboardingNavigation } from "./onboarding-navigation"
 
 const teamSizes = [
@@ -14,37 +12,37 @@ const teamSizes = [
 		id: "solo",
 		label: "Just me",
 		description: "Solo user or personal workspace",
-		icon: UserIcon,
+		icon: IconCircleDottedUser,
 	},
 	{
 		id: "small",
 		label: "2-10 people",
 		description: "Small team or startup",
-		icon: UsersIcon,
+		icon: IconUsers,
 	},
 	{
 		id: "medium",
 		label: "11-50 people",
 		description: "Growing team",
-		icon: UserGroupIcon,
+		icon: IconUsersPlus,
 	},
 	{
 		id: "large",
 		label: "51-200 people",
 		description: "Medium-sized company",
-		icon: BuildingOfficeIcon,
+		icon: IconOffice,
 	},
 	{
 		id: "xlarge",
 		label: "201-1000 people",
 		description: "Large organization",
-		icon: BuildingOfficeIcon,
+		icon: IconOffice,
 	},
 	{
 		id: "enterprise",
 		label: "1000+ people",
 		description: "Enterprise",
-		icon: BuildingOfficeIcon,
+		icon: IconOffice,
 	},
 ]
 

@@ -6,7 +6,7 @@ type IconProps = SVGProps<SVGSVGElement> & {
 	title?: string
 }
 
-function IconCircleDottedUser({
+export function IconCircleDottedUser({
 	fill = "currentColor",
 	secondaryfill,
 	title = "badge 13",
