@@ -164,11 +164,14 @@ function RouteComponent() {
 
 	// Navigate when onboarding is completed
 	useEffect(() => {
-		if (state.matches("completed") && state.context.orgSlug) {
-			navigate({
-				to: "/$orgSlug",
-				params: { orgSlug: state.context.orgSlug },
-			})
+		if (state.matches("completed")) {
+			const slug = state.context.orgSlug || state.context.organization?.slug
+			if (slug) {
+				navigate({
+					to: "/$orgSlug",
+					params: { orgSlug: slug },
+				})
+			}
 		}
 	}, [state, navigate])
 

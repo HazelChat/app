@@ -8,18 +8,39 @@ interface OnboardingLayoutProps {
 	totalSteps?: number
 }
 
+function getOnboardingImage() {
+	const now = new Date()
+	const month = now.getMonth() // 0-11
+	const hour = now.getHours() // 0-23
+
+	// Determine season based on month
+	let season: string
+	if (month >= 2 && month <= 4)
+		season = "spring" // Mar-May
+	else if (month >= 5 && month <= 7)
+		season = "summer" // Jun-Aug
+	else if (month >= 8 && month <= 10) season = "autumn"
+	else season = "winter" // Dec-Feb
+
+	// Determine time of day (day = 6AM-6PM, night = 6PM-6AM)
+	const timeOfDay = hour >= 6 && hour < 18 ? "day" : "night"
+
+	return `/images/onboarding/${season}-${timeOfDay}.png`
+}
+
 export function OnboardingLayout({ children, currentStep, totalSteps }: OnboardingLayoutProps) {
 	return (
 		<main className="relative grid h-dvh grid-cols-1 flex-col items-center justify-center lg:max-w-none lg:grid-cols-2">
 			{/* Left panel - branding and visual */}
-			<div className="relative hidden h-full flex-col bg-muted p-10 text-white lg:flex">
-				<div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-purple-600 to-pink-500 bg-center bg-cover bg-no-repeat" />
+			<div className="relative hidden h-full flex-col p-10 text-white lg:flex">
+				<img
+					src={getOnboardingImage()}
+					alt="Onboarding background"
+					className="absolute inset-0 size-full object-cover object-top-left"
+					style={{ imageRendering: "pixelated" }}
+				/>
 
-				<Link
-					href="/"
-					aria-label="Go to homepage"
-					className="relative z-20 flex items-center gap-2"
-				>
+				<Link href="/" aria-label="Go to homepage" className="relative z-20 flex items-center gap-2">
 					<Logo className="size-8 text-white" />
 					<strong className="font-semibold">Hazel</strong>
 				</Link>
@@ -30,7 +51,9 @@ export function OnboardingLayout({ children, currentStep, totalSteps }: Onboardi
 							Welcome to your new workspace. Let's get you set up in just a few steps.
 						</p>
 						<div className="text-sm text-white/80">
-							{currentStep && totalSteps ? `Step ${currentStep} of ${totalSteps}` : "Getting started"}
+							{currentStep && totalSteps
+								? `Step ${currentStep} of ${totalSteps}`
+								: "Getting started"}
 						</div>
 					</blockquote>
 				</div>
@@ -38,9 +61,7 @@ export function OnboardingLayout({ children, currentStep, totalSteps }: Onboardi
 
 			{/* Right panel - content */}
 			<div className="flex min-h-dvh items-center justify-center p-4 sm:p-12">
-				<div className="w-full max-w-2xl space-y-6">
-					{children}
-				</div>
+				<div className="w-full max-w-2xl space-y-6">{children}</div>
 			</div>
 		</main>
 	)
