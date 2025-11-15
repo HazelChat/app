@@ -203,19 +203,22 @@ function RouteComponent() {
 		return stepNumber
 	}
 
-	// Animation variants based on direction
+	// Animation variants based on direction with blur effect
 	const variants = {
 		enter: {
 			x: direction === "forward" ? 20 : -20,
 			opacity: 0,
+			filter: "blur(4px)",
 		},
 		center: {
 			x: 0,
 			opacity: 1,
+			filter: "blur(0px)",
 		},
 		exit: {
 			x: direction === "forward" ? -20 : 20,
 			opacity: 0,
+			filter: "blur(4px)",
 		},
 	}
 
