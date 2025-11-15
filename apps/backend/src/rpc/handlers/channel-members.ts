@@ -77,34 +77,39 @@ export const ChannelMemberRpcLive = ChannelMemberRpcs.toLayer(
 					),
 
 			"channelMember.clearNotifications": ({ channelId }) =>
-				db
-					.transaction(
-						Effect.gen(function* () {
-							const user = yield* CurrentUser.Context
+				Effect.gen(function* () {
+					const user = yield* CurrentUser.Context
 
-							// Find the channel member record for this user and channel
-							const memberOption = yield* ChannelMemberRepo.findByChannelAndUser(
-								channelId,
-								user.id,
-							)
-
-							// If member exists, clear the notification count
-							if (memberOption._tag === "Some") {
-								yield* ChannelMemberRepo.update({
-									id: memberOption.value.id,
-									notificationCount: 0,
-								})
-							}
-
-							const txid = yield* generateTransactionId()
-
-							return { transactionId: txid }
-						}),
+					// Find the channel member record for this user and channel
+					const memberOption = yield* ChannelMemberRepo.findByChannelAndUser(
+						channelId,
+						user.id,
+					).pipe(
+						policyUse(ChannelMemberPolicy.canRead(channelId)),
+						withRemapDbErrors("ChannelMember", "select"),
 					)
-					.pipe(
-						policyUse(ChannelMemberPolicy.canCreate(channelId)),
-						withRemapDbErrors("ChannelMember", "update"),
-					),
+
+					// If member exists, clear the notification count
+					if (memberOption._tag === "Some") {
+						yield* db
+							.transaction(
+								Effect.gen(function* () {
+									yield* ChannelMemberRepo.update({
+										id: memberOption.value.id,
+										notificationCount: 0,
+									})
+								}),
+							)
+							.pipe(
+								policyUse(ChannelMemberPolicy.canUpdate(memberOption.value.id)),
+								withRemapDbErrors("ChannelMember", "update"),
+							)
+					}
+
+					const txid = yield* generateTransactionId()
+
+					return { transactionId: txid }
+				}),
 		}
 	}),
 )

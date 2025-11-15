@@ -125,7 +125,7 @@ function AppearanceSettings() {
 						description="Switch between light and dark modes."
 					/>
 
-					<div className="-m-4 w-screen overflow-auto p-4 lg:w-[calc(100%+48px)]">
+					<div className="-mx-4 -mb-4 w-screen overflow-auto p-4 lg:w-[calc(100%+48px)]">
 						<RadioGroup
 							aria-label="Display preference"
 							defaultValue="system"

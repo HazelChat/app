@@ -65,6 +65,40 @@ export class ChannelMemberPolicy extends Effect.Service<ChannelMemberPolicy>()("
 				),
 			)
 
+		const canRead = (channelId: ChannelId) =>
+			UnauthorizedError.refail(
+				policyEntity,
+				"select",
+			)(
+				channelRepo.with(channelId, (channel) =>
+					policy(
+						policyEntity,
+						"select",
+						Effect.fn(`${policyEntity}.select`)(function* (actor) {
+							// Check if user is a member of the channel
+							const membership = yield* channelMemberRepo
+								.findByChannelAndUser(channelId, actor.id)
+								.pipe(withSystemActor)
+
+							if (Option.isSome(membership)) {
+								return yield* Effect.succeed(true)
+							}
+
+							// Organization admins can read all channel members
+							const orgMember = yield* organizationMemberRepo
+								.findByOrgAndUser(channel.organizationId, actor.id)
+								.pipe(withSystemActor)
+
+							if (Option.isSome(orgMember) && isAdminOrOwner(orgMember.value.role)) {
+								return yield* Effect.succeed(true)
+							}
+
+							return yield* Effect.succeed(false)
+						}),
+					),
+				),
+			)
+
 		const canUpdate = (id: ChannelMemberId) =>
 			UnauthorizedError.refail(
 				policyEntity,
@@ -129,7 +163,7 @@ export class ChannelMemberPolicy extends Effect.Service<ChannelMemberPolicy>()("
 				),
 			)
 
-		return { canCreate, canUpdate, canDelete, isOwner } as const
+		return { canCreate, canRead, canUpdate, canDelete, isOwner } as const
 	}),
 	dependencies: [ChannelMemberRepo.Default, ChannelRepo.Default, OrganizationMemberRepo.Default],
 	accessors: true,
