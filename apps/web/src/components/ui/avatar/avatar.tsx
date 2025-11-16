@@ -134,7 +134,7 @@ const styles = {
 }
 
 export const Avatar = ({
-	contrastBorder = true,
+	contrastBorder = false,
 	size = "md",
 	src,
 	alt,
@@ -145,7 +145,7 @@ export const Avatar = ({
 	status,
 	verified,
 	focusable = false,
-	isSquare = false,
+	isSquare = true,
 	className,
 }: AvatarProps) => {
 	const [isFailed, setIsFailed] = useState(false)
@@ -155,7 +155,11 @@ export const Avatar = ({
 			return (
 				<img
 					data-avatar-img
-					className={cx("size-full object-cover", isSquare ? "rounded-lg" : "rounded-full")}
+					className={cx("size-full object-cover", isSquare ? "rounded-xl" : "rounded-full")}
+					style={{
+						// @ts-expect-error
+						cornerShape: "squircle",
+					}}
 					src={src}
 					alt={alt}
 					onError={() => setIsFailed(true)}
@@ -200,13 +204,17 @@ export const Avatar = ({
 			data-slot="avatar"
 			className={cx(
 				"relative inline-flex shrink-0 items-center justify-center bg-muted outline-transparent",
-				isSquare ? "rounded-lg" : "rounded-full",
+				isSquare ? "rounded-xl" : "rounded-full",
 				// Focus styles
 				focusable && "ring-ring group-focus-visible:outline-2 group-focus-visible:outline-offset-2",
 				contrastBorder && "outline outline-border",
 				styles[size].root,
 				className,
 			)}
+			style={{
+				// @ts-expect-error
+				cornerShape: "squircle",
+			}}
 		>
 			{renderMainContent()}
 			{renderBadgeContent()}

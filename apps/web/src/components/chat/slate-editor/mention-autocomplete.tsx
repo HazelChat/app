@@ -248,7 +248,7 @@ export function MentionAutocomplete({ editor, search, onSelect }: MentionAutocom
 											<img
 												src={option.avatarUrl}
 												alt={option.displayName}
-												className="size-6 rounded-full object-cover"
+												className="size-6 rounded-md object-cover"
 											/>
 											{option.status && (
 												<div
@@ -262,7 +262,7 @@ export function MentionAutocomplete({ editor, search, onSelect }: MentionAutocom
 											)}
 										</div>
 									) : (
-										<div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary font-medium text-primary-fg text-xs">
+										<div className="flex size-6 shrink-0 items-center justify-center rounded-md bg-primary font-medium text-primary-fg text-xs">
 											@
 										</div>
 									)}

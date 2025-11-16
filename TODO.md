@@ -3,7 +3,6 @@
 
 # Before release
 - Settings Pages (TEST TES TEST)
-- Fix Theme colors not working
 - Electric proxy
 
 - Migrate the missing icons to nucleo
@@ -14,7 +13,6 @@
 
 
 ## High Priority Features
-- Notifications
 
 ## Medium Priority Features
 
