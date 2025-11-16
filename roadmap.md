@@ -1,4 +1,3 @@
-- notifications
 - electric proxy
 - webhook endpoints for channels
 - app integrations (linear, github as a start)

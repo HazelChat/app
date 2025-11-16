@@ -5,8 +5,6 @@
 - Settings Pages (TEST TES TEST)
 - Fix Theme colors not working
 - Electric proxy
-- Notifications 
- - Play sound when new message
 
 - Migrate the missing icons to nucleo
 
