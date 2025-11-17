@@ -130,7 +130,7 @@
         "@hazel/schema": "workspace:*",
         "@hazel/tanstack-db-atom": "workspace:*",
         "@heroicons/react": "^2.2.0",
-        "@legendapp/list": "2.1.0-beta.8",
+        "@legendapp/list": "2.1.0-beta.10",
         "@paper-design/shaders-react": "^0.0.63",
         "@radix-ui/themes": "^3.2.1",
         "@react-aria/utils": "^3.31.0",
@@ -727,7 +727,7 @@
 
     "@kikobeats/time-span": ["@kikobeats/time-span@1.0.10", "", {}, "sha512-liggEEFIA1VxExuWdJqzepj3hJ3pYLwnRbvuhfl3IYCIUFxdm41p32S8If+3RACdmLB2dZ6vME+CTAtC909q9Q=="],
 
-    "@legendapp/list": ["@legendapp/list@2.1.0-beta.8", "", { "dependencies": { "use-sync-external-store": "^1.5.0" }, "peerDependencies": { "react": "*" } }, "sha512-0KjUmoTa6FSu2lwJeBUaEpI47Gq6mTaRReMbGFlmw/UpmFw7rC1U1Ke/LwYlj+1CmA21zHsof1kYLZtfZlpyJA=="],
+    "@legendapp/list": ["@legendapp/list@2.1.0-beta.10", "", { "dependencies": { "use-sync-external-store": "^1.5.0" }, "peerDependencies": { "react": "*" } }, "sha512-3hJwSvdDkVp+xZ7h8oqjEloDJ/znAu+T3eBbbbnjYigVK+vPHydGrYCHWalJLI9rkJxfwEReFkfL0Pwz4RCP2g=="],
 
     "@metascraper/helpers": ["@metascraper/helpers@5.49.5", "", { "dependencies": { "audio-extensions": "0.0.0", "chrono-node": "2.9.0", "condense-whitespace": "~2.0.0", "data-uri-utils": "~1.0.9", "debug-logfmt": "~1.4.6", "entities": "~6.0.1", "file-extension": "~4.0.5", "has-values": "~2.0.1", "image-extensions": "~1.1.0", "is-relative-url": "~3.0.0", "is-uri": "~1.2.11", "iso-639-3": "~2.2.0", "isostring": "0.0.1", "jsdom": "~27.0.0", "lodash": "~4.17.21", "memoize-one": "~6.0.0", "microsoft-capitalize": "~1.0.5", "mime": "3", "normalize-url": "~6.1.0", "re2": "~1.22.1", "smartquotes": "~2.3.2", "tldts": "~7.0.17", "url-regex-safe": "~4.0.0", "video-extensions": "1" } }, "sha512-VbXquXB+U9g84XaazoTHF3MMVqnxBDnEAUfnpRnj7w2GV4imlqxjLgWlfixWtkcuR859mUEszniuxJ/L0NBXyw=="],
 

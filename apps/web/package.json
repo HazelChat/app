@@ -28,7 +28,7 @@
 		"@hazel/schema": "workspace:*",
 		"@hazel/tanstack-db-atom": "workspace:*",
 		"@heroicons/react": "^2.2.0",
-		"@legendapp/list": "2.1.0-beta.8",
+		"@legendapp/list": "2.1.0-beta.10",
 		"@paper-design/shaders-react": "^0.0.63",
 		"@radix-ui/themes": "^3.2.1",
 		"@react-aria/utils": "^3.31.0",
