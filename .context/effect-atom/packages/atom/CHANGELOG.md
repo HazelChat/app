@@ -1,5 +1,23 @@
 # @effect-rx/rx
 
+## 0.4.2
+
+### Patch Changes
+
+- [#366](https://github.com/tim-smart/effect-atom/pull/366) [`bb913b1`](https://github.com/tim-smart/effect-atom/commit/bb913b173557b90b7c737b17d0ec75d09cc47d45) Thanks [@lucas-barake](https://github.com/lucas-barake)! - ensure refreshed lazy parents invalidate newly mounted children
+
+## 0.4.1
+
+### Patch Changes
+
+- [#357](https://github.com/tim-smart/effect-atom/pull/357) [`92982ec`](https://github.com/tim-smart/effect-atom/commit/92982ec90ebfd9e902fa76ca2c3316c914316b0b) Thanks [@0xh3x](https://github.com/0xh3x)! - fix Result to consider waiting flag in equality
+
+## 0.4.0
+
+### Minor Changes
+
+- [`f79d415`](https://github.com/tim-smart/effect-atom/commit/f79d415d9fe5456edee076cd4b09d482457cdf38) Thanks [@tim-smart](https://github.com/tim-smart)! - update effect to 3.19
+
 ## 0.3.4
 
 ### Patch Changes

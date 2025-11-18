@@ -12,6 +12,8 @@ import * as Layer from "effect/Layer"
 import * as Option from "effect/Option"
 import * as Stream from "effect/Stream"
 
+declare const global: any
+
 addEqualityTesters()
 
 describe("Atom", () => {
@@ -274,6 +276,33 @@ describe("Atom", () => {
     assert(Result.isSuccess(result))
     expect(result.value).toEqual(111)
     expect(rebuilds).toEqual(2)
+  })
+
+  it("refresh derived before mount resolves base effect", async () => {
+    const baseAtom = Atom.make(
+      Effect.succeed("value").pipe(Effect.delay(100))
+    )
+    const derivedAtom = Atom.writable(
+      (get) => get(baseAtom),
+      () => {
+      },
+      (refresh) => refresh(baseAtom)
+    )
+    const registry = Registry.make()
+
+    registry.refresh(derivedAtom)
+    const unmount = registry.mount(derivedAtom)
+
+    let result = registry.get(derivedAtom)
+    assert(result.waiting)
+
+    await vitest.advanceTimersByTimeAsync(100)
+
+    result = registry.get(derivedAtom)
+    assert(Result.isSuccess(result))
+    expect(result.value).toEqual("value")
+
+    unmount()
   })
 
   it("scopedFn", async () => {
@@ -1168,7 +1197,7 @@ describe("Atom", () => {
 
       // optimistic phase: the optimistic value is set, but the true value is not
       expect(r.get(atom)).toEqual(Result.success(0))
-      expect(r.get(optimisticAtom)).toEqual(Result.success(1))
+      expect(r.get(optimisticAtom)).toEqual(Result.success(1, { waiting: true }))
 
       latch.unsafeOpen()
       await Effect.runPromise(Effect.yieldNow())
