@@ -2,33 +2,26 @@ import {
   createSingleRowRefProxy,
   toExpression,
 } from "../query/builder/ref-proxy"
-import { compileSingleRowExpression } from "../query/compiler/evaluators.js"
+import {
+  compileSingleRowExpression,
+  toBooleanPredicate,
+} from "../query/compiler/evaluators.js"
 import {
   findIndexForField,
   optimizeExpressionWithIndexes,
 } from "../utils/index-optimization.js"
 import { ensureIndexForField } from "../indexes/auto-index.js"
 import { makeComparator } from "../utils/comparison.js"
+import { buildCompareOptions } from "../query/compiler/order-by"
 import type {
   ChangeMessage,
+  CollectionLike,
   CurrentStateAsChangesOptions,
   SubscribeChangesOptions,
 } from "../types"
-import type { Collection, CollectionImpl } from "./index.js"
+import type { CollectionImpl } from "./index.js"
 import type { SingleRowRefProxy } from "../query/builder/ref-proxy"
 import type { BasicExpression, OrderBy } from "../query/ir.js"
-
-/**
- * Interface for a collection-like object that provides the necessary methods
- * for the change events system to work
- */
-export interface CollectionLike<
-  T extends object = Record<string, unknown>,
-  TKey extends string | number = string | number,
-> extends Pick<
-    Collection<T, TKey>,
-    `get` | `has` | `entries` | `indexes` | `id`
-  > {}
 
 /**
  * Returns the current state of the collection as an array of changes
@@ -140,7 +133,7 @@ export function currentStateAsChanges<
     // Try to optimize the query using indexes
     const optimizationResult = optimizeExpressionWithIndexes(
       expression,
-      collection.indexes
+      collection
     )
 
     if (optimizationResult.canOptimize) {
@@ -199,7 +192,7 @@ export function createFilterFunction<T extends object>(
       const evaluator = compileSingleRowExpression(expression)
       const result = evaluator(item as Record<string, unknown>)
       // WHERE clauses should always evaluate to boolean predicates (Kevin's feedback)
-      return result
+      return toBooleanPredicate(result)
     } catch {
       // If RefProxy approach fails (e.g., arithmetic operations), fall back to direct evaluation
       try {
@@ -211,7 +204,7 @@ export function createFilterFunction<T extends object>(
         }) as SingleRowRefProxy<T>
 
         const result = whereCallback(simpleProxy)
-        return result
+        return toBooleanPredicate(result)
       } catch {
         // If both approaches fail, exclude the item
         return false
@@ -232,7 +225,7 @@ export function createFilterFunctionFromExpression<T extends object>(
     try {
       const evaluator = compileSingleRowExpression(expression)
       const result = evaluator(item as Record<string, unknown>)
-      return Boolean(result)
+      return toBooleanPredicate(result)
     } catch {
       // If evaluation fails, exclude the item
       return false
@@ -326,21 +319,18 @@ function getOrderedKeys<T extends object, TKey extends string | number>(
     if (orderByExpression.type === `ref`) {
       const propRef = orderByExpression
       const fieldPath = propRef.path
+      const compareOpts = buildCompareOptions(clause, collection)
 
       // Ensure index exists for this field
       ensureIndexForField(
         fieldPath[0]!,
         fieldPath,
         collection as CollectionImpl<T, TKey>,
-        clause.compareOptions
+        compareOpts
       )
 
       // Find the index
-      const index = findIndexForField(
-        collection.indexes,
-        fieldPath,
-        clause.compareOptions
-      )
+      const index = findIndexForField(collection, fieldPath, compareOpts)
 
       if (index && index.supports(`gt`)) {
         // Use index optimization
