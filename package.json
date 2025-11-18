@@ -33,6 +33,7 @@
 		"dev": "turbo dev",
 		"build": "turbo build typecheck",
 		"start": "turbo start",
+		"setup": "turbo setup",
 		"typecheck": "turbo build typecheck",
 		"format:fix": "biome check --write --unsafe",
 		"test": "vitest",

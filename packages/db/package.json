@@ -9,7 +9,12 @@
 		"./schema": "./src/schema/index.ts"
 	},
 	"scripts": {
-		"db": "drizzle-kit"
+		"db": "drizzle-kit",
+		"setup": "drizzle-kit push",
+		"db:push": "drizzle-kit push",
+		"db:generate": "drizzle-kit generate",
+		"db:migrate": "drizzle-kit migrate",
+		"db:studio": "drizzle-kit studio"
 	},
 	"devDependencies": {
 		"@effect/language-service": "catalog:effect",

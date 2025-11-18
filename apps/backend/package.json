@@ -13,6 +13,7 @@
 		"dev": "bun run --hot src/index.ts",
 		"start": "bun run src/index.ts",
 		"typecheck": "tsc --noEmit",
+		"setup": "bun run scripts/setup.ts",
 		"sync:workos": "bun run src/scripts/sync-workos.ts",
 		"reset": "bun run scripts/reset-all.ts",
 		"reset:dry-run": "bun run scripts/reset-all.ts --dry-run",

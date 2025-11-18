@@ -32,6 +32,15 @@
 				"^typecheck"
 			]
 		},
+		"setup": {
+			"cache": false,
+			"dependsOn": [
+				"^setup"
+			]
+		},
+		"db:push": {
+			"cache": false
+		},
 		"dev": {
 			"persistent": true,
 			"cache": false
