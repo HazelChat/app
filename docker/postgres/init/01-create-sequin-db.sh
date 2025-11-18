@@ -2,7 +2,7 @@
 set -e
 
 # Create the sequin database (for Sequin's internal data)
-psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
+psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname=postgres <<-EOSQL
     CREATE DATABASE sequin;
 EOSQL
 

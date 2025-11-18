@@ -64,6 +64,21 @@ services:
       - sequin_redis_data:/data
     restart: always
 
+  # Electric - Real-time sync for Postgres
+  electric:
+    image: electricsql/electric:latest
+    environment:
+      DATABASE_URL: "postgresql://user:password@postgres:5432/app?sslmode=disable"
+      # IMPORTANT: Only use insecure mode in development
+      # See https://electric-sql.com/docs/guides/security
+      ELECTRIC_INSECURE: "true"
+    ports:
+      - "5133:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: always
+
 volumes:
   postgres_data:
     driver: local
