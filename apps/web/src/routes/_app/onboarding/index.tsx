@@ -5,7 +5,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { useMachine } from "@xstate/react"
 import { Exit } from "effect"
 import { AnimatePresence, motion } from "motion/react"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { fromPromise } from "xstate"
 import { createInvitationMutation } from "~/atoms/invitation-atoms"
 import {
@@ -67,146 +67,159 @@ function RouteComponent() {
 	const organizationMemberId = userOrganizations?.member.id
 
 	// Provide actor implementations and actions with access to RPC functions and navigation
-	const machineWithActors = onboardingMachine.provide({
-		actions: {
-			navigateToOrg: ({ context }) => {
-				const slug = context.orgSlug || context.organization?.slug
-				if (slug) {
-					navigate({
-						to: "/$orgSlug",
-						params: { orgSlug: slug },
-					})
-				}
-			},
-		},
-		actors: {
-			handleOrgSetup: fromPromise(
-				async ({
-					input,
-				}: {
-					input: {
-						orgId?: OrganizationId
-						createdOrgId?: OrganizationId
-						name: string
-						slug: string
-					}
-				}) => {
-					let effectiveOrgId = input.orgId || input.createdOrgId
-
-					// If no orgId, create the organization first
-					if (!effectiveOrgId) {
-						const result = await createOrganization({
-							payload: {
-								name: input.name,
-								slug: input.slug,
-								logoUrl: null,
-								settings: null,
-							},
-						})
-
-						if (Exit.isSuccess(result)) {
-							effectiveOrgId = result.value.data.id
-						} else {
-							throw new Error("Failed to create organization")
+	const machineWithActors = useMemo(
+		() =>
+			onboardingMachine.provide({
+				actions: {
+					navigateToOrg: ({ context }) => {
+						const slug = context.orgSlug || context.organization?.slug
+						if (slug) {
+							navigate({
+								to: "/$orgSlug",
+								params: { orgSlug: slug },
+							})
 						}
-					} else {
-						// If orgId exists, just update the slug
-						const result = await setOrganizationSlugAction({
-							payload: {
-								id: effectiveOrgId,
-								slug: input.slug,
-							},
-						})
-
-						if (!Exit.isSuccess(result)) {
-							throw new Error("Failed to set organization slug")
-						}
-					}
-
-					return { orgId: effectiveOrgId }
+					},
 				},
-			),
-			handleCompletion: fromPromise(
-				async ({
-					input,
-				}: {
-					input: {
-						orgId?: OrganizationId
-						role: string
-						useCases: string[]
-						emails: string[]
-						orgSlug?: string
-						organizationSlug?: string
-					}
-				}) => {
-					if (!input.orgId) {
-						throw new Error("Organization ID is required")
-					}
+				actors: {
+					handleOrgSetup: fromPromise(
+						async ({
+							input,
+						}: {
+							input: {
+								orgId?: OrganizationId
+								createdOrgId?: OrganizationId
+								name: string
+								slug: string
+							}
+						}) => {
+							let effectiveOrgId = input.orgId || input.createdOrgId
 
-					// Save user preferences to organization member metadata
-					if (organizationMemberId && user?.id) {
-						const metadataResult = await updateOrganizationMemberMetadata({
-							payload: {
-								id: organizationMemberId,
-								metadata: {
-									role: input.role,
-									useCases: input.useCases,
-								},
-							},
-						})
+							// If no orgId, create the organization first
+							if (!effectiveOrgId) {
+								const result = await createOrganization({
+									payload: {
+										name: input.name,
+										slug: input.slug,
+										logoUrl: null,
+										settings: null,
+									},
+								})
 
-						if (!Exit.isSuccess(metadataResult)) {
-							console.error("Failed to save onboarding metadata:", metadataResult.cause)
-						}
-					}
+								if (Exit.isSuccess(result)) {
+									effectiveOrgId = result.value.data.id
+								} else {
+									throw new Error("Failed to create organization")
+								}
+							} else {
+								// If orgId exists, just update the slug
+								const result = await setOrganizationSlugAction({
+									payload: {
+										id: effectiveOrgId,
+										slug: input.slug,
+									},
+								})
 
-					// Mark user as onboarded
-					const finalizeResult = await finalizeOnboarding({
-						payload: void 0,
-						reactivityKeys: ["currentUser"],
-					})
+								if (!Exit.isSuccess(result)) {
+									throw new Error("Failed to set organization slug")
+								}
+							}
 
-					if (!Exit.isSuccess(finalizeResult)) {
-						console.error("Failed to finalize onboarding:", finalizeResult.cause)
-					}
+							return { orgId: effectiveOrgId }
+						},
+					),
+					handleCompletion: fromPromise(
+						async ({
+							input,
+						}: {
+							input: {
+								orgId?: OrganizationId
+								role: string
+								useCases: string[]
+								emails: string[]
+								orgSlug?: string
+								organizationSlug?: string
+							}
+						}) => {
+							if (!input.orgId) {
+								throw new Error("Organization ID is required")
+							}
 
-					if (input.emails.length > 0) {
-						try {
-							const result = await createInvitation({
-								payload: {
-									organizationId: input.orgId,
-									invites: input.emails.map((email) => ({
-										email,
-										role: "member",
-									})),
-								},
+							// Save user preferences to organization member metadata
+							if (organizationMemberId && user?.id) {
+								const metadataResult = await updateOrganizationMemberMetadata({
+									payload: {
+										id: organizationMemberId,
+										metadata: {
+											role: input.role,
+											useCases: input.useCases,
+										},
+									},
+								})
+
+								if (!Exit.isSuccess(metadataResult)) {
+									console.error("Failed to save onboarding metadata:", metadataResult.cause)
+								}
+							}
+
+							// Mark user as onboarded
+							const finalizeResult = await finalizeOnboarding({
+								payload: void 0,
+								reactivityKeys: ["currentUser"],
 							})
 
-							if (Exit.isSuccess(result)) {
-								const { successCount, errorCount } = result.value
-								console.log(
-									`Sent ${successCount} invitation${successCount !== 1 ? "s" : ""}${errorCount > 0 ? `, ${errorCount} failed` : ""}`,
-								)
-							} else {
-								console.error("Failed to send invitations:", result.cause)
+							if (!Exit.isSuccess(finalizeResult)) {
+								console.error("Failed to finalize onboarding:", finalizeResult.cause)
 							}
-						} catch (error) {
-							console.error("Failed to send invitations:", error)
-						}
-					}
 
-					// Determine the slug to use for navigation
-					const slugToUse = input.orgSlug || input.organizationSlug
+							if (input.emails.length > 0) {
+								try {
+									const result = await createInvitation({
+										payload: {
+											organizationId: input.orgId,
+											invites: input.emails.map((email) => ({
+												email,
+												role: "member",
+											})),
+										},
+									})
 
-					if (!slugToUse) {
-						throw new Error("Organization slug is missing. Please try again.")
-					}
+									if (Exit.isSuccess(result)) {
+										const { successCount, errorCount } = result.value
+										console.log(
+											`Sent ${successCount} invitation${successCount !== 1 ? "s" : ""}${errorCount > 0 ? `, ${errorCount} failed` : ""}`,
+										)
+									} else {
+										console.error("Failed to send invitations:", result.cause)
+									}
+								} catch (error) {
+									console.error("Failed to send invitations:", error)
+								}
+							}
 
-					return { slug: slugToUse }
+							// Determine the slug to use for navigation
+							const slugToUse = input.orgSlug || input.organizationSlug
+
+							if (!slugToUse) {
+								throw new Error("Organization slug is missing. Please try again.")
+							}
+
+							return { slug: slugToUse }
+						},
+					),
 				},
-			),
-		},
-	})
+			}),
+		[
+			navigate,
+			createOrganization,
+			setOrganizationSlugAction,
+			updateOrganizationMemberMetadata,
+			finalizeOnboarding,
+			createInvitation,
+			user?.id,
+			organizationMemberId,
+		],
+	)
 
 	// Initialize state machine
 	const [state, send] = useMachine(machineWithActors, {

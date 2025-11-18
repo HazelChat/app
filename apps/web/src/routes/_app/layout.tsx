@@ -25,5 +25,5 @@ function RouteComponent() {
 		return <Loader />
 	}
 
-	return isLoading ? <Loader /> : <Outlet />
+	return isLoading && !user ? <Loader /> : <Outlet />
 }
