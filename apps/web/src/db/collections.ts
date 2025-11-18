@@ -122,6 +122,7 @@ export const invitationCollection = createCollection(
 export const messageCollection = createCollection(
 	effectElectricCollectionOptions({
 		id: "messages",
+		syncMode: "on-demand",
 		runtime: runtime,
 		shapeOptions: {
 			url: electricUrl,
@@ -167,6 +168,7 @@ export const messageCollection = createCollection(
 export const messageReactionCollection = createCollection(
 	effectElectricCollectionOptions({
 		id: "message_reactions",
+		syncMode: "on-demand",
 		runtime: runtime,
 		shapeOptions: {
 			url: electricUrl,
@@ -261,6 +263,7 @@ export const pinnedMessageCollection = createCollection(
 export const notificationCollection = createCollection(
 	effectElectricCollectionOptions({
 		id: "notifications",
+		syncMode: "on-demand",
 		runtime: runtime,
 		shapeOptions: {
 			url: electricUrl,
@@ -306,6 +309,7 @@ export const notificationCollection = createCollection(
 export const userCollection = createCollection(
 	effectElectricCollectionOptions({
 		id: "users",
+		syncMode: "progressive",
 		runtime: runtime,
 		shapeOptions: {
 			url: electricUrl,
@@ -438,6 +442,7 @@ export const channelCollection = createCollection(
 export const channelMemberCollection = createCollection(
 	effectElectricCollectionOptions({
 		id: "channel_members",
+		syncMode: "progressive",
 		runtime: runtime,
 		shapeOptions: {
 			url: `${electricUrl}`,
@@ -514,6 +519,7 @@ export const attachmentCollection = createCollection(
 export const typingIndicatorCollection = createCollection(
 	effectElectricCollectionOptions({
 		id: "typing_indicators",
+		syncMode: "on-demand",
 		runtime: runtime,
 		shapeOptions: {
 			url: electricUrl,

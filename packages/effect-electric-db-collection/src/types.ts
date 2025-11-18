@@ -121,6 +121,14 @@ export interface EffectElectricCollectionConfig<
 	autoIndex?: `off` | `eager`
 
 	/**
+	 * Sync mode for the collection
+	 * - `eager`: Sync all data immediately during preload
+	 * - `on-demand`: Sync data incrementally when queries execute
+	 * - `progressive`: Sync all data in background while serving incremental snapshots
+	 */
+	syncMode?: `eager` | `on-demand` | `progressive`
+
+	/**
 	 * Optional function to compare two items
 	 */
 	compare?: (x: T, y: T) => number
