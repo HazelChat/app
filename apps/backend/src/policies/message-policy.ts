@@ -25,23 +25,35 @@ export class MessagePolicy extends Effect.Service<MessagePolicy>()("MessagePolic
 						policyEntity,
 						"create",
 						Effect.fn(`${policyEntity}.create`)(function* (actor) {
-							// Check if user is a member of the organization
+							// Hazel Connect: Check if user has access to the channel
+							// This includes owner org AND any shared organizations
+							const hasAccess = yield* channelRepo
+								.hasAccess(channelId, actor.id)
+								.pipe(withSystemActor)
+
+							if (!hasAccess) {
+								return false
+							}
+
+							// Check if user is a member of the owner organization
 							const orgMember = yield* organizationMemberRepo
 								.findByOrgAndUser(channel.organizationId, actor.id)
 								.pipe(withSystemActor)
 
 							// Handle based on channel type
 							if (channel.type === "public") {
-								// Org members can post in public channels
-								return Option.isSome(orgMember)
+								// Hazel Connect: For public channels, any user with access can post
+								// This includes members from the owner org and shared orgs
+								return true
 							}
 
 							if (channel.type === "private") {
-								// Check if user is a channel member or org admin
+								// Check if user is a channel member or owner org admin
 								if (Option.isSome(orgMember) && isAdminOrOwner(orgMember.value.role)) {
 									return true
 								}
 
+								// Otherwise must be explicitly added as channel member
 								const channelMembership = yield* channelMemberRepo
 									.findByChannelAndUser(channelId, actor.id)
 									.pipe(withSystemActor)
@@ -61,6 +73,15 @@ export class MessagePolicy extends Effect.Service<MessagePolicy>()("MessagePolic
 							if (channel.type === "thread") {
 								// Threads inherit permissions from parent channel
 								if (channel.parentChannelId) {
+									// Hazel Connect: Check if user has access to parent channel
+									const hasParentAccess = yield* channelRepo
+										.hasAccess(channel.parentChannelId, actor.id)
+										.pipe(withSystemActor)
+
+									if (!hasParentAccess) {
+										return false
+									}
+
 									// Check parent channel - get parent channel and check its type
 									const parentChannel = yield* channelRepo
 										.findById(channel.parentChannelId)
@@ -74,11 +95,12 @@ export class MessagePolicy extends Effect.Service<MessagePolicy>()("MessagePolic
 
 									// Check parent channel permissions based on its type
 									if (parent.type === "public") {
-										return Option.isSome(orgMember)
+										// Hazel Connect: Any user with access to parent can post in thread
+										return true
 									}
 
 									if (parent.type === "private") {
-										if (Option.isSome(orgMember) && orgMember.value.role === "admin") {
+										if (Option.isSome(orgMember) && isAdminOrOwner(orgMember.value.role)) {
 											return true
 										}
 

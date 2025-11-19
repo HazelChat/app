@@ -1,5 +1,8 @@
 import { Database } from "@hazel/db"
 import {
+	CannotShareWithOwnerOrgError,
+	ChannelAlreadySharedError,
+	ChannelNotFoundError,
 	CurrentUser,
 	DmChannelAlreadyExistsError,
 	InternalServerError,
@@ -15,6 +18,7 @@ import { ChannelPolicy } from "../../policies/channel-policy"
 import { UserPolicy } from "../../policies/user-policy"
 import { ChannelMemberRepo } from "../../repositories/channel-member-repo"
 import { ChannelRepo } from "../../repositories/channel-repo"
+import { SharedChannelRepo } from "../../repositories/shared-channel-repo"
 import { UserRepo } from "../../repositories/user-repo"
 
 export const ChannelRpcLive = ChannelRpcs.toLayer(
@@ -197,6 +201,148 @@ export const ChannelRpcLive = ChannelRpcs.toLayer(
 						}),
 					)
 					.pipe(withRemapDbErrors("Channel", "create")),
+
+			/**
+			 * Hazel Connect: Share a channel with another organization
+			 */
+			"channel.share": ({ channelId, organizationId }) =>
+				db
+					.transaction(
+						Effect.gen(function* () {
+							const user = yield* CurrentUser.Context
+							const sharedChannelRepo = yield* SharedChannelRepo
+							const channelRepo = yield* ChannelRepo
+
+							// Get the channel
+							const channel = yield* channelRepo.findById(channelId).pipe(withSystemActor)
+
+							if (Option.isNone(channel)) {
+								return yield* Effect.fail(
+									new ChannelNotFoundError({
+										channelId,
+									}),
+								)
+							}
+
+							const channelData = channel.value
+
+							// Check if trying to share with the owner organization
+							if (channelData.organizationId === organizationId) {
+								return yield* Effect.fail(
+									new CannotShareWithOwnerOrgError({
+										channelId,
+										organizationId,
+									}),
+								)
+							}
+
+							// Check if already shared with this organization
+							const isAlreadyShared = yield* sharedChannelRepo
+								.isSharedWithOrg(channelId, organizationId)
+								.pipe(withSystemActor)
+
+							if (isAlreadyShared) {
+								return yield* Effect.fail(
+									new ChannelAlreadySharedError({
+										channelId,
+										organizationId,
+									}),
+								)
+							}
+
+							// Share the channel
+							yield* sharedChannelRepo
+								.shareChannel({
+									channelId,
+									organizationId,
+									sharedBy: user.id,
+								})
+								.pipe(withSystemActor, policyUse(ChannelPolicy.canShare(channelId)))
+
+							// TODO: Update channel to mark as shared when schema is updated
+							// TODO: Trigger SharedChannelNotificationWorkflow to notify target org admins
+
+							const txid = yield* generateTransactionId()
+
+							return { transactionId: txid }
+						}),
+					)
+					.pipe(withRemapDbErrors("Channel", "create")),
+
+			/**
+			 * Hazel Connect: Revoke an organization's access to a shared channel
+			 */
+			"channel.revokeShare": ({ channelId, organizationId }) =>
+				db
+					.transaction(
+						Effect.gen(function* () {
+							const user = yield* CurrentUser.Context
+							const sharedChannelRepo = yield* SharedChannelRepo
+							const channelRepo = yield* ChannelRepo
+
+							// Get the channel
+							const channel = yield* channelRepo.findById(channelId).pipe(withSystemActor)
+
+							if (Option.isNone(channel)) {
+								return yield* Effect.fail(
+									new ChannelNotFoundError({
+										channelId,
+									}),
+								)
+							}
+
+							// Revoke the share
+							yield* sharedChannelRepo
+								.revokeShare({
+									channelId,
+									organizationId,
+									revokedBy: user.id,
+								})
+								.pipe(withSystemActor, policyUse(ChannelPolicy.canShare(channelId)))
+
+							// TODO: Check if there are any remaining shares
+							// TODO: If no more shares, mark channel as not shared when schema is updated
+
+							const txid = yield* generateTransactionId()
+
+							return { transactionId: txid }
+						}),
+					)
+					.pipe(withRemapDbErrors("Channel", "delete")),
+
+			/**
+			 * Hazel Connect: Get all organizations that have access to a channel
+			 */
+			"channel.getShares": ({ channelId }) =>
+				db
+					.transaction(
+						Effect.gen(function* () {
+							const user = yield* CurrentUser.Context
+							const channelRepo = yield* ChannelRepo
+
+							// Get the channel
+							const channel = yield* channelRepo.findById(channelId).pipe(withSystemActor)
+
+							if (Option.isNone(channel)) {
+								return yield* Effect.fail(
+									new ChannelNotFoundError({
+										channelId,
+									}),
+								)
+							}
+
+							// Check if user can view this channel
+							yield* ChannelPolicy.canView(channelId, user.id)
+
+							// Get all organizations with access
+							const organizationIds = yield* channelRepo
+								.getChannelOrganizations(channelId)
+								.pipe(withSystemActor)
+
+							return { organizationIds }
+						}),
+					)
+					.pipe(withRemapDbErrors("Channel", "select")),
 		}
 	}),
 )

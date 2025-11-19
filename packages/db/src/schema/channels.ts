@@ -1,3 +1,4 @@
+import type { ChannelId, ChannelMemberId, MessageId, OrganizationId, UserId } from "@hazel/schema"
 import { sql } from "drizzle-orm"
 import {
 	boolean,
@@ -10,7 +11,6 @@ import {
 	uuid,
 	varchar,
 } from "drizzle-orm/pg-core"
-import type { ChannelId, ChannelMemberId, MessageId, OrganizationId, UserId } from "@hazel/schema"
 
 // Channel types
 export const channelTypeEnum = pgEnum("channel_type", ["public", "private", "thread", "direct", "single"])
@@ -25,6 +25,9 @@ export const channelsTable = pgTable(
 		organizationId: uuid().notNull().$type<OrganizationId>(),
 
 		parentChannelId: uuid().$type<ChannelId>(),
+
+		// Hazel Connect: indicates if this channel is shared with other organizations
+		isShared: boolean().notNull().default(false),
 
 		createdAt: timestamp({ mode: "date", withTimezone: true }).notNull().defaultNow(),
 		updatedAt: timestamp({ mode: "date", withTimezone: true }).notNull().defaultNow(),
