@@ -13,5 +13,8 @@
 		"typescript": "^5.9.3",
 		"vitest": "^4.0.10",
 		"wrangler": "^4.49.0"
+	},
+	"dependencies": {
+		"@electric-sql/client": "^1.1.5"
 	}
 }

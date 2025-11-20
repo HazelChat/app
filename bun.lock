@@ -76,6 +76,9 @@
     "apps/electric-proxy": {
       "name": "@hazel/electric-proxy",
       "version": "0.0.0",
+      "dependencies": {
+        "@electric-sql/client": "^1.1.5",
+      },
       "devDependencies": {
         "typescript": "^5.9.3",
         "vitest": "^4.0.10",
@@ -116,7 +119,7 @@
         "@effect/platform": "catalog:effect",
         "@effect/platform-browser": "catalog:effect",
         "@effect/rpc": "catalog:effect",
-        "@electric-sql/client": "^1.1.4",
+        "@electric-sql/client": "^1.1.5",
         "@fontsource/inter": "^5.2.8",
         "@hazel/backend": "workspace:*",
         "@hazel/db": "workspace:*",
@@ -256,7 +259,7 @@
       "version": "0.0.0",
       "dependencies": {
         "@effect-atom/atom": "catalog:effect",
-        "@electric-sql/client": "^1.1.4",
+        "@electric-sql/client": "^1.1.5",
         "@standard-schema/spec": "^1.0.0",
         "@tanstack/db": "0.5.0",
         "@tanstack/electric-db-collection": "0.2.0",
