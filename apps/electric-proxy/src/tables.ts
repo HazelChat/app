@@ -1,5 +1,15 @@
 import { Effect, Match, Schema } from "effect"
-import type { AuthenticatedUser } from "./auth"
+import type { AuthenticatedUserWithContext } from "./auth"
+
+/**
+ * Convert an array of IDs to a SQL IN clause string
+ * @param ids - Array of ID strings
+ * @returns SQL IN clause string like "('id1','id2','id3')"
+ */
+function toSqlInClause(ids: readonly string[]): string {
+	if (ids.length === 0) return "('')"
+	return `('${ids.join("','")}')`
+}
 
 /**
  * Error thrown when table access is denied or where clause cannot be generated
@@ -91,77 +101,86 @@ export function validateTable(table: string | null): {
  */
 export function getWhereClauseForTable(
 	table: AllowedTable,
-	user: AuthenticatedUser,
+	user: AuthenticatedUserWithContext,
 ): Effect.Effect<string, TableAccessError> {
 	return Match.value(table).pipe(
+		// User tables
 		Match.when("users", () =>
+			// Users can see other users who are members of their organizations
 			Effect.succeed(
-				`"id" IN (SELECT "userId" FROM "organization_members" WHERE "organizationId" IN (SELECT "organizationId" FROM "organization_members" WHERE "userId" = '${user.internalUserId}' AND "deletedAt" IS NULL) AND "deletedAt" IS NULL) AND "deletedAt" IS NULL`,
+				`"id" IN ${toSqlInClause(user.accessContext.coOrgUserIds)} AND "deletedAt" IS NULL`,
 			),
 		),
 		Match.when("user_presence_status", () =>
-			Effect.succeed(
-				`"userId" IN (SELECT "userId" FROM "organization_members" WHERE "organizationId" IN (SELECT "organizationId" FROM "organization_members" WHERE "userId" = '${user.internalUserId}' AND "deletedAt" IS NULL) AND "deletedAt" IS NULL)`,
-			),
+			// See presence status of users in the same organizations
+			Effect.succeed(`"userId" IN ${toSqlInClause(user.accessContext.coOrgUserIds)}`),
 		),
+		// Organization tables
 		Match.when("organizations", () =>
+			// Show only organizations where the user is a member
 			Effect.succeed(
-				`"id" IN (SELECT "organizationId" FROM "organization_members" WHERE "userId" = '${user.internalUserId}' AND "deletedAt" IS NULL) AND "deletedAt" IS NULL`,
+				`"id" IN ${toSqlInClause(user.accessContext.organizationIds)} AND "deletedAt" IS NULL`,
 			),
 		),
 		Match.when("organization_members", () =>
+			// Show members from organizations where the user is a member
 			Effect.succeed(
-				`"organizationId" IN (SELECT "organizationId" FROM "organization_members" WHERE "userId" = '${user.internalUserId}' AND "deletedAt" IS NULL) AND "deletedAt" IS NULL`,
+				`"organizationId" IN ${toSqlInClause(user.accessContext.organizationIds)} AND "deletedAt" IS NULL`,
 			),
 		),
+		// Channel tables
 		Match.when("channels", () =>
-			Effect.succeed(
-				`"id" IN (SELECT "channelId" FROM "channel_members" WHERE "userId" = '${user.internalUserId}' AND "deletedAt" IS NULL) AND "deletedAt" IS NULL`,
-			),
+			// Users can only see channels they're members of
+			Effect.succeed(`"id" IN ${toSqlInClause(user.accessContext.channelIds)} AND "deletedAt" IS NULL`),
 		),
 		Match.when("channel_members", () =>
+			// See all members of channels the user belongs to
 			Effect.succeed(
-				`"channelId" IN (SELECT "channelId" FROM "channel_members" WHERE "userId" = '${user.internalUserId}' AND "deletedAt" IS NULL) AND "deletedAt" IS NULL`,
+				`"channelId" IN ${toSqlInClause(user.accessContext.channelIds)} AND "deletedAt" IS NULL`,
 			),
 		),
+		// Message tables
 		Match.when("messages", () =>
+			// Messages only from channels the user is a member of
 			Effect.succeed(
-				`"channelId" IN (SELECT "channelId" FROM "channel_members" WHERE "userId" = '${user.internalUserId}' AND "deletedAt" IS NULL) AND "deletedAt" IS NULL`,
+				`"channelId" IN ${toSqlInClause(user.accessContext.channelIds)} AND "deletedAt" IS NULL`,
 			),
 		),
 		Match.when("message_reactions", () =>
+			// Reactions on messages from accessible channels (relies on messages table filtering)
 			Effect.succeed(
-				`"messageId" IN (SELECT "id" FROM "messages" WHERE "channelId" IN (SELECT "channelId" FROM "channel_members" WHERE "userId" = '${user.internalUserId}' AND "deletedAt" IS NULL) AND "deletedAt" IS NULL)`,
+				`"messageId" IN (SELECT "id" FROM "messages" WHERE "channelId" IN ${toSqlInClause(user.accessContext.channelIds)} AND "deletedAt" IS NULL)`,
 			),
 		),
 		Match.when("attachments", () =>
+			// Attachments from accessible channels only
 			Effect.succeed(
-				`"channelId" IN (SELECT "channelId" FROM "channel_members" WHERE "userId" = '${user.internalUserId}' AND "deletedAt" IS NULL) AND "deletedAt" IS NULL`,
+				`"channelId" IN ${toSqlInClause(user.accessContext.channelIds)} AND "deletedAt" IS NULL`,
 			),
 		),
+		// Notification tables
 		Match.when("notifications", () =>
-			Effect.succeed(
-				`"memberId" IN (SELECT "id" FROM "organization_members" WHERE "userId" = '${user.internalUserId}' AND "deletedAt" IS NULL)`,
-			),
+			// Users can only see their own notifications
+			Effect.succeed(`"memberId" IN ${toSqlInClause(user.accessContext.memberIds)}`),
 		),
 		Match.when("pinned_messages", () =>
-			Effect.succeed(
-				`"channelId" IN (SELECT "channelId" FROM "channel_members" WHERE "userId" = '${user.internalUserId}' AND "deletedAt" IS NULL)`,
-			),
+			// Pinned messages from accessible channels
+			Effect.succeed(`"channelId" IN ${toSqlInClause(user.accessContext.channelIds)}`),
 		),
+		// Interaction tables
 		Match.when("typing_indicators", () =>
-			Effect.succeed(
-				`"channelId" IN (SELECT "channelId" FROM "channel_members" WHERE "userId" = '${user.internalUserId}' AND "deletedAt" IS NULL)`,
-			),
+			// Typing indicators from accessible channels
+			Effect.succeed(`"channelId" IN ${toSqlInClause(user.accessContext.channelIds)}`),
 		),
 		Match.when("invitations", () =>
-			Effect.succeed(
-				`"organizationId" IN (SELECT "organizationId" FROM "organization_members" WHERE "userId" = '${user.internalUserId}' AND "deletedAt" IS NULL)`,
-			),
+			// Invitations for organizations the user belongs to
+			Effect.succeed(`"organizationId" IN ${toSqlInClause(user.accessContext.organizationIds)}`),
 		),
+		// Bot tables
 		Match.when("bots", () =>
+			// Public bots, bots created by user, or bots belonging to users in the same orgs
 			Effect.succeed(
-				`("isPublic" = true OR "createdBy" = '${user.internalUserId}' OR "userId" IN (SELECT "userId" FROM "organization_members" WHERE "organizationId" IN (SELECT "organizationId" FROM "organization_members" WHERE "userId" = '${user.internalUserId}' AND "deletedAt" IS NULL) AND "deletedAt" IS NULL)) AND "deletedAt" IS NULL`,
+				`("isPublic" = true OR "createdBy" = '${user.internalUserId}' OR "userId" IN ${toSqlInClause(user.accessContext.coOrgUserIds)}) AND "deletedAt" IS NULL`,
 			),
 		),
 		Match.orElse((table) =>
