@@ -7,8 +7,8 @@ localhost:5133 {
 
 	# HTTP/2 is automatically enabled with TLS
 
-	# Reverse proxy to Electric
-	reverse_proxy electric:3000 {
+	# Reverse proxy to Electric Proxy (running locally)
+	reverse_proxy host.docker.internal:3004 {
 		# Preserve headers
 		header_up Host {host}
 		header_up X-Real-IP {remote_host}

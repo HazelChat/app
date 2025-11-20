@@ -67,6 +67,8 @@ services:
   # Electric - Real-time sync for Postgres
   electric:
     image: electricsql/electric:latest
+    ports:
+      - "3333:3000"
     environment:
       DATABASE_URL: "postgresql://user:password@postgres:5432/app?sslmode=disable"
       # IMPORTANT: Only use insecure mode in development
@@ -77,19 +79,19 @@ services:
         condition: service_healthy
     restart: always
 
-  # Caddy - Reverse proxy for Electric (enables HTTP/2 with HTTPS)
+  # Caddy Reverse Proxy
   caddy:
     image: caddy:2-alpine
     ports:
       - "5133:5133"
     volumes:
       - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile
-      - ./docker/caddy/certs:/certs:ro
+      - ./docker/caddy/certs:/certs
       - caddy_data:/data
       - caddy_config:/config
-    depends_on:
-      - electric
-    restart: always
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
 
 volumes:
   postgres_data:
