@@ -75,16 +75,11 @@
     },
     "apps/electric-proxy": {
       "name": "@hazel/electric-proxy",
-      "dependencies": {
-        "@effect/platform": "catalog:effect",
-        "@effect/platform-bun": "catalog:effect",
-        "@electric-sql/client": "^1.1.4",
-        "effect": "catalog:effect",
-      },
+      "version": "0.0.0",
       "devDependencies": {
-        "@effect/language-service": "catalog:effect",
-        "@types/bun": "latest",
         "typescript": "^5.9.3",
+        "vitest": "^4.0.10",
+        "wrangler": "^4.49.0",
       },
     },
     "apps/link-preview-worker": {
@@ -105,16 +100,6 @@
       "devDependencies": {
         "@cloudflare/vitest-pool-workers": "^0.8.19",
         "@effect/language-service": "catalog:effect",
-        "typescript": "^5.9.3",
-        "vitest": "^4.0.10",
-        "wrangler": "^4.49.0",
-      },
-    },
-    "apps/proxyv2": {
-      "name": "proxyv2",
-      "version": "0.0.0",
-      "devDependencies": {
-        "@cloudflare/vitest-pool-workers": "^0.8.19",
         "typescript": "^5.9.3",
         "vitest": "^4.0.10",
         "wrangler": "^4.49.0",
@@ -2231,8 +2216,6 @@
     "proc-log": ["proc-log@5.0.0", "", {}, "sha512-Azwzvl90HaF0aCz1JrDdXQykFakSSNPaPoiZ9fm5qJIMHioDZEi7OAdRwSm6rSoPtY3Qutnm3L7ogmg3dc+wbQ=="],
 
     "promise-retry": ["promise-retry@2.0.1", "", { "dependencies": { "err-code": "^2.0.2", "retry": "^0.12.0" } }, "sha512-y+WKFlBR8BGXnsNlIHFGPZmyDf3DFMoLhaflAnyZgV6rG6xu+JwesTo2Q9R6XwYmtmwAFCkAk3e35jEdoeh/3g=="],
-
-    "proxyv2": ["proxyv2@workspace:apps/proxyv2"],
 
     "punycode": ["punycode@2.3.1", "", {}, "sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg=="],
 
