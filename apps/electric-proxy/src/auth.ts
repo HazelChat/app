@@ -51,10 +51,9 @@ function parseCookie(cookieHeader: string, cookieName: string): string | null {
  * Validate a WorkOS sealed session cookie and return authenticated user
  * Uses Effect Config to read environment variables
  */
-export function validateSession(
+export const validateSession = Effect.fn("ElectricProxy.validateSession")(function* (
 	request: Request,
-): Effect.Effect<AuthenticatedUser, AuthenticationError> {
-	return Effect.gen(function* () {
+) {
 		// Read configuration from environment
 		const workosApiKey = yield* Config.string("WORKOS_API_KEY").pipe(
 			Effect.mapError(
@@ -163,5 +162,5 @@ export function validateSession(
 			organizationId: jwtPayload.org_id,
 			role: jwtPayload.role,
 		}
-	})
-}
+	},
+)
