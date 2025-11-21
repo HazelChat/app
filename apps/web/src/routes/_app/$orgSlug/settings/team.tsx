@@ -2,7 +2,7 @@ import { useAtomSet } from "@effect-atom/atom-react"
 import type { UserId } from "@hazel/schema"
 import { ExclamationTriangleIcon } from "@heroicons/react/20/solid"
 import { eq, useLiveQuery } from "@tanstack/react-db"
-import { createFileRoute } from "@tanstack/react-router"
+import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { useState } from "react"
 import { toast } from "sonner"
 import { createDmChannelMutation } from "~/atoms/channel-atoms"
@@ -42,6 +42,7 @@ function TeamSettings() {
 	const [removeUserId, setRemoveUserId] = useState<UserId | null>(null)
 	const [showInviteModal, setShowInviteModal] = useState(false)
 
+	const navigate = useNavigate()
 	const { organizationId, slug: orgSlug } = useOrganization()
 	const { user } = useAuth()
 
@@ -125,16 +126,12 @@ function TeamSettings() {
 		const existingChannel = findExistingDmChannel(user.id, targetUserId)
 
 		if (existingChannel) {
-			// TODO: Navigate to chat when chat route is available
-			// navigate({
-			// 	to: "/$orgSlug/chat/$id",
-			// 	params: { orgSlug, id: existingChannel.id },
-			// })
-			toast.info("Opening chat", {
-				description: `Chat with ${targetUserName}`,
+			navigate({
+				to: "/$orgSlug/chat/$id",
+				params: { orgSlug, id: existingChannel.id },
 			})
 		} else {
-			await toastExit(
+			const result = await toastExit(
 				createDmChannel({
 					payload: {
 						organizationId,
@@ -144,8 +141,14 @@ function TeamSettings() {
 				}),
 				{
 					loading: `Starting conversation with ${targetUserName}...`,
-					success: () => {
-						// TODO: Navigate to chat when chat route is available
+					success: (data) => {
+						// Navigate to the newly created channel
+						if (data.channel?.id) {
+							navigate({
+								to: "/$orgSlug/chat/$id",
+								params: { orgSlug, id: data.channel.id },
+							})
+						}
 						return `Started conversation with ${targetUserName}`
 					},
 				},
