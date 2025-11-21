@@ -7,7 +7,7 @@ import type { AuthenticatedUserWithContext } from "./auth"
  * @returns SQL IN clause string like "('id1','id2','id3')"
  */
 function toSqlInClause(ids: readonly string[]): string {
-	if (ids.length === 0) return "('')"
+	if (ids.length === 0) return "(NULL)"
 	return `('${ids.join("','")}')`
 }
 
@@ -106,14 +106,20 @@ export function getWhereClauseForTable(
 	return Match.value(table).pipe(
 		// User tables
 		Match.when("users", () =>
-			// Users can see other users who are members of their organizations
+			// Users can always see themselves and other users who are members of their organizations
 			Effect.succeed(
-				`"id" IN ${toSqlInClause(user.accessContext.coOrgUserIds)} AND "deletedAt" IS NULL`,
+				user.accessContext.coOrgUserIds.length > 0
+			? `("id" = '${user.internalUserId}' OR "id" IN ${toSqlInClause(user.accessContext.coOrgUserIds)}) AND "deletedAt" IS NULL`
+			: `"id" = '${user.internalUserId}' AND "deletedAt" IS NULL`,
 			),
 		),
 		Match.when("user_presence_status", () =>
-			// See presence status of users in the same organizations
-			Effect.succeed(`"userId" IN ${toSqlInClause(user.accessContext.coOrgUserIds)}`),
+			// Users can always see their own presence and presence of users in the same organizations
+			Effect.succeed(
+			user.accessContext.coOrgUserIds.length > 0
+				? `"userId" = '${user.internalUserId}' OR "userId" IN ${toSqlInClause(user.accessContext.coOrgUserIds)}`
+				: `"userId" = '${user.internalUserId}'`,
+		),
 		),
 		// Organization tables
 		Match.when("organizations", () =>
@@ -180,7 +186,9 @@ export function getWhereClauseForTable(
 		Match.when("bots", () =>
 			// Public bots, bots created by user, or bots belonging to users in the same orgs
 			Effect.succeed(
-				`("isPublic" = true OR "createdBy" = '${user.internalUserId}' OR "userId" IN ${toSqlInClause(user.accessContext.coOrgUserIds)}) AND "deletedAt" IS NULL`,
+				user.accessContext.coOrgUserIds.length > 0
+			? `("isPublic" = true OR "createdBy" = '${user.internalUserId}' OR "userId" IN ${toSqlInClause(user.accessContext.coOrgUserIds)}) AND "deletedAt" IS NULL`
+			: `("isPublic" = true OR "createdBy" = '${user.internalUserId}') AND "deletedAt" IS NULL`,
 			),
 		),
 		Match.orElse((table) =>
