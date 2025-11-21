@@ -1,5 +1,5 @@
 import { Headers } from "@effect/platform"
-import { type CurrentUser, UnauthorizedError, withSystemActor } from "@hazel/domain"
+import { type CurrentUser, SessionNotProvidedError, withSystemActor } from "@hazel/domain"
 import { Config, Effect, FiberRef, Layer, Option } from "effect"
 import { UserPresenceStatusRepo } from "../../repositories/user-presence-status-repo"
 import { SessionManager } from "../../services/session-manager"
@@ -47,7 +47,7 @@ export const AuthMiddlewareLive = Layer.scoped(
 
 				if (Option.isNone(cookieHeader)) {
 					return yield* Effect.fail(
-						new UnauthorizedError({
+						new SessionNotProvidedError({
 							message: "No session cookie provided",
 							detail: "Authentication required",
 						}),
@@ -73,7 +73,7 @@ export const AuthMiddlewareLive = Layer.scoped(
 
 				if (!sessionCookie) {
 					return yield* Effect.fail(
-						new UnauthorizedError({
+						new SessionNotProvidedError({
 							message: "No WorkOS session cookie provided",
 							detail: "Authentication required",
 						}),

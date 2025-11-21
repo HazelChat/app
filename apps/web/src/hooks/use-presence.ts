@@ -5,7 +5,7 @@ import { eq } from "@tanstack/db"
 import { DateTime, Duration, Effect, Schedule, Stream } from "effect"
 import { useCallback, useEffect, useRef } from "react"
 import { userPresenceStatusCollection } from "~/db/collections"
-import { userAtom } from "~/lib/auth"
+import { useAuth, userAtom } from "~/lib/auth"
 import { HazelRpcClient } from "~/lib/services/common/rpc-atom-client"
 import { runtime } from "~/lib/services/common/runtime"
 import { router } from "~/main"
@@ -159,7 +159,7 @@ const currentChannelIdAtom = Atom.make((get) => {
  * Automatically reactive to user changes
  */
 const beforeUnloadAtom = Atom.make((get) => {
-	const user = get(userAtom)
+	const user = Result.getOrElse(get(userAtom), () => null)
 
 	// Skip setup if no user
 	if (!user?.id) return null
@@ -199,7 +199,7 @@ const currentUserPresenceAtomFamily = Atom.family((userId: UserId) =>
  * Reads from userAtom and returns the presence data
  */
 const currentUserPresenceAtom = Atom.make((get) => {
-	const user = get(userAtom)
+	const user = Result.getOrElse(get(userAtom), () => null)
 	if (!user?.id) return Result.initial(false)
 
 	return get(currentUserPresenceAtomFamily(user.id))
@@ -209,7 +209,7 @@ const currentUserPresenceAtom = Atom.make((get) => {
  * Hook for managing the current user's presence status
  */
 export function usePresence() {
-	const user = useAtomValue(userAtom)
+	const { user } = useAuth()
 	const presenceResult = useAtomValue(currentUserPresenceAtom)
 	const currentPresence = Result.getOrElse(presenceResult, () => undefined)
 	const computedStatusResult = useAtomValue(computedPresenceStatusAtom)

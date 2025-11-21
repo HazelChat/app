@@ -43,11 +43,11 @@ const currentUserQueryAtom = HazelRpcClient.query("user.me", void 0, {
 export const userAtom = Atom.make((get) => {
 	const isPublicRoute = get(isPublicRouteAtom)
 	if (isPublicRoute) {
-		return null
+		return Result.success(null)
 	}
 
 	const result = get(currentUserQueryAtom)
-	return Result.getOrElse(result, () => null)
+	return result
 })
 
 /**
@@ -81,7 +81,7 @@ const logoutAtom = Atom.fn(
 )
 
 export function useAuth() {
-	const user = useAtomValue(userAtom)
+	const userResult = useAtomValue(userAtom)
 	const isLoading = useAtomValue(isLoadingAtom)
 	const loginMutation = useAtomSet(loginAtom, { mode: "promiseExit" })
 	const logoutFn = useAtomSet(logoutAtom)
@@ -109,7 +109,8 @@ export function useAuth() {
 	}
 
 	return {
-		user,
+		user: Result.getOrElse(userResult, () => null),
+		error: Result.error(userResult),
 		isLoading,
 		login,
 		logout,

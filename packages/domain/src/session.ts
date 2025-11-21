@@ -12,6 +12,6 @@ export class JwtPayload extends Schema.Class<JwtPayload>("JwtPayload")({
 	updated_at: Schema.String,
 	family_name: Schema.String,
 	email_verified: Schema.Boolean,
-	externalOrganizationId: OrganizationId,
-	role: Schema.String,
+	externalOrganizationId: Schema.NullishOr(OrganizationId),
+	role: Schema.NullishOr(Schema.String),
 }) {}

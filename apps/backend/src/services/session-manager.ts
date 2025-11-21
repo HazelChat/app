@@ -1,9 +1,16 @@
 import {
 	CurrentUser,
+	InvalidBearerTokenError,
+	InvalidJwtPayloadError,
 	JwtPayload,
 	type OrganizationId,
 	OrganizationId as OrgId,
-	UnauthorizedError,
+	SessionAuthenticationError,
+	SessionExpiredError,
+	SessionLoadError,
+	SessionNotProvidedError,
+	SessionRefreshError,
+	WorkOSUserFetchError,
 	withSystemActor,
 } from "@hazel/domain"
 import { Config, Effect, Option, Schema } from "effect"
@@ -77,7 +84,7 @@ export class SessionManager extends Effect.Service<SessionManager>()("SessionMan
 				.pipe(
 					Effect.catchTag("WorkOSApiError", (error) =>
 						Effect.fail(
-							new UnauthorizedError({
+							new SessionLoadError({
 								message: "Failed to load session from cookie",
 								detail: String(error.cause),
 							}),
@@ -89,7 +96,7 @@ export class SessionManager extends Effect.Service<SessionManager>()("SessionMan
 			const session: any = yield* Effect.tryPromise(() => sealedSession.authenticate()).pipe(
 				Effect.catchTag("UnknownException", (error) =>
 					Effect.fail(
-						new UnauthorizedError({
+						new SessionAuthenticationError({
 							message: "Failed to authenticate sealed session",
 							detail: String(error.cause),
 						}),
@@ -105,7 +112,7 @@ export class SessionManager extends Effect.Service<SessionManager>()("SessionMan
 				).pipe(
 					Effect.mapError(
 						(error) =>
-							new UnauthorizedError({
+							new InvalidJwtPayloadError({
 								message: "Invalid JWT payload from WorkOS",
 								detail: String(error),
 							}),
@@ -125,7 +132,7 @@ export class SessionManager extends Effect.Service<SessionManager>()("SessionMan
 				const currentUser = new CurrentUser.Schema({
 					id: user.id,
 					role: (session.role as "admin" | "member") || "member",
-					organizationId: jwtPayload.externalOrganizationId,
+					organizationId: jwtPayload.externalOrganizationId || undefined,
 					avatarUrl: user.avatarUrl,
 					firstName: user.firstName,
 					lastName: user.lastName,
@@ -145,7 +152,7 @@ export class SessionManager extends Effect.Service<SessionManager>()("SessionMan
 			// If not authenticated, check if we should give up
 			if (session.reason === "no_session_cookie_provided") {
 				return yield* Effect.fail(
-					new UnauthorizedError({
+					new SessionNotProvidedError({
 						message: "No session cookie provided",
 						detail: "The session was not authenticated",
 					}),
@@ -156,7 +163,7 @@ export class SessionManager extends Effect.Service<SessionManager>()("SessionMan
 			const refreshedSession: any = yield* Effect.tryPromise(() => sealedSession.refresh()).pipe(
 				Effect.catchTag("UnknownException", (error) =>
 					Effect.fail(
-						new UnauthorizedError({
+						new SessionRefreshError({
 							message: "Failed to refresh sealed session",
 							detail: String(error.cause),
 						}),
@@ -166,7 +173,7 @@ export class SessionManager extends Effect.Service<SessionManager>()("SessionMan
 
 			if (!refreshedSession.authenticated || !refreshedSession.sealedSession) {
 				return yield* Effect.fail(
-					new UnauthorizedError({
+					new SessionExpiredError({
 						message: "Failed to refresh session",
 						detail: "The session could not be refreshed",
 					}),
@@ -179,7 +186,7 @@ export class SessionManager extends Effect.Service<SessionManager>()("SessionMan
 			).pipe(
 				Effect.mapError(
 					(error) =>
-						new UnauthorizedError({
+						new InvalidJwtPayloadError({
 							message: "Invalid JWT payload from WorkOS",
 							detail: String(error),
 						}),
@@ -199,7 +206,7 @@ export class SessionManager extends Effect.Service<SessionManager>()("SessionMan
 			const currentUser = new CurrentUser.Schema({
 				id: user.id,
 				role: (refreshedSession.role as "admin" | "member") || "member",
-				organizationId: jwtPayload.externalOrganizationId,
+				organizationId: jwtPayload.externalOrganizationId || undefined,
 				avatarUrl: user.avatarUrl,
 				firstName: user.firstName,
 				lastName: user.lastName,
@@ -232,7 +239,7 @@ export class SessionManager extends Effect.Service<SessionManager>()("SessionMan
 						issuer: "https://api.workos.com",
 					}),
 				catch: (error) =>
-					new UnauthorizedError({
+					new InvalidBearerTokenError({
 						message: `Invalid token: ${error}`,
 						detail: `The provided token is invalid`,
 					}),
@@ -241,7 +248,7 @@ export class SessionManager extends Effect.Service<SessionManager>()("SessionMan
 			const workOsUserId = payload.sub
 			if (!workOsUserId) {
 				return yield* Effect.fail(
-					new UnauthorizedError({
+					new InvalidJwtPayloadError({
 						message: "Token missing user ID",
 						detail: "The provided token is missing the user ID",
 					}),
@@ -262,7 +269,7 @@ export class SessionManager extends Effect.Service<SessionManager>()("SessionMan
 							.pipe(
 								Effect.catchTag("WorkOSApiError", (error) =>
 									Effect.fail(
-										new UnauthorizedError({
+										new WorkOSUserFetchError({
 											message: "Failed to fetch user from WorkOS",
 											detail: String(error.cause),
 										}),
@@ -303,19 +310,33 @@ export class SessionManager extends Effect.Service<SessionManager>()("SessionMan
 				workOsCookiePassword: string,
 			) => Effect.Effect<
 				{ currentUser: CurrentUser.Schema; refreshedSession: string | undefined },
-				UnauthorizedError,
+				| SessionLoadError
+				| SessionAuthenticationError
+				| InvalidJwtPayloadError
+				| SessionNotProvidedError
+				| SessionRefreshError
+				| SessionExpiredError,
 				never
 			>,
 			authenticateWithBearer: authenticateWithBearer as (
 				bearerToken: string,
-			) => Effect.Effect<CurrentUser.Schema, UnauthorizedError, never>,
+			) => Effect.Effect<
+				CurrentUser.Schema,
+				InvalidBearerTokenError | InvalidJwtPayloadError | WorkOSUserFetchError,
+				never
+			>,
 			// Keep old method name for backward compatibility during transition
 			authenticateAndGetUser: authenticateWithCookie as (
 				sessionCookie: string,
 				workOsCookiePassword: string,
 			) => Effect.Effect<
 				{ currentUser: CurrentUser.Schema; refreshedSession: string | undefined },
-				UnauthorizedError,
+				| SessionLoadError
+				| SessionAuthenticationError
+				| InvalidJwtPayloadError
+				| SessionNotProvidedError
+				| SessionRefreshError
+				| SessionExpiredError,
 				never
 			>,
 		} as const

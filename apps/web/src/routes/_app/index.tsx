@@ -31,6 +31,8 @@ function RouteComponent() {
 		[user?.id, user?.organizationId],
 	)
 
+	console.log(isLoading, isAuthLoading, !isReady)
+
 	if (isLoading || isAuthLoading || !isReady) {
 		return <Loader />
 	}

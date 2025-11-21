@@ -109,17 +109,17 @@ export function getWhereClauseForTable(
 			// Users can always see themselves and other users who are members of their organizations
 			Effect.succeed(
 				user.accessContext.coOrgUserIds.length > 0
-			? `("id" = '${user.internalUserId}' OR "id" IN ${toSqlInClause(user.accessContext.coOrgUserIds)}) AND "deletedAt" IS NULL`
-			: `"id" = '${user.internalUserId}' AND "deletedAt" IS NULL`,
+					? `("id" = '${user.internalUserId}' OR "id" IN ${toSqlInClause(user.accessContext.coOrgUserIds)}) AND "deletedAt" IS NULL`
+					: `"id" = '${user.internalUserId}' AND "deletedAt" IS NULL`,
 			),
 		),
 		Match.when("user_presence_status", () =>
 			// Users can always see their own presence and presence of users in the same organizations
 			Effect.succeed(
-			user.accessContext.coOrgUserIds.length > 0
-				? `"userId" = '${user.internalUserId}' OR "userId" IN ${toSqlInClause(user.accessContext.coOrgUserIds)}`
-				: `"userId" = '${user.internalUserId}'`,
-		),
+				user.accessContext.coOrgUserIds.length > 0
+					? `"userId" = '${user.internalUserId}' OR "userId" IN ${toSqlInClause(user.accessContext.coOrgUserIds)}`
+					: `"userId" = '${user.internalUserId}'`,
+			),
 		),
 		// Organization tables
 		Match.when("organizations", () =>
@@ -187,8 +187,8 @@ export function getWhereClauseForTable(
 			// Public bots, bots created by user, or bots belonging to users in the same orgs
 			Effect.succeed(
 				user.accessContext.coOrgUserIds.length > 0
-			? `("isPublic" = true OR "createdBy" = '${user.internalUserId}' OR "userId" IN ${toSqlInClause(user.accessContext.coOrgUserIds)}) AND "deletedAt" IS NULL`
-			: `("isPublic" = true OR "createdBy" = '${user.internalUserId}') AND "deletedAt" IS NULL`,
+					? `("isPublic" = true OR "createdBy" = '${user.internalUserId}' OR "userId" IN ${toSqlInClause(user.accessContext.coOrgUserIds)}) AND "deletedAt" IS NULL`
+					: `("isPublic" = true OR "createdBy" = '${user.internalUserId}') AND "deletedAt" IS NULL`,
 			),
 		),
 		Match.orElse((table) =>
