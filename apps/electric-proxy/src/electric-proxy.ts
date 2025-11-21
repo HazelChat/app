@@ -25,6 +25,8 @@ export function prepareElectricUrl(requestUrl: string): URL {
 		originUrl.searchParams.set(`secret`, env.ELECTRIC_SOURCE_SECRET)
 	}
 
+	console.log("originUrl", originUrl.toString())
+
 	return originUrl
 }
 

@@ -1,4 +1,5 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router"
+import { ElectricSyncErrorBanner } from "~/components/electric-sync-error-banner"
 import { Loader } from "~/components/loader"
 import { organizationCollection, organizationMemberCollection } from "~/db/collections"
 import { useAuth } from "~/lib/auth"
@@ -27,5 +28,12 @@ function RouteComponent() {
 		return <Loader />
 	}
 
-	return isLoading && !user ? <Loader /> : <Outlet />
+	return isLoading && !user ? (
+		<Loader />
+	) : (
+		<>
+			<ElectricSyncErrorBanner />
+			<Outlet />
+		</>
+	)
 }

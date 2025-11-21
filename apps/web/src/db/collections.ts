@@ -18,6 +18,10 @@ import { createCollection } from "@tanstack/react-db"
 import { Effect, Schema } from "effect"
 import { HazelRpcClient } from "~/lib/services/common/rpc-atom-client"
 import { runtime } from "~/lib/services/common/runtime"
+import {
+	createCollectionErrorHandler,
+	registerCollection,
+} from "~/lib/services/electric-collection-error-handler"
 
 const electricUrl: string = import.meta.env.VITE_ELECTRIC_URL
 
@@ -35,6 +39,7 @@ export const organizationCollection = createCollection(
 			},
 
 			fetchClient: (url, init) => fetch(url, { ...init, credentials: "include" }),
+			onError: createCollectionErrorHandler("organizations"),
 		},
 		schema: Schema.standardSchemaV1(Organization.Model.json),
 		getKey: (item) => item.id,
@@ -77,6 +82,7 @@ export const invitationCollection = createCollection(
 				timestamptz: (date) => new Date(date),
 			},
 			fetchClient: (url, init) => fetch(url, { ...init, credentials: "include" }),
+			onError: createCollectionErrorHandler("invitations"),
 		},
 		schema: Schema.standardSchemaV1(Invitation.Model.json),
 		getKey: (item) => item.id,
@@ -136,6 +142,7 @@ export const messageCollection = createCollection(
 				timestamptz: (date) => new Date(date),
 			},
 			fetchClient: (url, init) => fetch(url, { ...init, credentials: "include" }),
+			onError: createCollectionErrorHandler("messages"),
 		},
 		schema: Schema.standardSchemaV1(Message.Model.json),
 		getKey: (item) => item.id,
@@ -183,6 +190,7 @@ export const messageReactionCollection = createCollection(
 				timestamptz: (date) => new Date(date),
 			},
 			fetchClient: (url, init) => fetch(url, { ...init, credentials: "include" }),
+			onError: createCollectionErrorHandler("message_reactions"),
 		},
 		schema: Schema.standardSchemaV1(MessageReaction.Model.json),
 		getKey: (item) => item.id,
@@ -231,6 +239,7 @@ export const pinnedMessageCollection = createCollection(
 				timestamptz: (date) => new Date(date),
 			},
 			fetchClient: (url, init) => fetch(url, { ...init, credentials: "include" }),
+			onError: createCollectionErrorHandler("pinned_messages"),
 		},
 		schema: Schema.standardSchemaV1(PinnedMessage.Model.json),
 		getKey: (item) => item.id,
@@ -280,6 +289,7 @@ export const notificationCollection = createCollection(
 				timestamptz: (date) => new Date(date),
 			},
 			fetchClient: (url, init) => fetch(url, { ...init, credentials: "include" }),
+			onError: createCollectionErrorHandler("notifications"),
 		},
 		schema: Schema.standardSchemaV1(Notification.Model.json),
 		getKey: (item) => item.id,
@@ -327,6 +337,7 @@ export const userCollection = createCollection(
 				timestamptz: (date) => new Date(date),
 			},
 			fetchClient: (url, init) => fetch(url, { ...init, credentials: "include" }),
+			onError: createCollectionErrorHandler("users"),
 		},
 		schema: Schema.standardSchemaV1(User.Model.json),
 		getKey: (item) => item.id,
@@ -366,6 +377,7 @@ export const organizationMemberCollection = createCollection(
 				timestamptz: (date) => new Date(date),
 			},
 			fetchClient: (url, init) => fetch(url, { ...init, credentials: "include" }),
+			onError: createCollectionErrorHandler("organization_members"),
 		},
 		schema: Schema.standardSchemaV1(OrganizationMember.Model.json),
 		getKey: (item) => item.id,
@@ -414,6 +426,7 @@ export const channelCollection = createCollection(
 				timestamptz: (date) => new Date(date),
 			},
 			fetchClient: (url, init) => fetch(url, { ...init, credentials: "include" }),
+			onError: createCollectionErrorHandler("channels"),
 		},
 		schema: Schema.standardSchemaV1(Channel.Model.json),
 		getKey: (item) => item.id,
@@ -463,6 +476,7 @@ export const channelMemberCollection = createCollection(
 				timestamptz: (date) => new Date(date),
 			},
 			fetchClient: (url, init) => fetch(url, { ...init, credentials: "include" }),
+			onError: createCollectionErrorHandler("channel_members"),
 		},
 		schema: Schema.standardSchemaV1(ChannelMember.Model.json),
 		getKey: (item) => item.id,
@@ -511,6 +525,7 @@ export const attachmentCollection = createCollection(
 				timestamptz: (date) => new Date(date),
 			},
 			fetchClient: (url, init) => fetch(url, { ...init, credentials: "include" }),
+			onError: createCollectionErrorHandler("attachments"),
 		},
 		schema: Schema.standardSchemaV1(Attachment.Model.json),
 		getKey: (item) => item.id,
@@ -539,6 +554,7 @@ export const typingIndicatorCollection = createCollection(
 				table: "typing_indicators",
 			},
 			fetchClient: (url, init) => fetch(url, { ...init, credentials: "include" }),
+			onError: createCollectionErrorHandler("typing_indicators"),
 		},
 		schema: Schema.standardSchemaV1(TypingIndicator.Model.json),
 		getKey: (item) => item.id,
@@ -594,6 +610,7 @@ export const userPresenceStatusCollection = createCollection(
 				timestamptz: (date) => new Date(date),
 			},
 			fetchClient: (url, init) => fetch(url, { ...init, credentials: "include" }),
+			onError: createCollectionErrorHandler("user_presence_status"),
 		},
 		schema: Schema.standardSchemaV1(UserPresenceStatus.Model.json),
 		getKey: (item) => item.id,
@@ -623,3 +640,18 @@ export const userPresenceStatusCollection = createCollection(
 			}),
 	}),
 )
+
+// Register all collections for error handling and retry
+registerCollection("organizations", () => organizationCollection.preload())
+registerCollection("invitations", () => invitationCollection.preload())
+registerCollection("messages", () => messageCollection.preload())
+registerCollection("message_reactions", () => messageReactionCollection.preload())
+registerCollection("pinned_messages", () => pinnedMessageCollection.preload())
+registerCollection("notifications", () => notificationCollection.preload())
+registerCollection("users", () => userCollection.preload())
+registerCollection("organization_members", () => organizationMemberCollection.preload())
+registerCollection("channels", () => channelCollection.preload())
+registerCollection("channel_members", () => channelMemberCollection.preload())
+registerCollection("attachments", () => attachmentCollection.preload())
+registerCollection("typing_indicators", () => typingIndicatorCollection.preload())
+registerCollection("user_presence_status", () => userPresenceStatusCollection.preload())

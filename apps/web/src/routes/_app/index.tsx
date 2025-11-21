@@ -1,5 +1,8 @@
+import { useAtomValue } from "@effect-atom/atom-react"
 import { and, eq, useLiveQuery } from "@tanstack/react-db"
 import { createFileRoute, Navigate } from "@tanstack/react-router"
+import { hasElectricErrorAtom } from "~/atoms/electric-sync-atoms"
+import { ElectricSyncErrorPage } from "~/components/electric-sync-error-page"
 import { Loader } from "~/components/loader"
 import { organizationCollection, organizationMemberCollection } from "~/db/collections"
 import { useAuth } from "~/lib/auth"
@@ -10,6 +13,7 @@ export const Route = createFileRoute("/_app/")({
 
 function RouteComponent() {
 	const { user, isLoading: isAuthLoading } = useAuth()
+	const hasElectricError = useAtomValue(hasElectricErrorAtom)
 
 	const {
 		data: membership,
@@ -40,6 +44,17 @@ function RouteComponent() {
 	}
 
 	console.log("user", user)
+
+	// If Electric sync is failing and we can't load membership data, show error page
+	// This prevents incorrectly sending onboarded users to onboarding flow
+	if (hasElectricError && user.isOnboarded && user.organizationId && !membership) {
+		const handleRetry = async () => {
+			// Retry loading the collections needed for this route
+			await Promise.all([organizationCollection.preload(), organizationMemberCollection.preload()])
+		}
+
+		return <ElectricSyncErrorPage onRetry={handleRetry} />
+	}
 
 	if (!user.isOnboarded) {
 		const orgId = membership?.org.id
