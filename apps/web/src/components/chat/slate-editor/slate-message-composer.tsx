@@ -8,6 +8,7 @@ import { attachmentCollection, channelMemberCollection } from "~/db/collections"
 import { useTyping } from "~/hooks/use-typing"
 import { useAuth } from "~/lib/auth"
 import { cn } from "~/lib/utils"
+import { toast } from "sonner"
 import { useChat } from "~/providers/chat-provider"
 import { formatFileSize, getFileTypeFromName } from "~/utils/file-utils"
 import { MessageComposerActions } from "../message-composer-actions"
@@ -82,6 +83,17 @@ export const SlateMessageComposer = ({ placeholder = "Type a message..." }: Slat
 
 	const handleEmojiSelect = (emoji: string) => {
 		editorRef.current?.focusAndInsertText(emoji)
+	}
+
+	const handleCommand = (commandId: string) => {
+		switch (commandId) {
+			case "github":
+				// TODO: Open GitHub issue modal here
+				toast.info("Opening GitHub issue modal...")
+				break
+			default:
+				console.log("Unknown command:", commandId)
+		}
 	}
 
 	return (
@@ -180,6 +192,7 @@ export const SlateMessageComposer = ({ placeholder = "Type a message..." }: Slat
 						className="w-full"
 						onSubmit={handleSubmit}
 						onUpdate={handleUpdate}
+						onCommand={handleCommand}
 						isUploading={isUploading}
 					/>
 					<MessageComposerActions onEmojiSelect={handleEmojiSelect} />

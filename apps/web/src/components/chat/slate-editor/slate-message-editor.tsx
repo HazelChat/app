@@ -1,7 +1,7 @@
 "use client"
 
 import { pipe } from "effect"
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useState } from "react"
+import { forwardRef, useCallback, useImperativeHandle, useMemo, useState } from "react"
 import type { Descendant } from "slate"
 import { createEditor, Editor, Range, Element as SlateElement, Transforms } from "slate"
 import { withHistory } from "slate-history"
@@ -31,8 +31,11 @@ import {
 import { insertMention, type MentionEditor, withMentions } from "./slate-mention-plugin"
 import { isCodeBlockElement } from "./types"
 
+import { executeSlashCommand, type SlashCommandEditor, withSlashCommands } from "./slate-slash-command-plugin"
+import { SlashCommandAutocomplete } from "./slash-command-autocomplete"
+
 // Extend the editor type with all plugins
-type CustomEditor = MentionEditor
+type CustomEditor = MentionEditor & SlashCommandEditor
 
 export interface SlateMessageEditorRef {
 	focusAndInsertText: (text: string) => void
@@ -44,6 +47,7 @@ interface SlateMessageEditorProps {
 	className?: string
 	onSubmit?: (content: string) => void | Promise<void>
 	onUpdate?: (content: string) => void
+	onCommand?: (commandId: string) => void
 	isUploading?: boolean
 }
 
@@ -228,10 +232,21 @@ const shouldHidePlaceholder = (value: CustomDescendant[]): boolean => {
 }
 
 export const SlateMessageEditor = forwardRef<SlateMessageEditorRef, SlateMessageEditorProps>(
-	({ placeholder = "Type a message...", className, onSubmit, onUpdate, isUploading = false }, ref) => {
-		// Create Slate editor with React, History, Autoformat, and Mentions plugins
+	(
+		{ placeholder = "Type a message...", className, onSubmit, onUpdate, onCommand, isUploading = false },
+		ref,
+	) => {
+		// Create Slate editor with React, History, Autoformat, Mentions, and Slash Command plugins
 		const editor = useMemo(
-			() => pipe(createEditor(), withHistory, withReact, withMentions, withAutoformat) as CustomEditor,
+			() =>
+				pipe(
+					createEditor(),
+					withHistory,
+					withReact,
+					withMentions,
+					withSlashCommands,
+					withAutoformat,
+				) as CustomEditor,
 			[],
 		)
 
@@ -657,6 +672,21 @@ export const SlateMessageEditor = forwardRef<SlateMessageEditorRef, SlateMessage
 								// Restore focus to the editor
 								ReactEditor.focus(editor)
 								// Force re-render after mention selection
+								setValue([...value])
+							}}
+						/>
+					)}
+
+					{/* Render slash command autocomplete when active */}
+					{editor.slashCommandState.active && (
+						<SlashCommandAutocomplete
+							editor={editor}
+							search={editor.slashCommandState.search}
+							onSelect={(command) => {
+								executeSlashCommand(editor, command, onCommand)
+								// Restore focus to the editor
+								ReactEditor.focus(editor)
+								// Force re-render
 								setValue([...value])
 							}}
 						/>
