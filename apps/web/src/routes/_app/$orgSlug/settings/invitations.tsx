@@ -7,13 +7,15 @@ import { useState } from "react"
 import { toast } from "sonner"
 import { resendInvitationMutation, revokeInvitationMutation } from "~/atoms/invitation-atoms"
 import IconClose from "~/components/icons/icon-close"
+import IconCopy from "~/components/icons/icon-copy"
+import IconDots from "~/components/icons/icon-dots"
 import IconPlus from "~/components/icons/icon-plus"
 import { EmailInviteModal } from "~/components/modals/email-invite-modal"
 import { Button } from "~/components/ui/button"
+import { Menu, MenuContent, MenuItem, MenuTrigger } from "~/components/ui/menu"
 import { invitationCollection, userCollection } from "~/db/collections"
 import { useOrganization } from "~/hooks/use-organization"
 import { toastExit } from "~/lib/toast-exit"
-import { cn } from "~/lib/utils"
 
 export const Route = createFileRoute("/_app/$orgSlug/settings/invitations")({
 	component: InvitationsSettings,
@@ -67,6 +69,15 @@ function InvitationsSettings() {
 			return `Expires in ${hours} hour${hours > 1 ? "s" : ""}`
 		}
 		return "Expires soon"
+	}
+
+	const handleCopyInvitationUrl = async (url: string) => {
+		try {
+			await navigator.clipboard.writeText(url)
+			toast.success("Invitation URL copied to clipboard")
+		} catch (_error) {
+			toast.error("Failed to copy invitation URL")
+		}
 	}
 
 	const handleResendInvitation = async (invitationId: InvitationId) => {
@@ -182,24 +193,40 @@ function InvitationsSettings() {
 												</p>
 											</td>
 											<td className="px-4 py-4">
-												<div className="flex items-center justify-end gap-1">
-													<Button
-														intent="plain"
-														size="sq-xs"
-														onPress={() => handleResendInvitation(invitation.id)}
-														aria-label="Resend invitation"
-													>
-														<ArrowPathIcon data-slot="icon" />
+												<Menu>
+													<Button intent="plain" size="sq-xs">
+														<IconDots />
 													</Button>
-													<Button
-														intent="plain"
-														size="sq-xs"
-														onPress={() => handleRevokeInvitation(invitation.id)}
-														aria-label="Revoke invitation"
-													>
-														<IconClose data-slot="icon" />
-													</Button>
-												</div>
+													<MenuContent placement="bottom end">
+														<MenuItem
+															onAction={() =>
+																handleCopyInvitationUrl(
+																	invitation.invitationUrl,
+																)
+															}
+														>
+															<IconCopy className="mr-2 size-4" />
+															Copy Invitation URL
+														</MenuItem>
+														<MenuItem
+															onAction={() =>
+																handleResendInvitation(invitation.id)
+															}
+														>
+															<ArrowPathIcon className="mr-2 size-4" />
+															Resend Invitation
+														</MenuItem>
+														<MenuItem
+															onAction={() =>
+																handleRevokeInvitation(invitation.id)
+															}
+															intent="danger"
+														>
+															<IconClose className="mr-2 size-4" />
+															Revoke Invitation
+														</MenuItem>
+													</MenuContent>
+												</Menu>
 											</td>
 										</tr>
 									))}

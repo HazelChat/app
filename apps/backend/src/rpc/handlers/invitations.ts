@@ -69,6 +69,7 @@ export const InvitationRpcLive = InvitationRpcs.toLayer(
 										const createdInvitation = yield* InvitationRepo.upsertByWorkosId({
 											workosInvitationId: workosInvitation.id,
 											organizationId: payload.organizationId,
+											invitationUrl: workosInvitation.acceptInvitationUrl,
 											email: invite.email,
 											invitedBy: currentUser.id,
 											invitedAt: new Date(),
