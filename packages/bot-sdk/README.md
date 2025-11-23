@@ -1,13 +1,14 @@
 # @hazel/bot-sdk
 
-Official SDK for building bots for Hazel. Built with Effect-TS for type-safe, composable bot development.
+Official SDK for building bots for Hazel. Built with Effect-TS for type-safe, composable bot development with Electric SQL real-time event streaming.
 
 ## Features
 
-- 🤖 **Message Operations**: Send, update, and delete messages
-- 🔌 **Webhook Events**: Receive real-time events from Hazel
-- 🔐 **Bearer Token Auth**: Secure authentication with API tokens
-- ⚡ **Effect-TS**: Fully Effect-based for composability and error handling
+- ⚡ **Real-time Events**: Subscribe to database changes via Electric SQL shape streams
+- 📨 **Event Queue**: Built-in Effect.Queue for efficient event processing
+- 🤖 **Event Handlers**: onMessage, onMessageUpdate, onMessageDelete, and more
+- 🔐 **Secure Auth**: Bearer token authentication with Electric proxy
+- 🎯 **Effect-TS**: Fully Effect-based for composability and error handling
 - 📝 **TypeScript**: Complete type safety throughout
 
 ## Installation
@@ -19,208 +20,277 @@ bun add @hazel/bot-sdk
 ## Quick Start
 
 ```typescript
-import { BotClient, runBot } from "@hazel/bot-sdk"
+import { createBotRuntime, BotClient } from "@hazel/bot-sdk"
 import { Effect } from "effect"
 
-// Create your bot program
-const program = Effect.gen(function*() {
-  const bot = yield* BotClient
+// Create bot runtime
+const runtime = createBotRuntime({
+	electricUrl: "http://localhost:8787/v1/shape",
+	botToken: process.env.BOT_TOKEN!,
+	organizationId: "org_123",
+})
 
-  // Send a message
-  yield* bot.messages.send({
-    channelId: "channel-123",
-    content: "Hello from bot!"
-  })
+// Define your bot program
+const program = Effect.gen(function* () {
+	const bot = yield* BotClient
 
-  // Handle incoming messages
-  yield* bot.webhooks.onMessage((event) =>
-    Effect.gen(function*() {
-      yield* Effect.log("Received message:", event.data.content)
+	// Register message handler
+	yield* bot.onMessage((message) =>
+		Effect.gen(function* () {
+			yield* Effect.log(`Received message: ${message.content}`)
 
-      // Echo the message back
-      yield* bot.messages.send({
-        channelId: event.data.channelId,
-        content: `Echo: ${event.data.content}`
-      })
-    })
-  )
+			// Echo the message back (you would use RPC client here)
+			yield* Effect.log(`Would echo to channel: ${message.channelId}`)
+		}),
+	)
 
-  // Start webhook server
-  yield* bot.webhooks.listen(3000)
-  yield* Effect.log("Bot is running!")
+	// Start the bot
+	yield* bot.start
+	yield* Effect.log("Bot is running!")
 })
 
 // Run the bot
-await runBot(
-  {
-    botToken: process.env.BOT_TOKEN!,
-    rpcUrl: "ws://localhost:3003/rpc"
-  },
-  program
-)
+runtime.runFork(Effect.scoped(program))
+```
+
+## How It Works
+
+The bot SDK uses **Electric SQL** to subscribe to real-time database changes and queue them for processing:
+
+1. **Shape Streams**: Subscribe to Electric SQL shape streams (messages, channels, etc.)
+2. **Event Queue**: Events are pushed to in-memory Effect queues
+3. **Event Dispatcher**: Registered handlers consume events from queues
+4. **Handler Execution**: Handlers run with retry logic and error handling
+
+```
+Database Changes → Electric SQL → Shape Stream → Event Queue → Your Handlers
 ```
 
 ## API Reference
 
 ### BotClient
 
-Main client service that provides access to all bot functionality.
+Main client service that provides event subscription methods.
 
-#### Properties
+#### Event Handler Methods
 
-- `messages`: MessageClient - Send, update, and delete messages
-- `webhooks`: WebhookServer - Receive and handle webhook events
+##### `onMessage(handler: MessageHandler)`
 
-### MessageClient
-
-Service for message operations.
-
-#### Methods
-
-##### `send(options: SendMessageOptions)`
-
-Send a message to a channel.
+Register a handler for new messages.
 
 ```typescript
-yield* bot.messages.send({
-  channelId: "channel-123",
-  content: "Hello world!",
-  attachmentIds: ["attachment-1"] // optional
-})
-```
-
-##### `update(options: UpdateMessageOptions)`
-
-Update an existing message.
-
-```typescript
-yield* bot.messages.update({
-  id: "message-123",
-  content: "Updated content"
-})
-```
-
-##### `delete(messageId: MessageId)`
-
-Delete a message.
-
-```typescript
-yield* bot.messages.delete("message-123")
-```
-
-### WebhookServer
-
-HTTP server for receiving webhook events from Hazel.
-
-#### Methods
-
-##### `onMessage(handler: EventHandler<MessageCreatedEvent>)`
-
-Register a handler for `message.created` events.
-
-```typescript
-yield* bot.webhooks.onMessage((event) =>
-  Effect.gen(function*() {
-    console.log("New message:", event.data.content)
-    console.log("From channel:", event.data.channelId)
-    console.log("Author:", event.data.authorId)
-  })
+yield* bot.onMessage((message) =>
+	Effect.gen(function* () {
+		yield* Effect.log("New message:", message.content)
+		yield* Effect.log("Channel:", message.channelId)
+		yield* Effect.log("Author:", message.authorId)
+	}),
 )
 ```
 
-##### `onMessageUpdate(handler: EventHandler<MessageUpdatedEvent>)`
+##### `onMessageUpdate(handler: MessageUpdateHandler)`
 
-Register a handler for `message.updated` events.
+Register a handler for message updates.
 
 ```typescript
-yield* bot.webhooks.onMessageUpdate((event) =>
-  Effect.log("Message updated:", event.data.id)
+yield* bot.onMessageUpdate((message) =>
+	Effect.gen(function* () {
+		yield* Effect.log("Message updated:", message.id)
+	}),
 )
 ```
 
-##### `onMessageDelete(handler: EventHandler<MessageDeletedEvent>)`
+##### `onMessageDelete(handler: MessageDeleteHandler)`
 
-Register a handler for `message.deleted` events.
+Register a handler for message deletes.
 
 ```typescript
-yield* bot.webhooks.onMessageDelete((event) =>
-  Effect.log("Message deleted:", event.data.id)
+yield* bot.onMessageDelete((message) =>
+	Effect.gen(function* () {
+		yield* Effect.log("Message deleted:", message.id)
+	}),
 )
 ```
 
-##### `listen(port: number)`
+##### `onChannelCreated(handler: ChannelCreatedHandler)`
 
-Start the webhook server on the specified port.
+Register a handler for new channels.
 
 ```typescript
-yield* bot.webhooks.listen(3000)
+yield* bot.onChannelCreated((channel) =>
+	Effect.gen(function* () {
+		yield* Effect.log("New channel:", channel.name)
+	}),
+)
+```
+
+##### `onChannelUpdated(handler: ChannelUpdatedHandler)`
+
+Register a handler for channel updates.
+
+```typescript
+yield* bot.onChannelUpdated((channel) =>
+	Effect.gen(function* () {
+		yield* Effect.log("Channel updated:", channel.id)
+	}),
+)
+```
+
+##### `onChannelDeleted(handler: ChannelDeletedHandler)`
+
+Register a handler for channel deletes.
+
+```typescript
+yield* bot.onChannelDeleted((channel) =>
+	Effect.gen(function* () {
+		yield* Effect.log("Channel deleted:", channel.id)
+	}),
+)
+```
+
+##### `onChannelMemberAdded(handler: ChannelMemberAddedHandler)`
+
+Register a handler for new channel members.
+
+```typescript
+yield* bot.onChannelMemberAdded((member) =>
+	Effect.gen(function* () {
+		yield* Effect.log("New member added:", member.userId)
+	}),
+)
+```
+
+##### `onChannelMemberRemoved(handler: ChannelMemberRemovedHandler)`
+
+Register a handler for removed channel members.
+
+```typescript
+yield* bot.onChannelMemberRemoved((member) =>
+	Effect.gen(function* () {
+		yield* Effect.log("Member removed:", member.userId)
+	}),
+)
+```
+
+#### Control Methods
+
+##### `start`
+
+Start the bot client (begins listening to events).
+
+```typescript
+yield* bot.start
+```
+
+**Note**: This returns a scoped effect, so you must run it within `Effect.scoped()`.
+
+##### `getAuthContext`
+
+Get the bot's authentication context.
+
+```typescript
+const context = yield* bot.getAuthContext
+console.log("Bot ID:", context.botId)
+console.log("Organization:", context.organizationId)
 ```
 
 ### Configuration
 
 #### BotConfig
 
-Configuration object for the bot.
+Configuration for creating a bot runtime.
 
 ```typescript
-interface BotConfig {
-  // Required: Bot API token for authentication
-  botToken: string
+import { createBotConfig } from "@hazel/bot-sdk"
 
-  // Required: WebSocket URL for RPC connection
-  rpcUrl: string
+const config = createBotConfig({
+	// Required: Electric proxy URL
+	electricUrl: "http://localhost:8787/v1/shape",
 
-  // Optional: HTTP API base URL (derived from rpcUrl if not provided)
-  baseUrl?: string
+	// Required: Bot authentication token
+	botToken: "bot_token_123",
 
-  // Optional: Organization ID to scope operations
-  organizationId?: string
-}
-```
+	// Required: Organization ID the bot belongs to
+	organizationId: "org_123",
 
-#### Environment Variables
+	// Optional: Custom table subscriptions
+	subscriptions: [
+		{
+			table: "messages",
+			where: `"organizationId" = 'org_123'`,
+			startFromNow: true, // Only receive new events
+		},
+		{
+			table: "channels",
+			where: `"organizationId" = 'org_123'`,
+		},
+	],
 
-You can also configure the bot using environment variables:
+	// Optional: Queue configuration
+	queueConfig: {
+		capacity: 1000,
+		backpressureStrategy: "sliding", // "drop-oldest" | "drop-newest" | "sliding"
+	},
 
-- `BOT_TOKEN`: Bot API token
-- `BOT_RPC_URL`: WebSocket RPC URL
-- `BOT_ORGANIZATION_ID`: Organization ID
-
-```typescript
-// Will automatically load from environment variables
-const program = Effect.gen(function*() {
-  const bot = yield* BotClient
-  // ...
+	// Optional: Dispatcher configuration
+	dispatcherConfig: {
+		maxRetries: 3,
+		retryBaseDelay: 100, // milliseconds
+	},
 })
 ```
 
-### Helper Functions
+#### Helper Functions
 
-#### `makeBotClient(config: BotConfig)`
+##### `createBotRuntime(options)`
 
-Create a bot client layer with the given configuration.
+Simplified function to create a bot runtime.
 
 ```typescript
-const BotLayer = makeBotClient({
-  botToken: process.env.BOT_TOKEN!,
-  rpcUrl: "ws://localhost:3003/rpc"
+const runtime = createBotRuntime({
+	electricUrl: "http://localhost:8787/v1/shape",
+	botToken: process.env.BOT_TOKEN!,
+	organizationId: "org_123",
 })
-
-Effect.provide(program, BotLayer).pipe(Effect.runPromise)
 ```
 
-#### `runBot(config: BotConfig, program: Effect)`
+##### `makeBotRuntime(config)`
 
-Simplified function to run a bot program.
+Advanced function to create a bot runtime with full configuration.
 
 ```typescript
-await runBot(
-  {
-    botToken: process.env.BOT_TOKEN!,
-    rpcUrl: "ws://localhost:3003/rpc"
-  },
-  program
-)
+import { makeBotRuntime, createBotConfig } from "@hazel/bot-sdk"
+
+const config = createBotConfig({
+	electricUrl: process.env.ELECTRIC_URL!,
+	botToken: process.env.BOT_TOKEN!,
+	organizationId: process.env.ORG_ID!,
+	queueConfig: {
+		capacity: 5000,
+		backpressureStrategy: "drop-oldest",
+	},
+})
+
+const runtime = makeBotRuntime(config)
+```
+
+### Event Types
+
+All event handlers receive typed data from the domain package:
+
+```typescript
+import type { Message, Channel, ChannelMember } from "@hazel/domain"
+
+// Message events
+type MessageHandler = (message: Message.Model.Json) => Effect.Effect<void, HandlerError>
+
+// Channel events
+type ChannelCreatedHandler = (channel: Channel.Model.Json) => Effect.Effect<void, HandlerError>
+
+// Channel member events
+type ChannelMemberAddedHandler = (
+	member: ChannelMember.Model.Json,
+) => Effect.Effect<void, HandlerError>
 ```
 
 ## Examples
@@ -228,72 +298,117 @@ await runBot(
 ### Echo Bot
 
 ```typescript
-import { BotClient, runBot } from "@hazel/bot-sdk"
+import { createBotRuntime, BotClient } from "@hazel/bot-sdk"
 import { Effect } from "effect"
 
-const echoBot = Effect.gen(function*() {
-  const bot = yield* BotClient
-
-  yield* bot.webhooks.onMessage((event) =>
-    Effect.gen(function*() {
-      const content = event.data.content
-
-      // Only echo if message starts with "!echo"
-      if (!content.startsWith("!echo ")) {
-        return
-      }
-
-      const textToEcho = content.slice(6)
-
-      yield* bot.messages.send({
-        channelId: event.data.channelId,
-        content: `Echo: ${textToEcho}`
-      })
-    })
-  )
-
-  yield* bot.webhooks.listen(3000)
-  yield* Effect.log("Echo bot is running!")
+const runtime = createBotRuntime({
+	electricUrl: "http://localhost:8787/v1/shape",
+	botToken: process.env.BOT_TOKEN!,
+	organizationId: "org_123",
 })
 
-await runBot(
-  {
-    botToken: process.env.BOT_TOKEN!,
-    rpcUrl: "ws://localhost:3003/rpc"
-  },
-  echoBot
-)
+const echoBot = Effect.gen(function* () {
+	const bot = yield* BotClient
+
+	yield* bot.onMessage((message) =>
+		Effect.gen(function* () {
+			// Only echo if message starts with "!echo"
+			if (!message.content.startsWith("!echo ")) {
+				return
+			}
+
+			const textToEcho = message.content.slice(6)
+			yield* Effect.log(`Would echo: ${textToEcho}`)
+
+			// In a real bot, you would send via RPC:
+			// const rpc = yield* HazelRpcClient
+			// yield* rpc("message.create", {
+			//   channelId: message.channelId,
+			//   content: `Echo: ${textToEcho}`
+			// })
+		}),
+	)
+
+	yield* bot.start
+	yield* Effect.log("Echo bot is running!")
+})
+
+runtime.runFork(Effect.scoped(echoBot))
+```
+
+### Auto-Moderator Bot
+
+```typescript
+import { createBotRuntime, BotClient } from "@hazel/bot-sdk"
+import { Effect } from "effect"
+
+const runtime = createBotRuntime({
+	electricUrl: process.env.ELECTRIC_URL!,
+	botToken: process.env.BOT_TOKEN!,
+	organizationId: process.env.ORG_ID!,
+})
+
+const moderatorBot = Effect.gen(function* () {
+	const bot = yield* BotClient
+
+	const bannedWords = ["spam", "badword"]
+
+	yield* bot.onMessage((message) =>
+		Effect.gen(function* () {
+			const hasbannedWord = bannedWords.some((word) =>
+				message.content.toLowerCase().includes(word),
+			)
+
+			if (hasbannedWord) {
+				yield* Effect.log(`Detected banned word in message: ${message.id}`)
+
+				// In a real bot, you would delete the message:
+				// const rpc = yield* HazelRpcClient
+				// yield* rpc("message.delete", { id: message.id })
+			}
+		}),
+	)
+
+	yield* bot.start
+	yield* Effect.log("Moderator bot is running!")
+})
+
+runtime.runFork(Effect.scoped(moderatorBot))
 ```
 
 ### Welcome Bot
 
 ```typescript
-import { BotClient, runBot } from "@hazel/bot-sdk"
+import { createBotRuntime, BotClient } from "@hazel/bot-sdk"
 import { Effect } from "effect"
 
-const welcomeBot = Effect.gen(function*() {
-  const bot = yield* BotClient
-
-  yield* bot.webhooks.onMessage((event) =>
-    Effect.gen(function*() {
-      // Send welcome message to new members
-      yield* bot.messages.send({
-        channelId: event.data.channelId,
-        content: `Welcome to the channel! 👋`
-      })
-    })
-  )
-
-  yield* bot.webhooks.listen(3000)
+const runtime = createBotRuntime({
+	electricUrl: process.env.ELECTRIC_URL!,
+	botToken: process.env.BOT_TOKEN!,
+	organizationId: process.env.ORG_ID!,
 })
 
-await runBot(
-  {
-    botToken: process.env.BOT_TOKEN!,
-    rpcUrl: "ws://localhost:3003/rpc"
-  },
-  welcomeBot
-)
+const welcomeBot = Effect.gen(function* () {
+	const bot = yield* BotClient
+
+	yield* bot.onChannelMemberAdded((member) =>
+		Effect.gen(function* () {
+			yield* Effect.log(`New member joined: ${member.userId}`)
+
+			// In a real bot, send a welcome message:
+			// const rpc = yield* HazelRpcClient
+			// yield* rpc("message.create", {
+			//   channelId: member.channelId,
+			//   content: `Welcome <@${member.userId}>! 👋`
+			// })
+		}),
+	)
+
+	yield* bot.start
+	yield* Effect.log("Welcome bot is running!")
+})
+
+runtime.runFork(Effect.scoped(welcomeBot))
 ```
 
 ## Error Handling
@@ -301,26 +416,81 @@ await runBot(
 The SDK provides typed errors for different failure scenarios:
 
 ```typescript
-import { BotAuthenticationError, BotPermissionError } from "@hazel/bot-sdk"
-import { Effect, Match } from "effect"
+import {
+	QueueError,
+	ShapeStreamError,
+	HandlerError,
+	AuthenticationError,
+	BotStartError,
+} from "@hazel/bot-sdk"
+import { Effect } from "effect"
 
-const program = Effect.gen(function*() {
-  const bot = yield* BotClient
+const program = Effect.gen(function* () {
+	const bot = yield* BotClient
 
-  const result = yield* bot.messages.send({
-    channelId: "channel-123",
-    content: "Hello!"
-  }).pipe(
-    Effect.catchTags({
-      BotAuthenticationError: (error) =>
-        Effect.logError("Authentication failed:", error.message),
-      BotPermissionError: (error) =>
-        Effect.logError("Permission denied:", error.message),
-      UnauthorizedError: (error) =>
-        Effect.logError("Unauthorized:", error.message)
-    })
-  )
+	yield* bot.start.pipe(
+		Effect.catchTags({
+			ShapeStreamError: (error) =>
+				Effect.logError(`Failed to subscribe to ${error.table}: ${error.message}`),
+			AuthenticationError: (error) =>
+				Effect.logError(`Auth failed: ${error.message}`),
+			BotStartError: (error) => Effect.logError(`Failed to start bot: ${error.message}`),
+		}),
+	)
 })
+```
+
+## Architecture
+
+### Event Flow
+
+```
+1. Electric SQL detects database change
+2. Shape stream broadcasts change to subscribers
+3. ShapeStreamSubscriber receives change
+4. Event pushed to appropriate Effect.Queue
+5. EventDispatcher pulls from queue
+6. Registered handlers executed in parallel
+7. Failed handlers retried with exponential backoff
+```
+
+### Services
+
+The bot SDK is composed of several Effect services:
+
+- **ElectricEventQueue**: Manages Effect.Queue instances for each event type
+- **ShapeStreamSubscriber**: Subscribes to Electric SQL shape streams
+- **EventDispatcher**: Dispatches events to registered handlers
+- **BotAuth**: Manages bot authentication context
+- **BotClient**: Main public API for bot developers
+
+### Queue Strategy
+
+Events are queued with configurable backpressure strategies:
+
+- **sliding** (default): Automatically drops oldest events when full
+- **drop-oldest**: Explicitly drop oldest event when offering new one
+- **drop-newest**: Ignore new events when queue is full
+
+### Handler Execution
+
+Handlers are executed with:
+
+- **Parallel execution**: All registered handlers run concurrently
+- **Retry logic**: Failed handlers retry with exponential backoff
+- **Error isolation**: Handler errors don't crash the bot
+- **Logging**: Failed handlers are logged after max retries
+
+## Environment Variables
+
+```bash
+# Required
+ELECTRIC_URL=http://localhost:8787/v1/shape
+BOT_TOKEN=your_bot_token
+ORG_ID=your_organization_id
+
+# For production
+ELECTRIC_URL=https://electric-proxy.example.workers.dev/v1/shape
 ```
 
 ## Development
@@ -328,8 +498,9 @@ const program = Effect.gen(function*() {
 ### Prerequisites
 
 - Bun runtime
-- Hazel backend running locally (or remote URL)
-- Bot API token from Hazel
+- Electric SQL proxy running
+- Database with Electric SQL integration
+- Bot authentication token
 
 ### Testing
 
@@ -337,53 +508,37 @@ const program = Effect.gen(function*() {
 bun test
 ```
 
-### Building
+### Type Checking
 
 ```bash
-bun run build
+bun run typecheck
 ```
-
-## Architecture
-
-The bot SDK is built with Effect-TS and follows these patterns:
-
-- **Services**: All major components (BotClient, MessageClient, WebhookServer) are Effect Services
-- **Layers**: Configuration and dependencies are provided via Layers
-- **Error Handling**: All errors are typed and composable
-- **Composability**: All operations return Effects that can be composed
-
-### RPC Communication
-
-The SDK uses WebSocket-based RPC for real-time communication with the Hazel backend:
-
-- Protocol: WebSocket (NDJSON serialization)
-- Authentication: Bearer token in WebSocket headers
-- Reconnection: Automatic retry for transient errors
-
-### Webhook Events
-
-Bots receive events via HTTP webhooks:
-
-- POST requests to `/webhook` endpoint
-- JSON payload with event data
-- Signature verification (TODO: implement)
-- Event queue with concurrent handler execution
 
 ## Roadmap
 
+### Phase 1 (Current)
+
+- [x] Electric SQL shape stream integration
+- [x] Event queue system
+- [x] Event handlers (message, channel, member)
+- [x] Bearer token authentication
+- [x] Retry logic with exponential backoff
+
 ### Phase 2 (Coming Soon)
 
-- [ ] Read operations (list messages, get channel info)
-- [ ] Channel operations (create, update, delete)
-- [ ] Reaction operations
+- [ ] RPC client integration for sending messages
+- [ ] Message operations (send, update, delete)
+- [ ] Channel operations
 - [ ] File upload support
+- [ ] Reaction operations
 
 ### Phase 3
 
 - [ ] Command parser utility
 - [ ] Middleware system
 - [ ] Rich message builder
-- [ ] Declarative event handlers
+- [ ] Rate limiting
+- [ ] Metrics and observability
 
 ## Contributing
 

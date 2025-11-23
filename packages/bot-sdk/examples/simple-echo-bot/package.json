@@ -1,0 +1,15 @@
+{
+	"name": "simple-echo-bot-example",
+	"version": "1.0.0",
+	"private": true,
+	"description": "Simple echo bot example using @hazel/bot-sdk",
+	"type": "module",
+	"scripts": {
+		"start": "bun run index.ts",
+		"dev": "bun run --watch index.ts"
+	},
+	"dependencies": {
+		"@hazel/bot-sdk": "workspace:*",
+		"effect": "^3.19.3"
+	}
+}
