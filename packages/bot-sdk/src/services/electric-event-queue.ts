@@ -1,5 +1,5 @@
-import { Config, Effect, Layer, Queue } from "effect"
 import type { ConfigError } from "effect"
+import { Config, Effect, Layer, Queue } from "effect"
 import { QueueError } from "../errors.ts"
 import type { ElectricEvent, EventType } from "../types/events.ts"
 
@@ -53,7 +53,6 @@ export class ElectricEventQueue extends Effect.Service<ElectricEventQueue>()("El
 					return existing
 				}
 
-				// Create new queue based on strategy
 				const queue = yield* (
 					config.backpressureStrategy === "sliding"
 						? Queue.sliding<ElectricEvent>(config.capacity)
@@ -181,7 +180,5 @@ export class ElectricEventQueue extends Effect.Service<ElectricEventQueue>()("El
 	static readonly layerConfig = (
 		config: Config.Config.Wrap<EventQueueConfig>,
 	): Layer.Layer<ElectricEventQueue, ConfigError.ConfigError> =>
-		Layer.unwrapEffect(
-			Config.unwrap(config).pipe(Effect.map((cfg) => ElectricEventQueue.Default(cfg))),
-		)
+		Layer.unwrapEffect(Config.unwrap(config).pipe(Effect.map((cfg) => ElectricEventQueue.Default(cfg))))
 }

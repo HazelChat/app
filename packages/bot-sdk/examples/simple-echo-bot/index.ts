@@ -15,8 +15,8 @@
  */
 
 import { Message } from "@hazel/domain/models"
-import { Effect, type Schema } from "effect"
-import { BotClient, makeBotRuntime } from "../../src"
+import { Effect } from "effect"
+import { createBotClientTag, makeBotRuntime } from "../../src"
 
 /**
  * Load configuration from environment variables
@@ -37,7 +37,7 @@ if (!config.botToken) {
 
 /**
  * Define subscriptions with schemas
- * This is where you specify what tables to subscribe to and their schemas
+ * IMPORTANT: Use 'as const' to preserve literal types for strong typing
  */
 const subscriptions = [
 	{
@@ -45,16 +45,23 @@ const subscriptions = [
 		schema: Message.Model.json,
 		startFromNow: true,
 	},
-]
+] as const
 
 /**
  * Create the bot runtime with configuration and subscriptions
+ * The runtime is strongly typed based on subscriptions
  */
 const runtime = makeBotRuntime({
 	electricUrl: config.electricUrl,
 	botToken: config.botToken,
 	subscriptions,
 })
+
+/**
+ * Create a typed BotClient tag based on our subscriptions
+ * This enables automatic type inference in handlers
+ */
+const BotClient = createBotClientTag<typeof subscriptions>()
 
 /**
  * Define the bot program
@@ -75,14 +82,12 @@ const program = Effect.gen(function* () {
 
 	// Register a handler for new messages
 	// The handler will be called for every new message in the organization
-	// Type safety is provided by the schema specified in subscriptions
-	// The message type is inferred from Message.Model.json schema
-	type MessageType = Schema.Schema.Type<typeof Message.Model.json>
-
-	yield* bot.on<MessageType>("messages.insert", (message) =>
+	// ✨ Type safety is AUTOMATIC - no manual type annotations needed!
+	// The message parameter is automatically typed based on Message.Model.json schema
+	yield* bot.on("messages.insert", (message) =>
 		Effect.gen(function* () {
 			// Log the message details
-			// The message is fully typed based on Message.Model.json schema
+			// TypeScript knows about all these properties automatically!
 			yield* Effect.log("📨 New message received:")
 			yield* Effect.log(`  Author ID: ${message.authorId}`)
 			yield* Effect.log(`  Channel ID: ${message.channelId}`)

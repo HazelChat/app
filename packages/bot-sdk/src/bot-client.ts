@@ -1,83 +1,120 @@
-import { Effect, type ManagedRuntime, type Scope } from "effect"
+import { Context, Effect, Layer, type ManagedRuntime, type Scope } from "effect"
 import { BotAuth, type BotAuthContext } from "./auth.ts"
 import { BotStartError } from "./errors.ts"
 import { EventDispatcher } from "./services/event-dispatcher.ts"
-import { ShapeStreamSubscriber } from "./services/shape-stream-subscriber.ts"
+import { ShapeStreamSubscriber, type ShapeSubscriptionConfig } from "./services/shape-stream-subscriber.ts"
 import type { EventHandler } from "./types/handlers.ts"
-import type { EventType } from "./types/events.ts"
+import type {
+	EventSchemaMap,
+	SubscriptionEventTypes,
+} from "./types/subscription-types.ts"
 
 /**
- * Bot client for interacting with the application
+ * Bot client interface with typed event handlers
  */
-export class BotClient extends Effect.Service<BotClient>()("BotClient", {
-	accessors: true,
-	effect: Effect.gen(function* () {
-		const dispatcher = yield* EventDispatcher
-		const subscriber = yield* ShapeStreamSubscriber
-		const auth = yield* BotAuth
+export interface TypedBotClient<Subs extends readonly ShapeSubscriptionConfig[]> {
+	/**
+	 * Register a typed event handler for a specific event type
+	 * The handler's value type is automatically inferred from the subscription schema
+	 */
+	on<E extends SubscriptionEventTypes<Subs>, R = never>(
+		eventType: E,
+		handler: EventHandler<EventSchemaMap<Subs>[E], R>,
+	): Effect.Effect<void>
 
-		return {
-			/**
-			 * Register a generic event handler for a specific event type
-			 * @param eventType - The event type (e.g., "messages.insert", "channels.update")
-			 * @param handler - The handler function to process events of this type
-			 */
-			on: <A, R>(eventType: EventType, handler: EventHandler<A, R>) =>
-				dispatcher.on(eventType, handler),
+	/**
+	 * Start the bot client
+	 * Requires Scope because it starts scoped resources
+	 */
+	readonly start: Effect.Effect<void, BotStartError, Scope.Scope>
 
-			/**
-			 * Start the bot client
-			 * This begins listening to events and dispatching to handlers
-			 */
-			start: Effect.gen(function* () {
-				yield* Effect.log("Starting bot client...")
+	/**
+	 * Get bot authentication context
+	 */
+	readonly getAuthContext: Effect.Effect<BotAuthContext>
+}
 
-				// Start shape stream subscriptions
-				yield* subscriber.start.pipe(
-					Effect.catchAll((error) =>
-						Effect.fail(
-							new BotStartError({
-								message: "Failed to start shape stream subscriptions",
-								cause: error,
-							}),
+/**
+ * Create a typed BotClient tag for specific subscriptions
+ */
+export const createBotClientTag = <Subs extends readonly ShapeSubscriptionConfig[]>() =>
+	Context.GenericTag<TypedBotClient<Subs>>("BotClient")
+
+/**
+ * Default BotClient tag (untyped)
+ */
+export const BotClient = Context.GenericTag<TypedBotClient<any>>("BotClient")
+
+/**
+ * Create a BotClient layer from its dependencies
+ */
+export const createBotClientLayer = <
+	Subs extends readonly ShapeSubscriptionConfig[],
+>(): Layer.Layer<
+	TypedBotClient<Subs>,
+	never,
+	EventDispatcher | ShapeStreamSubscriber | BotAuth
+> =>
+	Layer.effect(
+		createBotClientTag<Subs>(),
+		Effect.gen(function* () {
+			const dispatcher = yield* EventDispatcher
+			const subscriber = yield* ShapeStreamSubscriber
+			const auth = yield* BotAuth
+
+			return {
+				on: (eventType, handler) => dispatcher.on(eventType, handler),
+
+				start: Effect.gen(function* () {
+					yield* Effect.log("Starting bot client...")
+
+					// Start shape stream subscriptions
+					yield* subscriber.start.pipe(
+						Effect.catchAll((error) =>
+							Effect.fail(
+								new BotStartError({
+									message: "Failed to start shape stream subscriptions",
+									cause: error,
+								}),
+							),
 						),
-					),
-				)
+					)
 
-				// Start event dispatcher
-				yield* dispatcher.start.pipe(
-					Effect.catchAll((error) =>
-						Effect.fail(
-							new BotStartError({
-								message: "Failed to start event dispatcher",
-								cause: error,
-							}),
+					// Start event dispatcher
+					yield* dispatcher.start.pipe(
+						Effect.catchAll((error) =>
+							Effect.fail(
+								new BotStartError({
+									message: "Failed to start event dispatcher",
+									cause: error,
+								}),
+							),
 						),
-					),
-				)
+					)
 
-				yield* Effect.log("Bot client started successfully")
-			}),
+					yield* Effect.log("Bot client started successfully")
+				}),
 
-			/**
-			 * Get bot authentication context
-			 */
-			getAuthContext: auth.getContext.pipe(Effect.orDie),
-		}
-	}),
-}) {}
+				getAuthContext: auth.getContext.pipe(Effect.orDie),
+			} satisfies TypedBotClient<Subs>
+		}),
+	)
 
 /**
  * Helper type for bot application
  */
-export type BotApp<R = never> = Effect.Effect<void, never, BotClient | Scope.Scope | R>
+export type BotApp<Subs extends readonly ShapeSubscriptionConfig[], R = never> = Effect.Effect<
+	void,
+	never,
+	TypedBotClient<Subs> | Scope.Scope | R
+>
 
 /**
  * Run a bot application
  */
-export const runBot = <R>(
-	app: BotApp<R>,
-	runtime: ManagedRuntime.ManagedRuntime<BotClient | R, unknown>,
+export const runBot = <Subs extends readonly ShapeSubscriptionConfig[], R>(
+	app: BotApp<Subs, R>,
+	runtime: ManagedRuntime.ManagedRuntime<TypedBotClient<Subs> | R, unknown>,
 ): void => {
 	const program = Effect.scoped(app)
 
