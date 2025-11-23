@@ -14,9 +14,8 @@
  * - Graceful shutdown
  */
 
-import { Message } from "@hazel/domain/models"
 import { Effect } from "effect"
-import { createBotClientTag, makeBotRuntime } from "../../src"
+import { createHazelBot, HazelBotClient } from "../../src/hazel-bot-sdk.ts"
 
 /**
  * Load configuration from environment variables
@@ -36,32 +35,14 @@ if (!config.botToken) {
 }
 
 /**
- * Define subscriptions with schemas
- * IMPORTANT: Use 'as const' to preserve literal types for strong typing
+ * Create a Hazel bot runtime
+ * All Hazel domain schemas are pre-configured automatically!
+ * No need to define subscriptions - they're baked into HazelBotSDK
  */
-const subscriptions = [
-	{
-		table: "messages",
-		schema: Message.Model.json,
-		startFromNow: true,
-	},
-] as const
-
-/**
- * Create the bot runtime with configuration and subscriptions
- * The runtime is strongly typed based on subscriptions
- */
-const runtime = makeBotRuntime({
+const runtime = createHazelBot({
 	electricUrl: config.electricUrl,
 	botToken: config.botToken,
-	subscriptions,
 })
-
-/**
- * Create a typed BotClient tag based on our subscriptions
- * This enables automatic type inference in handlers
- */
-const BotClient = createBotClientTag<typeof subscriptions>()
 
 /**
  * Define the bot program
@@ -74,17 +55,16 @@ const BotClient = createBotClientTag<typeof subscriptions>()
  * 4. Keeps running until interrupted
  */
 const program = Effect.gen(function* () {
-	// Get the BotClient service from the Effect context
-	const bot = yield* BotClient
+	// Get the HazelBotClient service from the Effect context
+	const bot = yield* HazelBotClient
 
 	// Log startup
 	yield* Effect.log("Starting Simple Echo Bot...")
 
-	// Register a handler for new messages
-	// The handler will be called for every new message in the organization
-	// ✨ Type safety is AUTOMATIC - no manual type annotations needed!
-	// The message parameter is automatically typed based on Message.Model.json schema
-	yield* bot.on("messages.insert", (message) =>
+	// Register a handler for new messages using the convenient onMessage method
+	// ✨ Type safety is AUTOMATIC - message parameter is typed as MessageType!
+	// No subscriptions to define, no manual type annotations needed!
+	yield* bot.onMessage((message) =>
 		Effect.gen(function* () {
 			// Log the message details
 			// TypeScript knows about all these properties automatically!
@@ -102,6 +82,10 @@ const program = Effect.gen(function* () {
 			// })
 		}),
 	)
+
+	// You can also register handlers for other events:
+	// yield* bot.onChannelCreated((channel) => { ... })
+	// yield* bot.onChannelMemberAdded((member) => { ... })
 
 	// Start the bot (begins listening for events)
 	// This must be called after registering all handlers
