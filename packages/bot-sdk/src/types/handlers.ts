@@ -62,12 +62,12 @@ export type ChannelDeletedHandler<R = never> = (
  * Registry of all event handlers
  */
 export interface EventHandlerRegistry {
-	"message.insert": Set<MessageHandler<any>>
-	"message.update": Set<MessageUpdateHandler<any>>
-	"message.delete": Set<MessageDeleteHandler<any>>
-	"channel_member.insert": Set<ChannelMemberAddedHandler<any>>
-	"channel_member.delete": Set<ChannelMemberRemovedHandler<any>>
-	"channel.insert": Set<ChannelCreatedHandler<any>>
-	"channel.update": Set<ChannelUpdatedHandler<any>>
-	"channel.delete": Set<ChannelDeletedHandler<any>>
+	"messages.insert": Set<MessageHandler<any>>
+	"messages.update": Set<MessageUpdateHandler<any>>
+	"messages.delete": Set<MessageDeleteHandler<any>>
+	"channel_members.insert": Set<ChannelMemberAddedHandler<any>>
+	"channel_members.delete": Set<ChannelMemberRemovedHandler<any>>
+	"channels.insert": Set<ChannelCreatedHandler<any>>
+	"channels.update": Set<ChannelUpdatedHandler<any>>
+	"channels.delete": Set<ChannelDeletedHandler<any>>
 }

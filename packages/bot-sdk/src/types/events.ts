@@ -76,27 +76,27 @@ export type ElectricEvent =
  * Event type discriminator
  */
 export type EventType =
-	| "message.insert"
-	| "message.update"
-	| "message.delete"
-	| "channel_member.insert"
-	| "channel_member.delete"
-	| "channel.insert"
-	| "channel.update"
-	| "channel.delete"
+	| "messages.insert"
+	| "messages.update"
+	| "messages.delete"
+	| "channel_members.insert"
+	| "channel_members.delete"
+	| "channels.insert"
+	| "channels.update"
+	| "channels.delete"
 
 /**
  * Schema for validating event types
  */
 export const EventTypeSchema = Schema.Literal(
-	"message.insert",
-	"message.update",
-	"message.delete",
-	"channel_member.insert",
-	"channel_member.delete",
-	"channel.insert",
-	"channel.update",
-	"channel.delete",
+	"messages.insert",
+	"messages.update",
+	"messages.delete",
+	"channel_members.insert",
+	"channel_members.delete",
+	"channels.insert",
+	"channels.update",
+	"channels.delete",
 )
 
 /**

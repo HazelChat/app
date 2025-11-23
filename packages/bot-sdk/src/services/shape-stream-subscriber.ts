@@ -30,23 +30,11 @@ export interface ShapeSubscriptionConfig {
 	readonly startFromNow?: boolean
 }
 
-/**
- * Configuration for the shape stream subscriber
- */
 export interface ShapeStreamSubscriberConfig {
-	/**
-	 * Electric proxy URL
-	 */
 	readonly electricUrl: string
 
-	/**
-	 * Bot authentication token
-	 */
 	readonly botToken: string
 
-	/**
-	 * Tables to subscribe to
-	 */
 	readonly subscriptions: readonly ShapeSubscriptionConfig[]
 }
 
@@ -58,15 +46,12 @@ export class ShapeStreamSubscriber extends Effect.Service<ShapeStreamSubscriber>
 	effect: Effect.fn(function* (config: ShapeStreamSubscriberConfig) {
 		const queue = yield* ElectricEventQueue
 
-		// Helper to create a shape stream as an Effect Stream
 		const createShapeStream = (
 			subscription: ShapeSubscriptionConfig,
 		): Stream.Stream<Message, ShapeStreamError> =>
 			Stream.asyncPush<Message, ShapeStreamError>((emit) =>
 				Effect.gen(function* () {
 					yield* Effect.log(`Creating shape stream for table: ${subscription.table}`)
-
-					console.log("subscription", subscription)
 
 					const stream = new ShapeStream({
 						url: config.electricUrl,
@@ -88,15 +73,12 @@ export class ShapeStreamSubscriber extends Effect.Service<ShapeStreamSubscriber>
 							}),
 					})
 
-					// Subscribe to the stream
 					const unsubscribe = stream.subscribe((messages) => {
-						// Emit each message individually to the Effect Stream
 						for (const message of messages) {
 							emit.single(message)
 						}
 					})
 
-					// Register cleanup - unsubscribe when the stream is finalized
 					yield* Effect.addFinalizer(() =>
 						Effect.gen(function* () {
 							yield* Effect.log(`Unsubscribing from table: ${subscription.table}`)
@@ -109,27 +91,18 @@ export class ShapeStreamSubscriber extends Effect.Service<ShapeStreamSubscriber>
 			)
 
 		return {
-			/**
-			 * Start all shape stream subscriptions
-			 * Returns an Effect that requires Scope - the streams will run until the scope is closed
-			 */
 			start: Effect.gen(function* () {
 				yield* Effect.log(
 					`Starting shape stream subscriptions for ${config.subscriptions.length} tables`,
 				)
 
-				// Start consuming each shape stream
 				yield* Effect.forEach(
 					config.subscriptions,
 					(subscription) =>
 						createShapeStream(subscription).pipe(
-							// Filter out control messages (only process change messages)
 							Stream.filter(isChangeMessage),
-							// Process each change message
 							Stream.mapEffect((message) =>
 								Effect.gen(function* () {
-									// Create event from message
-									console.log("message", message)
 									const event: ElectricEvent = {
 										operation: message.headers.operation as
 											| "insert"
@@ -140,23 +113,11 @@ export class ShapeStreamSubscriber extends Effect.Service<ShapeStreamSubscriber>
 										timestamp: new Date(),
 									}
 
-									// Offer event to queue
 									yield* queue.offer(event)
 								}),
 							),
-							// Consume the stream
 							Stream.runDrain,
-							// Fork as a scoped fiber - will be interrupted when scope closes
 							Effect.forkScoped,
-							// Handle any errors during subscription
-							Effect.catchAll((error) =>
-								Effect.logError(
-									`Failed to process shape stream for table: ${subscription.table}`,
-									{
-										error,
-									},
-								),
-							),
 						),
 					{ concurrency: "unbounded" },
 				)

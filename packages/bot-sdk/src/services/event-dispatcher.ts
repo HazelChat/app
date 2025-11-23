@@ -49,14 +49,14 @@ export class EventDispatcher extends Effect.Service<EventDispatcher>()("EventDis
 
 		// Registry of event handlers
 		const registry: EventHandlerRegistry = {
-			"message.insert": new Set(),
-			"message.update": new Set(),
-			"message.delete": new Set(),
-			"channel_member.insert": new Set(),
-			"channel_member.delete": new Set(),
-			"channel.insert": new Set(),
-			"channel.update": new Set(),
-			"channel.delete": new Set(),
+			"messages.insert": new Set(),
+			"messages.update": new Set(),
+			"messages.delete": new Set(),
+			"channel_members.insert": new Set(),
+			"channel_members.delete": new Set(),
+			"channels.insert": new Set(),
+			"channels.update": new Set(),
+			"channels.delete": new Set(),
 		}
 
 		// Retry policy with exponential backoff
@@ -135,42 +135,42 @@ export class EventDispatcher extends Effect.Service<EventDispatcher>()("EventDis
 		return {
 			onMessage: <R>(handler: MessageHandler<R>) =>
 				Effect.sync(() => {
-					registry["message.insert"].add(handler)
+					registry["messages.insert"].add(handler)
 				}),
 
 			onMessageUpdate: <R>(handler: MessageUpdateHandler<R>) =>
 				Effect.sync(() => {
-					registry["message.update"].add(handler)
+					registry["messages.update"].add(handler)
 				}),
 
 			onMessageDelete: <R>(handler: MessageDeleteHandler<R>) =>
 				Effect.sync(() => {
-					registry["message.delete"].add(handler)
+					registry["messages.delete"].add(handler)
 				}),
 
 			onChannelMemberAdded: <R>(handler: ChannelMemberAddedHandler<R>) =>
 				Effect.sync(() => {
-					registry["channel_member.insert"].add(handler)
+					registry["channel_members.insert"].add(handler)
 				}),
 
 			onChannelMemberRemoved: <R>(handler: ChannelMemberRemovedHandler<R>) =>
 				Effect.sync(() => {
-					registry["channel_member.delete"].add(handler)
+					registry["channel_members.delete"].add(handler)
 				}),
 
 			onChannelCreated: <R>(handler: ChannelCreatedHandler<R>) =>
 				Effect.sync(() => {
-					registry["channel.insert"].add(handler)
+					registry["channels.insert"].add(handler)
 				}),
 
 			onChannelUpdated: <R>(handler: ChannelUpdatedHandler<R>) =>
 				Effect.sync(() => {
-					registry["channel.update"].add(handler)
+					registry["channels.update"].add(handler)
 				}),
 
 			onChannelDeleted: <R>(handler: ChannelDeletedHandler<R>) =>
 				Effect.sync(() => {
-					registry["channel.delete"].add(handler)
+					registry["channels.delete"].add(handler)
 				}),
 
 			start: Effect.gen(function* () {
@@ -178,14 +178,14 @@ export class EventDispatcher extends Effect.Service<EventDispatcher>()("EventDis
 
 				// Start consumers for all event types
 				const eventTypes: EventType[] = [
-					"message.insert",
-					"message.update",
-					"message.delete",
-					"channel_member.insert",
-					"channel_member.delete",
-					"channel.insert",
-					"channel.update",
-					"channel.delete",
+					"messages.insert",
+					"messages.update",
+					"messages.delete",
+					"channel_members.insert",
+					"channel_members.delete",
+					"channels.insert",
+					"channels.update",
+					"channels.delete",
 				]
 
 				yield* Effect.forEach(eventTypes, consumeEvents, {
