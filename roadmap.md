@@ -1,6 +1,0 @@
-- electric proxy
-- webhook endpoints for channels
-- app integrations (linear, github as a start)
-- custom integrations 
-- hazel connect (connect to other workspaces)
-- universal connect (connect to any other chat app)

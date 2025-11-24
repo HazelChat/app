@@ -1,26 +1,22 @@
 {
-	"include": ["**/*.ts", "**/*.tsx"],
-	"compilerOptions": {
-		"target": "ES2022",
-		"module": "ESNext",
-		"lib": ["ES2022", "DOM", "DOM.Iterable"],
-
-		/* Bundler mode */
-		"moduleResolution": "bundler",
-		"allowImportingTsExtensions": true,
-		"verbatimModuleSyntax": true,
-		"noEmit": true,
-
-		/* Linting */
-		"skipLibCheck": true,
-		"strict": true,
-		"noFallthroughCasesInSwitch": true,
-		"noUncheckedSideEffectImports": true,
-		"plugins": [
-			{
-				"name": "@effect/language-service",
-				"reportSuggestionsAsWarningsInTsc": true
-			}
-		]
-	}
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "declaration": true,
+    "outDir": "dist",
+    "rootDir": ".",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "jsx": "react",
+    "paths": {
+      "@tanstack/store": ["../store/src"],
+      "@tanstack/db-ivm": ["../db-ivm/src"]
+    }
+  },
+  "include": ["src", "tests", "vite.config.ts"],
+  "exclude": ["node_modules", "dist"]
 }
