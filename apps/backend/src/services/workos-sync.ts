@@ -1,7 +1,7 @@
 import { Database, schema } from "@hazel/db"
 import { type OrganizationId, type UserId, withSystemActor } from "@hazel/domain"
 import type { Event } from "@workos-inc/node"
-import { Effect, Option, pipe, Schema } from "effect"
+import { Effect, Match, Option, pipe, Schema } from "effect"
 import { InvitationRepo } from "../repositories/invitation-repo"
 import { OrganizationMemberRepo } from "../repositories/organization-member-repo"
 import { OrganizationRepo } from "../repositories/organization-repo"
@@ -571,138 +571,146 @@ export class WorkOSSync extends Effect.Service<WorkOSSync>()("WorkOSSync", {
 			return result
 		})
 
-		// Process WorkOS webhook event
+		// --- Webhook Event Handlers ---
+
+		const handleUserUpsert = (data: {
+			id: string
+			email: string
+			firstName: string | null
+			lastName: string | null
+			profilePictureUrl: string | null
+		}) =>
+			userRepo
+				.upsertByExternalId({
+					externalId: data.id,
+					email: data.email,
+					firstName: data.firstName || "",
+					lastName: data.lastName || "",
+					avatarUrl: data.profilePictureUrl || `https://avatar.vercel.sh/${data.id}.svg`,
+					userType: "user",
+					settings: null,
+					isOnboarded: false,
+					deletedAt: null,
+				})
+				.pipe(Effect.asVoid)
+
+		const handleUserDeleted = (data: { id: string }) =>
+			userRepo.softDeleteByExternalId(data.id).pipe(Effect.asVoid)
+
+		const handleOrgUpsert = (data: { id: string; name: string; externalId: string | null }) =>
+			Effect.gen(function* () {
+				if (!data.externalId) {
+					yield* Effect.logWarning(`Skipping organization ${data.id} - no externalId set`)
+					return
+				}
+
+				const orgId = data.externalId as OrganizationId
+				const existingOrg = yield* orgRepo.findById(orgId).pipe(withSystemActor)
+
+				yield* Option.match(existingOrg, {
+					onSome: (org) => orgRepo.update({ id: org.id, name: data.name }).pipe(withSystemActor),
+					onNone: () =>
+						orgRepo
+							.insert({
+								name: data.name,
+								logoUrl: null,
+								settings: null,
+								deletedAt: null,
+								slug: data.name
+									.toLowerCase()
+									.replace(/[^a-z0-9]+/g, "-")
+									.replace(/^-|-$/g, ""),
+							})
+							.pipe(withSystemActor),
+				})
+			})
+
+		const handleOrgDeleted = (data: { id: string; externalId: string | null }) =>
+			Effect.gen(function* () {
+				if (!data.externalId) {
+					yield* Effect.logWarning(`Skipping organization deletion ${data.id} - no externalId set`)
+					return
+				}
+
+				const orgId = data.externalId as OrganizationId
+				yield* orgRepo.softDelete(orgId).pipe(withSystemActor)
+			})
+
+		const handleMembershipUpsert = (data: {
+			organizationId: string
+			userId: string
+			role: { slug: string }
+		}) =>
+			Effect.gen(function* () {
+				const orgId = data.organizationId as OrganizationId
+				const org = yield* orgRepo.findById(orgId).pipe(withSystemActor)
+				const user = yield* userRepo.findByExternalId(data.userId)
+
+				if (Option.isSome(org) && Option.isSome(user)) {
+					yield* orgMemberRepo.upsertByOrgAndUser({
+						organizationId: org.value.id,
+						nickname: null,
+						userId: user.value.id,
+						role: (data.role.slug || "member") as "admin" | "member" | "owner",
+						joinedAt: new Date(),
+						invitedBy: null,
+						deletedAt: null,
+					})
+				}
+			})
+
+		const handleMembershipRemoved = (data: { organizationId: string; userId: string }) =>
+			Effect.gen(function* () {
+				const orgId = data.organizationId as OrganizationId
+				const org = yield* orgRepo.findById(orgId).pipe(withSystemActor)
+				const user = yield* userRepo.findByExternalId(data.userId)
+
+				if (Option.isSome(org) && Option.isSome(user)) {
+					yield* orgMemberRepo.softDeleteByOrgAndUser(org.value.id, user.value.id)
+				}
+			})
+
+		// --- Process WorkOS webhook event using Match ---
+
 		const processWebhookEvent = (event: Event) =>
 			pipe(
-				Effect.gen(function* () {
-					const typedEvent = event
-
-					switch (typedEvent.event) {
-						case "user.created":
-						case "user.updated": {
-							const userData = {
-								externalId: typedEvent.data.id,
-								email: typedEvent.data.email,
-								firstName: typedEvent.data.firstName || "",
-								lastName: typedEvent.data.lastName || "",
-								avatarUrl:
-									typedEvent.data.profilePictureUrl ||
-									`https://avatar.vercel.sh/${typedEvent.data.id}.svg`,
-								userType: "user" as const,
-								status: "offline" as const,
-								lastSeen: new Date(),
-								settings: null,
-								isOnboarded: false,
-								deletedAt: null,
-							}
-							yield* userRepo.upsertByExternalId(userData)
-							break
-						}
-
-						case "user.deleted": {
-							yield* userRepo.softDeleteByExternalId(typedEvent.data.id)
-							break
-						}
-
-						case "organization.created":
-						case "organization.updated": {
-							// Only sync organizations that have an externalId (created through our API)
-							if (!typedEvent.data.externalId) {
-								yield* Effect.logWarning(
-									`Skipping organization ${typedEvent.data.id} - no externalId set`,
-								)
-								break
-							}
-
-							const orgId = typedEvent.data.externalId as OrganizationId
-							const existingOrg = yield* orgRepo.findById(orgId).pipe(withSystemActor)
-
-							if (Option.isSome(existingOrg)) {
-								// Update existing organization
-								yield* orgRepo
-									.update({
-										id: orgId,
-										name: typedEvent.data.name,
-									})
-									.pipe(withSystemActor)
-							} else {
-								// Create new organization (edge case: org exists in WorkOS but not in our DB)
-								yield* orgRepo
-									.insert({
-										name: typedEvent.data.name,
-										logoUrl: null,
-										settings: null,
-										deletedAt: null,
-										slug: typedEvent.data.name
-											.toLowerCase()
-											.replace(/[^a-z0-9]+/g, "-")
-											.replace(/^-|-$/g, ""),
-									})
-									.pipe(withSystemActor)
-							}
-							break
-						}
-
-						case "organization.deleted": {
-							// Only sync organizations that have an externalId
-							if (!typedEvent.data.externalId) {
-								yield* Effect.logWarning(
-									`Skipping organization deletion ${typedEvent.data.id} - no externalId set`,
-								)
-								break
-							}
-
-							const orgId = typedEvent.data.externalId as OrganizationId
-							yield* orgRepo.softDelete(orgId).pipe(withSystemActor)
-							break
-						}
-
-						case "organization_membership.added":
-						case "organization_membership.updated": {
-							// organizationId in WorkOS is now our organization ID (externalId)
-							const orgId = typedEvent.data.organizationId as OrganizationId
-
-							// Get the organization and user
-							const org = yield* orgRepo.findById(orgId).pipe(withSystemActor)
-							const user = yield* userRepo.findByExternalId(typedEvent.data.userId)
-
-							if (Option.isSome(org) && Option.isSome(user)) {
-								yield* orgMemberRepo.upsertByOrgAndUser({
-									organizationId: org.value.id,
-									nickname: null,
-									userId: user.value.id,
-									role: (typedEvent.data.role.slug || "member") as
-										| "admin"
-										| "member"
-										| "owner",
-									joinedAt: new Date(),
-									invitedBy: null,
-									deletedAt: null,
-								})
-							}
-							break
-						}
-
-						case "organization_membership.removed": {
-							// organizationId in WorkOS is now our organization ID (externalId)
-							const orgId = typedEvent.data.organizationId as OrganizationId
-
-							const org = yield* orgRepo.findById(orgId).pipe(withSystemActor)
-							const user = yield* userRepo.findByExternalId(typedEvent.data.userId)
-
-							if (Option.isSome(org) && Option.isSome(user)) {
-								yield* orgMemberRepo.softDeleteByOrgAndUser(org.value.id, user.value.id)
-							}
-							break
-						}
-
-						default:
-							yield* Effect.logInfo(`Unhandled WorkOS event type: ${typedEvent.event}`)
-					}
-
-					return { success: true }
-				}),
-				Effect.catchAll((error) => Effect.succeed({ success: false, error: String(error) })),
+				Effect.logDebug(`Processing WorkOS webhook: ${event.event}`),
+				Effect.flatMap(() =>
+					Match.value(event.event).pipe(
+						Match.whenOr("user.created", "user.updated", () =>
+							handleUserUpsert(event.data as Parameters<typeof handleUserUpsert>[0]),
+						),
+						Match.when("user.deleted", () =>
+							handleUserDeleted(event.data as Parameters<typeof handleUserDeleted>[0]),
+						),
+						Match.whenOr("organization.created", "organization.updated", () =>
+							handleOrgUpsert(event.data as Parameters<typeof handleOrgUpsert>[0]),
+						),
+						Match.when("organization.deleted", () =>
+							handleOrgDeleted(event.data as Parameters<typeof handleOrgDeleted>[0]),
+						),
+						Match.whenOr("organization_membership.added", "organization_membership.updated", () =>
+							handleMembershipUpsert(
+								event.data as Parameters<typeof handleMembershipUpsert>[0],
+							),
+						),
+						Match.when("organization_membership.removed", () =>
+							handleMembershipRemoved(
+								event.data as Parameters<typeof handleMembershipRemoved>[0],
+							),
+						),
+						Match.orElse((eventType) =>
+							Effect.logInfo(`Unhandled WorkOS event type: ${eventType}`),
+						),
+					),
+				),
+				Effect.tap(() => Effect.logDebug(`Successfully processed: ${event.event}`)),
+				Effect.as({ success: true }),
+				Effect.catchAll((error) =>
+					Effect.logError(`Failed to process ${event.event}`, { error }).pipe(
+						Effect.as({ success: false, error: String(error) }),
+					),
+				),
 			)
 
 		return {
