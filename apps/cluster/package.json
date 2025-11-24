@@ -9,7 +9,7 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
-    "@types/bun": "1.3.2"
+    "@types/bun": "1.3.3"
   },
   "peerDependencies": {
     "typescript": "5.9.3"
@@ -20,9 +20,10 @@
     "@effect/platform-bun": "catalog:effect",
     "@effect/sql-pg": "catalog:effect",
     "@effect/workflow": "catalog:effect",
+    "@hazel/backend-core": "workspace:*",
     "@hazel/db": "workspace:*",
     "@hazel/domain": "workspace:*",
     "drizzle-orm": "^0.44.7",
-    "effect": "^3.19.3"
+    "effect": "catalog:effect"
   }
 }

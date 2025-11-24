@@ -3,9 +3,18 @@ import { HttpApiBuilder, HttpMiddleware, HttpServer } from "@effect/platform"
 import { BunClusterSocket, BunHttpServer, BunRuntime } from "@effect/platform-bun"
 import { PgClient } from "@effect/sql-pg"
 import { WorkflowProxyServer } from "@effect/workflow"
+import {
+	InvitationRepo,
+	OrganizationMemberRepo,
+	OrganizationRepo,
+	UserRepo,
+	WorkOS,
+	WorkOSSync,
+} from "@hazel/backend-core"
 import { Database } from "@hazel/db"
 import { Cluster } from "@hazel/domain"
 import { Config, Effect, Layer, Logger, Redacted } from "effect"
+import { WorkOSSyncCronLayer } from "./cron/workos-sync-cron.ts"
 import { MessageNotificationWorkflowLayer } from "./workflows/index.ts"
 
 // PostgreSQL configuration (uses existing database)
@@ -31,6 +40,23 @@ const HealthLive = HttpApiBuilder.group(Cluster.WorkflowApi, "health", (handlers
 
 const AllWorkflows = MessageNotificationWorkflowLayer.pipe(Layer.provide(DatabaseLayer))
 
+// WorkOSSync dependencies layer for cron job
+// Build the layer manually to ensure Database is provided to all deps
+const WorkOSSyncLive = WorkOSSync.Default.pipe(
+	Layer.provide(WorkOS.Default),
+	Layer.provide(UserRepo.Default),
+	Layer.provide(OrganizationRepo.Default),
+	Layer.provide(OrganizationMemberRepo.Default),
+	Layer.provide(InvitationRepo.Default),
+	Layer.provide(DatabaseLayer),
+)
+
+// Cron jobs layer - WorkflowEngineLayer provides Sharding which ClusterCron requires
+const AllCronJobs = WorkOSSyncCronLayer.pipe(
+	Layer.provide(WorkOSSyncLive),
+	Layer.provide(WorkflowEngineLayer),
+)
+
 // Workflow API implementation
 const WorkflowApiLive = HttpApiBuilder.api(Cluster.WorkflowApi).pipe(
 	Layer.provide(WorkflowProxyServer.layerHttpApi(Cluster.WorkflowApi, "workflows", Cluster.workflows)),
@@ -47,6 +73,7 @@ const ServerLayer = HttpApiBuilder.serve(
 ).pipe(
 	Layer.provide(WorkflowApiLive),
 	Layer.provide(AllWorkflows),
+	Layer.provide(AllCronJobs),
 	Layer.provide(Logger.pretty),
 	Layer.provide(
 		BunHttpServer.layerConfig(
