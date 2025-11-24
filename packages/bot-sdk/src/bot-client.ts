@@ -16,10 +16,13 @@ export interface TypedBotClient<Subs extends readonly ShapeSubscriptionConfig[]>
 	/**
 	 * Register a typed event handler for a specific event type
 	 * The handler's value type is automatically inferred from the subscription schema
+	 * @template E - Event type from subscriptions
+	 * @template Err - Error type for the handler (defaults to HandlerError)
+	 * @template R - Required context/services for the handler
 	 */
-	on<E extends SubscriptionEventTypes<Subs>, R = never>(
+	on<E extends SubscriptionEventTypes<Subs>, Err = any, R = never>(
 		eventType: E,
-		handler: EventHandler<EventSchemaMap<Subs>[E], R>,
+		handler: EventHandler<EventSchemaMap<Subs>[E], Err, R>,
 	): Effect.Effect<void>
 
 	/**

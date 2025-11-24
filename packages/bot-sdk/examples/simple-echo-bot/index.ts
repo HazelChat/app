@@ -39,7 +39,7 @@ if (!botToken) {
 const runtime = createHazelBot({
 	botToken,
 	// electricUrl is optional - uncomment for local development:
-	// electricUrl: process.env.ELECTRIC_URL ?? "http://localhost:8787/v1/shape",
+	electricUrl: process.env.ELECTRIC_URL ?? "http://localhost:8787/v1/shape",
 })
 
 /**

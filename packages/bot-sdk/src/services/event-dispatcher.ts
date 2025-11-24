@@ -1,6 +1,7 @@
 import { Config, Effect, Fiber, Layer, Schedule, type Scope } from "effect"
 import type { ConfigError } from "effect"
 import { HandlerError } from "../errors.ts"
+import { composeMiddleware, type Middleware } from "../middleware.ts"
 import type { EventType } from "../types/events.ts"
 import type { EventHandler, EventHandlerRegistry } from "../types/handlers.ts"
 import { ElectricEventQueue } from "./electric-event-queue.ts"
@@ -20,6 +21,12 @@ export interface EventDispatcherConfig {
 	 * @default 100
 	 */
 	readonly retryBaseDelay: number
+
+	/**
+	 * Middleware to apply to all handlers
+	 * @default []
+	 */
+	readonly middleware?: readonly Middleware[]
 }
 
 /**
@@ -47,7 +54,7 @@ export class EventDispatcher extends Effect.Service<EventDispatcher>()("EventDis
 		)
 
 		// Helper to get or create handler set for an event type
-		const getHandlers = (eventType: EventType): Set<EventHandler<any, any>> => {
+		const getHandlers = (eventType: EventType): Set<EventHandler<any, any, any>> => {
 			let handlers = registry.get(eventType)
 			if (!handlers) {
 				handlers = new Set()
@@ -55,6 +62,9 @@ export class EventDispatcher extends Effect.Service<EventDispatcher>()("EventDis
 			}
 			return handlers
 		}
+
+		// Compose all middleware
+		const composedMiddleware = composeMiddleware(config.middleware || [])
 
 		// Helper to dispatch event to handlers
 		const dispatchToHandlers = (eventType: EventType, value: any) =>
@@ -65,18 +75,29 @@ export class EventDispatcher extends Effect.Service<EventDispatcher>()("EventDis
 				}
 
 				// Execute all handlers in parallel
+				// Note: Type cast is safe because handler requirements (R) are satisfied by runtime layers
 				yield* Effect.forEach(
 					Array.from(handlers),
-					(handler) =>
-						handler(value).pipe(
+					(handler) => {
+						// Wrap handler with middleware
+						const wrappedHandler = composedMiddleware(
+							value,
+							eventType,
+							handler(value) as Effect.Effect<void, any, never>,
+						)
+
+						return wrappedHandler.pipe(
 							Effect.retry(retryPolicy),
 							Effect.catchAllCause((cause) =>
 								Effect.logError("Handler failed after retries", {
 									cause,
 									eventType,
-								}),
+								}).pipe(
+									Effect.annotateLogs("service", "EventDispatcher"),
+								),
 							),
-						),
+						)
+					},
 					{ concurrency: "unbounded" },
 				)
 			}) as Effect.Effect<void, never>
@@ -84,7 +105,9 @@ export class EventDispatcher extends Effect.Service<EventDispatcher>()("EventDis
 		// Helper to start consuming events for a specific event type
 		const consumeEvents = (eventType: EventType): Effect.Effect<void, never, Scope.Scope> =>
 			Effect.gen(function* () {
-				yield* Effect.log(`Starting event consumer for: ${eventType}`)
+				yield* Effect.logInfo(`Starting event consumer`, { eventType }).pipe(
+					Effect.annotateLogs("service", "EventDispatcher"),
+				)
 
 				// Continuously take events from queue and dispatch
 				const fiber = yield* Effect.forkScoped(
@@ -97,7 +120,9 @@ export class EventDispatcher extends Effect.Service<EventDispatcher>()("EventDis
 										yield* Effect.logError("Failed to take event from queue", {
 											error,
 											eventType,
-										})
+										}).pipe(
+											Effect.annotateLogs("service", "EventDispatcher"),
+										)
 										// Wait a bit before retrying
 										yield* Effect.sleep(1000)
 										// Return null to skip this iteration
@@ -119,7 +144,9 @@ export class EventDispatcher extends Effect.Service<EventDispatcher>()("EventDis
 				// Interrupt fiber on scope close
 				yield* Effect.addFinalizer(() =>
 					Effect.gen(function* () {
-						yield* Effect.log(`Stopping event consumer for: ${eventType}`)
+						yield* Effect.logInfo(`Stopping event consumer`, { eventType }).pipe(
+							Effect.annotateLogs("service", "EventDispatcher"),
+						)
 						yield* Fiber.interrupt(fiber)
 					}),
 				)
@@ -129,22 +156,26 @@ export class EventDispatcher extends Effect.Service<EventDispatcher>()("EventDis
 			/**
 			 * Register a generic event handler for a specific event type
 			 */
-			on: <A, R>(eventType: EventType, handler: EventHandler<A, R>) =>
+			on: <A, E, R>(eventType: EventType, handler: EventHandler<A, E, R>) =>
 				Effect.sync(() => {
-					getHandlers(eventType).add(handler as EventHandler<any, any>)
+					getHandlers(eventType).add(handler as EventHandler<any, any, any>)
 				}),
 
 			/**
 			 * Start the event dispatcher - begins consuming events for all registered handlers
 			 */
 			start: Effect.gen(function* () {
-				yield* Effect.log("Starting event dispatcher")
+				yield* Effect.logInfo("Starting event dispatcher").pipe(
+					Effect.annotateLogs("service", "EventDispatcher"),
+				)
 
 				// Start consumers for all registered event types
 				const eventTypes = Array.from(registry.keys())
 
 				if (eventTypes.length === 0) {
-					yield* Effect.logWarning("No handlers registered, dispatcher has nothing to do")
+					yield* Effect.logWarning("No handlers registered, dispatcher has nothing to do").pipe(
+						Effect.annotateLogs("service", "EventDispatcher"),
+					)
 					return
 				}
 
@@ -152,7 +183,12 @@ export class EventDispatcher extends Effect.Service<EventDispatcher>()("EventDis
 					concurrency: "unbounded",
 				})
 
-				yield* Effect.log(`Event dispatcher started for ${eventTypes.length} event types`)
+				yield* Effect.logInfo(`Event dispatcher started`, {
+					eventTypesCount: eventTypes.length,
+					eventTypes: eventTypes.join(", "),
+				}).pipe(
+					Effect.annotateLogs("service", "EventDispatcher"),
+				)
 			}),
 		}
 	}),

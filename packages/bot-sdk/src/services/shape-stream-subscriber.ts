@@ -57,7 +57,13 @@ export class ShapeStreamSubscriber extends Effect.Service<ShapeStreamSubscriber>
 		): Stream.Stream<Message, ShapeStreamError> =>
 			Stream.asyncPush<Message, ShapeStreamError>((emit) =>
 				Effect.gen(function* () {
-					yield* Effect.log(`Creating shape stream for table: ${subscription.table}`)
+					yield* Effect.logInfo(`Creating shape stream`, {
+						table: subscription.table,
+						where: subscription.where,
+						columns: subscription.columns?.join(", "),
+					}).pipe(
+						Effect.annotateLogs("service", "ShapeStreamSubscriber"),
+					)
 
 					const stream = new ShapeStream({
 						url: config.electricUrl,
@@ -87,19 +93,33 @@ export class ShapeStreamSubscriber extends Effect.Service<ShapeStreamSubscriber>
 
 					yield* Effect.addFinalizer(() =>
 						Effect.gen(function* () {
-							yield* Effect.log(`Unsubscribing from table: ${subscription.table}`)
+							yield* Effect.logInfo(`Unsubscribing from shape stream`, {
+								table: subscription.table,
+							}).pipe(
+								Effect.annotateLogs("service", "ShapeStreamSubscriber"),
+							)
 							yield* Effect.sync(() => unsubscribe())
 						}),
 					)
 
-					yield* Effect.log(`Shape stream subscription active for table: ${subscription.table}`)
+					yield* Effect.logInfo(`Shape stream subscription active`, {
+						table: subscription.table,
+					}).pipe(
+						Effect.annotateLogs("service", "ShapeStreamSubscriber"),
+					)
 				}),
 			)
 
 		return {
 			start: Effect.gen(function* () {
-				yield* Effect.log(
-					`Starting shape stream subscriptions for ${config.subscriptions.length} tables`,
+				yield* Effect.logInfo(
+					`Starting shape stream subscriptions`,
+					{
+						tablesCount: config.subscriptions.length,
+						tables: config.subscriptions.map((s) => s.table).join(", "),
+					},
+				).pipe(
+					Effect.annotateLogs("service", "ShapeStreamSubscriber"),
 				)
 
 				yield* Effect.forEach(
@@ -119,7 +139,9 @@ export class ShapeStreamSubscriber extends Effect.Service<ShapeStreamSubscriber>
 													table: subscription.table,
 													operation: message.headers.operation,
 													error: error.message,
-												})
+												}).pipe(
+													Effect.annotateLogs("service", "ShapeStreamSubscriber"),
+												)
 												// Return Effect.fail to skip this message
 												return yield* Effect.fail(error)
 											}),
@@ -148,7 +170,9 @@ export class ShapeStreamSubscriber extends Effect.Service<ShapeStreamSubscriber>
 					{ concurrency: "unbounded" },
 				)
 
-				yield* Effect.log("All shape stream subscriptions started successfully")
+				yield* Effect.logInfo("All shape stream subscriptions started successfully").pipe(
+					Effect.annotateLogs("service", "ShapeStreamSubscriber"),
+				)
 			}),
 		}
 	}),

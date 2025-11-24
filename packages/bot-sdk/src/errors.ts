@@ -53,3 +53,12 @@ export class MessageOperationError extends Schema.TaggedError<MessageOperationEr
 		cause: Schema.Unknown,
 	},
 ) {}
+
+/**
+ * Error thrown when event dispatcher operations fail
+ */
+export class DispatchError extends Schema.TaggedError<DispatchError>()("DispatchError", {
+	message: Schema.String,
+	eventType: Schema.String,
+	cause: Schema.Unknown,
+}) {}

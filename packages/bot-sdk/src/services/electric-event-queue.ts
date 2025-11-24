@@ -1,5 +1,5 @@
 import type { ConfigError } from "effect"
-import { Config, Effect, Layer, Queue } from "effect"
+import { Config, Effect, Layer, Metric, Queue } from "effect"
 import { QueueError } from "../errors.ts"
 import type { ElectricEvent, EventType } from "../types/events.ts"
 
@@ -53,6 +53,14 @@ export class ElectricEventQueue extends Effect.Service<ElectricEventQueue>()("El
 					return existing
 				}
 
+				yield* Effect.logInfo(`Creating queue`, {
+					eventType,
+					capacity: config.capacity,
+					backpressureStrategy: config.backpressureStrategy,
+				}).pipe(
+					Effect.annotateLogs("service", "ElectricEventQueue"),
+				)
+
 				const queue = yield* (
 					config.backpressureStrategy === "sliding"
 						? Queue.sliding<ElectricEvent>(config.capacity)
@@ -91,6 +99,18 @@ export class ElectricEventQueue extends Effect.Service<ElectricEventQueue>()("El
 
 				// Handle backpressure for bounded queues
 				if (!offered && config.backpressureStrategy === "drop-oldest") {
+					yield* Effect.logWarning(`Queue full, dropping oldest event`, {
+						eventType,
+					}).pipe(
+						Effect.annotateLogs("service", "ElectricEventQueue"),
+					)
+
+					// Track dropped events
+					const droppedEvents = Metric.counter("bot_queue_events_dropped")
+					yield* Metric.increment(droppedEvents).pipe(
+						Effect.tagMetrics("event_type", eventType),
+					)
+
 					// Take one from queue and try again
 					yield* Queue.take(queue).pipe(Effect.ignore)
 					yield* Queue.offer(queue, event).pipe(
@@ -104,12 +124,25 @@ export class ElectricEventQueue extends Effect.Service<ElectricEventQueue>()("El
 						),
 					)
 				}
+
+				// Track enqueued events
+				const enqueuedEvents = Metric.counter("bot_queue_events_enqueued")
+				yield* Metric.increment(enqueuedEvents).pipe(
+					Effect.tagMetrics("event_type", eventType),
+				)
+
+				// Update queue size gauge
+				const queueSize = yield* Queue.size(queue)
+				const queueSizeGauge = Metric.gauge("bot_queue_size")
+				yield* Metric.set(queueSizeGauge, queueSize).pipe(
+					Effect.tagMetrics("event_type", eventType),
+				)
 			}),
 
 			take: (eventType: EventType) =>
 				Effect.gen(function* () {
 					const queue = yield* getQueue(eventType)
-					return yield* Queue.take(queue).pipe(
+					const event = yield* Queue.take(queue).pipe(
 						Effect.catchAll((error) =>
 							Effect.fail(
 								new QueueError({
@@ -119,6 +152,21 @@ export class ElectricEventQueue extends Effect.Service<ElectricEventQueue>()("El
 							),
 						),
 					)
+
+					// Track dequeued events
+					const dequeuedEvents = Metric.counter("bot_queue_events_dequeued")
+					yield* Metric.increment(dequeuedEvents).pipe(
+						Effect.tagMetrics("event_type", eventType),
+					)
+
+					// Update queue size gauge
+					const queueSize = yield* Queue.size(queue)
+					const queueSizeGauge = Metric.gauge("bot_queue_size")
+					yield* Metric.set(queueSizeGauge, queueSize).pipe(
+						Effect.tagMetrics("event_type", eventType),
+					)
+
+					return event
 				}),
 
 			poll: (eventType: EventType) =>
@@ -153,6 +201,12 @@ export class ElectricEventQueue extends Effect.Service<ElectricEventQueue>()("El
 				}),
 
 			shutdown: Effect.gen(function* () {
+				yield* Effect.logInfo(`Shutting down queues`, {
+					queueCount: queues.size,
+				}).pipe(
+					Effect.annotateLogs("service", "ElectricEventQueue"),
+				)
+
 				// Shutdown all queues
 				yield* Effect.forEach(
 					Array.from(queues.values()),
@@ -170,6 +224,10 @@ export class ElectricEventQueue extends Effect.Service<ElectricEventQueue>()("El
 					{ concurrency: "unbounded" },
 				)
 				queues.clear()
+
+				yield* Effect.logInfo("All queues shutdown successfully").pipe(
+					Effect.annotateLogs("service", "ElectricEventQueue"),
+				)
 			}),
 		}
 	}),

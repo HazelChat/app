@@ -7,12 +7,11 @@
 
 import { Channel, ChannelMember, Message } from "@hazel/domain/models"
 import { Config, Effect, Layer, ManagedRuntime, type Schema } from "effect"
-import type { ConfigError } from "effect"
 import { BotAuth, createAuthContextFromToken } from "./auth.ts"
 import { createBotClientTag } from "./bot-client.ts"
-import { ElectricEventQueue, EventDispatcher, ShapeStreamSubscriber } from "./services/index.ts"
-import type { EventQueueConfig } from "./services/index.ts"
 import type { HandlerError } from "./errors.ts"
+import type { EventQueueConfig } from "./services/index.ts"
+import { ElectricEventQueue, EventDispatcher, ShapeStreamSubscriber } from "./services/index.ts"
 
 /**
  * Pre-configured Hazel domain subscriptions
@@ -46,11 +45,15 @@ export type ChannelMemberType = Schema.Schema.Type<typeof ChannelMember.Model.js
 /**
  * Hazel-specific event handlers
  */
-export type MessageHandler<R = never> = (message: MessageType) => Effect.Effect<void, HandlerError, R>
-export type ChannelHandler<R = never> = (channel: ChannelType) => Effect.Effect<void, HandlerError, R>
-export type ChannelMemberHandler<R = never> = (
+export type MessageHandler<E = HandlerError, R = never> = (
+	message: MessageType,
+) => Effect.Effect<void, E, R>
+export type ChannelHandler<E = HandlerError, R = never> = (
+	channel: ChannelType,
+) => Effect.Effect<void, E, R>
+export type ChannelMemberHandler<E = HandlerError, R = never> = (
 	member: ChannelMemberType,
-) => Effect.Effect<void, HandlerError, R>
+) => Effect.Effect<void, E, R>
 
 /**
  * Hazel Bot Client - Effect Service with typed convenience methods
@@ -65,43 +68,49 @@ export class HazelBotClient extends Effect.Service<HazelBotClient>()("HazelBotCl
 			/**
 			 * Register a handler for new messages
 			 */
-			onMessage: <R>(handler: MessageHandler<R>) => bot.on("messages.insert", handler),
+			onMessage: <E = HandlerError, R = never>(handler: MessageHandler<E, R>) =>
+				bot.on("messages.insert", handler),
 
 			/**
 			 * Register a handler for message updates
 			 */
-			onMessageUpdate: <R>(handler: MessageHandler<R>) => bot.on("messages.update", handler),
+			onMessageUpdate: <E = HandlerError, R = never>(handler: MessageHandler<E, R>) =>
+				bot.on("messages.update", handler),
 
 			/**
 			 * Register a handler for message deletes
 			 */
-			onMessageDelete: <R>(handler: MessageHandler<R>) => bot.on("messages.delete", handler),
+			onMessageDelete: <E = HandlerError, R = never>(handler: MessageHandler<E, R>) =>
+				bot.on("messages.delete", handler),
 
 			/**
 			 * Register a handler for new channels
 			 */
-			onChannelCreated: <R>(handler: ChannelHandler<R>) => bot.on("channels.insert", handler),
+			onChannelCreated: <E = HandlerError, R = never>(handler: ChannelHandler<E, R>) =>
+				bot.on("channels.insert", handler),
 
 			/**
 			 * Register a handler for channel updates
 			 */
-			onChannelUpdated: <R>(handler: ChannelHandler<R>) => bot.on("channels.update", handler),
+			onChannelUpdated: <E = HandlerError, R = never>(handler: ChannelHandler<E, R>) =>
+				bot.on("channels.update", handler),
 
 			/**
 			 * Register a handler for channel deletes
 			 */
-			onChannelDeleted: <R>(handler: ChannelHandler<R>) => bot.on("channels.delete", handler),
+			onChannelDeleted: <E = HandlerError, R = never>(handler: ChannelHandler<E, R>) =>
+				bot.on("channels.delete", handler),
 
 			/**
 			 * Register a handler for new channel members
 			 */
-			onChannelMemberAdded: <R>(handler: ChannelMemberHandler<R>) =>
+			onChannelMemberAdded: <E = HandlerError, R = never>(handler: ChannelMemberHandler<E, R>) =>
 				bot.on("channel_members.insert", handler),
 
 			/**
 			 * Register a handler for removed channel members
 			 */
-			onChannelMemberRemoved: <R>(handler: ChannelMemberHandler<R>) =>
+			onChannelMemberRemoved: <E = HandlerError, R = never>(handler: ChannelMemberHandler<E, R>) =>
 				bot.on("channel_members.delete", handler),
 
 			/**
