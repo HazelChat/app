@@ -17,7 +17,6 @@ import { useGlobalKeyboardFocus } from "~/hooks/use-global-keyboard-focus"
 import { cx } from "~/utils/cx"
 import {
 	type AutocompleteEditor,
-	type AutocompleteOption,
 	type AutocompleteState,
 	type CommandData,
 	CommandTrigger,
@@ -30,12 +29,11 @@ import {
 	type MentionData,
 	MentionTrigger,
 	useCommandOptions,
-	useEditorAutocomplete,
 	useEmojiOptions,
 	useMentionOptions,
-	useSlateAutocomplete,
 	withAutocomplete,
 } from "./autocomplete"
+import { getOptionByKey, useSlateComboBox } from "./autocomplete/use-slate-combobox"
 import { CodeBlockElement } from "./code-block-element"
 import { MentionElement } from "./mention-element"
 import { MentionLeaf } from "./mention-leaf"
@@ -270,9 +268,15 @@ export const SlateMessageEditor = forwardRef<SlateMessageEditorRef, SlateMessage
 	({ placeholder = "Type a message...", className, onSubmit, onUpdate, isUploading = false }, ref) => {
 		const containerRef = useRef<HTMLDivElement>(null)
 
-		// Autocomplete state management
-		const autocomplete = useEditorAutocomplete()
-		const [autocompleteState, setAutocompleteState] = useState<AutocompleteState>(autocomplete.state)
+		// Autocomplete state from Slate plugin
+		const [autocompleteState, setAutocompleteState] = useState<AutocompleteState>({
+			isOpen: false,
+			trigger: null,
+			search: "",
+			activeIndex: 0,
+			startPoint: null,
+			targetRange: null,
+		})
 
 		// Create Slate editor with plugins
 		const editor = useMemo(
@@ -316,12 +320,26 @@ export const SlateMessageEditor = forwardRef<SlateMessageEditorRef, SlateMessage
 			emojiOptions,
 		])
 
-		// React Aria listbox keyboard event bridge
-		const { listBoxRef, handleKeyDown: handleAutocompleteKeyDown } = useSlateAutocomplete()
+		// Helper to close autocomplete
+		const closeAutocomplete = useCallback(() => {
+			const newState = {
+				isOpen: false,
+				trigger: null,
+				search: "",
+				activeIndex: 0,
+				startPoint: null,
+				targetRange: null,
+			} as AutocompleteState
+			setAutocompleteState(newState)
+			editor.autocompleteState = newState
+		}, [editor])
 
 		// Handle mention selection
 		const handleMentionSelect = useCallback(
-			(option: AutocompleteOption<MentionData>) => {
+			(key: string | number) => {
+				const option = getOptionByKey(mentionOptions, key)
+				if (!option) return
+
 				const mention: MentionElementType = {
 					type: "mention",
 					userId: option.data.type === "user" ? option.data.id : option.data.type,
@@ -332,12 +350,15 @@ export const SlateMessageEditor = forwardRef<SlateMessageEditorRef, SlateMessage
 				ReactEditor.focus(editor)
 				setValue([...value])
 			},
-			[editor, value],
+			[editor, value, mentionOptions],
 		)
 
 		// Handle command selection
 		const handleCommandSelect = useCallback(
-			(option: AutocompleteOption<CommandData>) => {
+			(key: string | number) => {
+				const option = getOptionByKey(commandOptions, key)
+				if (!option) return
+
 				const command = getCommandById(option.data.id)
 				if (!command) return
 
@@ -354,37 +375,55 @@ export const SlateMessageEditor = forwardRef<SlateMessageEditorRef, SlateMessage
 					...command.blockProps,
 				} as Partial<CustomElement>)
 
-				// Reset autocomplete state
-				setAutocompleteState({
-					isOpen: false,
-					trigger: null,
-					search: "",
-					activeIndex: 0,
-					startPoint: null,
-					targetRange: null,
-				})
-				editor.autocompleteState = {
-					isOpen: false,
-					trigger: null,
-					search: "",
-					activeIndex: 0,
-					startPoint: null,
-					targetRange: null,
-				}
-
+				closeAutocomplete()
 				ReactEditor.focus(editor)
 			},
-			[editor],
+			[editor, commandOptions, closeAutocomplete],
 		)
 
 		// Handle emoji selection
 		const handleEmojiSelect = useCallback(
-			(option: AutocompleteOption<EmojiData>) => {
+			(key: string | number) => {
+				const option = getOptionByKey(emojiOptions, key)
+				if (!option) return
+
 				insertAutocompleteResult(editor, option.data.emoji, setAutocompleteState)
 				ReactEditor.focus(editor)
 			},
-			[editor],
+			[editor, emojiOptions],
 		)
+
+		// Get the right selection handler based on trigger type
+		const handleSelection = useCallback(
+			(key: string | number) => {
+				if (!autocompleteState.trigger) return
+				switch (autocompleteState.trigger.id) {
+					case "mention":
+						handleMentionSelect(key)
+						break
+					case "command":
+						handleCommandSelect(key)
+						break
+					case "emoji":
+						handleEmojiSelect(key)
+						break
+				}
+			},
+			[autocompleteState.trigger, handleMentionSelect, handleCommandSelect, handleEmojiSelect],
+		)
+
+		// Use the new unified combobox hook
+		const comboBox = useSlateComboBox<unknown>({
+			items: currentOptions,
+			isOpen: autocompleteState.isOpen,
+			inputValue: autocompleteState.search,
+			onOpenChange: (isOpen) => {
+				if (!isOpen) {
+					closeAutocomplete()
+				}
+			},
+			onSelectionChange: handleSelection,
+		})
 
 		const focusAndInsertTextInternal = useCallback(
 			(text: string) => {
@@ -455,53 +494,22 @@ export const SlateMessageEditor = forwardRef<SlateMessageEditorRef, SlateMessage
 			const { selection } = editor
 
 			// Handle autocomplete keyboard navigation when open
-			// React Aria handles ArrowUp/Down/Enter/Home/End via event forwarding
 			if (autocompleteState.isOpen && currentOptions.length > 0) {
-				// Forward keyboard events to React Aria's listbox
-				if (handleAutocompleteKeyDown(event)) {
-					return // Event was handled by the listbox
+				// Forward keyboard events to React Aria's combobox
+				if (comboBox.handleKeyDown(event)) {
+					return // Event was handled by the combobox
 				}
 
 				// Handle Escape to close
 				if (event.key === "Escape") {
 					event.preventDefault()
-					setAutocompleteState({
-						isOpen: false,
-						trigger: null,
-						search: "",
-						activeIndex: 0,
-						startPoint: null,
-						targetRange: null,
-					})
-					editor.autocompleteState = {
-						isOpen: false,
-						trigger: null,
-						search: "",
-						activeIndex: 0,
-						startPoint: null,
-						targetRange: null,
-					}
+					closeAutocomplete()
 					return
 				}
 
 				// Handle Tab to close
 				if (event.key === "Tab") {
-					setAutocompleteState({
-						isOpen: false,
-						trigger: null,
-						search: "",
-						activeIndex: 0,
-						startPoint: null,
-						targetRange: null,
-					})
-					editor.autocompleteState = {
-						isOpen: false,
-						trigger: null,
-						search: "",
-						activeIndex: 0,
-						startPoint: null,
-						targetRange: null,
-					}
+					closeAutocomplete()
 					return
 				}
 			}
@@ -818,9 +826,6 @@ export const SlateMessageEditor = forwardRef<SlateMessageEditorRef, SlateMessage
 			[editor],
 		)
 
-		// Active item ID for aria-activedescendant is handled by React Aria internally
-		// We only check if autocomplete is open for the aria-expanded attribute
-
 		return (
 			<div ref={containerRef} className={cx("relative w-full", className)}>
 				<Slate editor={editor} initialValue={value} onChange={handleChange}>
@@ -828,23 +833,23 @@ export const SlateMessageEditor = forwardRef<SlateMessageEditorRef, SlateMessage
 					<EditorAutocomplete containerRef={containerRef} state={autocompleteState}>
 						{autocompleteState.trigger?.id === "mention" && (
 							<MentionTrigger
-								options={currentOptions as any}
-								listBoxRef={listBoxRef}
-								onSelect={handleMentionSelect}
+								state={comboBox.state as any}
+								listBoxRef={comboBox.listBoxRef}
+								listBoxProps={comboBox.listBoxProps}
 							/>
 						)}
 						{autocompleteState.trigger?.id === "command" && (
 							<CommandTrigger
-								options={currentOptions as any}
-								listBoxRef={listBoxRef}
-								onSelect={handleCommandSelect}
+								state={comboBox.state as any}
+								listBoxRef={comboBox.listBoxRef}
+								listBoxProps={comboBox.listBoxProps}
 							/>
 						)}
 						{autocompleteState.trigger?.id === "emoji" && (
 							<EmojiTrigger
-								options={currentOptions as any}
-								listBoxRef={listBoxRef}
-								onSelect={handleEmojiSelect}
+								state={comboBox.state as any}
+								listBoxRef={comboBox.listBoxRef}
+								listBoxProps={comboBox.listBoxProps}
 								searchLength={autocompleteState.search.length}
 							/>
 						)}
@@ -855,7 +860,7 @@ export const SlateMessageEditor = forwardRef<SlateMessageEditorRef, SlateMessage
 						aria-autocomplete="list"
 						aria-expanded={autocompleteState.isOpen && currentOptions.length > 0}
 						aria-haspopup="listbox"
-						aria-controls={autocompleteState.isOpen ? "editor-autocomplete-listbox" : undefined}
+						aria-controls={autocompleteState.isOpen ? comboBox.listBoxProps.id : undefined}
 						className={cx(
 							"w-full whitespace-pre-wrap break-all px-3 py-2 text-base md:text-sm",
 							"rounded-xl bg-transparent",

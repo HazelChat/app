@@ -1,5 +1,6 @@
 "use client"
 
+import type { ComboBoxState } from "@react-stately/combobox"
 import { useMemo } from "react"
 import { AutocompleteListBox } from "../autocomplete-listbox"
 import type { AutocompleteOption, AutocompleteState, EmojiData } from "../types"
@@ -322,7 +323,7 @@ const EMOJI_DATA: Array<[string, string, ...string[]]> = [
 	["🦎", "lizard"],
 	["🐙", "octopus"],
 	["🦑", "squid"],
-	["��", "shrimp"],
+	["🦐", "shrimp"],
 	["🦞", "lobster"],
 	["🦀", "crab"],
 	["🐡", "blowfish"],
@@ -434,12 +435,12 @@ function buildEmojiOptions(): AutocompleteOption<EmojiData>[] {
 const ALL_EMOJI_OPTIONS = buildEmojiOptions()
 
 interface EmojiTriggerProps {
-	/** Options to display (passed from parent for unified state) */
-	options: AutocompleteOption<EmojiData>[]
-	/** Ref to attach to the listbox element (for forwarding keyboard events) */
-	listBoxRef?: React.RefObject<HTMLUListElement | null>
-	/** Callback when an emoji is selected */
-	onSelect: (option: AutocompleteOption<EmojiData>) => void
+	/** ComboBox state from useSlateComboBox */
+	state: ComboBoxState<AutocompleteOption<EmojiData>>
+	/** Ref for the listbox element */
+	listBoxRef: React.RefObject<HTMLUListElement | null>
+	/** Props to spread on the listbox element */
+	listBoxProps: React.HTMLAttributes<HTMLUListElement>
 	/** Current search length for empty message */
 	searchLength: number
 }
@@ -448,12 +449,12 @@ interface EmojiTriggerProps {
  * Emoji trigger component
  * Renders emoji suggestions using React Aria's ListBox with virtual focus
  */
-export function EmojiTrigger({ options, listBoxRef, onSelect, searchLength }: EmojiTriggerProps) {
+export function EmojiTrigger({ state, listBoxRef, listBoxProps, searchLength }: EmojiTriggerProps) {
 	return (
 		<AutocompleteListBox
-			options={options}
+			state={state}
 			listBoxRef={listBoxRef}
-			onSelect={onSelect}
+			listBoxProps={listBoxProps}
 			emptyMessage={searchLength < 2 ? "Type at least 2 characters" : "No emoji found"}
 			renderItem={({ option }) => <EmojiItem option={option} />}
 		/>

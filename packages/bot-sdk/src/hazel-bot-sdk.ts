@@ -5,13 +5,16 @@
  * All Hazel domain schemas are pre-configured, making it trivial to build integrations.
  */
 
+import type { AttachmentId, ChannelId, ChannelMemberId, MessageId, TypingIndicatorId, UserId } from "@hazel/domain/ids"
 import { Channel, ChannelMember, Message } from "@hazel/domain/models"
-import { Config, Effect, Layer, ManagedRuntime, type Schema } from "effect"
+import { Config, Context, Effect, Layer, ManagedRuntime, type Schema, type Scope } from "effect"
 import { BotAuth, createAuthContextFromToken } from "./auth.ts"
 import { createBotClientTag } from "./bot-client.ts"
 import type { HandlerError } from "./errors.ts"
+import { BotRpcClient, BotRpcClientConfigTag, BotRpcClientLive } from "./rpc/client.ts"
 import type { EventQueueConfig } from "./services/index.ts"
 import { ElectricEventQueue, EventDispatcher, ShapeStreamSubscriber } from "./services/index.ts"
+
 
 /**
  * Pre-configured Hazel domain subscriptions
@@ -56,6 +59,18 @@ export type ChannelMemberHandler<E = HandlerError, R = never> = (
 ) => Effect.Effect<void, E, R>
 
 /**
+ * Options for sending a message
+ */
+export interface SendMessageOptions {
+	/** Reply to a specific message */
+	readonly replyToMessageId?: MessageId | null
+	/** Send message in a thread */
+	readonly threadChannelId?: ChannelId | null
+	/** Attachment IDs to include */
+	readonly attachmentIds?: readonly AttachmentId[]
+}
+
+/**
  * Hazel Bot Client - Effect Service with typed convenience methods
  */
 export class HazelBotClient extends Effect.Service<HazelBotClient>()("HazelBotClient", {
@@ -63,6 +78,8 @@ export class HazelBotClient extends Effect.Service<HazelBotClient>()("HazelBotCl
 	effect: Effect.gen(function* () {
 		// Get the typed BotClient for Hazel subscriptions
 		const bot = yield* createBotClientTag<typeof HAZEL_SUBSCRIPTIONS>()
+		// Get the RPC client from context
+		const rpc = yield* BotRpcClient
 
 		return {
 			/**
@@ -114,6 +131,138 @@ export class HazelBotClient extends Effect.Service<HazelBotClient>()("HazelBotCl
 				bot.on("channel_members.delete", handler),
 
 			/**
+			 * Message operations - send, reply, update, delete, react
+			 */
+			message: {
+				/**
+				 * Send a message to a channel
+				 * @param channelId - The channel to send the message to
+				 * @param content - Message content
+				 * @param options - Optional settings (reply, thread, attachments)
+				 */
+				send: (channelId: ChannelId, content: string, options?: SendMessageOptions) =>
+					rpc.message
+						.create({
+							channelId,
+							content,
+							replyToMessageId: options?.replyToMessageId ?? null,
+							threadChannelId: options?.threadChannelId ?? null,
+							attachmentIds: options?.attachmentIds ?? [],
+							deletedAt: null,
+							// authorId will be overridden by backend AuthMiddleware with the authenticated bot user
+							authorId: "" as UserId,
+						})
+						.pipe(Effect.map((r) => r.data)),
+
+				/**
+				 * Reply to a message
+				 * @param message - The message to reply to
+				 * @param content - Reply content
+				 * @param options - Optional settings (thread, attachments)
+				 */
+				reply: (message: MessageType, content: string, options?: Omit<SendMessageOptions, "replyToMessageId">) =>
+					rpc.message
+						.create({
+							channelId: message.channelId,
+							content,
+							replyToMessageId: message.id,
+							threadChannelId: options?.threadChannelId ?? null,
+							attachmentIds: options?.attachmentIds ?? [],
+							deletedAt: null,
+							// authorId will be overridden by backend AuthMiddleware with the authenticated bot user
+							authorId: "" as UserId,
+						})
+						.pipe(Effect.map((r) => r.data)),
+
+				/**
+				 * Update a message
+				 * @param message - The message to update (requires full message object)
+				 * @param content - New content
+				 */
+				update: (message: MessageType, content: string) =>
+					rpc.message
+						.update({
+							id: message.id,
+							channelId: message.channelId,
+							replyToMessageId: message.replyToMessageId,
+							threadChannelId: message.threadChannelId,
+							content,
+						})
+						.pipe(Effect.map((r) => r.data)),
+
+				/**
+				 * Delete a message
+				 * @param id - Message ID to delete
+				 */
+				delete: (id: MessageId) => rpc.message.delete({ id }),
+
+				/**
+				 * Toggle a reaction on a message
+				 * @param messageId - Message ID to react to
+				 * @param emoji - Emoji to toggle
+				 */
+				react: (messageId: MessageId, emoji: string) => rpc.messageReaction.toggle({ messageId, emoji }),
+			},
+
+			/**
+			 * Channel operations - update
+			 */
+			channel: {
+				/**
+				 * Update a channel
+				 * @param channel - The channel to update (requires full channel object)
+				 * @param updates - Fields to update
+				 */
+				update: (
+					channel: ChannelType,
+					updates: {
+						name?: string
+						description?: string | null
+					},
+				) =>
+					rpc.channel
+						.update({
+							id: channel.id,
+							type: channel.type,
+							organizationId: channel.organizationId,
+							parentChannelId: channel.parentChannelId,
+							name: updates.name ?? channel.name,
+							...updates,
+						})
+						.pipe(Effect.map((r) => r.data)),
+			},
+
+			/**
+			 * Typing indicator operations
+			 */
+			typing: {
+				/**
+				 * Start showing typing indicator
+				 * @param channelId - Channel ID
+				 * @param memberId - Channel member ID
+				 */
+				start: (channelId: ChannelId, memberId: ChannelMemberId) =>
+					rpc.typingIndicator
+						.create({
+							channelId,
+							memberId,
+							lastTyped: Date.now(),
+						})
+						.pipe(Effect.map((r) => r.data)),
+
+				/**
+				 * Stop showing typing indicator
+				 * @param id - Typing indicator ID
+				 */
+				stop: (id: TypingIndicatorId) =>
+					rpc.typingIndicator
+						.delete({
+							id,
+						})
+						.pipe(Effect.map((r) => r.data)),
+			},
+
+			/**
 			 * Start the bot client
 			 * Begins listening to events and dispatching to handlers
 			 */
@@ -137,6 +286,13 @@ export interface HazelBotConfig {
 	 * @example "http://localhost:8787/v1/shape" // For local development
 	 */
 	readonly electricUrl?: string
+
+	/**
+	 * Backend URL for RPC API calls
+	 * @default "https://api.hazel.sh"
+	 * @example "http://localhost:3003" // For local development
+	 */
+	readonly backendUrl?: string
 
 	/**
 	 * Bot authentication token (required)
@@ -191,8 +347,9 @@ export interface HazelBotConfig {
 export const createHazelBot = (
 	config: HazelBotConfig,
 ): ManagedRuntime.ManagedRuntime<HazelBotClient, unknown> => {
-	// Apply default electricUrl if not provided
+	// Apply defaults for URLs
 	const electricUrl = config.electricUrl ?? "https://electric.hazel.sh/v1/shape"
+	const backendUrl = config.backendUrl ?? "https://api.hazel.sh"
 
 	// Create all the required layers using layerConfig pattern
 	const EventQueueLayer = ElectricEventQueue.layerConfig(
@@ -225,6 +382,15 @@ export const createHazelBot = (
 		createAuthContextFromToken(config.botToken).pipe(Effect.map((context) => BotAuth.Default(context))),
 	)
 
+	// Create the RPC client config layer
+	const RpcClientConfigLayer = Layer.succeed(BotRpcClientConfigTag, {
+		backendUrl,
+		botToken: config.botToken,
+	})
+
+	// Create the scoped RPC client layer
+	const RpcClientLayer = BotRpcClientLive.pipe(Layer.provide(RpcClientConfigLayer))
+
 	// Create the typed BotClient layer for Hazel subscriptions
 	const BotClientTag = createBotClientTag<typeof HAZEL_SUBSCRIPTIONS>()
 	const BotClientLayer = Layer.effect(
@@ -250,6 +416,7 @@ export const createHazelBot = (
 	// Compose all layers with proper dependency order
 	const AllLayers = HazelBotClient.Default.pipe(
 		Layer.provide(BotClientLayer),
+		Layer.provide(RpcClientLayer),
 		Layer.provide(
 			Layer.mergeAll(
 				Layer.provide(EventDispatcherLayer, EventQueueLayer),

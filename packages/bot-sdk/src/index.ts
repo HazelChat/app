@@ -48,5 +48,7 @@ export * from "./errors.ts"
 // Hazel-specific convenience layer (recommended for Hazel integrations)
 export * from "./hazel-bot-sdk.ts"
 export * from "./layers.ts"
+// RPC client for API calls
+export * from "./rpc/index.ts"
 export * from "./services/index.ts"
 export * from "./types/index.ts"

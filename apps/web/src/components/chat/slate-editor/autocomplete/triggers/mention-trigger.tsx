@@ -7,26 +7,27 @@ import { channelMemberCollection, userCollection, userPresenceStatusCollection }
 import { cx } from "~/utils/cx"
 import { AutocompleteListBox } from "../autocomplete-listbox"
 import type { AutocompleteOption, AutocompleteState, MentionData } from "../types"
+import type { ComboBoxState } from "@react-stately/combobox"
 
 interface MentionTriggerProps {
-	/** Options to display (passed from parent for unified state) */
-	options: AutocompleteOption<MentionData>[]
-	/** Ref to attach to the listbox element (for forwarding keyboard events) */
-	listBoxRef?: React.RefObject<HTMLUListElement | null>
-	/** Callback when an option is selected */
-	onSelect: (option: AutocompleteOption<MentionData>) => void
+	/** ComboBox state from useSlateComboBox */
+	state: ComboBoxState<AutocompleteOption<MentionData>>
+	/** Ref for the listbox element */
+	listBoxRef: React.RefObject<HTMLUListElement | null>
+	/** Props to spread on the listbox element */
+	listBoxProps: React.HTMLAttributes<HTMLUListElement>
 }
 
 /**
  * Mention trigger component
  * Renders mention suggestions using React Aria's ListBox with virtual focus
  */
-export function MentionTrigger({ options, listBoxRef, onSelect }: MentionTriggerProps) {
+export function MentionTrigger({ state, listBoxRef, listBoxProps }: MentionTriggerProps) {
 	return (
 		<AutocompleteListBox
-			options={options}
+			state={state}
 			listBoxRef={listBoxRef}
-			onSelect={onSelect}
+			listBoxProps={listBoxProps}
 			emptyMessage="No users found"
 			renderItem={({ option, isFocused }) => <MentionItem option={option} isHighlighted={isFocused} />}
 		/>
@@ -82,7 +83,7 @@ function MentionItem({ option }: MentionItemProps) {
 }
 
 /**
- * Get the filtered options for external use (e.g., keyboard navigation)
+ * Get the filtered options for mentions
  */
 export function useMentionOptions(state: AutocompleteState) {
 	const { id: channelId } = useParams({ from: "/_app/$orgSlug/chat/$id" })

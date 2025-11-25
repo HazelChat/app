@@ -5,7 +5,7 @@
 	"type": "module",
 	"main": "src/index.ts",
 	"scripts": {
-		"typecheck": "tsc --no-emit"
+		"typecheck": "tsc --noEmit"
 	},
 	"exports": {
 		".": "./src/index.ts",
