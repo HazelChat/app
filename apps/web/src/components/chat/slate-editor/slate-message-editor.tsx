@@ -33,7 +33,7 @@ import {
 	useMentionOptions,
 	withAutocomplete,
 } from "./autocomplete"
-import { getOptionByKey, useSlateComboBox } from "./autocomplete/use-slate-combobox"
+import { getOptionByIndex, useSlateAutocomplete } from "./autocomplete/use-slate-combobox"
 import { CodeBlockElement } from "./code-block-element"
 import { MentionElement } from "./mention-element"
 import { MentionLeaf } from "./mention-leaf"
@@ -334,95 +334,78 @@ export const SlateMessageEditor = forwardRef<SlateMessageEditorRef, SlateMessage
 			editor.autocompleteState = newState
 		}, [editor])
 
-		// Handle mention selection
-		const handleMentionSelect = useCallback(
-			(key: string | number) => {
-				const option = getOptionByKey(mentionOptions, key)
-				if (!option) return
-
-				const mention: MentionElementType = {
-					type: "mention",
-					userId: option.data.type === "user" ? option.data.id : option.data.type,
-					displayName: option.data.displayName,
-					children: [{ text: "" }],
-				}
-				insertAutocompleteResult(editor, mention, setAutocompleteState)
-				ReactEditor.focus(editor)
-				setValue([...value])
-			},
-			[editor, value, mentionOptions],
-		)
-
-		// Handle command selection
-		const handleCommandSelect = useCallback(
-			(key: string | number) => {
-				const option = getOptionByKey(commandOptions, key)
-				if (!option) return
-
-				const command = getCommandById(option.data.id)
-				if (!command) return
-
-				// Delete the /command text
-				const { startPoint, targetRange } = editor.autocompleteState
-				if (startPoint && targetRange) {
-					Transforms.select(editor, { anchor: startPoint, focus: targetRange.focus })
-					Transforms.delete(editor)
-				}
-
-				// Apply the block type
-				Transforms.setNodes(editor, {
-					type: command.blockType,
-					...command.blockProps,
-				} as Partial<CustomElement>)
-
-				closeAutocomplete()
-				ReactEditor.focus(editor)
-			},
-			[editor, commandOptions, closeAutocomplete],
-		)
-
-		// Handle emoji selection
-		const handleEmojiSelect = useCallback(
-			(key: string | number) => {
-				const option = getOptionByKey(emojiOptions, key)
-				if (!option) return
-
-				insertAutocompleteResult(editor, option.data.emoji, setAutocompleteState)
-				ReactEditor.focus(editor)
-			},
-			[editor, emojiOptions],
-		)
-
-		// Get the right selection handler based on trigger type
-		const handleSelection = useCallback(
-			(key: string | number) => {
+		// Handle selection by index - routes to the right handler based on trigger type
+		const handleSelectByIndex = useCallback(
+			(index: number) => {
 				if (!autocompleteState.trigger) return
+
 				switch (autocompleteState.trigger.id) {
-					case "mention":
-						handleMentionSelect(key)
+					case "mention": {
+						const option = getOptionByIndex(mentionOptions, index)
+						if (!option) return
+
+						const mention: MentionElementType = {
+							type: "mention",
+							userId: option.data.type === "user" ? option.data.id : option.data.type,
+							displayName: option.data.displayName,
+							children: [{ text: "" }],
+						}
+						insertAutocompleteResult(editor, mention, setAutocompleteState)
+						ReactEditor.focus(editor)
+						setValue([...value])
 						break
-					case "command":
-						handleCommandSelect(key)
+					}
+					case "command": {
+						const option = getOptionByIndex(commandOptions, index)
+						if (!option) return
+
+						const command = getCommandById(option.data.id)
+						if (!command) return
+
+						// Delete the /command text
+						const { startPoint, targetRange } = editor.autocompleteState
+						if (startPoint && targetRange) {
+							Transforms.select(editor, { anchor: startPoint, focus: targetRange.focus })
+							Transforms.delete(editor)
+						}
+
+						// Apply the block type
+						Transforms.setNodes(editor, {
+							type: command.blockType,
+							...command.blockProps,
+						} as Partial<CustomElement>)
+
+						closeAutocomplete()
+						ReactEditor.focus(editor)
 						break
-					case "emoji":
-						handleEmojiSelect(key)
+					}
+					case "emoji": {
+						const option = getOptionByIndex(emojiOptions, index)
+						if (!option) return
+
+						insertAutocompleteResult(editor, option.data.emoji, setAutocompleteState)
+						ReactEditor.focus(editor)
 						break
+					}
 				}
 			},
-			[autocompleteState.trigger, handleMentionSelect, handleCommandSelect, handleEmojiSelect],
+			[
+				autocompleteState.trigger,
+				editor,
+				value,
+				mentionOptions,
+				commandOptions,
+				emojiOptions,
+				closeAutocomplete,
+			],
 		)
 
-		// Use the new unified combobox hook
-		const comboBox = useSlateComboBox<unknown>({
-			items: currentOptions,
+		// Use the new simplified autocomplete hook
+		const autocomplete = useSlateAutocomplete({
 			isOpen: autocompleteState.isOpen,
-			inputValue: autocompleteState.search,
-			onOpenChange: (isOpen) => {
-				if (!isOpen) {
-					closeAutocomplete()
-				}
-			},
-			onSelectionChange: handleSelection,
+			itemCount: currentOptions.length,
+			onSelect: handleSelectByIndex,
+			onClose: closeAutocomplete,
 		})
 
 		const focusAndInsertTextInternal = useCallback(
@@ -495,22 +478,9 @@ export const SlateMessageEditor = forwardRef<SlateMessageEditorRef, SlateMessage
 
 			// Handle autocomplete keyboard navigation when open
 			if (autocompleteState.isOpen && currentOptions.length > 0) {
-				// Forward keyboard events to React Aria's combobox
-				if (comboBox.handleKeyDown(event)) {
-					return // Event was handled by the combobox
-				}
-
-				// Handle Escape to close
-				if (event.key === "Escape") {
-					event.preventDefault()
-					closeAutocomplete()
-					return
-				}
-
-				// Handle Tab to close
-				if (event.key === "Tab") {
-					closeAutocomplete()
-					return
+				// Let our autocomplete hook handle arrow keys, Enter, Tab, Escape
+				if (autocomplete.handleKeyDown(event)) {
+					return // Event was handled by autocomplete
 				}
 			}
 
@@ -833,23 +803,26 @@ export const SlateMessageEditor = forwardRef<SlateMessageEditorRef, SlateMessage
 					<EditorAutocomplete containerRef={containerRef} state={autocompleteState}>
 						{autocompleteState.trigger?.id === "mention" && (
 							<MentionTrigger
-								state={comboBox.state as any}
-								listBoxRef={comboBox.listBoxRef}
-								listBoxProps={comboBox.listBoxProps}
+								items={currentOptions as any}
+								activeIndex={autocomplete.activeIndex}
+								onSelect={handleSelectByIndex}
+								onHover={autocomplete.setActiveIndex}
 							/>
 						)}
 						{autocompleteState.trigger?.id === "command" && (
 							<CommandTrigger
-								state={comboBox.state as any}
-								listBoxRef={comboBox.listBoxRef}
-								listBoxProps={comboBox.listBoxProps}
+								items={currentOptions as any}
+								activeIndex={autocomplete.activeIndex}
+								onSelect={handleSelectByIndex}
+								onHover={autocomplete.setActiveIndex}
 							/>
 						)}
 						{autocompleteState.trigger?.id === "emoji" && (
 							<EmojiTrigger
-								state={comboBox.state as any}
-								listBoxRef={comboBox.listBoxRef}
-								listBoxProps={comboBox.listBoxProps}
+								items={currentOptions as any}
+								activeIndex={autocomplete.activeIndex}
+								onSelect={handleSelectByIndex}
+								onHover={autocomplete.setActiveIndex}
 								searchLength={autocompleteState.search.length}
 							/>
 						)}
@@ -860,7 +833,6 @@ export const SlateMessageEditor = forwardRef<SlateMessageEditorRef, SlateMessage
 						aria-autocomplete="list"
 						aria-expanded={autocompleteState.isOpen && currentOptions.length > 0}
 						aria-haspopup="listbox"
-						aria-controls={autocompleteState.isOpen ? comboBox.listBoxProps.id : undefined}
 						className={cx(
 							"w-full whitespace-pre-wrap break-all px-3 py-2 text-base md:text-sm",
 							"rounded-xl bg-transparent",

@@ -1,19 +1,18 @@
 "use client"
 
-import { useOption } from "@react-aria/listbox"
-import type { ComboBoxState } from "@react-stately/combobox"
-import type { Node } from "@react-types/shared"
 import { type ReactNode, useEffect, useRef } from "react"
 import { cx } from "~/utils/cx"
 import type { AutocompleteOption } from "./types"
 
 interface AutocompleteListBoxProps<T> {
-	/** ComboBox state from useSlateComboBox */
-	state: ComboBoxState<AutocompleteOption<T>>
-	/** Ref for the listbox element (from useSlateComboBox) */
-	listBoxRef: React.RefObject<HTMLUListElement | null>
-	/** Props to spread on the listbox element (from useSlateComboBox) */
-	listBoxProps: React.HTMLAttributes<HTMLUListElement>
+	/** Items to display */
+	items: AutocompleteOption<T>[]
+	/** Currently active/focused index */
+	activeIndex: number
+	/** Callback when an item is selected (clicked) */
+	onSelect: (index: number) => void
+	/** Callback when mouse hovers over an item */
+	onHover: (index: number) => void
 	/** Custom render function for items */
 	renderItem?: (props: { option: AutocompleteOption<T>; isFocused: boolean }) => ReactNode
 	/** Message to show when no options */
@@ -23,82 +22,89 @@ interface AutocompleteListBoxProps<T> {
 }
 
 /**
- * Autocomplete listbox using React Aria with virtual focus.
+ * Autocomplete listbox using simple index-based focus.
  *
- * This component receives state from useSlateComboBox and renders
- * the list items. All keyboard navigation and ARIA attributes are
- * handled by the parent hook.
+ * This component renders the list items as plain divs with styling
+ * based on whether `index === activeIndex`.
  *
  * Features:
- * - Virtual focus (DOM focus stays in Slate editor)
- * - Keyboard navigation handled by useSlateComboBox
- * - Hover to focus items
- * - Auto-scroll focused items into view
+ * - Focus stays in Slate editor (no hidden inputs)
+ * - Simple index-based highlighting
+ * - Hover to change active index
+ * - Auto-scroll active items into view
+ * - Click to select
  */
 export function AutocompleteListBox<T>({
-	state,
-	listBoxRef,
-	listBoxProps,
+	items,
+	activeIndex,
+	onSelect,
+	onHover,
 	renderItem,
 	emptyMessage = "No results found",
 	className,
 }: AutocompleteListBoxProps<T>) {
-	// Get the original items from the state (they have our custom data)
-	const items = [...state.collection]
-
 	if (items.length === 0) {
 		return <div className="p-4 text-center text-muted-fg text-sm">{emptyMessage}</div>
 	}
 
 	return (
-		<ul
-			{...listBoxProps}
-			ref={listBoxRef}
-			className={cx("p-2 outline-none", className)}
-			// Prevent clicks from stealing focus from editor
-			onMouseDown={(e) => e.preventDefault()}
-		>
-			{items.map((item) => (
-				<Option key={item.key} item={item} state={state} renderItem={renderItem} />
+		<div className={cx("p-2 outline-none", className)}>
+			{items.map((item, index) => (
+				<Option
+					key={item.id}
+					item={item}
+					index={index}
+					isActive={index === activeIndex}
+					onSelect={onSelect}
+					onHover={onHover}
+					renderItem={renderItem}
+				/>
 			))}
-		</ul>
+		</div>
 	)
 }
 
 interface OptionProps<T> {
-	item: Node<AutocompleteOption<T>>
-	state: ComboBoxState<AutocompleteOption<T>>
+	item: AutocompleteOption<T>
+	index: number
+	isActive: boolean
+	onSelect: (index: number) => void
+	onHover: (index: number) => void
 	renderItem?: (props: { option: AutocompleteOption<T>; isFocused: boolean }) => ReactNode
 }
 
-function Option<T>({ item, state, renderItem }: OptionProps<T>) {
-	const ref = useRef<HTMLLIElement>(null)
-	const { optionProps, isFocused, isDisabled } = useOption({ key: item.key }, state, ref)
+function Option<T>({ item, index, isActive, onSelect, onHover, renderItem }: OptionProps<T>) {
+	const ref = useRef<HTMLDivElement>(null)
 
-	// Get the original option data
-	const option = item.value as AutocompleteOption<T>
-
-	// Scroll focused item into view
+	// Scroll active item into view
 	useEffect(() => {
-		if (isFocused && ref.current) {
+		if (isActive && ref.current) {
 			ref.current.scrollIntoView({ block: "nearest" })
 		}
-	}, [isFocused])
+	}, [isActive])
 
 	return (
-		<li
-			{...optionProps}
+		<div
 			ref={ref}
+			role="option"
+			aria-selected={isActive}
+			onClick={() => onSelect(index)}
+			onKeyDown={(e) => {
+				if (e.key === "Enter" || e.key === " ") {
+					e.preventDefault()
+					onSelect(index)
+				}
+			}}
+			onMouseEnter={() => onHover(index)}
 			className={cx(
 				"flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm",
 				"outline-none transition-colors",
-				isFocused && "bg-accent text-accent-fg",
-				!isFocused && "hover:bg-accent/50",
-				isDisabled && "cursor-not-allowed opacity-50",
+				isActive && "bg-accent text-accent-fg",
+				!isActive && "hover:bg-accent/50",
 			)}
 		>
-			{renderItem ? renderItem({ option, isFocused }) : <DefaultItemContent option={option} />}
-		</li>
+			{renderItem ? renderItem({ option: item, isFocused: isActive }) : <DefaultItemContent option={item} />}
+		</div>
 	)
 }
 
@@ -111,9 +117,7 @@ function DefaultItemContent<T>({ option }: { option: AutocompleteOption<T> }) {
 			{option.icon && <span className="shrink-0">{option.icon}</span>}
 			<div className="min-w-0 flex-1">
 				<div className="truncate font-medium">{option.label}</div>
-				{option.description && (
-					<div className="truncate text-xs opacity-70">{option.description}</div>
-				)}
+				{option.description && <div className="truncate text-xs opacity-70">{option.description}</div>}
 			</div>
 		</>
 	)

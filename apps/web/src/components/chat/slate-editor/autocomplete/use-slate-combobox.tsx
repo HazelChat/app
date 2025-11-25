@@ -1,183 +1,105 @@
 "use client"
 
-import { useListBox } from "@react-aria/listbox"
-import { ListKeyboardDelegate, useSelectableCollection } from "@react-aria/selection"
-import { Item } from "@react-stately/collections"
-import type { ComboBoxState } from "@react-stately/combobox"
-import { useComboBoxState } from "@react-stately/combobox"
-import type { Key } from "@react-types/shared"
-import { useCallback, useEffect, useMemo, useRef } from "react"
+import { useCallback, useEffect, useState } from "react"
 import type { AutocompleteOption } from "./types"
 
-export interface UseSlateComboBoxProps<T> {
-	/** Items to display in the listbox */
-	items: AutocompleteOption<T>[]
-	/** Whether the listbox is open */
+export interface UseSlateAutocompleteProps {
+	/** Whether autocomplete is currently open */
 	isOpen: boolean
-	/** Current search/filter text */
-	inputValue: string
-	/** Callback when open state changes */
-	onOpenChange: (isOpen: boolean) => void
-	/** Callback when selection changes */
-	onSelectionChange: (key: Key) => void
+	/** Number of items in the list */
+	itemCount: number
+	/** Callback when an item is selected */
+	onSelect: (index: number) => void
+	/** Callback when autocomplete should close */
+	onClose: () => void
 }
 
-export interface UseSlateComboBoxReturn<T> {
-	/** The combobox state from React Stately */
-	state: ComboBoxState<AutocompleteOption<T>>
-	/** Ref for the listbox element */
-	listBoxRef: React.RefObject<HTMLUListElement | null>
-	/** Props to spread on the listbox element */
-	listBoxProps: React.HTMLAttributes<HTMLUListElement>
-	/** Handle keyboard events from Slate editor - returns true if event was handled */
+export interface UseSlateAutocompleteReturn {
+	/** Currently focused index */
+	activeIndex: number
+	/** Set the active index (for hover) */
+	setActiveIndex: (index: number) => void
+	/** Handle keyboard events - returns true if event was handled */
 	handleKeyDown: (event: React.KeyboardEvent) => boolean
 }
 
 /**
- * Hook that bridges Slate.js with React Aria's combobox pattern.
+ * Simple hook for managing autocomplete keyboard navigation in Slate.
  *
- * Uses useComboBoxState for state management and useSelectableCollection
- * for keyboard navigation. The Slate editor acts as a "virtual" input -
- * we don't attach to a real input element, but forward keyboard events.
+ * Unlike Ariakit, this keeps focus in the Slate editor and handles
+ * arrow keys, Enter, Tab, and Escape directly.
  *
- * Features:
- * - Virtual focus (DOM focus stays in Slate)
- * - Keyboard navigation (ArrowUp/Down, Home/End, PageUp/PageDown)
- * - Selection on Enter
- * - Focus on hover
+ * Based on the Slate mentions example from the docs.
  */
-export function useSlateComboBox<T>({
-	items,
+export function useSlateAutocomplete({
 	isOpen,
-	inputValue,
-	onOpenChange,
-	onSelectionChange,
-}: UseSlateComboBoxProps<T>): UseSlateComboBoxReturn<T> {
-	const listBoxRef = useRef<HTMLUListElement>(null)
+	itemCount,
+	onSelect,
+	onClose,
+}: UseSlateAutocompleteProps): UseSlateAutocompleteReturn {
+	const [activeIndex, setActiveIndex] = useState(0)
 
-	// Create a fake input ref for useSelectableCollection
-	// We don't actually use this, but the hook requires it
-	const fakeInputRef = useRef<HTMLInputElement>(null)
-
-	// Convert our items to the format React Stately expects
-	const statelyItems = useMemo(
-		() =>
-			items.map((item) => ({
-				...item,
-				key: item.id,
-				textValue: item.label,
-			})),
-		[items],
-	)
-
-	// Create combobox state
-	const state = useComboBoxState({
-		items: statelyItems,
-		children: (item) => <Item key={item.key}>{item.label}</Item>,
-		inputValue,
-		onOpenChange,
-		onSelectionChange: (key) => {
-			if (key != null) onSelectionChange(key)
-		},
-		// Don't filter - we handle filtering externally
-		defaultFilter: () => true,
-		// Manual trigger - we control open/close via Slate plugin
-		menuTrigger: "manual",
-		// Allow the same item to be selected again (useful for commands)
-		allowsEmptyCollection: true,
-	})
-
-	// Sync external isOpen state with combobox state
+	// Reset index when closing or when item count changes significantly
 	useEffect(() => {
-		if (isOpen && !state.isOpen) {
-			state.open()
-		} else if (!isOpen && state.isOpen) {
-			state.close()
+		if (!isOpen) {
+			setActiveIndex(0)
 		}
-	}, [isOpen, state])
+	}, [isOpen])
 
-	// Create keyboard delegate for navigation
-	const delegate = useMemo(
-		() =>
-			new ListKeyboardDelegate({
-				collection: state.collection,
-				disabledKeys: state.selectionManager.disabledKeys,
-				ref: listBoxRef,
-			}),
-		[state.collection, state.selectionManager.disabledKeys],
-	)
+	// Clamp index if it's out of bounds (e.g., items filtered down)
+	useEffect(() => {
+		if (activeIndex >= itemCount && itemCount > 0) {
+			setActiveIndex(itemCount - 1)
+		}
+	}, [activeIndex, itemCount])
 
-	// Get keyboard handlers via useSelectableCollection
-	const { collectionProps } = useSelectableCollection({
-		selectionManager: state.selectionManager,
-		keyboardDelegate: delegate,
-		disallowTypeAhead: true,
-		disallowEmptySelection: true,
-		ref: fakeInputRef,
-		isVirtualized: true,
-	})
-
-	// Get listbox props
-	const { listBoxProps } = useListBox(
-		{
-			"aria-label": "Suggestions",
-			shouldUseVirtualFocus: true,
-			shouldFocusOnHover: true,
-			autoFocus: "first",
-		},
-		state,
-		listBoxRef,
-	)
-
-	// Handler to forward keyboard events from Slate
 	const handleKeyDown = useCallback(
 		(event: React.KeyboardEvent): boolean => {
-			// Don't handle if closed or no items
-			if (!isOpen || items.length === 0) return false
-
-			// Skip if composing (IME input)
-			if (event.nativeEvent.isComposing) return false
-
-			const navigationKeys = ["ArrowUp", "ArrowDown", "Home", "End", "PageUp", "PageDown"]
-			const selectionKeys = ["Enter"]
-
-			if (navigationKeys.includes(event.key)) {
-				// Forward to React Aria's keyboard handler
-				collectionProps.onKeyDown?.(event as any)
-				event.preventDefault()
-				return true
+			if (!isOpen || itemCount === 0) {
+				return false
 			}
 
-			if (selectionKeys.includes(event.key)) {
-				// Get the focused item and trigger selection
-				const focusedKey = state.selectionManager.focusedKey
-				if (focusedKey != null) {
-					onSelectionChange(focusedKey)
+			switch (event.key) {
+				case "ArrowDown":
 					event.preventDefault()
+					setActiveIndex((prev) => (prev >= itemCount - 1 ? 0 : prev + 1))
 					return true
-				}
+
+				case "ArrowUp":
+					event.preventDefault()
+					setActiveIndex((prev) => (prev <= 0 ? itemCount - 1 : prev - 1))
+					return true
+
+				case "Enter":
+				case "Tab":
+					event.preventDefault()
+					onSelect(activeIndex)
+					return true
+
+				case "Escape":
+					event.preventDefault()
+					onClose()
+					return true
 			}
 
 			return false
 		},
-		[isOpen, items.length, collectionProps, state.selectionManager.focusedKey, onSelectionChange],
+		[isOpen, itemCount, activeIndex, onSelect, onClose],
 	)
 
 	return {
-		state,
-		listBoxRef,
-		listBoxProps,
+		activeIndex,
+		setActiveIndex,
 		handleKeyDown,
 	}
 }
 
 /**
- * Get the original option data from a collection item key
+ * Get the original option data from items by index
  */
-export function getOptionByKey<T>(
+export function getOptionByIndex<T>(
 	items: AutocompleteOption<T>[],
-	key: Key | null,
+	index: number,
 ): AutocompleteOption<T> | undefined {
-	if (key == null) return undefined
-	return items.find((item) => item.id === key)
+	return items[index]
 }

@@ -1,10 +1,8 @@
 // Types
-export * from "./types"
 
 // Components
 export { AutocompleteListBox } from "./autocomplete-listbox"
 export { EditorAutocomplete } from "./editor-autocomplete"
-
 // Slate plugin
 export {
 	type AutocompleteEditor,
@@ -13,11 +11,11 @@ export {
 	insertAutocompleteResult,
 	withAutocomplete,
 } from "./slate-autocomplete-plugin"
-
 // Triggers
 export { COMMANDS, CommandTrigger, getCommandById, useCommandOptions } from "./triggers/command-trigger"
 export { EmojiTrigger, useEmojiOptions } from "./triggers/emoji-trigger"
 export { MentionTrigger, useMentionOptions } from "./triggers/mention-trigger"
+export * from "./types"
 
 // Hooks
-export { getOptionByKey, useSlateComboBox } from "./use-slate-combobox"
+export { getOptionByIndex, useSlateAutocomplete } from "./use-slate-combobox"

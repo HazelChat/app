@@ -16,8 +16,11 @@ interface EditorAutocompleteProps {
 }
 
 /**
- * Autocomplete popover container
- * Positions itself above the editor container, full width, with dynamic height
+ * Autocomplete popover container.
+ * Positions itself above the editor container, full width, with dynamic height.
+ *
+ * This is a simple positioned div - keyboard navigation is handled by the
+ * Slate editor's onKeyDown via useSlateAutocomplete hook.
  */
 export function EditorAutocomplete({ containerRef, state, children, className }: EditorAutocompleteProps) {
 	const popoverRef = useRef<HTMLDivElement>(null)
@@ -54,15 +57,13 @@ export function EditorAutocomplete({ containerRef, state, children, className }:
 		<div
 			ref={popoverRef}
 			role="listbox"
-			id="editor-autocomplete-listbox"
-			aria-label="Suggestions"
 			// Prevent clicks from stealing focus from editor
 			onMouseDown={(e) => e.preventDefault()}
 			className={cx(
-				"absolute bottom-full left-0 right-0 z-50 mb-2",
+				"absolute right-0 bottom-full left-0 z-50 mb-2",
 				"overflow-y-auto overflow-x-hidden rounded-xl",
 				"border border-fg/10 bg-overlay shadow-lg",
-				"animate-in fade-in slide-in-from-bottom-2 duration-150",
+				"fade-in slide-in-from-bottom-2 animate-in duration-150",
 				className,
 			)}
 			style={{ maxHeight }}

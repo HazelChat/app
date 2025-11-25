@@ -1,6 +1,5 @@
 "use client"
 
-import type { ComboBoxState } from "@react-stately/combobox"
 import { type ReactNode, useMemo } from "react"
 import { AutocompleteListBox } from "../autocomplete-listbox"
 import type { AutocompleteOption, AutocompleteState, CommandData } from "../types"
@@ -173,24 +172,27 @@ const COMMANDS: SlashCommand[] = [
 ]
 
 interface CommandTriggerProps {
-	/** ComboBox state from useSlateComboBox */
-	state: ComboBoxState<AutocompleteOption<CommandData>>
-	/** Ref for the listbox element */
-	listBoxRef: React.RefObject<HTMLUListElement | null>
-	/** Props to spread on the listbox element */
-	listBoxProps: React.HTMLAttributes<HTMLUListElement>
+	/** Items to display */
+	items: AutocompleteOption<CommandData>[]
+	/** Currently active index */
+	activeIndex: number
+	/** Callback when an item is selected */
+	onSelect: (index: number) => void
+	/** Callback when mouse hovers over an item */
+	onHover: (index: number) => void
 }
 
 /**
  * Command trigger component
- * Renders command suggestions using React Aria's ListBox with virtual focus
+ * Renders command suggestions using simple index-based focus
  */
-export function CommandTrigger({ state, listBoxRef, listBoxProps }: CommandTriggerProps) {
+export function CommandTrigger({ items, activeIndex, onSelect, onHover }: CommandTriggerProps) {
 	return (
 		<AutocompleteListBox
-			state={state}
-			listBoxRef={listBoxRef}
-			listBoxProps={listBoxProps}
+			items={items}
+			activeIndex={activeIndex}
+			onSelect={onSelect}
+			onHover={onHover}
 			emptyMessage="No commands found"
 		/>
 	)

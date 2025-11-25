@@ -1,6 +1,5 @@
 "use client"
 
-import type { ComboBoxState } from "@react-stately/combobox"
 import { useMemo } from "react"
 import { AutocompleteListBox } from "../autocomplete-listbox"
 import type { AutocompleteOption, AutocompleteState, EmojiData } from "../types"
@@ -435,26 +434,29 @@ function buildEmojiOptions(): AutocompleteOption<EmojiData>[] {
 const ALL_EMOJI_OPTIONS = buildEmojiOptions()
 
 interface EmojiTriggerProps {
-	/** ComboBox state from useSlateComboBox */
-	state: ComboBoxState<AutocompleteOption<EmojiData>>
-	/** Ref for the listbox element */
-	listBoxRef: React.RefObject<HTMLUListElement | null>
-	/** Props to spread on the listbox element */
-	listBoxProps: React.HTMLAttributes<HTMLUListElement>
+	/** Items to display */
+	items: AutocompleteOption<EmojiData>[]
+	/** Currently active index */
+	activeIndex: number
+	/** Callback when an item is selected */
+	onSelect: (index: number) => void
+	/** Callback when mouse hovers over an item */
+	onHover: (index: number) => void
 	/** Current search length for empty message */
 	searchLength: number
 }
 
 /**
  * Emoji trigger component
- * Renders emoji suggestions using React Aria's ListBox with virtual focus
+ * Renders emoji suggestions using simple index-based focus
  */
-export function EmojiTrigger({ state, listBoxRef, listBoxProps, searchLength }: EmojiTriggerProps) {
+export function EmojiTrigger({ items, activeIndex, onSelect, onHover, searchLength }: EmojiTriggerProps) {
 	return (
 		<AutocompleteListBox
-			state={state}
-			listBoxRef={listBoxRef}
-			listBoxProps={listBoxProps}
+			items={items}
+			activeIndex={activeIndex}
+			onSelect={onSelect}
+			onHover={onHover}
 			emptyMessage={searchLength < 2 ? "Type at least 2 characters" : "No emoji found"}
 			renderItem={({ option }) => <EmojiItem option={option} />}
 		/>

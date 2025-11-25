@@ -7,27 +7,29 @@ import { channelMemberCollection, userCollection, userPresenceStatusCollection }
 import { cx } from "~/utils/cx"
 import { AutocompleteListBox } from "../autocomplete-listbox"
 import type { AutocompleteOption, AutocompleteState, MentionData } from "../types"
-import type { ComboBoxState } from "@react-stately/combobox"
 
 interface MentionTriggerProps {
-	/** ComboBox state from useSlateComboBox */
-	state: ComboBoxState<AutocompleteOption<MentionData>>
-	/** Ref for the listbox element */
-	listBoxRef: React.RefObject<HTMLUListElement | null>
-	/** Props to spread on the listbox element */
-	listBoxProps: React.HTMLAttributes<HTMLUListElement>
+	/** Items to display */
+	items: AutocompleteOption<MentionData>[]
+	/** Currently active index */
+	activeIndex: number
+	/** Callback when an item is selected */
+	onSelect: (index: number) => void
+	/** Callback when mouse hovers over an item */
+	onHover: (index: number) => void
 }
 
 /**
  * Mention trigger component
- * Renders mention suggestions using React Aria's ListBox with virtual focus
+ * Renders mention suggestions using simple index-based focus
  */
-export function MentionTrigger({ state, listBoxRef, listBoxProps }: MentionTriggerProps) {
+export function MentionTrigger({ items, activeIndex, onSelect, onHover }: MentionTriggerProps) {
 	return (
 		<AutocompleteListBox
-			state={state}
-			listBoxRef={listBoxRef}
-			listBoxProps={listBoxProps}
+			items={items}
+			activeIndex={activeIndex}
+			onSelect={onSelect}
+			onHover={onHover}
 			emptyMessage="No users found"
 			renderItem={({ option, isFocused }) => <MentionItem option={option} isHighlighted={isFocused} />}
 		/>
