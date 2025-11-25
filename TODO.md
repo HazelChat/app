@@ -4,8 +4,6 @@
 - rpc client for bot
 
 Deploy production
-- make webhooks work (required)
-
 
 
 
@@ -18,7 +16,6 @@ Deploy production
 
 - Migrate the missing icons to nucleo
 
-- setup webhooks for workos
 
 
 
@@ -33,11 +30,6 @@ Deploy production
 - [ ] **Chat Improvements**
   - Better Chat Input with:
     - Slash commands
-
-
-- [ ] **User Management**
-  - Fix webhook for invitation.created
-
 
 ### Chat Components
 - [ ] **Message Features**

@@ -1,7 +1,7 @@
 "use client"
 
 import { pipe } from "effect"
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useState } from "react"
+import { forwardRef, useCallback, useImperativeHandle, useMemo, useRef, useState } from "react"
 import type { Descendant } from "slate"
 import { createEditor, Editor, Range, Element as SlateElement, Transforms } from "slate"
 import { withHistory } from "slate-history"
@@ -15,8 +15,28 @@ import {
 } from "slate-react"
 import { useGlobalKeyboardFocus } from "~/hooks/use-global-keyboard-focus"
 import { cx } from "~/utils/cx"
+import {
+	type AutocompleteEditor,
+	type AutocompleteOption,
+	type AutocompleteState,
+	type CommandData,
+	CommandTrigger,
+	DEFAULT_TRIGGERS,
+	EditorAutocomplete,
+	type EmojiData,
+	EmojiTrigger,
+	getCommandById,
+	insertAutocompleteResult,
+	type MentionData,
+	MentionTrigger,
+	useCommandOptions,
+	useEditorAutocomplete,
+	useEmojiOptions,
+	useMentionOptions,
+	useSlateAutocomplete,
+	withAutocomplete,
+} from "./autocomplete"
 import { CodeBlockElement } from "./code-block-element"
-import { MentionAutocomplete } from "./mention-autocomplete"
 import { MentionElement } from "./mention-element"
 import { MentionLeaf } from "./mention-leaf"
 import { decorateCodeBlock } from "./slate-code-decorator"
@@ -28,11 +48,11 @@ import {
 	isValueEmpty,
 	serializeToMarkdown,
 } from "./slate-markdown-serializer"
-import { insertMention, type MentionEditor, withMentions } from "./slate-mention-plugin"
+import type { MentionElement as MentionElementType } from "./slate-mention-plugin"
 import { isCodeBlockElement } from "./types"
 
-// Extend the editor type with all plugins
-type CustomEditor = MentionEditor
+// Extend the editor type with autocomplete plugin
+type CustomEditor = AutocompleteEditor
 
 export interface SlateMessageEditorRef {
 	focusAndInsertText: (text: string) => void
@@ -167,6 +187,25 @@ const withAutoformat = (editor: CustomEditor): CustomEditor => {
 	return editor
 }
 
+// Configure mention elements as inline and void
+const withMentionElements = (editor: CustomEditor): CustomEditor => {
+	const { isInline, isVoid, markableVoid } = editor
+
+	editor.isInline = (element: any) => {
+		return element.type === "mention" ? true : isInline(element)
+	}
+
+	editor.isVoid = (element: any) => {
+		return element.type === "mention" ? true : isVoid(element)
+	}
+
+	editor.markableVoid = (element: any) => {
+		return element.type === "mention" || markableVoid(element)
+	}
+
+	return editor
+}
+
 // Define custom element renderer
 const Element = (props: RenderElementProps) => {
 	const { attributes, children, element } = props
@@ -229,13 +268,124 @@ const shouldHidePlaceholder = (value: CustomDescendant[]): boolean => {
 
 export const SlateMessageEditor = forwardRef<SlateMessageEditorRef, SlateMessageEditorProps>(
 	({ placeholder = "Type a message...", className, onSubmit, onUpdate, isUploading = false }, ref) => {
-		// Create Slate editor with React, History, Autoformat, and Mentions plugins
+		const containerRef = useRef<HTMLDivElement>(null)
+
+		// Autocomplete state management
+		const autocomplete = useEditorAutocomplete()
+		const [autocompleteState, setAutocompleteState] = useState<AutocompleteState>(autocomplete.state)
+
+		// Create Slate editor with plugins
 		const editor = useMemo(
-			() => pipe(createEditor(), withHistory, withReact, withMentions, withAutoformat) as CustomEditor,
+			() =>
+				pipe(
+					createEditor(),
+					withHistory,
+					withReact,
+					(e) => withAutocomplete(e, DEFAULT_TRIGGERS, setAutocompleteState),
+					withMentionElements,
+					withAutoformat,
+				) as CustomEditor,
 			[],
 		)
 
 		const [value, setValue] = useState<CustomDescendant[]>(createEmptyValue())
+
+		// Get options for each trigger type
+		const mentionOptions = useMentionOptions(autocompleteState)
+		const commandOptions = useCommandOptions(autocompleteState)
+		const emojiOptions = useEmojiOptions(autocompleteState)
+
+		// Get current options based on active trigger
+		const currentOptions = useMemo(() => {
+			if (!autocompleteState.isOpen || !autocompleteState.trigger) return []
+			switch (autocompleteState.trigger.id) {
+				case "mention":
+					return mentionOptions
+				case "command":
+					return commandOptions
+				case "emoji":
+					return emojiOptions
+				default:
+					return []
+			}
+		}, [
+			autocompleteState.isOpen,
+			autocompleteState.trigger,
+			mentionOptions,
+			commandOptions,
+			emojiOptions,
+		])
+
+		// React Aria listbox keyboard event bridge
+		const { listBoxRef, handleKeyDown: handleAutocompleteKeyDown } = useSlateAutocomplete()
+
+		// Handle mention selection
+		const handleMentionSelect = useCallback(
+			(option: AutocompleteOption<MentionData>) => {
+				const mention: MentionElementType = {
+					type: "mention",
+					userId: option.data.type === "user" ? option.data.id : option.data.type,
+					displayName: option.data.displayName,
+					children: [{ text: "" }],
+				}
+				insertAutocompleteResult(editor, mention, setAutocompleteState)
+				ReactEditor.focus(editor)
+				setValue([...value])
+			},
+			[editor, value],
+		)
+
+		// Handle command selection
+		const handleCommandSelect = useCallback(
+			(option: AutocompleteOption<CommandData>) => {
+				const command = getCommandById(option.data.id)
+				if (!command) return
+
+				// Delete the /command text
+				const { startPoint, targetRange } = editor.autocompleteState
+				if (startPoint && targetRange) {
+					Transforms.select(editor, { anchor: startPoint, focus: targetRange.focus })
+					Transforms.delete(editor)
+				}
+
+				// Apply the block type
+				Transforms.setNodes(editor, {
+					type: command.blockType,
+					...command.blockProps,
+				} as Partial<CustomElement>)
+
+				// Reset autocomplete state
+				setAutocompleteState({
+					isOpen: false,
+					trigger: null,
+					search: "",
+					activeIndex: 0,
+					startPoint: null,
+					targetRange: null,
+				})
+				editor.autocompleteState = {
+					isOpen: false,
+					trigger: null,
+					search: "",
+					activeIndex: 0,
+					startPoint: null,
+					targetRange: null,
+				}
+
+				ReactEditor.focus(editor)
+			},
+			[editor],
+		)
+
+		// Handle emoji selection
+		const handleEmojiSelect = useCallback(
+			(option: AutocompleteOption<EmojiData>) => {
+				insertAutocompleteResult(editor, option.data.emoji, setAutocompleteState)
+				ReactEditor.focus(editor)
+			},
+			[editor],
+		)
+
 		const focusAndInsertTextInternal = useCallback(
 			(text: string) => {
 				requestAnimationFrame(() => {
@@ -303,6 +453,58 @@ export const SlateMessageEditor = forwardRef<SlateMessageEditorRef, SlateMessage
 		// Handle key down
 		const handleKeyDown = (event: React.KeyboardEvent) => {
 			const { selection } = editor
+
+			// Handle autocomplete keyboard navigation when open
+			// React Aria handles ArrowUp/Down/Enter/Home/End via event forwarding
+			if (autocompleteState.isOpen && currentOptions.length > 0) {
+				// Forward keyboard events to React Aria's listbox
+				if (handleAutocompleteKeyDown(event)) {
+					return // Event was handled by the listbox
+				}
+
+				// Handle Escape to close
+				if (event.key === "Escape") {
+					event.preventDefault()
+					setAutocompleteState({
+						isOpen: false,
+						trigger: null,
+						search: "",
+						activeIndex: 0,
+						startPoint: null,
+						targetRange: null,
+					})
+					editor.autocompleteState = {
+						isOpen: false,
+						trigger: null,
+						search: "",
+						activeIndex: 0,
+						startPoint: null,
+						targetRange: null,
+					}
+					return
+				}
+
+				// Handle Tab to close
+				if (event.key === "Tab") {
+					setAutocompleteState({
+						isOpen: false,
+						trigger: null,
+						search: "",
+						activeIndex: 0,
+						startPoint: null,
+						targetRange: null,
+					})
+					editor.autocompleteState = {
+						isOpen: false,
+						trigger: null,
+						search: "",
+						activeIndex: 0,
+						startPoint: null,
+						targetRange: null,
+					}
+					return
+				}
+			}
 
 			// Handle Command+A / Ctrl+A for select all
 			if ((event.metaKey || event.ctrlKey) && event.key === "a") {
@@ -616,10 +818,44 @@ export const SlateMessageEditor = forwardRef<SlateMessageEditorRef, SlateMessage
 			[editor],
 		)
 
+		// Active item ID for aria-activedescendant is handled by React Aria internally
+		// We only check if autocomplete is open for the aria-expanded attribute
+
 		return (
-			<div className={cx("relative w-full", className)}>
+			<div ref={containerRef} className={cx("relative w-full", className)}>
 				<Slate editor={editor} initialValue={value} onChange={handleChange}>
+					{/* Autocomplete popover - positioned above the editor */}
+					<EditorAutocomplete containerRef={containerRef} state={autocompleteState}>
+						{autocompleteState.trigger?.id === "mention" && (
+							<MentionTrigger
+								options={currentOptions as any}
+								listBoxRef={listBoxRef}
+								onSelect={handleMentionSelect}
+							/>
+						)}
+						{autocompleteState.trigger?.id === "command" && (
+							<CommandTrigger
+								options={currentOptions as any}
+								listBoxRef={listBoxRef}
+								onSelect={handleCommandSelect}
+							/>
+						)}
+						{autocompleteState.trigger?.id === "emoji" && (
+							<EmojiTrigger
+								options={currentOptions as any}
+								listBoxRef={listBoxRef}
+								onSelect={handleEmojiSelect}
+								searchLength={autocompleteState.search.length}
+							/>
+						)}
+					</EditorAutocomplete>
+
 					<Editable
+						role="combobox"
+						aria-autocomplete="list"
+						aria-expanded={autocompleteState.isOpen && currentOptions.length > 0}
+						aria-haspopup="listbox"
+						aria-controls={autocompleteState.isOpen ? "editor-autocomplete-listbox" : undefined}
 						className={cx(
 							"w-full whitespace-pre-wrap break-all px-3 py-2 text-base md:text-sm",
 							"rounded-xl bg-transparent",
@@ -646,21 +882,6 @@ export const SlateMessageEditor = forwardRef<SlateMessageEditorRef, SlateMessage
 							return <span {...attributes}>{children}</span>
 						}}
 					/>
-
-					{/* Render mention autocomplete when active */}
-					{editor.mentionState.active && (
-						<MentionAutocomplete
-							editor={editor}
-							search={editor.mentionState.search}
-							onSelect={(id, displayName, type) => {
-								insertMention(editor, id, displayName, type)
-								// Restore focus to the editor
-								ReactEditor.focus(editor)
-								// Force re-render after mention selection
-								setValue([...value])
-							}}
-						/>
-					)}
 				</Slate>
 			</div>
 		)

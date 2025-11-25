@@ -4,6 +4,10 @@
   "workspaces": {
     "": {
       "name": "maki-chat",
+      "dependencies": {
+        "@react-aria/autocomplete": "^3.0.0-rc.3",
+        "@react-stately/autocomplete": "^3.0.0-beta.3",
+      },
       "devDependencies": {
         "@biomejs/biome": "2.3.7",
         "@vitest/coverage-v8": "^4.0.13",
@@ -139,10 +143,13 @@
         "@hazel/schema": "workspace:*",
         "@hazel/tanstack-db-atom": "workspace:*",
         "@heroicons/react": "^2.2.0",
-        "@legendapp/list": "2.1.0-beta.12",
+        "@legendapp/list": "3.0.0-beta.1",
         "@paper-design/shaders-react": "^0.0.65",
         "@radix-ui/themes": "^3.2.1",
+        "@react-aria/listbox": "^3.15.0",
         "@react-aria/utils": "^3.31.0",
+        "@react-stately/collections": "^3.12.8",
+        "@react-stately/list": "^3.13.1",
         "@tailwindcss/typography": "^0.5.19",
         "@tailwindcss/vite": "^4.1.17",
         "@tanstack/db": "0.5.0",
@@ -774,7 +781,7 @@
 
     "@kikobeats/time-span": ["@kikobeats/time-span@1.0.10", "", {}, "sha512-liggEEFIA1VxExuWdJqzepj3hJ3pYLwnRbvuhfl3IYCIUFxdm41p32S8If+3RACdmLB2dZ6vME+CTAtC909q9Q=="],
 
-    "@legendapp/list": ["@legendapp/list@2.1.0-beta.12", "", { "dependencies": { "use-sync-external-store": "^1.5.0" }, "peerDependencies": { "react": "*" } }, "sha512-rwovciOg/w9B36nat8tgoXYOGtwF692tj3fJTrDydf62j3zI2Buz5LJyysQSY1h3BuBaX0nUSMkiCQq4pnOtXQ=="],
+    "@legendapp/list": ["@legendapp/list@3.0.0-beta.1", "", { "dependencies": { "use-sync-external-store": "^1.5.0" }, "peerDependencies": { "react": "*" } }, "sha512-xD725XBhrKUbl7nfcOLujEM0pA7WHAOPGZteybPugtYAuJf39Y0CR5zs2tocqETQmmqY/m9w3Jmjsg4r0qTbcg=="],
 
     "@metascraper/helpers": ["@metascraper/helpers@5.49.5", "", { "dependencies": { "audio-extensions": "0.0.0", "chrono-node": "2.9.0", "condense-whitespace": "~2.0.0", "data-uri-utils": "~1.0.9", "debug-logfmt": "~1.4.6", "entities": "~6.0.1", "file-extension": "~4.0.5", "has-values": "~2.0.1", "image-extensions": "~1.1.0", "is-relative-url": "~3.0.0", "is-uri": "~1.2.11", "iso-639-3": "~2.2.0", "isostring": "0.0.1", "jsdom": "~27.0.0", "lodash": "~4.17.21", "memoize-one": "~6.0.0", "microsoft-capitalize": "~1.0.5", "mime": "3", "normalize-url": "~6.1.0", "re2": "~1.22.1", "smartquotes": "~2.3.2", "tldts": "~7.0.17", "url-regex-safe": "~4.0.0", "video-extensions": "1" } }, "sha512-VbXquXB+U9g84XaazoTHF3MMVqnxBDnEAUfnpRnj7w2GV4imlqxjLgWlfixWtkcuR859mUEszniuxJ/L0NBXyw=="],
 
