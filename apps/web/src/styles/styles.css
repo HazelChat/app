@@ -188,18 +188,18 @@ If you want to use the typography plugin, uncomment the line below.
 
   --sidebar: oklch(0.985 0 0);
   --sidebar-fg: oklch(0.141 0.005 285.823);
-  --sidebar-primary: oklch(0.704 0.14 182.503 / 0.15);
-  --sidebar-primary-fg: oklch(0.511 0.096 186.391);
+  --sidebar-primary: rgb(from var(--color-brand-500) r g b / 15%);
+  --sidebar-primary-fg: var(--color-brand-700);
   --sidebar-accent: oklch(0.92 0.004 286.32);
   --sidebar-accent-fg: oklch(0.141 0.005 285.823);
   --sidebar-border: oklch(0.901 0.006 286.286);
-  --sidebar-ring: oklch(0.6 0.118 184.704);
+  --sidebar-ring: var(--color-brand-500);
 
-  --chart-1: var(--color-teal-600);
-  --chart-2: var(--color-teal-400);
-  --chart-3: var(--color-teal-300);
-  --chart-4: var(--color-teal-200);
-  --chart-5: var(--color-teal-100);
+  --chart-1: var(--color-brand-600);
+  --chart-2: var(--color-brand-400);
+  --chart-3: var(--color-brand-300);
+  --chart-4: var(--color-brand-200);
+  --chart-5: var(--color-brand-100);
 
   --favorite: var(--color-amber-400);
   --favorite-fg: var(--color-amber-600);
@@ -273,18 +273,18 @@ If you want to use the typography plugin, uncomment the line below.
 
   --sidebar: oklch(0.180 0.006 285.885);
   --sidebar-fg: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.704 0.14 182.503 / 0.1);
-  --sidebar-primary-fg: oklch(0.855 0.138 181.071);
+  --sidebar-primary: rgb(from var(--color-brand-500) r g b / 10%);
+  --sidebar-primary-fg: var(--color-brand-300);
   --sidebar-accent: oklch(0.274 0.006 286.033);
   --sidebar-accent-fg: oklch(0.985 0 0);
   --sidebar-border: oklch(0.274 0.006 286.033);
-  --sidebar-ring: oklch(0.6 0.118 184.704);
+  --sidebar-ring: var(--color-brand-500);
 
-  --chart-1: var(--color-teal-700);
-  --chart-2: var(--color-teal-500);
-  --chart-3: var(--color-teal-400);
-  --chart-4: var(--color-teal-300);
-  --chart-5: var(--color-teal-200);
+  --chart-1: var(--color-brand-700);
+  --chart-2: var(--color-brand-500);
+  --chart-3: var(--color-brand-400);
+  --chart-4: var(--color-brand-300);
+  --chart-5: var(--color-brand-200);
 
   --favorite: var(--color-amber-400);
   --favorite-fg: var(--color-amber-300);
