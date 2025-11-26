@@ -164,33 +164,40 @@ export const HttpAuthLive = HttpApiBuilder.group(HazelApi, "auth", (handlers) =>
 					if (workosOrg?.externalId && Option.isSome(user)) {
 						const orgId = workosOrg.externalId as OrganizationId
 
-						// Fetch the user's membership role from WorkOS
-						const workosMembership = yield* workos
-							.call((client) =>
-								client.userManagement.listOrganizationMemberships({
-									organizationId: authResponse.organizationId!,
-									userId: workosUser.id,
-								}),
-							)
-							.pipe(Effect.catchAll(() => Effect.succeed(null)))
-
-						const role = (workosMembership?.data?.[0]?.role?.slug || "member") as
-							| "admin"
-							| "member"
-							| "owner"
-
-						// Upsert membership - idempotent, safe if webhook already created it
-						yield* orgMemberRepo
-							.upsertByOrgAndUser({
-								organizationId: orgId,
-								userId: user.value.id,
-								role,
-								nickname: null,
-								joinedAt: new Date(),
-								invitedBy: null,
-								deletedAt: null,
-							})
+						// Check if membership already exists - if so, skip creation
+						const existingMembership = yield* orgMemberRepo
+							.findByOrgAndUser(orgId, user.value.id)
 							.pipe(Effect.orDie, withSystemActor)
+
+						if (Option.isNone(existingMembership)) {
+							// Membership doesn't exist - fetch role from WorkOS and create it
+							const workosMembership = yield* workos
+								.call((client) =>
+									client.userManagement.listOrganizationMemberships({
+										organizationId: authResponse.organizationId!,
+										userId: workosUser.id,
+									}),
+								)
+								.pipe(Effect.catchAll(() => Effect.succeed(null)))
+
+							const role = (workosMembership?.data?.[0]?.role?.slug || "member") as
+								| "admin"
+								| "member"
+								| "owner"
+
+							// Create the membership (only runs if it doesn't exist)
+							yield* orgMemberRepo
+								.upsertByOrgAndUser({
+									organizationId: orgId,
+									userId: user.value.id,
+									role,
+									nickname: null,
+									joinedAt: new Date(),
+									invitedBy: null,
+									deletedAt: null,
+								})
+								.pipe(Effect.orDie, withSystemActor)
+						}
 					}
 				}
 
