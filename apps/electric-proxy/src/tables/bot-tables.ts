@@ -1,15 +1,7 @@
+import { and, isNull, schema } from "@hazel/db"
 import { Effect, Match, Schema } from "effect"
 import type { AuthenticatedBot } from "../auth/bot-auth"
-
-/**
- * Convert an array of IDs to a SQL IN clause string
- * @param ids - Array of ID strings
- * @returns SQL IN clause string like "('id1','id2','id3')"
- */
-function toSqlInClause(ids: readonly string[]): string {
-	if (ids.length === 0) return "(NULL)"
-	return `('${ids.join("','")}')`
-}
+import { buildWhereClause, inArraySorted, type WhereClauseResult } from "./where-clause-builder"
 
 /**
  * Error thrown when bot table access is denied or where clause cannot be generated
@@ -70,28 +62,55 @@ export function validateBotTable(table: string | null): {
  * Get the WHERE clause for a table based on the authenticated bot.
  * This ensures bots can only access data from channels they're installed in.
  *
+ * Uses Drizzle's QueryBuilder for type-safe WHERE clause generation with
+ * parameterized queries.
+ *
  * @param table - The table name
  * @param bot - The authenticated bot context
- * @returns Effect that succeeds with SQL WHERE clause string or fails with BotTableAccessError
+ * @returns Effect that succeeds with WhereClauseResult or fails with BotTableAccessError
  */
 export function getBotWhereClauseForTable(
 	table: BotAllowedTable,
 	bot: AuthenticatedBot,
-): Effect.Effect<string, BotTableAccessError> {
+): Effect.Effect<WhereClauseResult, BotTableAccessError> {
 	return Match.value(table).pipe(
 		Match.when("messages", () =>
 			// Messages only from channels the bot is a member of
 			Effect.succeed(
-				`"channelId" IN ${toSqlInClause(bot.accessContext.channelIds)} AND "deletedAt" IS NULL`,
+				buildWhereClause(
+					schema.messagesTable,
+					and(
+						inArraySorted(schema.messagesTable.channelId, bot.accessContext.channelIds),
+						isNull(schema.messagesTable.deletedAt),
+					),
+				),
 			),
 		),
+
 		// Future tables can be added here:
 		// Match.when("channels", () =>
-		// 	Effect.succeed(`"id" IN ${toSqlInClause(bot.accessContext.channelIds)} AND "deletedAt" IS NULL`),
+		// 	Effect.succeed(
+		// 		buildWhereClause(
+		// 			schema.channelsTable,
+		// 			and(
+		// 				inArraySorted(schema.channelsTable.id, bot.accessContext.channelIds),
+		// 				isNull(schema.channelsTable.deletedAt),
+		// 			),
+		// 		),
+		// 	),
 		// ),
 		// Match.when("attachments", () =>
-		// 	Effect.succeed(`"channelId" IN ${toSqlInClause(bot.accessContext.channelIds)} AND "deletedAt" IS NULL`),
+		// 	Effect.succeed(
+		// 		buildWhereClause(
+		// 			schema.attachmentsTable,
+		// 			and(
+		// 				inArraySorted(schema.attachmentsTable.channelId, bot.accessContext.channelIds),
+		// 				isNull(schema.attachmentsTable.deletedAt),
+		// 			),
+		// 		),
+		// 	),
 		// ),
+
 		Match.orElse((table) =>
 			Effect.fail(
 				new BotTableAccessError({

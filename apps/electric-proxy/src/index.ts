@@ -6,6 +6,7 @@ import { ProxyConfigLive, ProxyConfigService } from "./config"
 import { type ElectricProxyError, prepareElectricUrl, proxyElectricRequest } from "./proxy/electric-client"
 import { type BotTableAccessError, getBotWhereClauseForTable, validateBotTable } from "./tables/bot-tables"
 import { getWhereClauseForTable, type TableAccessError, validateTable } from "./tables/user-tables"
+import { applyWhereToElectricUrl } from "./tables/where-clause-builder"
 
 // =============================================================================
 // CORS HELPERS
@@ -75,10 +76,14 @@ const handleUserRequest = (request: Request) =>
 		const originUrl = yield* prepareElectricUrl(request.url)
 		originUrl.searchParams.set("table", tableValidation.table!)
 
-		// Generate WHERE clause
-		const whereClause = yield* getWhereClauseForTable(tableValidation.table!, user)
-		yield* Effect.log("Generated WHERE clause", { table: tableValidation.table, whereClause })
-		originUrl.searchParams.set("where", whereClause)
+		// Generate WHERE clause with type-safe Drizzle operators
+		const whereResult = yield* getWhereClauseForTable(tableValidation.table!, user)
+		yield* Effect.log("Generated WHERE clause", {
+			table: tableValidation.table,
+			whereClause: whereResult.whereClause,
+			paramCount: whereResult.params.length,
+		})
+		applyWhereToElectricUrl(originUrl, whereResult)
 
 		// Proxy request to Electric
 		const response = yield* proxyElectricRequest(originUrl)
@@ -206,10 +211,14 @@ const handleBotRequest = (request: Request) =>
 		const originUrl = yield* prepareElectricUrl(request.url)
 		originUrl.searchParams.set("table", tableValidation.table!)
 
-		// Generate WHERE clause
-		const whereClause = yield* getBotWhereClauseForTable(tableValidation.table!, bot)
-		yield* Effect.log("Generated bot WHERE clause", { table: tableValidation.table, whereClause })
-		originUrl.searchParams.set("where", whereClause)
+		// Generate WHERE clause with type-safe Drizzle operators
+		const whereResult = yield* getBotWhereClauseForTable(tableValidation.table!, bot)
+		yield* Effect.log("Generated bot WHERE clause", {
+			table: tableValidation.table,
+			whereClause: whereResult.whereClause,
+			paramCount: whereResult.params.length,
+		})
+		applyWhereToElectricUrl(originUrl, whereResult)
 
 		// Proxy request to Electric
 		const response = yield* proxyElectricRequest(originUrl)
