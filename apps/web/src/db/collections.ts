@@ -14,7 +14,7 @@ import {
 	UserPresenceStatus,
 } from "@hazel/domain/models"
 import { createEffectCollection } from "@hazel/effect-electric-db-collection"
-import { Effect, Schema } from "effect"
+import { Effect } from "effect"
 import { HazelRpcClient } from "~/lib/services/common/rpc-atom-client"
 import { runtime } from "~/lib/services/common/runtime"
 
@@ -35,7 +35,7 @@ export const organizationCollection = createEffectCollection({
 
 		fetchClient: (url, init) => fetch(url, { ...init, credentials: "include" }),
 	},
-	schema: Schema.standardSchemaV1(Organization.Model.json),
+	schema: Organization.Model.json,
 	getKey: (item) => item.id,
 	onUpdate: ({ transaction }) =>
 		Effect.gen(function* () {
@@ -75,7 +75,7 @@ export const invitationCollection = createEffectCollection({
 		},
 		fetchClient: (url, init) => fetch(url, { ...init, credentials: "include" }),
 	},
-	schema: Schema.standardSchemaV1(Invitation.Model.json),
+	schema: Invitation.Model.json,
 	getKey: (item) => item.id,
 	onInsert: ({ transaction }) =>
 		Effect.gen(function* () {
@@ -133,7 +133,7 @@ export const messageCollection = createEffectCollection({
 		},
 		fetchClient: (url, init) => fetch(url, { ...init, credentials: "include" }),
 	},
-	schema: Schema.standardSchemaV1(Message.Model.json),
+	schema: Message.Model.json,
 	getKey: (item) => item.id,
 	onInsert: ({ transaction }) =>
 		Effect.gen(function* () {
@@ -178,7 +178,7 @@ export const messageReactionCollection = createEffectCollection({
 		},
 		fetchClient: (url, init) => fetch(url, { ...init, credentials: "include" }),
 	},
-	schema: Schema.standardSchemaV1(MessageReaction.Model.json),
+	schema: MessageReaction.Model.json,
 	getKey: (item) => item.id,
 	onInsert: ({ transaction }) =>
 		Effect.gen(function* () {
@@ -224,7 +224,7 @@ export const pinnedMessageCollection = createEffectCollection({
 		},
 		fetchClient: (url, init) => fetch(url, { ...init, credentials: "include" }),
 	},
-	schema: Schema.standardSchemaV1(PinnedMessage.Model.json),
+	schema: PinnedMessage.Model.json,
 	getKey: (item) => item.id,
 	onInsert: ({ transaction }) =>
 		Effect.gen(function* () {
@@ -271,7 +271,7 @@ export const notificationCollection = createEffectCollection({
 		},
 		fetchClient: (url, init) => fetch(url, { ...init, credentials: "include" }),
 	},
-	schema: Schema.standardSchemaV1(Notification.Model.json),
+	schema: Notification.Model.json,
 	getKey: (item) => item.id,
 	onInsert: ({ transaction }) =>
 		Effect.gen(function* () {
@@ -316,7 +316,7 @@ export const userCollection = createEffectCollection({
 		},
 		fetchClient: (url, init) => fetch(url, { ...init, credentials: "include" }),
 	},
-	schema: Schema.standardSchemaV1(User.Model.json),
+	schema: User.Model.json,
 	getKey: (item) => item.id,
 	onUpdate: ({ transaction }) =>
 		Effect.gen(function* () {
@@ -353,7 +353,7 @@ export const organizationMemberCollection = createEffectCollection({
 		},
 		fetchClient: (url, init) => fetch(url, { ...init, credentials: "include" }),
 	},
-	schema: Schema.standardSchemaV1(OrganizationMember.Model.json),
+	schema: OrganizationMember.Model.json,
 	getKey: (item) => item.id,
 	onInsert: ({ transaction }) =>
 		Effect.gen(function* () {
@@ -399,7 +399,7 @@ export const channelCollection = createEffectCollection({
 		},
 		fetchClient: (url, init) => fetch(url, { ...init, credentials: "include" }),
 	},
-	schema: Schema.standardSchemaV1(Channel.Model.json),
+	schema: Channel.Model.json,
 	getKey: (item) => item.id,
 	onInsert: ({ transaction }) =>
 		Effect.gen(function* () {
@@ -446,7 +446,7 @@ export const channelMemberCollection = createEffectCollection({
 		},
 		fetchClient: (url, init) => fetch(url, { ...init, credentials: "include" }),
 	},
-	schema: Schema.standardSchemaV1(ChannelMember.Model.json),
+	schema: ChannelMember.Model.json,
 	getKey: (item) => item.id,
 	onInsert: ({ transaction }) =>
 		Effect.gen(function* () {
@@ -492,7 +492,7 @@ export const attachmentCollection = createEffectCollection({
 		},
 		fetchClient: (url, init) => fetch(url, { ...init, credentials: "include" }),
 	},
-	schema: Schema.standardSchemaV1(Attachment.Model.json),
+	schema: Attachment.Model.json,
 	getKey: (item) => item.id,
 	onDelete: ({ transaction }) =>
 		Effect.gen(function* () {
@@ -518,7 +518,7 @@ export const typingIndicatorCollection = createEffectCollection({
 		},
 		fetchClient: (url, init) => fetch(url, { ...init, credentials: "include" }),
 	},
-	schema: Schema.standardSchemaV1(TypingIndicator.Model.json),
+	schema: TypingIndicator.Model.json,
 	getKey: (item) => item.id,
 	onInsert: ({ transaction }) =>
 		Effect.gen(function* () {
@@ -571,7 +571,7 @@ export const userPresenceStatusCollection = createEffectCollection({
 		},
 		fetchClient: (url, init) => fetch(url, { ...init, credentials: "include" }),
 	},
-	schema: Schema.standardSchemaV1(UserPresenceStatus.Model.json),
+	schema: UserPresenceStatus.Model.json,
 	getKey: (item) => item.id,
 	onInsert: ({ transaction }) =>
 		Effect.gen(function* () {

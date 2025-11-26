@@ -4,7 +4,7 @@ import type { Collection, CollectionConfig } from "@tanstack/db"
 import type { ElectricCollectionUtils, Txid } from "@tanstack/electric-db-collection"
 import { electricCollectionOptions } from "@tanstack/electric-db-collection"
 import { createCollection as tanstackCreateCollection } from "@tanstack/react-db"
-import { Effect, type ManagedRuntime } from "effect"
+import { Effect, type ManagedRuntime, Schema } from "effect"
 import { InvalidTxIdError, TxIdTimeoutError } from "./errors"
 import { convertDeleteHandler, convertInsertHandler, convertUpdateHandler } from "./handlers"
 import type { EffectElectricCollectionConfig } from "./types"
@@ -162,7 +162,7 @@ export type EffectCollection<
 
 /**
  * Creates a collection with Effect-native utilities.
- * Combines createCollection + effectElectricCollectionOptions with proper typing.
+ * Accepts Effect Schema directly and converts to StandardSchemaV1 internally.
  *
  * @example
  * ```typescript
@@ -170,7 +170,7 @@ export type EffectCollection<
  *   id: "messages",
  *   runtime: runtime,
  *   shapeOptions: { url: electricUrl, params: { table: "messages" } },
- *   schema: Schema.standardSchemaV1(Message.Model.json),
+ *   schema: Message.Model.json,  // Direct Effect Schema!
  *   getKey: (item) => item.id,
  *   onInsert: ({ transaction }) => Effect.gen(function* () { ... }),
  * })
@@ -178,19 +178,24 @@ export type EffectCollection<
  * // messageCollection.utils.awaitTxIdEffect is properly typed!
  * ```
  */
-export function createEffectCollection<T extends StandardSchemaV1, R>(
-	config: EffectElectricCollectionConfig<
-		InferSchemaOutput<T>,
-		string | number,
-		T,
-		Record<string, never>,
-		R
+export function createEffectCollection<A extends Row<unknown>, I, TRuntime>(
+	config: Omit<
+		EffectElectricCollectionConfig<A, string | number, never, Record<string, never>, TRuntime>,
+		"schema"
 	> & {
-		schema: T
-		runtime: ManagedRuntime.ManagedRuntime<R, unknown>
+		schema: Schema.Schema<A, I>
+		runtime: ManagedRuntime.ManagedRuntime<TRuntime, unknown>
 	},
-): EffectCollection<InferSchemaOutput<T>> {
-	const options = effectElectricCollectionOptions(config)
+): EffectCollection<A> {
+	// Convert Effect Schema to StandardSchemaV1 internally
+	const standardSchema = Schema.standardSchemaV1(config.schema)
+
+	const options = effectElectricCollectionOptions({
+		...config,
+		schema: standardSchema,
+	} as any)
+
+	// biome-ignore lint/suspicious/noExplicitAny: Type compatibility between tanstack/db versions
 	const collection = tanstackCreateCollection(options as any)
-	return collection as unknown as EffectCollection<InferSchemaOutput<T>>
+	return collection as unknown as EffectCollection<A>
 }
