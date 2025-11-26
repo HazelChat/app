@@ -21,7 +21,7 @@
 		"@effect/platform": "catalog:effect",
 		"@effect/platform-bun": "catalog:effect",
 		"@effect/rpc": "catalog:effect",
-		"@electric-sql/client": "^1.1.5",
+		"@electric-sql/client": "^1.2.0",
 		"@hazel/domain": "workspace:*",
 		"effect": "catalog:effect"
 	},

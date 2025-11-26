@@ -1,25 +1,22 @@
 import { Database } from "@hazel/db"
-import { ConfigProvider, Effect, Layer, Redacted } from "effect"
-import { type AuthenticationError, validateSession } from "./auth"
-import { type BotAuthenticationError, validateBotToken } from "./bot-auth"
-import { type BotTableAccessError, getBotWhereClauseForTable, validateBotTable } from "./bot-tables"
-import { prepareElectricUrl, proxyElectricRequest } from "./electric-proxy"
-import { getWhereClauseForTable, type TableAccessError, validateTable } from "./tables"
+import { Effect, Layer, Logger, Runtime } from "effect"
+import { type BotAuthenticationError, validateBotToken } from "./auth/bot-auth"
+import { type AuthenticationError, validateSession } from "./auth/user-auth"
+import { ProxyConfigLive, ProxyConfigService } from "./config"
+import { type ElectricProxyError, prepareElectricUrl, proxyElectricRequest } from "./proxy/electric-client"
+import { type BotTableAccessError, getBotWhereClauseForTable, validateBotTable } from "./tables/bot-tables"
+import { getWhereClauseForTable, type TableAccessError, validateTable } from "./tables/user-tables"
 
 // =============================================================================
-// USER FLOW
+// CORS HELPERS
 // =============================================================================
 
 /**
- * Get CORS headers for response
+ * Get CORS headers for user flow response
  * Note: When using credentials, we must specify exact origin instead of "*"
  */
-function getCorsHeaders(request: Request, allowedOrigin: string): HeadersInit {
-	const requestOrigin = request.headers.get("Origin")
-
-	// Only set Access-Control-Allow-Origin if the request origin matches the allowed origin
+function getUserCorsHeaders(allowedOrigin: string, requestOrigin: string | null): Record<string, string> {
 	const origin = requestOrigin === allowedOrigin ? allowedOrigin : "null"
-
 	return {
 		"Access-Control-Allow-Origin": origin,
 		"Access-Control-Allow-Methods": "GET, DELETE, OPTIONS",
@@ -29,79 +26,66 @@ function getCorsHeaders(request: Request, allowedOrigin: string): HeadersInit {
 	}
 }
 
-/**
- * Main proxy handler using Effect-based flow
- */
-const handleRequest = (request: Request, env: Env) =>
+const BOT_CORS_HEADERS: Record<string, string> = {
+	"Access-Control-Allow-Origin": "*",
+	"Access-Control-Allow-Methods": "GET, DELETE, OPTIONS",
+	"Access-Control-Allow-Headers": "Content-Type, Authorization",
+}
+
+// =============================================================================
+// USER FLOW HANDLER
+// =============================================================================
+
+const handleUserRequest = (request: Request) =>
 	Effect.gen(function* () {
-		const allowedOrigin = env.ALLOWED_ORIGIN || "http://localhost:3000"
+		const config = yield* ProxyConfigService
+		const allowedOrigin = config.allowedOrigin
+		const requestOrigin = request.headers.get("Origin")
+		const corsHeaders = getUserCorsHeaders(allowedOrigin, requestOrigin)
 
 		// Handle CORS preflight
 		if (request.method === "OPTIONS") {
-			return new Response(null, {
-				status: 204,
-				headers: getCorsHeaders(request, allowedOrigin),
-			})
+			return new Response(null, { status: 204, headers: corsHeaders })
 		}
 
-		// Only allow GET and DELETE methods (Electric protocol)
+		// Method check
 		if (request.method !== "GET" && request.method !== "DELETE") {
 			return new Response("Method not allowed", {
 				status: 405,
-				headers: {
-					Allow: "GET, DELETE, OPTIONS",
-					...getCorsHeaders(request, allowedOrigin),
-				},
+				headers: { Allow: "GET, DELETE, OPTIONS", ...corsHeaders },
 			})
 		}
 
-		// Validate configuration
-		if (!env.ELECTRIC_URL) {
-			return new Response("ELECTRIC_URL not configured", {
-				status: 500,
-				headers: getCorsHeaders(request, allowedOrigin),
-			})
-		}
-
-		// Authenticate user - Config validation happens inside validateSession
+		// Authenticate user
 		const user = yield* validateSession(request)
 
 		// Extract and validate table parameter
-		const searchParams = new URL(request.url).searchParams
-		const tableParam = searchParams.get("table")
-
+		const url = new URL(request.url)
+		const tableParam = url.searchParams.get("table")
 		const tableValidation = validateTable(tableParam)
+
 		if (!tableValidation.valid) {
-			return new Response(
-				JSON.stringify({
-					error: tableValidation.error,
-				}),
-				{
-					status: tableParam ? 403 : 400,
-					headers: {
-						"Content-Type": "application/json",
-						...getCorsHeaders(request, allowedOrigin),
-					},
-				},
-			)
+			return new Response(JSON.stringify({ error: tableValidation.error }), {
+				status: tableParam ? 403 : 400,
+				headers: { "Content-Type": "application/json", ...corsHeaders },
+			})
 		}
 
-		// Prepare Electric URL and proxy the request
-		const originUrl = prepareElectricUrl(request.url)
+		// Prepare Electric URL
+		const originUrl = yield* prepareElectricUrl(request.url)
 		originUrl.searchParams.set("table", tableValidation.table!)
 
+		// Generate WHERE clause
 		const whereClause = yield* getWhereClauseForTable(tableValidation.table!, user)
-		console.log("whereClause", whereClause)
-
-		// // Always set where clause (no nullable check needed)
+		yield* Effect.log("Generated WHERE clause", { table: tableValidation.table, whereClause })
 		originUrl.searchParams.set("where", whereClause)
 
 		// Proxy request to Electric
-		const response = yield* Effect.promise(() => proxyElectricRequest(originUrl))
+		const response = yield* proxyElectricRequest(originUrl)
 
 		// Add CORS headers to response
 		const headers = new Headers(response.headers)
-		for (const [key, value] of Object.entries(getCorsHeaders(request, allowedOrigin))) {
+		for (const [key, value] of Object.entries(corsHeaders)) {
 			headers.set(key, value)
 		}
 
@@ -110,96 +94,92 @@ const handleRequest = (request: Request, env: Env) =>
 			statusText: response.statusText,
 			headers,
 		})
-	})
-
-/**
- * User fetch handler
- */
-async function handleUserFetch(request: Request, env: Env): Promise<Response> {
-	const allowedOrigin = env.ALLOWED_ORIGIN || "http://localhost:3000"
-
-	// Create Database layer
-	const DatabaseLive = Layer.unwrapEffect(
-		Effect.gen(function* () {
-			return Database.layer({
-				url: Redacted.make(env.HYPERDRIVE.connectionString),
-				ssl: false,
-			})
-		}),
-	)
-
-	// Run Effect pipeline
-	const program = handleRequest(request, env).pipe(
-		Effect.provide(DatabaseLive),
+	}).pipe(
+		// Error handling
 		Effect.catchTag("AuthenticationError", (error: AuthenticationError) =>
-			Effect.succeed(
-				new Response(
+			Effect.gen(function* () {
+				const config = yield* ProxyConfigService
+				const requestOrigin = request.headers.get("Origin")
+				yield* Effect.logInfo("Authentication failed", { error: error.message, detail: error.detail })
+				return new Response(
 					JSON.stringify({
 						error: error.message,
 						detail: error.detail,
+						timestamp: new Date().toISOString(),
+						hint: "Check if session cookie is present and valid",
 					}),
 					{
 						status: 401,
 						headers: {
 							"Content-Type": "application/json",
-							...getCorsHeaders(request, allowedOrigin),
+							...getUserCorsHeaders(config.allowedOrigin, requestOrigin),
 						},
 					},
-				),
-			),
+				)
+			}),
 		),
 		Effect.catchTag("TableAccessError", (error: TableAccessError) =>
-			Effect.succeed(
-				new Response(
-					JSON.stringify({
-						error: error.message,
-						detail: error.detail,
-						table: error.table,
-					}),
+			Effect.gen(function* () {
+				const config = yield* ProxyConfigService
+				const requestOrigin = request.headers.get("Origin")
+				yield* Effect.logError("Table access error", { error: error.message, table: error.table })
+				return new Response(
+					JSON.stringify({ error: error.message, detail: error.detail, table: error.table }),
 					{
 						status: 500,
 						headers: {
 							"Content-Type": "application/json",
-							...getCorsHeaders(request, allowedOrigin),
+							...getUserCorsHeaders(config.allowedOrigin, requestOrigin),
 						},
 					},
-				),
-			),
+				)
+			}),
+		),
+		Effect.catchTag("ElectricProxyError", (error: ElectricProxyError) =>
+			Effect.gen(function* () {
+				const config = yield* ProxyConfigService
+				const requestOrigin = request.headers.get("Origin")
+				yield* Effect.logError("Electric proxy error", { error: error.message })
+				return new Response(JSON.stringify({ error: error.message, detail: error.detail }), {
+					status: 502,
+					headers: {
+						"Content-Type": "application/json",
+						...getUserCorsHeaders(config.allowedOrigin, requestOrigin),
+					},
+				})
+			}),
 		),
 		Effect.catchAll((error) =>
-			Effect.succeed(
-				new Response(
-					JSON.stringify({
-						error: "Internal server error",
-						detail: String(error),
-					}),
+			Effect.gen(function* () {
+				const config = yield* ProxyConfigService
+				const requestOrigin = request.headers.get("Origin")
+				yield* Effect.logError("Unexpected error in user flow", { error: String(error) })
+				return new Response(
+					JSON.stringify({ error: "Internal server error", detail: String(error) }),
 					{
 						status: 500,
 						headers: {
 							"Content-Type": "application/json",
-							...getCorsHeaders(request, allowedOrigin),
+							...getUserCorsHeaders(config.allowedOrigin, requestOrigin),
 						},
 					},
-				),
-			),
+				)
+			}),
 		),
 	)
 
-	return await Effect.runPromise(program.pipe(Effect.withConfigProvider(ConfigProvider.fromJson(env))))
-}
-
 // =============================================================================
-// BOT FLOW (Completely Separate)
+// BOT FLOW HANDLER
 // =============================================================================
 
-const BOT_CORS_HEADERS = {
-	"Access-Control-Allow-Origin": "*",
-	"Access-Control-Allow-Methods": "GET, DELETE, OPTIONS",
-	"Access-Control-Allow-Headers": "Content-Type, Authorization",
-}
-
-const handleBotRequest = (request: Request, env: Env) =>
+const handleBotRequest = (request: Request) =>
 	Effect.gen(function* () {
+		// Handle CORS preflight
+		if (request.method === "OPTIONS") {
+			return new Response(null, { status: 204, headers: BOT_CORS_HEADERS })
+		}
+
+		// Method check
 		if (request.method !== "GET" && request.method !== "DELETE") {
 			return new Response("Method not allowed", {
 				status: 405,
@@ -207,16 +187,14 @@ const handleBotRequest = (request: Request, env: Env) =>
 			})
 		}
 
-		if (!env.ELECTRIC_URL) {
-			return new Response("ELECTRIC_URL not configured", { status: 500, headers: BOT_CORS_HEADERS })
-		}
-
+		// Authenticate bot
 		const bot = yield* validateBotToken(request)
 
-		const searchParams = new URL(request.url).searchParams
-		const tableParam = searchParams.get("table")
-
+		// Extract and validate table parameter
+		const url = new URL(request.url)
+		const tableParam = url.searchParams.get("table")
 		const tableValidation = validateBotTable(tableParam)
+
 		if (!tableValidation.valid) {
 			return new Response(JSON.stringify({ error: tableValidation.error }), {
 				status: tableParam ? 403 : 400,
@@ -224,82 +202,159 @@ const handleBotRequest = (request: Request, env: Env) =>
 			})
 		}
 
-		const originUrl = prepareElectricUrl(request.url)
+		// Prepare Electric URL
+		const originUrl = yield* prepareElectricUrl(request.url)
 		originUrl.searchParams.set("table", tableValidation.table!)
 
+		// Generate WHERE clause
 		const whereClause = yield* getBotWhereClauseForTable(tableValidation.table!, bot)
-		console.log("bot whereClause", whereClause)
+		yield* Effect.log("Generated bot WHERE clause", { table: tableValidation.table, whereClause })
 		originUrl.searchParams.set("where", whereClause)
 
-		const response = yield* Effect.promise(() => proxyElectricRequest(originUrl))
+		// Proxy request to Electric
+		const response = yield* proxyElectricRequest(originUrl)
 
+		// Add CORS headers to response
 		const headers = new Headers(response.headers)
 		for (const [key, value] of Object.entries(BOT_CORS_HEADERS)) {
 			headers.set(key, value)
 		}
 
-		return new Response(response.body, { status: response.status, statusText: response.statusText, headers })
-	})
-
-async function handleBotFetch(request: Request, env: Env): Promise<Response> {
-	if (request.method === "OPTIONS") {
-		return new Response(null, { status: 204, headers: BOT_CORS_HEADERS })
-	}
-
-	const DatabaseLive = Layer.unwrapEffect(
-		Effect.gen(function* () {
-			return Database.layer({
-				url: Redacted.make(env.HYPERDRIVE.connectionString),
-				ssl: false,
-			})
-		}),
-	)
-
-	const program = handleBotRequest(request, env).pipe(
-		Effect.provide(DatabaseLive),
+		return new Response(response.body, {
+			status: response.status,
+			statusText: response.statusText,
+			headers,
+		})
+	}).pipe(
+		// Error handling
 		Effect.catchTag("BotAuthenticationError", (error: BotAuthenticationError) =>
-			Effect.succeed(
-				new Response(JSON.stringify({ error: error.message, detail: error.detail }), {
-					status: 401,
-					headers: { "Content-Type": "application/json", ...BOT_CORS_HEADERS },
-				}),
-			),
+			Effect.gen(function* () {
+				yield* Effect.logInfo("Bot authentication failed", {
+					error: error.message,
+					detail: error.detail,
+				})
+				return new Response(
+					JSON.stringify({
+						error: error.message,
+						detail: error.detail,
+						timestamp: new Date().toISOString(),
+						hint: "Check if Authorization header contains valid Bearer token",
+					}),
+					{
+						status: 401,
+						headers: { "Content-Type": "application/json", ...BOT_CORS_HEADERS },
+					},
+				)
+			}),
 		),
 		Effect.catchTag("BotTableAccessError", (error: BotTableAccessError) =>
-			Effect.succeed(
-				new Response(JSON.stringify({ error: error.message, detail: error.detail, table: error.table }), {
-					status: 500,
+			Effect.gen(function* () {
+				yield* Effect.logError("Bot table access error", { error: error.message, table: error.table })
+				return new Response(
+					JSON.stringify({ error: error.message, detail: error.detail, table: error.table }),
+					{ status: 500, headers: { "Content-Type": "application/json", ...BOT_CORS_HEADERS } },
+				)
+			}),
+		),
+		Effect.catchTag("ElectricProxyError", (error: ElectricProxyError) =>
+			Effect.gen(function* () {
+				yield* Effect.logError("Electric proxy error (bot)", { error: error.message })
+				return new Response(JSON.stringify({ error: error.message, detail: error.detail }), {
+					status: 502,
 					headers: { "Content-Type": "application/json", ...BOT_CORS_HEADERS },
-				}),
-			),
+				})
+			}),
 		),
 		Effect.catchAll((error) =>
-			Effect.succeed(
-				new Response(JSON.stringify({ error: "Internal server error", detail: String(error) }), {
-					status: 500,
-					headers: { "Content-Type": "application/json", ...BOT_CORS_HEADERS },
-				}),
-			),
+			Effect.gen(function* () {
+				yield* Effect.logError("Unexpected error in bot flow", { error: String(error) })
+				return new Response(
+					JSON.stringify({ error: "Internal server error", detail: String(error) }),
+					{
+						status: 500,
+						headers: { "Content-Type": "application/json", ...BOT_CORS_HEADERS },
+					},
+				)
+			}),
 		),
 	)
 
-	return await Effect.runPromise(program.pipe(Effect.withConfigProvider(ConfigProvider.fromJson(env))))
-}
-
 // =============================================================================
-// MAIN ENTRY POINT
+// LAYERS
 // =============================================================================
 
-export default {
-	async fetch(request: Request, env: Env): Promise<Response> {
-		const url = new URL(request.url)
+const DatabaseLive = Layer.unwrapEffect(
+	Effect.gen(function* () {
+		const config = yield* ProxyConfigService
+		yield* Effect.log("Connecting to database", { isDev: config.isDev })
+		return Database.layer({
+			url: config.databaseUrl,
+			ssl: !config.isDev,
+		})
+	}),
+)
 
-		// Bot requests go to separate handler
-		if (url.pathname === "/bot/v1/shape") {
-			return handleBotFetch(request, env)
-		}
+const LoggerLive = Layer.unwrapEffect(
+	Effect.gen(function* () {
+		const config = yield* ProxyConfigService
+		return config.isDev ? Logger.pretty : Logger.structured
+	}),
+).pipe(Layer.provide(ProxyConfigLive))
 
-		// All other requests use user handler
-		return handleUserFetch(request, env)
-	},
-} satisfies ExportedHandler<Env>
+const MainLive = DatabaseLive.pipe(Layer.provideMerge(ProxyConfigLive), Layer.provideMerge(LoggerLive))
+
+// =============================================================================
+// MAIN
+// =============================================================================
+
+const main = Effect.gen(function* () {
+	const config = yield* ProxyConfigService
+
+	yield* Effect.log("Starting Electric Proxy (Bun)", {
+		port: config.port,
+		electricUrl: config.electricUrl,
+		allowedOrigin: config.allowedOrigin,
+	})
+
+	// Create Effect runtime for request handlers
+	const runtime = yield* Effect.runtime<ProxyConfigService | Database.Database>()
+
+	// Start Bun server
+	const server = Bun.serve({
+		port: config.port,
+		hostname: "::",
+		idleTimeout: 120,
+		fetch: async (request: Request) => {
+			const url = new URL(request.url)
+
+			// Health check
+			if (url.pathname === "/health") {
+				return new Response("OK", { status: 200 })
+			}
+
+			// Bot requests
+			if (url.pathname === "/bot/v1/shape") {
+				return Runtime.runPromise(runtime)(handleBotRequest(request))
+			}
+
+			// User requests (default)
+			if (url.pathname === "/v1/shape") {
+				return Runtime.runPromise(runtime)(handleUserRequest(request))
+			}
+
+			// Not found
+			return new Response("Not Found", { status: 404 })
+		},
+	})
+
+	yield* Effect.log(`Server listening on http://localhost:${server.port}`)
+
+	// Keep the server running
+	yield* Effect.never
+})
+
+// Run with layers
+Effect.runPromise(main.pipe(Effect.provide(MainLive))).catch((error) => {
+	console.error("Failed to start server:", error)
+	process.exit(1)
+})

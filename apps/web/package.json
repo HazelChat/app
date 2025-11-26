@@ -19,7 +19,7 @@
 		"@effect/platform": "catalog:effect",
 		"@effect/platform-browser": "catalog:effect",
 		"@effect/rpc": "catalog:effect",
-		"@electric-sql/client": "^1.1.5",
+		"@electric-sql/client": "^1.2.0",
 		"@fontsource/inter": "^5.2.8",
 		"@hazel/backend": "workspace:*",
 		"@hazel/db": "workspace:*",
