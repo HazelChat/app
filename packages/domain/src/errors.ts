@@ -61,6 +61,17 @@ export class DmChannelAlreadyExistsError extends Schema.TaggedError<DmChannelAlr
 	}),
 ) {}
 
+export class NotFoundError extends Schema.TaggedError<NotFoundError>("NotFoundError")(
+	"NotFoundError",
+	{
+		message: Schema.String,
+		detail: Schema.optional(Schema.String),
+	},
+	HttpApiSchema.annotations({
+		status: 404,
+	}),
+) {}
+
 export function withRemapDbErrors<R, E extends { _tag: string }, A>(
 	entityType: string,
 	action: "update" | "create" | "delete" | "select",

@@ -1,6 +1,7 @@
 import { HttpApi, OpenApi } from "@effect/platform"
 import { AttachmentGroup } from "./attachments"
 import { AuthGroup } from "./auth"
+import { MessageHttpGroup } from "./messages"
 import { MockDataGroup } from "./mock-data"
 import { PresencePublicGroup } from "./presence"
 import { RootGroup } from "./root"
@@ -11,6 +12,7 @@ export class HazelApi extends HttpApi.make("HazelApp")
 	.add(PresencePublicGroup)
 	.add(RootGroup)
 	.add(AuthGroup)
+	.add(MessageHttpGroup)
 	.add(WebhookGroup)
 	.add(MockDataGroup)
 	.annotateContext(

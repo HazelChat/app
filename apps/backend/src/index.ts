@@ -48,6 +48,7 @@ import { SessionManager } from "./services/session-manager"
 import { WorkOS } from "./services/workos"
 import { WorkOSSync } from "./services/workos-sync"
 import { WorkOSWebhookVerifier } from "./services/workos-webhook"
+import { MessageService } from "./services/message"
 
 export { HazelApi }
 
@@ -118,7 +119,7 @@ const PolicyLive = Layer.mergeAll(
 	UserPresenceStatusPolicy.Default,
 )
 
-const MainLive = Layer.mergeAll(
+const CoreLive = Layer.mergeAll(
 	RepoLive,
 	PolicyLive,
 	MockDataGenerator.Default,
@@ -128,19 +129,9 @@ const MainLive = Layer.mergeAll(
 	WorkOSWebhookVerifier.Default,
 	DatabaseLive,
 	MultipartUpload.layerWithoutS3Service,
-).pipe(
-	Layer.provide(
-		S3.layer({
-			region: "auto",
-			endpoint: process.env.R2_ENDPOINT!,
-			credentials: {
-				accessKeyId: process.env.R2_ACCESS_KEY_ID!,
-				secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
-			},
-		}),
-	),
-	Layer.provideMerge(FetchHttpClient.layer),
 )
+
+const MainLive = MessageService.Default.pipe(Layer.provideMerge(CoreLive))
 
 HttpLayerRouter.serve(AllRoutes).pipe(
 	HttpMiddleware.withTracerDisabledWhen(
@@ -163,6 +154,17 @@ HttpLayerRouter.serve(AllRoutes).pipe(
 			}),
 		),
 	),
+	Layer.provide(
+		S3.layer({
+			region: "auto",
+			endpoint: process.env.R2_ENDPOINT!,
+			credentials: {
+				accessKeyId: process.env.R2_ACCESS_KEY_ID!,
+				secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
+			},
+		}),
+	),
+	Layer.provideMerge(FetchHttpClient.layer),
 	Layer.launch,
 	BunRuntime.runMain,
 )
