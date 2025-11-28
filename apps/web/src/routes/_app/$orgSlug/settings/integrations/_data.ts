@@ -111,6 +111,7 @@ export const integrations: Integration[] = [
 			"Connect Figma to embed design previews directly in your conversations. Share frames, components, and prototypes with rich previews that keep everyone aligned on design decisions.",
 		logoDomain: "figma.com",
 		brandColor: "#F24E1E",
+		logoType: "icon",
 		category: "productivity",
 		features: ["Embed design previews", "Share specific frames", "Comment sync", "Version tracking"],
 		configOptions: [

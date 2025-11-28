@@ -243,7 +243,7 @@ function DisconnectedState({
 				) : (
 					<>
 						<img
-							src={getBrandfetchIcon(integration.logoDomain, { theme: "light" })}
+							src={getBrandfetchIcon(integration.logoDomain, { theme: "light", type: integration.logoType })}
 							alt=""
 							className="size-4 rounded object-contain"
 						/>
