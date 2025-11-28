@@ -1,13 +1,15 @@
-import { Result, useAtomSet, useAtomValue } from "@effect-atom/atom-react"
+import { useAtomSet } from "@effect-atom/atom-react"
 import type { IntegrationConnection } from "@hazel/domain/models"
 import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router"
 import { Exit } from "effect"
 import { useState } from "react"
 import { Button } from "~/components/ui/button"
+import { useIntegrationConnection } from "~/db/hooks"
 import { Input, InputGroup } from "~/components/ui/input"
 import { SectionHeader } from "~/components/ui/section-header"
 import { SectionLabel } from "~/components/ui/section-label"
 import { Switch, SwitchLabel } from "~/components/ui/switch"
+import { useAuth } from "~/lib/auth"
 import { HazelApiClient } from "~/lib/services/common/atom-client"
 import {
 	type ConfigOption,
@@ -31,15 +33,15 @@ export const Route = createFileRoute("/_app/$orgSlug/settings/integrations/$inte
 function IntegrationConfigPage() {
 	const { orgSlug, integrationId } = Route.useParams()
 	const navigate = useNavigate()
+	const { user } = useAuth()
 	const integration = getIntegrationById(integrationId)
 	const [isConnecting, setIsConnecting] = useState(false)
 	const [isDisconnecting, setIsDisconnecting] = useState(false)
 
-	// Fetch connection status from API
-	const statusResult = useAtomValue(
-		HazelApiClient.query("integrations", "getConnectionStatus", {
-			path: { provider: integrationId as IntegrationProvider },
-		}),
+	// Query connection from TanStack DB collection (real-time sync via Electric)
+	const { connection, isConnected } = useIntegrationConnection(
+		user?.organizationId ?? null,
+		integrationId as IntegrationProvider,
 	)
 
 	// Mutations for OAuth flow and disconnect
@@ -54,14 +56,10 @@ function IntegrationConfigPage() {
 		return null
 	}
 
-	// Get connection status from API result
-	const status = Result.getOrElse(statusResult, () => null)
-	const isConnected = status?.connected ?? false
-	const externalAccountName = status?.externalAccountName ?? null
+	const externalAccountName = connection?.externalAccountName ?? null
 
 	const handleConnect = async () => {
 		setIsConnecting(true)
-		console.log("xd", integrationId)
 		const exit = await getOAuthUrl({
 			path: { provider: integrationId as IntegrationProvider },
 		})

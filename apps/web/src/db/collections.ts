@@ -2,6 +2,7 @@ import {
 	Attachment,
 	Channel,
 	ChannelMember,
+	IntegrationConnection,
 	Invitation,
 	Message,
 	MessageReaction,
@@ -597,4 +598,22 @@ export const userPresenceStatusCollection = createEffectCollection({
 
 			return { txid: results.transactionId }
 		}),
+})
+
+export const integrationConnectionCollection = createEffectCollection({
+	id: "integration_connections",
+	// syncMode: "on-demand",
+	runtime: runtime,
+	shapeOptions: {
+		url: electricUrl,
+		params: {
+			table: "integration_connections",
+		},
+		parser: {
+			timestamptz: (date) => new Date(date),
+		},
+		fetchClient: (url, init) => fetch(url, { ...init, credentials: "include" }),
+	},
+	schema: IntegrationConnection.Model.json,
+	getKey: (item) => item.id,
 })

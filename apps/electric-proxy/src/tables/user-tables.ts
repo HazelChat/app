@@ -44,6 +44,9 @@ export const ALLOWED_TABLES = [
 
 	// Bot tables
 	"bots",
+
+	// Integration tables
+	"integration_connections",
 ] as const
 
 export type AllowedTable = (typeof ALLOWED_TABLES)[number]
@@ -282,6 +285,21 @@ export function getWhereClauseForTable(
 				params: [true, user.internalUserId, ...coOrgIds],
 			} satisfies WhereClauseResult)
 		}),
+
+		// ===========================================
+		// Integration tables
+		// ===========================================
+
+		Match.when("integration_connections", () =>
+			// Integration connections for organizations the user belongs to
+			Effect.succeed(
+				buildInClauseWithDeletedAt(
+					schema.integrationConnectionsTable.organizationId,
+					user.accessContext.organizationIds,
+					schema.integrationConnectionsTable.deletedAt,
+				),
+			),
+		),
 
 		// ===========================================
 		// Fallback for unhandled tables

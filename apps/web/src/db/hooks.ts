@@ -1,8 +1,14 @@
-import type { Channel, ChannelMember, User } from "@hazel/domain/models"
-import type { ChannelId, MessageId } from "@hazel/schema"
-import { eq, useLiveQuery } from "@tanstack/react-db"
+import type { Channel, ChannelMember, IntegrationConnection, User } from "@hazel/domain/models"
+import type { ChannelId, MessageId, OrganizationId } from "@hazel/schema"
+import { and, eq, isNull, useLiveQuery } from "@tanstack/react-db"
 import { useAuth } from "~/lib/auth"
-import { attachmentCollection, channelCollection, messageCollection, userCollection } from "./collections"
+import {
+	attachmentCollection,
+	channelCollection,
+	integrationConnectionCollection,
+	messageCollection,
+	userCollection,
+} from "./collections"
 import { channelMemberWithUserCollection } from "./materialized-collections"
 
 export const useMessage = (messageId: MessageId) => {
@@ -115,5 +121,45 @@ export const useAttachments = (messageId: MessageId) => {
 	return {
 		attachments: attachments || [],
 		rest,
+	}
+}
+
+/**
+ * Query integration connection by organization and provider.
+ * Returns the active connection if one exists.
+ */
+export const useIntegrationConnection = (
+	organizationId: OrganizationId | null,
+	provider: IntegrationConnection.IntegrationProvider,
+) => {
+	const { data, ...rest } = useLiveQuery(
+		(q) =>
+			q
+				.from({ connection: integrationConnectionCollection })
+				.where(({ connection }) =>
+					and(
+						eq(connection.organizationId, organizationId ?? ("" as OrganizationId)),
+						eq(connection.provider, provider),
+						isNull(connection.deletedAt),
+					),
+				),
+		[organizationId, provider],
+	)
+
+	// If no organizationId, return empty result
+	if (!organizationId) {
+		return {
+			connection: null,
+			isConnected: false,
+			...rest,
+		}
+	}
+
+	const connection = data?.[0] ?? null
+
+	return {
+		connection,
+		isConnected: connection?.status === "active",
+		...rest,
 	}
 }
