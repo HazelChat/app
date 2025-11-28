@@ -1,7 +1,7 @@
 # Today
-- make sure electric proxy is setup correctly for on demand, live + progressive
-- add helper for status color for badge and dot
 - fix channel creation not actually appearing in the channel list
+- fix status doesn't seem to realy work someone is marked as away event though offline
+- fix status beign shown as online in sidebar even when offline/away
 
 
 # Later 
