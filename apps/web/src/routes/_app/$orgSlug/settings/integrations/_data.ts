@@ -1,0 +1,182 @@
+export type ConfigOption = {
+	id: string
+	label: string
+	description: string
+	type: "toggle" | "input" | "select"
+	placeholder?: string
+}
+
+export type Integration = {
+	id: string
+	name: string
+	description: string
+	fullDescription: string
+	logoDomain: string
+	logoType?: "symbol" | "icon"
+	brandColor: string
+	category: string
+	features: string[]
+	configOptions: ConfigOption[]
+}
+
+// Helper to generate Brandfetch CDN URLs
+export const getBrandfetchIcon = (
+	domain: string,
+	options: { theme?: "light" | "dark"; size?: number; type?: "symbol" | "icon" } = {},
+): string => {
+	const { theme = "dark", size = 512, type = "symbol" } = options
+	return `https://cdn.brandfetch.io/${domain}/w/${size}/h/${size}/theme/${theme}/${type}`
+}
+
+export const integrations: Integration[] = [
+	{
+		id: "linear",
+		name: "Linear",
+		description: "Streamline software projects, sprints, and bug tracking.",
+		fullDescription:
+			"Connect Linear to automatically sync issues, track progress, and keep your team aligned. Create issues directly from conversations and link existing tickets for seamless project management.",
+		logoDomain: "linear.app",
+		brandColor: "#5E6AD2",
+		category: "developer-tools",
+		features: [
+			"Create issues from messages",
+			"Auto-link Linear tickets",
+			"Sync issue status updates",
+			"Browse and search issues",
+		],
+		configOptions: [
+			{
+				id: "auto-link",
+				label: "Auto-link issues",
+				description: "Automatically detect and link Linear issue IDs in messages",
+				type: "toggle",
+			},
+			{
+				id: "notifications",
+				label: "Status notifications",
+				description: "Receive notifications when linked issue statuses change",
+				type: "toggle",
+			},
+			{
+				id: "default-team",
+				label: "Default team",
+				description: "Team to use when creating new issues",
+				type: "input",
+				placeholder: "Select a team...",
+			},
+		],
+	},
+	{
+		id: "github",
+		name: "GitHub",
+		description: "Link pull requests and automate workflows.",
+		fullDescription:
+			"Integrate GitHub to link repositories, track pull requests, and receive notifications about code changes. Streamline your development workflow with automatic PR updates and issue tracking.",
+		logoDomain: "github.com",
+		brandColor: "#24292F",
+		category: "developer-tools",
+		features: [
+			"Link pull requests",
+			"Track code reviews",
+			"Automated notifications",
+			"Repository browsing",
+		],
+		configOptions: [
+			{
+				id: "auto-link-prs",
+				label: "Auto-link PRs",
+				description: "Automatically detect and link GitHub PR URLs in messages",
+				type: "toggle",
+			},
+			{
+				id: "pr-notifications",
+				label: "PR notifications",
+				description: "Receive notifications for PR status changes",
+				type: "toggle",
+			},
+			{
+				id: "default-repo",
+				label: "Default repository",
+				description: "Repository to use for quick actions",
+				type: "input",
+				placeholder: "owner/repository",
+			},
+		],
+	},
+	{
+		id: "figma",
+		name: "Figma",
+		description: "Embed file previews in projects.",
+		fullDescription:
+			"Connect Figma to embed design previews directly in your conversations. Share frames, components, and prototypes with rich previews that keep everyone aligned on design decisions.",
+		logoDomain: "figma.com",
+		brandColor: "#F24E1E",
+		category: "productivity",
+		features: ["Embed design previews", "Share specific frames", "Comment sync", "Version tracking"],
+		configOptions: [
+			{
+				id: "auto-preview",
+				label: "Auto-preview links",
+				description: "Automatically generate previews for Figma links",
+				type: "toggle",
+			},
+			{
+				id: "comment-sync",
+				label: "Comment sync",
+				description: "Sync Figma comments to conversations",
+				type: "toggle",
+			},
+		],
+	},
+	{
+		id: "notion",
+		name: "Notion",
+		description: "Embed notion pages and notes in projects.",
+		fullDescription:
+			"Link your Notion workspace to embed pages, databases, and documents directly in conversations. Keep documentation accessible and up-to-date without switching contexts.",
+		logoDomain: "notion.so",
+		logoType: "icon",
+		brandColor: "#000000",
+		category: "productivity",
+		features: [
+			"Embed pages and databases",
+			"Search workspace content",
+			"Real-time sync",
+			"Rich previews",
+		],
+		configOptions: [
+			{
+				id: "auto-preview",
+				label: "Auto-preview links",
+				description: "Automatically generate previews for Notion links",
+				type: "toggle",
+			},
+			{
+				id: "search-enabled",
+				label: "Workspace search",
+				description: "Enable searching Notion from within conversations",
+				type: "toggle",
+			},
+			{
+				id: "default-workspace",
+				label: "Default workspace",
+				description: "Workspace to search by default",
+				type: "input",
+				placeholder: "Select workspace...",
+			},
+		],
+	},
+]
+
+export const categories = [
+	{ id: "all", label: "View all" },
+	{ id: "developer-tools", label: "Developer tools" },
+	{ id: "communication", label: "Communication" },
+	{ id: "productivity", label: "Productivity" },
+]
+
+export const getIntegrationById = (id: string): Integration | undefined => {
+	return integrations.find((i) => i.id === id)
+}
+
+export const validIntegrationIds = integrations.map((i) => i.id)
