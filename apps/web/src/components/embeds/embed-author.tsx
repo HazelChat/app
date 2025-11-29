@@ -8,7 +8,7 @@ export interface EmbedAuthorProps {
 	/** URL for the author's icon/logo */
 	iconUrl?: string
 	/** Author/source name to display */
-	name: string
+	name: ReactNode
 	/** Optional URL to link the author name */
 	url?: string
 	/** Additional content to render on the right side (e.g., status badge) */

@@ -17,6 +17,10 @@ query GetIssue($issueId: String!) {
     title
     description
     url
+    team {
+      name
+      key
+    }
     state {
       id
       name
@@ -39,6 +43,12 @@ query GetIssue($issueId: String!) {
   }
 }
 `
+
+// Schema for Linear team
+export const LinearTeam = Schema.Struct({
+	name: Schema.String,
+	key: Schema.String,
+})
 
 // Schema for Linear issue state
 export const LinearIssueState = Schema.Struct({
@@ -68,6 +78,7 @@ export const LinearIssue = Schema.Struct({
 	title: Schema.String,
 	description: Schema.NullOr(Schema.String),
 	url: Schema.String,
+	teamName: Schema.String,
 	state: Schema.NullOr(LinearIssueState),
 	assignee: Schema.NullOr(LinearIssueAssignee),
 	priority: Schema.Number,
@@ -195,6 +206,7 @@ export const fetchLinearIssue = (
 			title: issue.title,
 			description: issue.description ?? null,
 			url: issue.url,
+			teamName: issue.team?.name ?? "Linear",
 			state: issue.state
 				? {
 						id: issue.state.id,

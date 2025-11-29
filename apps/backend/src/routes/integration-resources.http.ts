@@ -82,6 +82,7 @@ export const HttpIntegrationResourceLive = HttpApiBuilder.group(
 					title: issue.title,
 					description: issue.description,
 					url: issue.url,
+					teamName: issue.teamName,
 					state: issue.state,
 					assignee: issue.assignee,
 					priority: issue.priority,

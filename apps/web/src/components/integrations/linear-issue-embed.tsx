@@ -242,7 +242,13 @@ export function LinearIssueEmbed({ url }: LinearIssueEmbedProps) {
 		<Embed accentColor={theme.color} url={url} className="group">
 			<Embed.Author
 				iconUrl={theme.iconUrl}
-				name={issue.identifier}
+				name={
+					<span className="flex items-center gap-1.5">
+						<span className="text-muted-fg">{issue.teamName}</span>
+						<span className="text-muted-fg/50">/</span>
+						<span>{issue.identifier}</span>
+					</span>
+				}
 				trailing={issue.state && <StatusBadge name={issue.state.name} color={issue.state.color} />}
 			/>
 			<Embed.Body title={issue.title} description={issue.description} />

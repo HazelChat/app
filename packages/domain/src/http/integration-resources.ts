@@ -37,6 +37,7 @@ export class LinearIssueResourceResponse extends Schema.Class<LinearIssueResourc
 	title: Schema.String,
 	description: Schema.NullOr(Schema.String),
 	url: Schema.String,
+	teamName: Schema.String,
 	state: Schema.NullOr(LinearIssueStateResponse),
 	assignee: Schema.NullOr(LinearIssueAssigneeResponse),
 	priority: Schema.Number,
