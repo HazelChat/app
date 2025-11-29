@@ -1,9 +1,12 @@
+import type { IntegrationConnection } from "@hazel/domain/models"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { useState } from "react"
 import IconPlus from "~/components/icons/icon-plus"
 import { Button } from "~/components/ui/button"
 import { SectionHeader } from "~/components/ui/section-header"
 import { Tab, TabList, Tabs } from "~/components/ui/tabs"
+import { useIntegrationConnections } from "~/db/hooks"
+import { useAuth } from "~/lib/auth"
 import { categories, getBrandfetchIcon, type Integration, integrations } from "./_data"
 
 export const Route = createFileRoute("/_app/$orgSlug/settings/integrations/")({
@@ -14,6 +17,10 @@ function IntegrationsSettings() {
 	const [selectedCategory, setSelectedCategory] = useState<string>("all")
 	const { orgSlug } = Route.useParams()
 	const navigate = useNavigate()
+	const { user } = useAuth()
+
+	// Query all integration connections for the organization
+	const { isConnected } = useIntegrationConnections(user?.organizationId ?? null)
 
 	const filteredIntegrations =
 		selectedCategory === "all"
@@ -65,6 +72,7 @@ function IntegrationsSettings() {
 					<IntegrationCard
 						key={integration.id}
 						integration={integration}
+						connected={isConnected(integration.id as IntegrationConnection.IntegrationProvider)}
 						onClick={() => handleIntegrationClick(integration.id)}
 					/>
 				))}
@@ -79,10 +87,11 @@ function IntegrationsSettings() {
 	)
 }
 
-function IntegrationCard({ integration, onClick }: { integration: Integration; onClick: () => void }) {
-	// TODO: This should come from actual connection state
-	const connected = integration.id === "github"
-
+function IntegrationCard({
+	integration,
+	connected,
+	onClick,
+}: { integration: Integration; connected: boolean; onClick: () => void }) {
 	return (
 		<button
 			type="button"

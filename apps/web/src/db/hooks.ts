@@ -125,6 +125,47 @@ export const useAttachments = (messageId: MessageId) => {
 }
 
 /**
+ * Query all integration connections for an organization.
+ * Returns a map of provider -> connection for easy lookup.
+ */
+export const useIntegrationConnections = (organizationId: OrganizationId | null) => {
+	const { data, ...rest } = useLiveQuery(
+		(q) =>
+			q
+				.from({ connection: integrationConnectionCollection })
+				.where(({ connection }) =>
+					and(
+						eq(connection.organizationId, organizationId ?? ("" as OrganizationId)),
+						isNull(connection.deletedAt),
+					),
+				),
+		[organizationId],
+	)
+
+	// Build a map of provider -> connection for easy lookup
+	const connectionsByProvider = new Map<
+		IntegrationConnection.IntegrationProvider,
+		typeof IntegrationConnection.Model.Type
+	>()
+
+	if (organizationId && data) {
+		for (const connection of data) {
+			connectionsByProvider.set(connection.provider, connection)
+		}
+	}
+
+	return {
+		connections: data ?? [],
+		connectionsByProvider,
+		isConnected: (provider: IntegrationConnection.IntegrationProvider) => {
+			const conn = connectionsByProvider.get(provider)
+			return conn?.status === "active"
+		},
+		...rest,
+	}
+}
+
+/**
  * Query integration connection by organization and provider.
  * Returns the active connection if one exists.
  */
