@@ -1,5 +1,8 @@
 "use client"
 
+import { Result, useAtomValue } from "@effect-atom/atom-react"
+import { Option } from "effect"
+import { HazelApiClient } from "~/lib/services/common/atom-client"
 import { cn } from "~/lib/utils"
 import { Embed, useEmbedTheme } from "../embeds"
 import { extractGitHubInfo } from "../link-preview"
@@ -17,6 +20,14 @@ const PR_STATE_CONFIG = {
 } as const
 
 type PRState = keyof typeof PR_STATE_CONFIG
+
+// Get the effective state of a PR
+function getPRState(state: string, merged: boolean, draft: boolean): PRState {
+	if (merged) return "merged"
+	if (draft) return "draft"
+	if (state === "closed") return "closed"
+	return "open"
+}
 
 // PR Open icon
 function PROpenIcon({ className }: { className?: string }) {
@@ -45,10 +56,27 @@ function PRClosedIcon({ className }: { className?: string }) {
 	)
 }
 
+// PR Draft icon
+function PRDraftIcon({ className }: { className?: string }) {
+	return (
+		<svg className={cn("size-4", className)} viewBox="0 0 16 16" fill="currentColor">
+			<path d="M3.25 1A2.25 2.25 0 0 1 4 5.372v5.256a2.251 2.251 0 1 1-1.5 0V5.372A2.251 2.251 0 0 1 3.25 1Zm9.5 14a2.25 2.25 0 1 1 0-4.5 2.25 2.25 0 0 1 0 4.5Zm0-3a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5ZM2.5 3.25a.75.75 0 1 0 1.5 0 .75.75 0 0 0-1.5 0ZM3.25 12a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5ZM9.75 7a.75.75 0 0 0 0 1.5h2.5a.75.75 0 0 0 0-1.5h-2.5Zm0-4a.75.75 0 0 0 0 1.5h2.5a.75.75 0 0 0 0-1.5h-2.5Z" />
+		</svg>
+	)
+}
+
 // Status badge component
-function PRStatusBadge({ state }: { state: PRState }) {
-	const config = PR_STATE_CONFIG[state]
-	const Icon = state === "merged" ? PRMergedIcon : state === "closed" ? PRClosedIcon : PROpenIcon
+function PRStatusBadge({ state, merged, draft }: { state: string; merged: boolean; draft: boolean }) {
+	const prState = getPRState(state, merged, draft)
+	const config = PR_STATE_CONFIG[prState]
+	const Icon =
+		prState === "merged"
+			? PRMergedIcon
+			: prState === "closed"
+				? PRClosedIcon
+				: prState === "draft"
+					? PRDraftIcon
+					: PROpenIcon
 
 	return (
 		<span
@@ -80,12 +108,34 @@ function AuthorAvatar({ login, avatarUrl }: { login: string; avatarUrl?: string 
 	)
 }
 
-// Diff stats component
-function DiffStats({ additions, deletions }: { additions: number; deletions: number }) {
+// Branch info component
+function BranchInfo({ base, head }: { base: string; head: string }) {
 	return (
-		<div className="flex items-center gap-1.5 font-medium text-[10px]">
+		<div className="flex items-center gap-1 text-[10px] text-muted-fg">
+			<span className="truncate rounded bg-muted px-1 py-0.5 font-mono">{head}</span>
+			<span>→</span>
+			<span className="truncate rounded bg-muted px-1 py-0.5 font-mono">{base}</span>
+		</div>
+	)
+}
+
+// Diff stats component
+function DiffStats({
+	additions,
+	deletions,
+	changedFiles,
+}: {
+	additions: number
+	deletions: number
+	changedFiles: number
+}) {
+	return (
+		<div className="flex items-center gap-2 font-medium text-[10px]">
 			<span className="text-green-600">+{additions}</span>
-			<span className="text-red-600">-{deletions}</span>
+			<span className="text-red-600">−{deletions}</span>
+			<span className="text-muted-fg">
+				{changedFiles} {changedFiles === 1 ? "file" : "files"}
+			</span>
 		</div>
 	)
 }
@@ -106,127 +156,148 @@ function LabelBadge({ name, color }: { name: string; color: string }) {
 	)
 }
 
-// GitHub PR data type (for when the API is implemented)
-export interface GitHubPRData {
-	owner: string
-	repo: string
-	number: number
-	title: string
-	body?: string | null
-	state: "open" | "closed"
-	draft?: boolean
-	merged?: boolean
-	author?: {
-		login: string
-		avatarUrl?: string | null
-	}
-	additions?: number
-	deletions?: number
-	headRefName?: string
-	updatedAt?: string
-	labels?: Array<{ name: string; color: string }>
-}
+// Reviewer avatars component
+function ReviewerAvatars({
+	reviewers,
+}: {
+	reviewers: readonly { readonly id: number; readonly login: string; readonly avatarUrl: string }[]
+}) {
+	if (reviewers.length === 0) return null
 
-interface GitHubPREmbedWithDataProps {
-	url: string
-	data: GitHubPRData
+	return (
+		<div className="flex items-center">
+			<div className="-space-x-1.5 flex">
+				{reviewers.slice(0, 3).map((reviewer) => (
+					<img
+						key={reviewer.id}
+						src={reviewer.avatarUrl}
+						alt={reviewer.login}
+						title={reviewer.login}
+						className="size-4 rounded-full ring-1 ring-bg"
+					/>
+				))}
+			</div>
+			{reviewers.length > 3 && (
+				<span className="ml-1 text-[10px] text-muted-fg">+{reviewers.length - 3}</span>
+			)}
+		</div>
+	)
 }
 
 /**
- * GitHub PR embed with pre-fetched data.
- * Use this when you already have the PR data.
+ * GitHub PR embed that fetches data from the API.
  */
-export function GitHubPREmbedWithData({ url, data }: GitHubPREmbedWithDataProps) {
+export function GitHubPREmbed({ url }: GitHubPREmbedProps) {
 	const theme = useEmbedTheme("github")
 
-	// Determine PR state
-	const prState: PRState = data.merged
-		? "merged"
-		: data.draft
-			? "draft"
-			: data.state === "closed"
-				? "closed"
-				: "open"
+	const resourceResult = useAtomValue(
+		HazelApiClient.query("integration-resources", "fetchGitHubPR", {
+			urlParams: { url },
+		}),
+	)
 
-	// Build fields array
+	// Loading state
+	if (Result.isInitial(resourceResult)) {
+		return <Embed.Skeleton accentColor={theme.color} />
+	}
+
+	// Error handling
+	if (Result.isFailure(resourceResult)) {
+		const errorOption = Result.error(resourceResult)
+
+		if (Option.isSome(errorOption)) {
+			const error = errorOption.value
+
+			// Show connect prompt if not connected
+			if ("_tag" in error && error._tag === "IntegrationNotConnectedForPreviewError") {
+				const info = extractGitHubInfo(url)
+				return (
+					<Embed.ConnectPrompt
+						providerName={theme.name}
+						iconUrl={theme.iconUrl}
+						accentColor={theme.color}
+						resourceLabel={info ? `#${info.number}` : undefined}
+					/>
+				)
+			}
+
+			// Show specific error message if available
+			if ("_tag" in error && error._tag === "ResourceNotFoundError") {
+				return (
+					<Embed.Error iconUrl={theme.iconUrl} accentColor={theme.color} message="PR not found" />
+				)
+			}
+		}
+
+		return <Embed.Error iconUrl={theme.iconUrl} accentColor={theme.color} />
+	}
+
+	const pr = Result.getOrElse(resourceResult, () => null)
+
+	if (!pr) {
+		return <Embed.Error iconUrl={theme.iconUrl} accentColor={theme.color} />
+	}
+
+	// Build fields array for the footer
 	const fields = []
 
-	if (data.author) {
+	if (pr.author) {
 		fields.push({
 			name: "Author",
-			value: <AuthorAvatar login={data.author.login} avatarUrl={data.author.avatarUrl} />,
+			value: <AuthorAvatar login={pr.author.login} avatarUrl={pr.author.avatarUrl} />,
 			inline: true,
 		})
 	}
 
-	if (data.additions !== undefined && data.deletions !== undefined) {
+	// Add branch info
+	fields.push({
+		name: "Branch",
+		value: <BranchInfo base={pr.base.ref} head={pr.head.ref} />,
+		inline: true,
+	})
+
+	// Add changes stats
+	fields.push({
+		name: "Changes",
+		value: <DiffStats additions={pr.additions} deletions={pr.deletions} changedFiles={pr.changedFiles} />,
+		inline: true,
+	})
+
+	// Add reviewers if any
+	if (pr.reviewers.length > 0) {
 		fields.push({
-			name: "Changes",
-			value: <DiffStats additions={data.additions} deletions={data.deletions} />,
+			name: "Reviewers",
+			value: <ReviewerAvatars reviewers={pr.reviewers} />,
 			inline: true,
 		})
 	}
 
-	if (data.labels) {
-		for (const label of data.labels.slice(0, 2)) {
-			fields.push({
-				name: "Label",
-				value: <LabelBadge name={label.name} color={label.color} />,
-				inline: true,
-			})
-		}
+	// Add labels (max 2, with overflow indicator)
+	for (const label of pr.labels.slice(0, 2)) {
+		fields.push({
+			name: "Label",
+			value: <LabelBadge name={label.name} color={label.color} />,
+			inline: true,
+		})
+	}
 
-		if (data.labels.length > 2) {
-			fields.push({
-				name: "More",
-				value: <span className="text-[10px] text-muted-fg">+{data.labels.length - 2}</span>,
-				inline: true,
-			})
-		}
+	if (pr.labels.length > 2) {
+		fields.push({
+			name: "More",
+			value: <span className="text-[10px] text-muted-fg">+{pr.labels.length - 2}</span>,
+			inline: true,
+		})
 	}
 
 	return (
 		<Embed accentColor={theme.color} url={url} className="group">
 			<Embed.Author
 				iconUrl={theme.iconUrl}
-				name={`${data.owner}/${data.repo}`}
-				url={`https://github.com/${data.owner}/${data.repo}`}
-				trailing={<PRStatusBadge state={prState} />}
+				name={`#${pr.number}`}
+				trailing={<PRStatusBadge state={pr.state} merged={pr.merged} draft={pr.draft} />}
 			/>
-			<Embed.Body title={`#${data.number} ${data.title}`} description={data.body} />
+			<Embed.Body title={pr.title} description={pr.body} />
 			{fields.length > 0 && <Embed.Fields fields={fields} />}
-			{data.headRefName && (
-				<Embed.Footer
-					text={data.headRefName}
-					timestamp={data.updatedAt ? new Date(data.updatedAt) : undefined}
-				/>
-			)}
 		</Embed>
-	)
-}
-
-/**
- * GitHub PR embed that fetches data from URL.
- * Note: Requires backend API to be implemented.
- * For now, shows a connect prompt with extracted PR info.
- */
-export function GitHubPREmbed({ url }: GitHubPREmbedProps) {
-	const theme = useEmbedTheme("github")
-	const info = extractGitHubInfo(url)
-
-	// TODO: Replace with actual API call once backend is implemented
-	// const resourceResult = useAtomValue(
-	//   HazelApiClient.query("integration-resources", "fetchGitHubPR", { urlParams: { url } })
-	// )
-
-	// For now, show connect prompt since API isn't implemented yet
-	return (
-		<Embed.ConnectPrompt
-			providerName={theme.name}
-			iconUrl={theme.iconUrl}
-			accentColor={theme.color}
-			resourceLabel={info ? `#${info.number}` : undefined}
-			description="Connect GitHub to see PR details inline"
-		/>
 	)
 }
