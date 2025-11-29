@@ -5,7 +5,6 @@ import { channelMembersTable, channelsTable } from "./channels"
 import { integrationConnectionsTable } from "./integration-connections"
 import { integrationTokensTable } from "./integration-tokens"
 import { invitationsTable } from "./invitations"
-import { messageIntegrationLinksTable } from "./message-integration-links"
 import { messageReactionsTable, messagesTable } from "./messages"
 import { notificationsTable } from "./notifications"
 import { organizationMembersTable, organizationsTable } from "./organizations"
@@ -227,18 +226,6 @@ export const integrationTokensRelations = relations(integrationTokensTable, ({ o
 	connection: one(integrationConnectionsTable, {
 		fields: [integrationTokensTable.connectionId],
 		references: [integrationConnectionsTable.id],
-	}),
-}))
-
-// Message integration links relations
-export const messageIntegrationLinksRelations = relations(messageIntegrationLinksTable, ({ one }) => ({
-	message: one(messagesTable, {
-		fields: [messageIntegrationLinksTable.messageId],
-		references: [messagesTable.id],
-	}),
-	channel: one(channelsTable, {
-		fields: [messageIntegrationLinksTable.channelId],
-		references: [channelsTable.id],
 	}),
 }))
 
