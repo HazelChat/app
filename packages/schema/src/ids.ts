@@ -95,3 +95,27 @@ export const UserPresenceStatusId = Schema.UUID.pipe(
 	title: "User Presence Status ID",
 })
 export type UserPresenceStatusId = Schema.Schema.Type<typeof UserPresenceStatusId>
+
+export const IntegrationConnectionId = Schema.UUID.pipe(
+	Schema.brand("@HazelChat/IntegrationConnectionId"),
+).annotations({
+	description: "The ID of an integration connection",
+	title: "Integration Connection ID",
+})
+export type IntegrationConnectionId = Schema.Schema.Type<typeof IntegrationConnectionId>
+
+export const IntegrationTokenId = Schema.UUID.pipe(
+	Schema.brand("@HazelChat/IntegrationTokenId"),
+).annotations({
+	description: "The ID of an integration token record",
+	title: "Integration Token ID",
+})
+export type IntegrationTokenId = Schema.Schema.Type<typeof IntegrationTokenId>
+
+export const MessageIntegrationLinkId = Schema.UUID.pipe(
+	Schema.brand("@HazelChat/MessageIntegrationLinkId"),
+).annotations({
+	description: "The ID of a message-integration link",
+	title: "Message Integration Link ID",
+})
+export type MessageIntegrationLinkId = Schema.Schema.Type<typeof MessageIntegrationLinkId>

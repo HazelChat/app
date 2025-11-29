@@ -1,7 +1,11 @@
 import { relations } from "drizzle-orm"
 import { attachmentsTable } from "./attachments"
+import { botsTable } from "./bots"
 import { channelMembersTable, channelsTable } from "./channels"
+import { integrationConnectionsTable } from "./integration-connections"
+import { integrationTokensTable } from "./integration-tokens"
 import { invitationsTable } from "./invitations"
+import { messageIntegrationLinksTable } from "./message-integration-links"
 import { messageReactionsTable, messagesTable } from "./messages"
 import { notificationsTable } from "./notifications"
 import { organizationMembersTable, organizationsTable } from "./organizations"
@@ -198,5 +202,54 @@ export const typingIndicatorsRelations = relations(typingIndicatorsTable, ({ one
 	member: one(organizationMembersTable, {
 		fields: [typingIndicatorsTable.memberId],
 		references: [organizationMembersTable.id],
+	}),
+}))
+
+// Integration connections relations
+export const integrationConnectionsRelations = relations(integrationConnectionsTable, ({ one, many }) => ({
+	organization: one(organizationsTable, {
+		fields: [integrationConnectionsTable.organizationId],
+		references: [organizationsTable.id],
+	}),
+	user: one(usersTable, {
+		fields: [integrationConnectionsTable.userId],
+		references: [usersTable.id],
+	}),
+	connectedByUser: one(usersTable, {
+		fields: [integrationConnectionsTable.connectedBy],
+		references: [usersTable.id],
+	}),
+	token: one(integrationTokensTable),
+}))
+
+// Integration tokens relations
+export const integrationTokensRelations = relations(integrationTokensTable, ({ one }) => ({
+	connection: one(integrationConnectionsTable, {
+		fields: [integrationTokensTable.connectionId],
+		references: [integrationConnectionsTable.id],
+	}),
+}))
+
+// Message integration links relations
+export const messageIntegrationLinksRelations = relations(messageIntegrationLinksTable, ({ one }) => ({
+	message: one(messagesTable, {
+		fields: [messageIntegrationLinksTable.messageId],
+		references: [messagesTable.id],
+	}),
+	channel: one(channelsTable, {
+		fields: [messageIntegrationLinksTable.channelId],
+		references: [channelsTable.id],
+	}),
+}))
+
+// Bots relations
+export const botsRelations = relations(botsTable, ({ one }) => ({
+	user: one(usersTable, {
+		fields: [botsTable.userId],
+		references: [usersTable.id],
+	}),
+	createdByUser: one(usersTable, {
+		fields: [botsTable.createdBy],
+		references: [usersTable.id],
 	}),
 }))

@@ -1,5 +1,6 @@
 import { BotId, UserId } from "@hazel/schema"
 import { Schema } from "effect"
+import { IntegrationProvider } from "./integration-connection-model"
 import * as M from "./utils"
 import { baseFields, JsonDate } from "./utils"
 
@@ -20,6 +21,8 @@ export class Model extends M.Class<Model>("Bot")({
 	),
 	isPublic: Schema.Boolean,
 	installCount: Schema.Number,
+	// List of integration providers this bot is allowed to use (e.g., ["linear", "github"])
+	allowedIntegrations: Schema.NullOr(Schema.Array(IntegrationProvider)),
 	...baseFields,
 }) {}
 

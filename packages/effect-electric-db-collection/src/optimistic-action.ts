@@ -3,7 +3,6 @@ import type { Collection, Row, Transaction } from "@tanstack/db"
 import { createTransaction } from "@tanstack/db"
 import type { Txid } from "@tanstack/electric-db-collection"
 import { Cause, Effect, Exit, type ManagedRuntime } from "effect"
-import type { EffectElectricCollectionUtils } from "./collection"
 import { type InvalidTxIdError, OptimisticActionError, SyncError, type TxIdTimeoutError } from "./errors"
 
 /**
@@ -192,7 +191,6 @@ export function createEffectOptimisticAction<
  * Uses `any` for row type to allow any collection to be passed.
  * The utils must have awaitTxIdEffect method for sync functionality.
  */
-// biome-ignore lint/suspicious/noExplicitAny: Need any to accept any collection type
 type EffectCollection = Collection<any, any> & {
 	utils: {
 		awaitTxIdEffect: (

@@ -1,5 +1,8 @@
 import type { BotId, UserId } from "@hazel/schema"
 import { boolean, index, integer, jsonb, pgTable, text, timestamp, uuid, varchar } from "drizzle-orm/pg-core"
+import type { IntegrationConnection } from "./integration-connections"
+
+type IntegrationProvider = IntegrationConnection["provider"]
 
 export const botsTable = pgTable(
 	"bots",
@@ -15,6 +18,8 @@ export const botsTable = pgTable(
 		metadata: jsonb().$type<Record<string, any>>(),
 		isPublic: boolean().notNull().default(false),
 		installCount: integer().notNull().default(0),
+		// List of integration providers this bot is allowed to use (e.g., ["linear", "github"])
+		allowedIntegrations: jsonb().$type<IntegrationProvider[]>().default([]),
 		createdAt: timestamp({ mode: "date", withTimezone: true }).notNull().defaultNow(),
 		updatedAt: timestamp({ mode: "date", withTimezone: true }).notNull().defaultNow(),
 		deletedAt: timestamp({ mode: "date", withTimezone: true }),

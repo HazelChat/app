@@ -16,6 +16,7 @@ import { HttpApiRoutes } from "./http"
 import { AttachmentPolicy } from "./policies/attachment-policy"
 import { ChannelMemberPolicy } from "./policies/channel-member-policy"
 import { ChannelPolicy } from "./policies/channel-policy"
+import { IntegrationConnectionPolicy } from "./policies/integration-connection-policy"
 import { InvitationPolicy } from "./policies/invitation-policy"
 import { MessagePolicy } from "./policies/message-policy"
 import { MessageReactionPolicy } from "./policies/message-reaction-policy"
@@ -29,6 +30,8 @@ import { UserPresenceStatusPolicy } from "./policies/user-presence-status-policy
 import { AttachmentRepo } from "./repositories/attachment-repo"
 import { ChannelMemberRepo } from "./repositories/channel-member-repo"
 import { ChannelRepo } from "./repositories/channel-repo"
+import { IntegrationConnectionRepo } from "./repositories/integration-connection-repo"
+import { IntegrationTokenRepo } from "./repositories/integration-token-repo"
 import { InvitationRepo } from "./repositories/invitation-repo"
 import { MessageReactionRepo } from "./repositories/message-reaction-repo"
 import { MessageRepo } from "./repositories/message-repo"
@@ -43,7 +46,9 @@ import { UserRepo } from "./repositories/user-repo"
 import { AllRpcs, RpcServerLive } from "./rpc/server"
 import { AuthorizationLive } from "./services/auth"
 import { DatabaseLive } from "./services/database"
+import { IntegrationTokenService } from "./services/integration-token-service"
 import { MockDataGenerator } from "./services/mock-data-generator"
+import { OAuthProviderRegistry } from "./services/oauth"
 import { SessionManager } from "./services/session-manager"
 import { WorkOS } from "./services/workos"
 import { WorkOSSync } from "./services/workos-sync"
@@ -100,6 +105,8 @@ const RepoLive = Layer.mergeAll(
 	TypingIndicatorRepo.Default,
 	MessageReactionRepo.Default,
 	UserPresenceStatusRepo.Default,
+	IntegrationConnectionRepo.Default,
+	IntegrationTokenRepo.Default,
 )
 
 const PolicyLive = Layer.mergeAll(
@@ -116,6 +123,7 @@ const PolicyLive = Layer.mergeAll(
 	TypingIndicatorPolicy.Default,
 	NotificationPolicy.Default,
 	UserPresenceStatusPolicy.Default,
+	IntegrationConnectionPolicy.Default,
 )
 
 const MainLive = Layer.mergeAll(
@@ -128,6 +136,8 @@ const MainLive = Layer.mergeAll(
 	WorkOSWebhookVerifier.Default,
 	DatabaseLive,
 	MultipartUpload.layerWithoutS3Service,
+	IntegrationTokenService.Default,
+	OAuthProviderRegistry.Default,
 ).pipe(
 	Layer.provide(
 		S3.layer({
