@@ -2,6 +2,8 @@
 
 import { Link, useParams } from "@tanstack/react-router"
 
+// Linear logo - using Brandfetch CDN
+const LINEAR_LOGO_URL = "https://cdn.brandfetch.io/linear.app/w/64/h/64/theme/dark/icon"
 
 interface LinearConnectPromptProps {
 	url: string
@@ -18,7 +20,7 @@ export function LinearConnectPrompt({ url }: LinearConnectPromptProps) {
 	return (
 		<div className="mt-2 flex max-w-md items-center gap-3 overflow-hidden rounded-lg border border-[#5E6AD2]/30 border-dashed bg-linear-to-r from-[#5E6AD2]/5 to-transparent p-3 transition-colors hover:border-[#5E6AD2]/50 hover:bg-[#5E6AD2]/5">
 			<div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-[#5E6AD2]/10">
-				<img src={LINEAR_LOGO_URL} alt="Linear" className="size-5" />
+				<img src={LINEAR_LOGO_URL} alt="" className="size-5" />
 			</div>
 
 			<div className="min-w-0 flex-1">

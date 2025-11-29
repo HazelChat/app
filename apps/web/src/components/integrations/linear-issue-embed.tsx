@@ -44,6 +44,8 @@ const PriorityIcon = ({ priority, className }: { priority: number; className?: s
 	)
 }
 
+// Linear logo - using Brandfetch CDN
+const LINEAR_LOGO_URL = "https://cdn.brandfetch.io/linear.app/w/64/h/64/theme/dark/icon"
 
 // Loading skeleton
 function LinearIssueSkeleton() {
@@ -77,7 +79,7 @@ function LinearIssueSkeleton() {
 function LinearIssueError({ message }: { message?: string }) {
 	return (
 		<div className="mt-2 flex max-w-md items-center gap-3 rounded-lg border border-border/60 bg-muted/30 p-3">
-			<img src={LINEAR_LOGO_URL} alt="Linear" className="size-5 opacity-50" />
+			<img src={LINEAR_LOGO_URL} alt="" className="size-5 opacity-50" />
 			<span className="text-muted-fg text-sm">{message || "Could not load Linear issue"}</span>
 		</div>
 	)
@@ -136,7 +138,7 @@ export function LinearIssueEmbed({ url }: LinearIssueEmbedProps) {
 		>
 			{/* Header with Linear branding */}
 			<div className="flex items-center gap-2 border-border/40 border-b bg-linear-to-r from-[#5E6AD2]/5 to-transparent px-3 py-2">
-				<img src={LINEAR_LOGO_URL} alt="Linear" className="size-4" />
+				<img src={LINEAR_LOGO_URL} alt="" className="size-4" />
 				<span className="font-medium font-mono text-[#5E6AD2] text-xs">{issue.identifier}</span>
 				{issue.state && (
 					<span
