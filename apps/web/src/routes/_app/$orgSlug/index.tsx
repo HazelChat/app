@@ -46,6 +46,7 @@ function RouteComponent() {
 				.leftJoin({ presence: userPresenceStatusCollection }, ({ user, presence }) =>
 					eq(user.id, presence.userId),
 				)
+				.where(({ user }) => eq(user.userType, "user"))
 				.select(({ member, user, presence }) => ({
 					...user,
 					role: member.role,
