@@ -11,8 +11,10 @@ import {
 import { Effect, Option } from "effect"
 import { HazelApi } from "../api"
 import { IntegrationConnectionRepo } from "../repositories/integration-connection-repo"
+import { MessageRepo } from "../repositories/message-repo"
 import { IntegrationTokenService } from "../services/integration-token-service"
 import { CommandRegistry } from "../services/integrations/command-registry"
+import { IntegrationBotService } from "../services/integrations/integration-bot-service"
 import { createIssue, type LinearCommandError } from "../services/integrations/linear-command-executor"
 
 export const HttpIntegrationCommandLive = HttpApiBuilder.group(HazelApi, "integration-commands", (handlers) =>
@@ -81,7 +83,7 @@ export const HttpIntegrationCommandLive = HttpApiBuilder.group(HazelApi, "integr
 			Effect.gen(function* () {
 				const currentUser = yield* CurrentUser.Context
 				const { provider, commandId } = path
-				const { arguments: args } = payload
+				const { channelId, arguments: args } = payload
 
 				// Must have organization context
 				if (!currentUser.organizationId) {
@@ -96,6 +98,8 @@ export const HttpIntegrationCommandLive = HttpApiBuilder.group(HazelApi, "integr
 				const registry = yield* CommandRegistry
 				const connectionRepo = yield* IntegrationConnectionRepo
 				const tokenService = yield* IntegrationTokenService
+				const botService = yield* IntegrationBotService
+				const messageRepo = yield* MessageRepo
 
 				// Find the command definition
 				const commandOption = registry.getCommand(provider, commandId)
@@ -145,6 +149,21 @@ export const HttpIntegrationCommandLive = HttpApiBuilder.group(HazelApi, "integr
 						description: argsMap.get("description"),
 					})
 
+					// Get or create the Linear bot user (with org membership for Electric sync)
+					const botUser = yield* botService.getOrCreateBotUser("linear", currentUser.organizationId)
+
+					// Create message from bot with the issue URL
+					yield* messageRepo
+						.insert({
+							channelId,
+							authorId: botUser.id,
+							content: result.url,
+							replyToMessageId: null,
+							threadChannelId: null,
+							deletedAt: null,
+						})
+						.pipe(withSystemActor)
+
 					return new LinearIssueCreatedResponse({
 						id: result.id,
 						identifier: result.identifier,
@@ -183,6 +202,13 @@ export const HttpIntegrationCommandLive = HttpApiBuilder.group(HazelApi, "integr
 						Effect.fail(new IntegrationNotConnectedForCommandError({ provider: path.provider })),
 					ConnectionNotFoundError: () =>
 						Effect.fail(new IntegrationNotConnectedForCommandError({ provider: path.provider })),
+					ParseError: (error) =>
+						Effect.fail(
+							new InternalServerError({
+								message: "Invalid request data",
+								detail: String(error),
+							}),
+						),
 				}),
 			),
 		),

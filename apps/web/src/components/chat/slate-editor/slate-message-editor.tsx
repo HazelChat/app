@@ -1,6 +1,7 @@
 "use client"
 
 import { useAtomSet } from "@effect-atom/atom-react"
+import type { ChannelId } from "@hazel/schema"
 import { Exit, pipe } from "effect"
 import { forwardRef, useCallback, useImperativeHandle, useMemo, useRef, useState } from "react"
 import type { Descendant } from "slate"
@@ -66,6 +67,7 @@ export interface SlateMessageEditorRef {
 interface SlateMessageEditorProps {
 	placeholder?: string
 	className?: string
+	channelId?: ChannelId
 	onSubmit?: (content: string) => void | Promise<void>
 	onUpdate?: (content: string) => void
 	isUploading?: boolean
@@ -271,7 +273,7 @@ const shouldHidePlaceholder = (value: CustomDescendant[]): boolean => {
 }
 
 export const SlateMessageEditor = forwardRef<SlateMessageEditorRef, SlateMessageEditorProps>(
-	({ placeholder = "Type a message...", className, onSubmit, onUpdate, isUploading = false }, ref) => {
+	({ placeholder = "Type a message...", className, channelId, onSubmit, onUpdate, isUploading = false }, ref) => {
 		const containerRef = useRef<HTMLDivElement>(null)
 
 		// Autocomplete state from Slate plugin
@@ -370,6 +372,10 @@ export const SlateMessageEditor = forwardRef<SlateMessageEditorRef, SlateMessage
 
 		const handleCommandExecute = useCallback(async () => {
 			if (!commandInputState.command) return
+			if (!channelId) {
+				toast.error("Cannot execute command without a channel")
+				return
+			}
 
 			// Validate required fields
 			const missingRequired = commandInputState.command.arguments
@@ -397,7 +403,7 @@ export const SlateMessageEditor = forwardRef<SlateMessageEditorRef, SlateMessage
 
 			const exit = await executeCommand({
 				path: { provider, commandId: commandInputState.command.id },
-				payload: { arguments: args },
+				payload: { channelId, arguments: args },
 			})
 
 			Exit.match(exit, {

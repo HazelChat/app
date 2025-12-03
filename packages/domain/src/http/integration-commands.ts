@@ -2,6 +2,7 @@ import { HttpApiEndpoint, HttpApiGroup, OpenApi } from "@effect/platform"
 import { Schema } from "effect"
 import * as CurrentUser from "../current-user"
 import { InternalServerError, UnauthorizedError } from "../errors"
+import { ChannelId } from "../ids"
 import { IntegrationConnection } from "../models"
 
 // Provider type from the model
@@ -16,6 +17,7 @@ export const CommandArgumentValue = Schema.Struct({
 export type CommandArgumentValue = typeof CommandArgumentValue.Type
 
 export class ExecuteCommandRequest extends Schema.Class<ExecuteCommandRequest>("ExecuteCommandRequest")({
+	channelId: ChannelId,
 	arguments: Schema.Array(CommandArgumentValue),
 }) {}
 

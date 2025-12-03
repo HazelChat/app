@@ -20,6 +20,7 @@ import {
 	LinkPreview,
 } from "~/components/link-preview"
 import { TweetEmbed } from "~/components/tweet-embed"
+import { Badge } from "~/components/ui/badge"
 import { YoutubeEmbed } from "~/components/youtube-embed"
 import { messageCollection } from "~/db/collections"
 import { useChat } from "~/hooks/use-chat"
@@ -304,6 +305,11 @@ export const MessageAuthorHeader = ({
 	return (
 		<div className="flex items-baseline gap-2">
 			<span className="font-semibold text-fg">{fullName}</span>
+			{user.userType === "machine" && (
+				<Badge intent="primary" isCircle={false}>
+					APP
+				</Badge>
+			)}
 			<span className="text-muted-fg text-xs">
 				{format(message.createdAt, "HH:mm")}
 				{isEdited && " (edited)"}

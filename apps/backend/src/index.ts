@@ -54,6 +54,7 @@ import { WorkOS } from "./services/workos"
 import { WorkOSSync } from "./services/workos-sync"
 import { WorkOSWebhookVerifier } from "./services/workos-webhook"
 import { CommandRegistry } from "./services/integrations/command-registry"
+import { IntegrationBotService } from "./services/integrations/integration-bot-service"
 
 export { HazelApi }
 
@@ -140,6 +141,7 @@ const MainLive = Layer.mergeAll(
 	IntegrationTokenService.Default,
 	OAuthProviderRegistry.Default,
 	CommandRegistry.Default,
+	IntegrationBotService.Default,
 ).pipe(
 	Layer.provide(
 		S3.layer({
