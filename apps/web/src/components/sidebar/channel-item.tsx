@@ -1,11 +1,13 @@
 import { useAtomSet } from "@effect-atom/atom-react"
 import type { Channel, ChannelMember } from "@hazel/db/schema"
+import { useNavigate } from "@tanstack/react-router"
 import { Exit } from "effect"
 import { useState } from "react"
 import { toast } from "sonner"
 import { deleteChannelMemberMutation, updateChannelMemberMutation } from "~/atoms/channel-member-atoms"
 import IconDots from "~/components/icons/icon-dots"
 import IconEdit from "~/components/icons/icon-edit"
+import IconGear from "~/components/icons/icon-gear"
 import IconHashtag from "~/components/icons/icon-hashtag"
 import IconLeave from "~/components/icons/icon-leave"
 import IconStar from "~/components/icons/icon-star"
@@ -30,6 +32,7 @@ export function ChannelItem({ channel, member }: ChannelItemProps) {
 	const [deleteModalOpen, setDeleteModalOpen] = useState(false)
 
 	const { slug } = useOrganization()
+	const navigate = useNavigate()
 
 	// Use Effect Atom mutations for channel member operations
 	const updateMember = useAtomSet(updateChannelMemberMutation, { mode: "promiseExit" })
@@ -151,6 +154,17 @@ export function ChannelItem({ channel, member }: ChannelItemProps) {
 						<MenuItem onAction={() => setRenameModalOpen(true)}>
 							<IconEdit />
 							<MenuLabel>Rename</MenuLabel>
+						</MenuItem>
+						<MenuItem
+							onAction={() =>
+								navigate({
+									to: "/$orgSlug/channels/$channelId/settings",
+									params: { orgSlug: slug, channelId: channel.id },
+								})
+							}
+						>
+							<IconGear />
+							<MenuLabel>Settings</MenuLabel>
 						</MenuItem>
 						<MenuItem intent="danger" onAction={() => setDeleteModalOpen(true)}>
 							<IconTrash />

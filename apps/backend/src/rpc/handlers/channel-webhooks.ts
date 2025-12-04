@@ -1,3 +1,4 @@
+import { createHash, randomBytes } from "node:crypto"
 import { Database } from "@hazel/db"
 import { CurrentUser, policyUse, withRemapDbErrors, withSystemActor } from "@hazel/domain"
 import {
@@ -7,7 +8,6 @@ import {
 	ChannelWebhookResponse,
 	ChannelWebhookRpcs,
 } from "@hazel/domain/rpc"
-import { randomBytes, createHash } from "crypto"
 import { Effect, Option } from "effect"
 import { generateTransactionId } from "../../lib/create-transactionId"
 import { ChannelWebhookPolicy } from "../../policies/channel-webhook-policy"
@@ -50,7 +50,9 @@ export const ChannelWebhookRpcLive = ChannelWebhookRpcs.toLayer(
 							const botService = yield* WebhookBotService
 
 							// Get channel to get organization ID
-							const channelOption = yield* channelRepo.findById(payload.channelId).pipe(withSystemActor)
+							const channelOption = yield* channelRepo
+								.findById(payload.channelId)
+								.pipe(withSystemActor)
 							if (Option.isNone(channelOption)) {
 								return yield* Effect.die(new Error("Channel not found"))
 							}
@@ -141,7 +143,9 @@ export const ChannelWebhookRpcLive = ChannelWebhookRpcs.toLayer(
 								yield* botService.updateWebhookBot(
 									currentWebhook.botUserId,
 									payload.name ?? currentWebhook.name,
-									payload.avatarUrl !== undefined ? payload.avatarUrl : currentWebhook.avatarUrl,
+									payload.avatarUrl !== undefined
+										? payload.avatarUrl
+										: currentWebhook.avatarUrl,
 								)
 							}
 
@@ -171,7 +175,11 @@ export const ChannelWebhookRpcLive = ChannelWebhookRpcs.toLayer(
 							const { token, tokenHash, tokenSuffix } = generateToken()
 
 							// Update token
-							const [updatedWebhook] = yield* webhookRepo.updateToken(id, tokenHash, tokenSuffix)
+							const [updatedWebhook] = yield* webhookRepo.updateToken(
+								id,
+								tokenHash,
+								tokenSuffix,
+							)
 
 							const txid = yield* generateTransactionId()
 

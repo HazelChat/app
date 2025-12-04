@@ -11,9 +11,7 @@ import { AuthMiddleware } from "./middleware"
  * Response schema for webhook operations.
  * Contains the webhook data and a transaction ID for optimistic updates.
  */
-export class ChannelWebhookResponse extends Schema.Class<ChannelWebhookResponse>(
-	"ChannelWebhookResponse",
-)({
+export class ChannelWebhookResponse extends Schema.Class<ChannelWebhookResponse>("ChannelWebhookResponse")({
 	data: ChannelWebhook.Model.json,
 	transactionId: TransactionId,
 }) {}

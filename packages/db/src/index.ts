@@ -1,7 +1,5 @@
 export * from "drizzle-orm"
 export * as schema from "./schema"
-export * from "./services"
-
 // Re-export embed types for direct import
 export type {
 	MessageEmbed,
@@ -9,3 +7,4 @@ export type {
 	MessageEmbedField,
 	MessageEmbedFooter,
 } from "./schema/messages"
+export * from "./services"

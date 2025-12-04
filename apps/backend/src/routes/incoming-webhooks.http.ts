@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto"
 import { HttpApiBuilder } from "@effect/platform"
 import type { MessageEmbed as DbMessageEmbed } from "@hazel/db"
 import { InternalServerError, withSystemActor } from "@hazel/domain"
@@ -8,7 +9,6 @@ import {
 	WebhookNotFoundError,
 } from "@hazel/domain/http"
 import type { MessageEmbed } from "@hazel/domain/models"
-import { createHash } from "crypto"
 import { Effect, Option } from "effect"
 import { HazelApi } from "../api"
 import { ChannelWebhookRepo } from "../repositories/channel-webhook-repo"

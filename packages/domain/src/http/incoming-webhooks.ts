@@ -5,17 +5,13 @@ import { InternalServerError } from "../errors"
 import { MessageEmbed } from "../models/message-embed-schema"
 
 // Incoming webhook payload (Discord-style)
-export class IncomingWebhookPayload extends Schema.Class<IncomingWebhookPayload>(
-	"IncomingWebhookPayload",
-)({
+export class IncomingWebhookPayload extends Schema.Class<IncomingWebhookPayload>("IncomingWebhookPayload")({
 	content: Schema.optional(Schema.String), // Plain text content
 	embeds: Schema.optional(Schema.Array(MessageEmbed)), // Rich embeds
 }) {}
 
 // Response after successful webhook execution
-export class WebhookMessageResponse extends Schema.Class<WebhookMessageResponse>(
-	"WebhookMessageResponse",
-)({
+export class WebhookMessageResponse extends Schema.Class<WebhookMessageResponse>("WebhookMessageResponse")({
 	messageId: Schema.String,
 	channelId: Schema.String,
 }) {}
