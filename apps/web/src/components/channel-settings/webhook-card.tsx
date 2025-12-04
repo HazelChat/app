@@ -1,5 +1,7 @@
 import type { ChannelId, ChannelWebhookId, OrganizationId, UserId } from "@hazel/schema"
 import { formatDistanceToNow } from "date-fns"
+import { useState } from "react"
+import { toast } from "sonner"
 
 // Type for the webhook data returned from RPC (without sensitive tokenHash field)
 interface WebhookData {
@@ -19,6 +21,8 @@ interface WebhookData {
 	deletedAt: Date | null
 }
 
+import IconCheck from "~/components/icons/icon-check"
+import IconCopy from "~/components/icons/icon-copy"
 import IconDotsVertical from "~/components/icons/icon-dots-vertical"
 import IconEdit from "~/components/icons/icon-edit"
 import IconTrash from "~/components/icons/icon-trash"
@@ -34,6 +38,21 @@ interface WebhookCardProps {
 }
 
 export function WebhookCard({ webhook, onEdit, onRegenerateToken, onDelete }: WebhookCardProps) {
+	const [copied, setCopied] = useState(false)
+
+	const webhookUrl = `${import.meta.env.VITE_BACKEND_URL}/webhooks/incoming/${webhook.id}/`
+
+	const handleCopyUrl = async () => {
+		try {
+			await navigator.clipboard.writeText(webhookUrl)
+			setCopied(true)
+			toast.success("Webhook URL copied")
+			setTimeout(() => setCopied(false), 2000)
+		} catch {
+			toast.error("Failed to copy to clipboard")
+		}
+	}
+
 	return (
 		<div className="flex items-start justify-between rounded-xl border border-border bg-bg p-4 transition-colors hover:border-border-hover">
 			<div className="flex items-start gap-3">
@@ -84,6 +103,24 @@ export function WebhookCard({ webhook, onEdit, onRegenerateToken, onDelete }: We
 								</span>
 							</>
 						)}
+					</div>
+
+					<div className="flex items-center gap-1.5">
+						<span className="max-w-[280px] truncate font-mono text-muted-fg text-xs">
+							{webhookUrl}
+						</span>
+						<button
+							type="button"
+							onClick={handleCopyUrl}
+							className="flex size-5 shrink-0 items-center justify-center rounded text-muted-fg transition-colors hover:bg-secondary hover:text-fg"
+							aria-label="Copy webhook URL"
+						>
+							{copied ? (
+								<IconCheck className="size-3.5 text-emerald-500" />
+							) : (
+								<IconCopy className="size-3.5" />
+							)}
+						</button>
 					</div>
 				</div>
 			</div>
