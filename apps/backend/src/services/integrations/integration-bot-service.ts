@@ -17,7 +17,7 @@ export class IntegrationBotService extends Effect.Service<IntegrationBotService>
 		const orgMemberRepo = yield* OrganizationMemberRepo
 
 		/**
-		 * Get or create a global bot user for an integration provider.
+		 * Get or create a global bot user for an OAuth integration provider.
 		 * Bot users are machine users with predictable external IDs.
 		 * Also ensures the bot is a member of the given organization so it appears in Electric sync.
 		 */
@@ -69,7 +69,59 @@ export class IntegrationBotService extends Effect.Service<IntegrationBotService>
 				return botUser
 			})
 
-		return { getOrCreateBotUser }
+		/**
+		 * Get or create a global bot user for a webhook-based integration provider.
+		 * Similar to OAuth providers but uses WEBHOOK_BOT_CONFIGS.
+		 */
+		const getOrCreateWebhookBotUser = (
+			provider: Integrations.WebhookProvider,
+			organizationId: OrganizationId,
+		) =>
+			Effect.gen(function* () {
+				const externalId = `webhook-bot-${provider}`
+
+				// Try to find existing bot user
+				const existing = yield* userRepo.findByExternalId(externalId).pipe(withSystemActor)
+
+				const botUser = Option.isSome(existing)
+					? existing.value
+					: yield* Effect.gen(function* () {
+							// Create new machine user for this webhook integration
+							const botConfig = Integrations.getWebhookBotConfig(provider)
+							const newUser = yield* userRepo
+								.insert({
+									externalId,
+									email: `${provider}-bot@webhooks.internal`,
+									firstName: botConfig.name,
+									lastName: "",
+									avatarUrl: botConfig.avatarUrl,
+									userType: "machine",
+									settings: null,
+									isOnboarded: true,
+									deletedAt: null,
+								})
+								.pipe(withSystemActor)
+
+							return newUser[0]
+						})
+
+				// Ensure bot is a member of this organization (so it shows in Electric sync)
+				yield* orgMemberRepo
+					.upsertByOrgAndUser({
+						organizationId,
+						userId: botUser.id,
+						role: "member",
+						nickname: null,
+						joinedAt: new Date(),
+						invitedBy: null,
+						deletedAt: null,
+					})
+					.pipe(withSystemActor)
+
+				return botUser
+			})
+
+		return { getOrCreateBotUser, getOrCreateWebhookBotUser }
 	}),
 	dependencies: [UserRepo.Default, OrganizationMemberRepo.Default],
 }) {}

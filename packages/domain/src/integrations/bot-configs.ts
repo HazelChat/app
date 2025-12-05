@@ -14,7 +14,7 @@ export interface IntegrationBotConfig {
 }
 
 /**
- * Shared bot configurations for all integration providers.
+ * Shared bot configurations for OAuth integration providers.
  * Single source of truth for bot display info.
  */
 export const INTEGRATION_BOT_CONFIGS: Record<
@@ -44,7 +44,30 @@ export const INTEGRATION_BOT_CONFIGS: Record<
 }
 
 /**
- * Get bot config for a specific provider
+ * Webhook provider types (non-OAuth integrations)
+ */
+export type WebhookProvider = "openstatus"
+
+/**
+ * Bot configurations for webhook-based integrations.
+ * These don't require OAuth but still need bot users for posting messages.
+ */
+export const WEBHOOK_BOT_CONFIGS: Record<WebhookProvider, IntegrationBotConfig> = {
+	openstatus: {
+		name: "OpenStatus",
+		avatarUrl: "https://cdn.brandfetch.io/openstatus.dev/w/64/h/64/theme/dark/icon",
+		botId: "bot-openstatus",
+	},
+}
+
+/**
+ * Get bot config for a specific OAuth provider
  */
 export const getBotConfig = (provider: IntegrationConnection.IntegrationProvider): IntegrationBotConfig =>
 	INTEGRATION_BOT_CONFIGS[provider]
+
+/**
+ * Get bot config for a webhook provider
+ */
+export const getWebhookBotConfig = (provider: WebhookProvider): IntegrationBotConfig =>
+	WEBHOOK_BOT_CONFIGS[provider]

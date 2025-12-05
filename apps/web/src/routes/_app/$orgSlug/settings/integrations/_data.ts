@@ -174,29 +174,20 @@ export const integrations: Integration[] = [
 	{
 		id: "openstatus",
 		name: "OpenStatus",
-		description: "Monitor your API and website to detect and resolve performance issues.",
+		description: "Monitor alerts and uptime notifications for your services.",
 		fullDescription:
-			"Connect OpenStatus to monitor your services and share real-time status updates with your team. Get instant alerts on incidents and keep everyone informed about system health.",
+			"Connect OpenStatus to receive monitor alerts directly in your channels. Get instant notifications when your services go down or recover, keeping your team informed about system health.",
 		logoDomain: "openstatus.dev",
-		logoSrc: "/brands/openstatus.svg",
+		logoType: "icon",
 		brandColor: "#10B981",
 		category: "developer-tools",
-		features: ["Real-time status updates", "Incident alerts", "Uptime monitoring", "Status page embeds"],
-		configOptions: [
-			{
-				id: "auto-alerts",
-				label: "Incident alerts",
-				description: "Automatically post alerts when incidents are detected",
-				type: "toggle",
-			},
-			{
-				id: "status-updates",
-				label: "Status updates",
-				description: "Share status changes in conversations",
-				type: "toggle",
-			},
+		features: [
+			"Monitor status alerts",
+			"Recovery notifications",
+			"Latency tracking",
+			"Rich status embeds",
 		],
-		comingSoon: true,
+		configOptions: [],
 	},
 ]
 

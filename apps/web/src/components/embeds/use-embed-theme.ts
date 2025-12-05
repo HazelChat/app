@@ -1,6 +1,6 @@
 import { getBrandfetchIcon } from "~/routes/_app/$orgSlug/settings/integrations/_data"
 
-export type EmbedProvider = "linear" | "github" | "figma" | "notion"
+export type EmbedProvider = "linear" | "github" | "figma" | "notion" | "openstatus"
 
 export interface EmbedTheme {
 	/** Provider display name */
@@ -38,6 +38,12 @@ export const EMBED_THEMES: Record<EmbedProvider, EmbedTheme> = {
 		name: "Notion",
 		color: "#000000",
 		domain: "notion.so",
+		logoType: "icon",
+	},
+	openstatus: {
+		name: "OpenStatus",
+		color: "#10B981",
+		domain: "openstatus.dev",
 		logoType: "icon",
 	},
 }

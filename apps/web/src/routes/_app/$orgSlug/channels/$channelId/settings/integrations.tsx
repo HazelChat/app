@@ -2,13 +2,15 @@ import { useAtomSet } from "@effect-atom/atom-react"
 import type { ChannelId, ChannelWebhookId } from "@hazel/schema"
 import { createFileRoute } from "@tanstack/react-router"
 import { Exit } from "effect"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { listChannelWebhooksMutation, type WebhookData } from "~/atoms/channel-webhook-atoms"
 import { CreateWebhookForm } from "~/components/channel-settings/create-webhook-form"
 import { DeleteWebhookDialog } from "~/components/channel-settings/delete-webhook-dialog"
 import { EditWebhookForm } from "~/components/channel-settings/edit-webhook-form"
+import { OpenStatusSection } from "~/components/channel-settings/openstatus-section"
 import { RegenerateTokenDialog } from "~/components/channel-settings/regenerate-token-dialog"
 import { WebhookCard } from "~/components/channel-settings/webhook-card"
+import { getProviderIconUrl } from "~/components/embeds/use-embed-theme"
 import { SectionHeader } from "~/components/ui/section-header"
 
 export const Route = createFileRoute("/_app/$orgSlug/channels/$channelId/settings/integrations")({
@@ -76,12 +78,20 @@ function IntegrationsPage() {
 	const { channelId } = Route.useParams()
 
 	const [webhooksExpanded, setWebhooksExpanded] = useState(true)
+	const [openStatusExpanded, setOpenStatusExpanded] = useState(true)
 	const [webhooks, setWebhooks] = useState<WebhookData[]>([])
 	const [isLoading, setIsLoading] = useState(true)
 	const [selectedWebhook, setSelectedWebhook] = useState<WebhookData | null>(null)
 	const [editModalOpen, setEditModalOpen] = useState(false)
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 	const [regenerateDialogOpen, setRegenerateDialogOpen] = useState(false)
+
+	// Separate OpenStatus webhook from regular webhooks
+	const { openStatusWebhook, regularWebhooks } = useMemo(() => {
+		const openStatus = webhooks.find((w) => w.name === "OpenStatus")
+		const regular = webhooks.filter((w) => w.name !== "OpenStatus")
+		return { openStatusWebhook: openStatus ?? null, regularWebhooks: regular }
+	}, [webhooks])
 
 	const listWebhooks = useAtomSet(listChannelWebhooksMutation, {
 		mode: "promiseExit",
@@ -137,6 +147,34 @@ function IntegrationsPage() {
 			</SectionHeader.Root>
 
 			<div className="flex flex-col gap-4">
+				{/* OpenStatus Section */}
+				<IntegrationSection
+					icon={
+						<img
+							src={getProviderIconUrl("openstatus")}
+							alt="OpenStatus"
+							className="size-5 rounded"
+						/>
+					}
+					title="OpenStatus"
+					description="Receive monitor alerts in this channel"
+					badge={
+						openStatusWebhook ? (
+							<span className="rounded-full bg-emerald-500/10 px-2 py-0.5 font-medium text-emerald-600 text-xs dark:text-emerald-400">
+								Connected
+							</span>
+						) : undefined
+					}
+					isExpanded={openStatusExpanded}
+					onToggle={() => setOpenStatusExpanded(!openStatusExpanded)}
+				>
+					<OpenStatusSection
+						channelId={channelId as ChannelId}
+						webhook={openStatusWebhook}
+						onWebhookChange={fetchWebhooks}
+					/>
+				</IntegrationSection>
+
 				{/* Webhooks Section */}
 				<IntegrationSection
 					icon={
@@ -157,9 +195,9 @@ function IntegrationsPage() {
 					title="Webhooks"
 					description="Allow external services to post messages via HTTP"
 					badge={
-						webhooks.length > 0 ? (
+						regularWebhooks.length > 0 ? (
 							<span className="rounded-full bg-primary/10 px-2 py-0.5 font-medium text-primary text-xs">
-								{webhooks.length}
+								{regularWebhooks.length}
 							</span>
 						) : undefined
 					}
@@ -173,7 +211,7 @@ function IntegrationsPage() {
 							<div className="flex items-center justify-center py-8">
 								<div className="size-6 animate-spin rounded-full border-2 border-muted-fg/30 border-t-primary" />
 							</div>
-						) : webhooks.length === 0 ? (
+						) : regularWebhooks.length === 0 ? (
 							<div className="flex flex-col items-center justify-center rounded-lg border border-border border-dashed py-8 text-center">
 								<p className="text-muted-fg text-sm">
 									No webhooks yet. Create one to get started.
@@ -181,7 +219,7 @@ function IntegrationsPage() {
 							</div>
 						) : (
 							<div className="flex flex-col gap-3">
-								{webhooks.map((webhook) => (
+								{regularWebhooks.map((webhook) => (
 									<WebhookCard
 										key={webhook.id}
 										webhook={webhook}
