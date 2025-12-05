@@ -37,11 +37,7 @@ export function EmbedBody({
 			? `${description.slice(0, descriptionMaxLength)}...`
 			: description
 
-	const titleElement = (
-		<h4 className="font-semibold text-fg text-sm leading-snug">
-			{title}
-		</h4>
-	)
+	const titleElement = <h4 className="font-semibold text-fg text-sm leading-snug">{title}</h4>
 
 	return (
 		<div className={cn("p-3", className)}>

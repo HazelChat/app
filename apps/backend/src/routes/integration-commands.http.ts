@@ -163,6 +163,7 @@ export const HttpIntegrationCommandLive = HttpApiBuilder.group(HazelApi, "integr
 							channelId,
 							authorId: botUser.id,
 							content: messageContent,
+							embeds: null,
 							replyToMessageId: null,
 							threadChannelId: null,
 							deletedAt: null,

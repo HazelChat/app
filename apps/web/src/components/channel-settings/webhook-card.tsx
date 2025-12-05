@@ -1,0 +1,143 @@
+import { formatDistanceToNow } from "date-fns"
+import { useState } from "react"
+import { toast } from "sonner"
+import type { WebhookData } from "~/atoms/channel-webhook-atoms"
+import IconCheck from "~/components/icons/icon-check"
+import IconCopy from "~/components/icons/icon-copy"
+import IconDotsVertical from "~/components/icons/icon-dots-vertical"
+import IconEdit from "~/components/icons/icon-edit"
+import IconTrash from "~/components/icons/icon-trash"
+import { Badge } from "~/components/ui/badge"
+import { Button } from "~/components/ui/button"
+import { Menu, MenuContent, MenuItem, MenuLabel, MenuSeparator } from "~/components/ui/menu"
+
+interface WebhookCardProps {
+	webhook: WebhookData
+	onEdit: () => void
+	onRegenerateToken: () => void
+	onDelete: () => void
+}
+
+export function WebhookCard({ webhook, onEdit, onRegenerateToken, onDelete }: WebhookCardProps) {
+	const [copied, setCopied] = useState(false)
+
+	const webhookUrl = `${import.meta.env.VITE_BACKEND_URL}/webhooks/incoming/${webhook.id}/`
+
+	const handleCopyUrl = async () => {
+		try {
+			await navigator.clipboard.writeText(webhookUrl)
+			setCopied(true)
+			toast.success("Webhook URL copied")
+			setTimeout(() => setCopied(false), 2000)
+		} catch {
+			toast.error("Failed to copy to clipboard")
+		}
+	}
+
+	return (
+		<div className="flex items-start justify-between rounded-xl border border-border bg-bg p-4 transition-colors hover:border-border-hover">
+			<div className="flex items-start gap-3">
+				{webhook.avatarUrl ? (
+					<img
+						src={webhook.avatarUrl}
+						alt={webhook.name}
+						className="size-10 rounded-full object-cover"
+					/>
+				) : (
+					<div className="flex size-10 items-center justify-center rounded-full bg-secondary">
+						<svg
+							className="size-5 text-muted-fg"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke="currentColor"
+							strokeWidth={1.5}
+						>
+							<path
+								strokeLinecap="round"
+								strokeLinejoin="round"
+								d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244"
+							/>
+						</svg>
+					</div>
+				)}
+
+				<div className="flex flex-col gap-1">
+					<div className="flex items-center gap-2">
+						<span className="font-medium text-fg">{webhook.name}</span>
+						<Badge intent={webhook.isEnabled ? "success" : "secondary"}>
+							{webhook.isEnabled ? "Active" : "Disabled"}
+						</Badge>
+					</div>
+
+					{webhook.description && <p className="text-muted-fg text-sm">{webhook.description}</p>}
+
+					<div className="flex items-center gap-2 text-muted-fg text-xs">
+						<span className="font-mono">****{webhook.tokenSuffix}</span>
+						{webhook.lastUsedAt && (
+							<>
+								<span className="text-muted-fg/50">•</span>
+								<span>
+									Last used{" "}
+									{formatDistanceToNow(new Date(webhook.lastUsedAt), {
+										addSuffix: true,
+									})}
+								</span>
+							</>
+						)}
+					</div>
+
+					<div className="flex items-center gap-1.5">
+						<span className="max-w-[280px] truncate font-mono text-muted-fg text-xs">
+							{webhookUrl}
+						</span>
+						<button
+							type="button"
+							onClick={handleCopyUrl}
+							className="flex size-5 shrink-0 items-center justify-center rounded text-muted-fg transition-colors hover:bg-secondary hover:text-fg"
+							aria-label="Copy webhook URL"
+						>
+							{copied ? (
+								<IconCheck className="size-3.5 text-emerald-500" />
+							) : (
+								<IconCopy className="size-3.5" />
+							)}
+						</button>
+					</div>
+				</div>
+			</div>
+
+			<Menu>
+				<Button intent="plain" size="sq-xs" className="text-muted-fg">
+					<IconDotsVertical className="size-4" />
+				</Button>
+				<MenuContent placement="bottom end">
+					<MenuItem onAction={onEdit}>
+						<IconEdit className="size-4" />
+						<MenuLabel>Edit</MenuLabel>
+					</MenuItem>
+					<MenuItem onAction={onRegenerateToken}>
+						<svg
+							className="size-4"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke="currentColor"
+							strokeWidth={1.5}
+						>
+							<path
+								strokeLinecap="round"
+								strokeLinejoin="round"
+								d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"
+							/>
+						</svg>
+						<MenuLabel>Regenerate Token</MenuLabel>
+					</MenuItem>
+					<MenuSeparator />
+					<MenuItem intent="danger" onAction={onDelete}>
+						<IconTrash className="size-4" />
+						<MenuLabel>Delete</MenuLabel>
+					</MenuItem>
+				</MenuContent>
+			</Menu>
+		</div>
+	)
+}

@@ -29,6 +29,7 @@ import { useAuth } from "~/lib/auth"
 import { cn } from "~/lib/utils"
 import { InlineThreadPreview } from "./inline-thread-preview"
 import { MessageAttachments } from "./message-attachments"
+import { MessageEmbeds } from "./message-embeds"
 import { MessageReplySection } from "./message-reply-section"
 import { SlateMessageViewer } from "./slate-editor/slate-message-viewer"
 import { UserProfilePopover } from "./user-profile-popover"
@@ -196,6 +197,8 @@ export function MessageItem({
 									{otherUrls.length > 0 && otherUrls[otherUrls.length - 1] && (
 										<LinkPreview url={otherUrls[otherUrls.length - 1]!} />
 									)}
+									{/* Webhook/rich embeds */}
+									<MessageEmbeds embeds={message.embeds} />
 								</>
 							)
 						})()

@@ -40,6 +40,7 @@ export const sendMessageAction = optimisticAction({
 			content: props.content,
 			replyToMessageId: props.replyToMessageId || null,
 			threadChannelId: props.threadChannelId || null,
+			embeds: null,
 			createdAt: new Date(),
 			updatedAt: null,
 			deletedAt: null,
@@ -60,6 +61,7 @@ export const sendMessageAction = optimisticAction({
 				replyToMessageId: props.replyToMessageId || null,
 				threadChannelId: props.threadChannelId || null,
 				attachmentIds: props.attachmentIds || [],
+				embeds: null,
 				deletedAt: null,
 				authorId: props.authorId,
 			})

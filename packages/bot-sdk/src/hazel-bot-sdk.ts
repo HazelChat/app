@@ -150,6 +150,7 @@ export class HazelBotClient extends Effect.Service<HazelBotClient>()("HazelBotCl
 							replyToMessageId: options?.replyToMessageId ?? null,
 							threadChannelId: options?.threadChannelId ?? null,
 							attachmentIds: options?.attachmentIds ?? [],
+							embeds: null,
 							deletedAt: null,
 							// authorId will be overridden by backend AuthMiddleware with the authenticated bot user
 							authorId: "" as UserId,
@@ -174,6 +175,7 @@ export class HazelBotClient extends Effect.Service<HazelBotClient>()("HazelBotCl
 							replyToMessageId: message.id,
 							threadChannelId: options?.threadChannelId ?? null,
 							attachmentIds: options?.attachmentIds ?? [],
+							embeds: null,
 							deletedAt: null,
 							// authorId will be overridden by backend AuthMiddleware with the authenticated bot user
 							authorId: "" as UserId,
@@ -192,6 +194,7 @@ export class HazelBotClient extends Effect.Service<HazelBotClient>()("HazelBotCl
 							channelId: message.channelId,
 							replyToMessageId: message.replyToMessageId,
 							threadChannelId: message.threadChannelId,
+							embeds: message.embeds,
 							content,
 						})
 						.pipe(Effect.map((r) => r.data)),

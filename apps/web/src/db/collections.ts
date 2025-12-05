@@ -131,9 +131,10 @@ export const messageCollection = createEffectCollection({
 			table: "messages",
 		},
 		// liveSse: true,
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Parser type assertion needed due to complex JSONB embeds field
 		parser: {
-			timestamptz: (date) => new Date(date),
-		},
+			timestamptz: (date: string) => new Date(date),
+		} as any,
 		fetchClient: (url, init) => fetch(url, { ...init, credentials: "include" }),
 	},
 	schema: Message.Model.json,

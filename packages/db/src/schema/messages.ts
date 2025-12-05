@@ -1,5 +1,36 @@
 import type { ChannelId, MessageId, MessageReactionId, UserId } from "@hazel/schema"
-import { index, pgTable, text, timestamp, unique, uuid, varchar } from "drizzle-orm/pg-core"
+import { index, jsonb, pgTable, text, timestamp, unique, uuid, varchar } from "drizzle-orm/pg-core"
+
+// Embed types for JSONB column
+export interface MessageEmbedAuthor {
+	name: string
+	url?: string
+	iconUrl?: string
+}
+
+export interface MessageEmbedFooter {
+	text: string
+	iconUrl?: string
+}
+
+export interface MessageEmbedField {
+	name: string
+	value: string
+	inline?: boolean
+}
+
+export interface MessageEmbed {
+	title?: string
+	description?: string
+	url?: string
+	color?: number // Hex color as integer
+	author?: MessageEmbedAuthor
+	footer?: MessageEmbedFooter
+	image?: { url: string }
+	thumbnail?: { url: string }
+	fields?: MessageEmbedField[]
+	timestamp?: string // ISO 8601 timestamp
+}
 
 // Messages table
 export const messagesTable = pgTable(
@@ -9,6 +40,8 @@ export const messagesTable = pgTable(
 		channelId: uuid().notNull().$type<ChannelId>(),
 		authorId: uuid().notNull().$type<UserId>(),
 		content: text().notNull(),
+		// Rich embeds for webhook messages (Discord-style)
+		embeds: jsonb().$type<MessageEmbed[]>(),
 		// Reply to another message
 		replyToMessageId: uuid().$type<MessageId>(),
 		// Thread channel (if this message started a thread)

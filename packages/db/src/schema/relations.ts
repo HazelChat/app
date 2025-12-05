@@ -1,6 +1,7 @@
 import { relations } from "drizzle-orm"
 import { attachmentsTable } from "./attachments"
 import { botsTable } from "./bots"
+import { channelWebhooksTable } from "./channel-webhooks"
 import { channelMembersTable, channelsTable } from "./channels"
 import { integrationConnectionsTable } from "./integration-connections"
 import { integrationTokensTable } from "./integration-tokens"
@@ -70,6 +71,7 @@ export const channelsRelations = relations(channelsTable, ({ one, many }) => ({
 	pinnedMessages: many(pinnedMessagesTable),
 	attachments: many(attachmentsTable),
 	typingIndicators: many(typingIndicatorsTable),
+	webhooks: many(channelWebhooksTable),
 }))
 
 // Channel members relations
@@ -237,6 +239,26 @@ export const botsRelations = relations(botsTable, ({ one }) => ({
 	}),
 	createdByUser: one(usersTable, {
 		fields: [botsTable.createdBy],
+		references: [usersTable.id],
+	}),
+}))
+
+// Channel webhooks relations
+export const channelWebhooksRelations = relations(channelWebhooksTable, ({ one }) => ({
+	channel: one(channelsTable, {
+		fields: [channelWebhooksTable.channelId],
+		references: [channelsTable.id],
+	}),
+	organization: one(organizationsTable, {
+		fields: [channelWebhooksTable.organizationId],
+		references: [organizationsTable.id],
+	}),
+	botUser: one(usersTable, {
+		fields: [channelWebhooksTable.botUserId],
+		references: [usersTable.id],
+	}),
+	createdByUser: one(usersTable, {
+		fields: [channelWebhooksTable.createdBy],
 		references: [usersTable.id],
 	}),
 }))

@@ -156,6 +156,7 @@ export class MockDataGenerator extends Effect.Service<MockDataGenerator>()("Mock
 								"Let's discuss this in the next standup.",
 								"I'll review the PR shortly.",
 							][i % 10] || `Message ${i}`,
+						embeds: null,
 						replyToMessageId: null,
 						threadChannelId: null,
 						deletedAt: null,

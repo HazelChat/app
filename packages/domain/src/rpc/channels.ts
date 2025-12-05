@@ -77,8 +77,7 @@ export class ChannelRpcs extends RpcGroup.make(
 	Rpc.make("channel.update", {
 		payload: Schema.Struct({
 			id: ChannelId,
-			...Channel.Model.jsonUpdate.fields,
-		}),
+		}).pipe(Schema.extend(Schema.partial(Channel.Model.jsonUpdate))),
 		success: ChannelResponse,
 		error: Schema.Union(ChannelNotFoundError, UnauthorizedError, InternalServerError),
 	}).middleware(AuthMiddleware),

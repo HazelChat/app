@@ -1,5 +1,6 @@
 import { AttachmentId, ChannelId, MessageId, UserId } from "@hazel/schema"
 import { Schema } from "effect"
+import { MessageEmbeds } from "./message-embed-schema"
 import * as M from "./utils"
 import { baseFields } from "./utils"
 
@@ -8,6 +9,7 @@ export class Model extends M.Class<Model>("Message")({
 	channelId: ChannelId,
 	authorId: M.GeneratedByApp(UserId),
 	content: Schema.String,
+	embeds: Schema.NullOr(MessageEmbeds),
 	replyToMessageId: Schema.NullOr(MessageId),
 	threadChannelId: Schema.NullOr(ChannelId),
 	...baseFields,

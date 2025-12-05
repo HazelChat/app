@@ -3,6 +3,7 @@ import {
 	AttachmentRpcs,
 	ChannelMemberRpcs,
 	ChannelRpcs,
+	ChannelWebhookRpcs,
 	InvitationRpcs,
 	MessageReactionRpcs,
 	MessageRpcs,
@@ -17,6 +18,7 @@ import {
 import { Layer } from "effect"
 import { AttachmentRpcLive } from "./handlers/attachments"
 import { ChannelMemberRpcLive } from "./handlers/channel-members"
+import { ChannelWebhookRpcLive } from "./handlers/channel-webhooks"
 import { ChannelRpcLive } from "./handlers/channels"
 import { InvitationRpcLive } from "./handlers/invitations"
 import { MessageReactionRpcLive } from "./handlers/message-reactions"
@@ -57,6 +59,7 @@ export const AllRpcs = MessageRpcs.merge(
 	UserPresenceStatusRpcs,
 	ChannelRpcs,
 	ChannelMemberRpcs,
+	ChannelWebhookRpcs,
 	AttachmentRpcs,
 ).middleware(RpcLoggingMiddleware)
 
@@ -73,6 +76,7 @@ export const RpcServerLive = Layer.empty.pipe(
 	Layer.provideMerge(UserPresenceStatusRpcLive),
 	Layer.provideMerge(ChannelRpcLive),
 	Layer.provideMerge(ChannelMemberRpcLive),
+	Layer.provideMerge(ChannelWebhookRpcLive),
 	Layer.provideMerge(AttachmentRpcLive),
 	Layer.provideMerge(AuthMiddlewareLive),
 	Layer.provideMerge(RpcLoggingMiddlewareLive),

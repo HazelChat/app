@@ -119,3 +119,9 @@ export const MessageIntegrationLinkId = Schema.UUID.pipe(
 	title: "Message Integration Link ID",
 })
 export type MessageIntegrationLinkId = Schema.Schema.Type<typeof MessageIntegrationLinkId>
+
+export const ChannelWebhookId = Schema.UUID.pipe(Schema.brand("@HazelChat/ChannelWebhookId")).annotations({
+	description: "The ID of a channel webhook",
+	title: "Channel Webhook ID",
+})
+export type ChannelWebhookId = Schema.Schema.Type<typeof ChannelWebhookId>
