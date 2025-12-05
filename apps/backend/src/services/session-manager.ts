@@ -53,7 +53,7 @@ export class SessionManager extends Effect.Service<SessionManager>()("SessionMan
 							email: email,
 							firstName: firstName || "",
 							lastName: lastName || "",
-							avatarUrl: avatarUrl || "",
+							avatarUrl: avatarUrl || `https://avatar.vercel.sh/${workOsUserId}.svg`,
 							userType: "user",
 							settings: null,
 							isOnboarded: false,

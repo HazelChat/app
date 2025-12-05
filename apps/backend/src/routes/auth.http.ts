@@ -136,7 +136,7 @@ export const HttpAuthLive = HttpApiBuilder.group(HazelApi, "auth", (handlers) =>
 						email: workosUser.email,
 						firstName: workosUser.firstName || "",
 						lastName: workosUser.lastName || "",
-						avatarUrl: workosUser.profilePictureUrl || "",
+						avatarUrl: workosUser.profilePictureUrl || `https://avatar.vercel.sh/${workosUser.id}.svg`,
 						userType: "user",
 						settings: null,
 						isOnboarded: false,
