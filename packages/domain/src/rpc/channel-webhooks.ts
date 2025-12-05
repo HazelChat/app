@@ -76,9 +76,9 @@ export class ChannelWebhookRpcs extends RpcGroup.make(
 	Rpc.make("channelWebhook.create", {
 		payload: Schema.Struct({
 			channelId: ChannelId,
-			name: Schema.String,
-			description: Schema.optional(Schema.String),
-			avatarUrl: Schema.optional(Schema.String),
+			name: Schema.String.pipe(Schema.minLength(1), Schema.maxLength(100)),
+			description: Schema.optional(Schema.String.pipe(Schema.maxLength(500))),
+			avatarUrl: Schema.optional(Schema.String.pipe(Schema.maxLength(2048))),
 		}),
 		success: ChannelWebhookCreatedResponse,
 		error: Schema.Union(ChannelNotFoundError, UnauthorizedError, InternalServerError),
@@ -113,9 +113,9 @@ export class ChannelWebhookRpcs extends RpcGroup.make(
 	Rpc.make("channelWebhook.update", {
 		payload: Schema.Struct({
 			id: ChannelWebhookId,
-			name: Schema.optional(Schema.String),
-			description: Schema.optional(Schema.NullOr(Schema.String)),
-			avatarUrl: Schema.optional(Schema.NullOr(Schema.String)),
+			name: Schema.optional(Schema.String.pipe(Schema.minLength(1), Schema.maxLength(100))),
+			description: Schema.optional(Schema.NullOr(Schema.String.pipe(Schema.maxLength(500)))),
+			avatarUrl: Schema.optional(Schema.NullOr(Schema.String.pipe(Schema.maxLength(2048)))),
 			isEnabled: Schema.optional(Schema.Boolean),
 		}),
 		success: ChannelWebhookResponse,

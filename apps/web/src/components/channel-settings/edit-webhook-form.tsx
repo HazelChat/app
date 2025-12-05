@@ -1,26 +1,7 @@
 import { useAtomSet } from "@effect-atom/atom-react"
-import type { ChannelId, ChannelWebhookId, OrganizationId, UserId } from "@hazel/schema"
 import { type } from "arktype"
-
-// Type for the webhook data returned from RPC (without sensitive tokenHash field)
-interface WebhookData {
-	id: ChannelWebhookId
-	channelId: ChannelId
-	organizationId: OrganizationId
-	botUserId: UserId
-	name: string
-	description: string | null
-	avatarUrl: string | null
-	tokenSuffix: string
-	isEnabled: boolean
-	createdBy: UserId
-	lastUsedAt: Date | null
-	createdAt: Date
-	updatedAt: Date | null
-	deletedAt: Date | null
-}
-
 import { Exit } from "effect"
+import type { WebhookData } from "~/atoms/channel-webhook-atoms"
 import { toast } from "sonner"
 import { updateChannelWebhookMutation } from "~/atoms/channel-webhook-atoms"
 import { Button } from "~/components/ui/button"
@@ -77,7 +58,7 @@ export function EditWebhookForm({ webhook, isOpen, onOpenChange, onSuccess }: Ed
 			Exit.match(exit, {
 				onSuccess: () => {
 					toast.success("Webhook updated successfully")
-					onOpenChange(false)
+					handleClose()
 					onSuccess?.()
 				},
 				onFailure: (cause) => {
@@ -88,8 +69,13 @@ export function EditWebhookForm({ webhook, isOpen, onOpenChange, onSuccess }: Ed
 		},
 	})
 
+	const handleClose = () => {
+		form.reset()
+		onOpenChange(false)
+	}
+
 	return (
-		<Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+		<Modal isOpen={isOpen} onOpenChange={handleClose}>
 			<ModalContent size="lg">
 				<ModalHeader>
 					<ModalTitle>Edit Webhook</ModalTitle>
@@ -170,7 +156,7 @@ export function EditWebhookForm({ webhook, isOpen, onOpenChange, onSuccess }: Ed
 					</ModalBody>
 
 					<ModalFooter>
-						<Button intent="outline" onPress={() => onOpenChange(false)} type="button">
+						<Button intent="outline" onPress={handleClose} type="button">
 							Cancel
 						</Button>
 						<form.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting]}>

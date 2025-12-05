@@ -1,4 +1,4 @@
-import { createHash } from "node:crypto"
+import { createHash, timingSafeEqual } from "node:crypto"
 import { HttpApiBuilder } from "@effect/platform"
 import type { MessageEmbed as DbMessageEmbed } from "@hazel/db"
 import { InternalServerError, withSystemActor } from "@hazel/domain"
@@ -57,18 +57,26 @@ export const HttpIncomingWebhookLive = HttpApiBuilder.group(HazelApi, "incoming-
 			const webhookOption = yield* webhookRepo.findById(webhookId).pipe(withSystemActor)
 
 			if (Option.isNone(webhookOption)) {
+				yield* Effect.logWarning("Webhook not found", { webhookId })
 				return yield* Effect.fail(new WebhookNotFoundError({ message: "Webhook not found" }))
 			}
 
 			const webhook = webhookOption.value
 
-			// Verify token hash matches
-			if (webhook.tokenHash !== tokenHash) {
+			// Verify token hash matches using timing-safe comparison to prevent timing attacks
+			const tokenBuffer = Buffer.from(tokenHash, "hex")
+			const expectedBuffer = Buffer.from(webhook.tokenHash, "hex")
+			if (
+				tokenBuffer.length !== expectedBuffer.length ||
+				!timingSafeEqual(tokenBuffer, expectedBuffer)
+			) {
+				yield* Effect.logWarning("Invalid webhook token", { webhookId })
 				return yield* Effect.fail(new InvalidWebhookTokenError({ message: "Invalid webhook token" }))
 			}
 
 			// Check if webhook is enabled
 			if (!webhook.isEnabled) {
+				yield* Effect.logWarning("Webhook is disabled", { webhookId: webhook.id })
 				return yield* Effect.fail(new WebhookDisabledError({ message: "Webhook is disabled" }))
 			}
 

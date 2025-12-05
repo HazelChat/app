@@ -1,26 +1,7 @@
-import type { ChannelId, ChannelWebhookId, OrganizationId, UserId } from "@hazel/schema"
 import { formatDistanceToNow } from "date-fns"
 import { useState } from "react"
 import { toast } from "sonner"
-
-// Type for the webhook data returned from RPC (without sensitive tokenHash field)
-interface WebhookData {
-	id: ChannelWebhookId
-	channelId: ChannelId
-	organizationId: OrganizationId
-	botUserId: UserId
-	name: string
-	description: string | null
-	avatarUrl: string | null
-	tokenSuffix: string
-	isEnabled: boolean
-	createdBy: UserId
-	lastUsedAt: Date | null
-	createdAt: Date
-	updatedAt: Date | null
-	deletedAt: Date | null
-}
-
+import type { WebhookData } from "~/atoms/channel-webhook-atoms"
 import IconCheck from "~/components/icons/icon-check"
 import IconCopy from "~/components/icons/icon-copy"
 import IconDotsVertical from "~/components/icons/icon-dots-vertical"

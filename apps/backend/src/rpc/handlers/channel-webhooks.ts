@@ -1,7 +1,8 @@
 import { createHash, randomBytes } from "node:crypto"
 import { Database } from "@hazel/db"
-import { CurrentUser, policyUse, withRemapDbErrors, withSystemActor } from "@hazel/domain"
+import { type ChannelWebhookId, CurrentUser, policyUse, withRemapDbErrors, withSystemActor } from "@hazel/domain"
 import {
+	ChannelNotFoundError,
 	ChannelWebhookCreatedResponse,
 	ChannelWebhookListResponse,
 	ChannelWebhookNotFoundError,
@@ -54,18 +55,21 @@ export const ChannelWebhookRpcLive = ChannelWebhookRpcs.toLayer(
 								.findById(payload.channelId)
 								.pipe(withSystemActor)
 							if (Option.isNone(channelOption)) {
-								return yield* Effect.die(new Error("Channel not found"))
+								return yield* Effect.fail(
+									new ChannelNotFoundError({ channelId: payload.channelId }),
+								)
 							}
 							const channel = channelOption.value
 
 							// Generate token
 							const { token, tokenHash, tokenSuffix } = generateToken()
 
+							// Generate a stable ID for the bot's external ID reference
+							const botReferenceId = crypto.randomUUID() as ChannelWebhookId
+
 							// Create bot user for this webhook
 							const botUser = yield* botService.createWebhookBot(
-								// We'll create the webhook first to get the ID, but for now use a placeholder
-								// Actually, let's generate a UUID ourselves
-								crypto.randomUUID() as any,
+								botReferenceId,
 								payload.name,
 								payload.avatarUrl ?? null,
 								channel.organizationId,
@@ -205,7 +209,9 @@ export const ChannelWebhookRpcLive = ChannelWebhookRpcs.toLayer(
 								return yield* Effect.fail(new ChannelWebhookNotFoundError({ webhookId: id }))
 							}
 
-							// Soft delete
+							// Soft delete webhook only - bot user cleanup can be handled separately
+							// (e.g., by admin or background job) since integrations may create webhooks
+							// and users shouldn't need permission to delete integration-created bot users
 							yield* webhookRepo.softDelete(id)
 
 							const txid = yield* generateTransactionId()

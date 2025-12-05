@@ -1,28 +1,9 @@
 import { useAtomSet } from "@effect-atom/atom-react"
-import type { ChannelId, ChannelWebhookId, OrganizationId, UserId } from "@hazel/schema"
+import type { ChannelId, ChannelWebhookId } from "@hazel/schema"
 import { createFileRoute } from "@tanstack/react-router"
 import { Exit } from "effect"
 import { useCallback, useEffect, useState } from "react"
-import { listChannelWebhooksMutation } from "~/atoms/channel-webhook-atoms"
-
-// Type for the webhook data returned from RPC (without sensitive tokenHash field)
-interface WebhookData {
-	id: ChannelWebhookId
-	channelId: ChannelId
-	organizationId: OrganizationId
-	botUserId: UserId
-	name: string
-	description: string | null
-	avatarUrl: string | null
-	tokenSuffix: string
-	isEnabled: boolean
-	createdBy: UserId
-	lastUsedAt: Date | null
-	createdAt: Date
-	updatedAt: Date | null
-	deletedAt: Date | null
-}
-
+import { listChannelWebhooksMutation, type WebhookData } from "~/atoms/channel-webhook-atoms"
 import { CreateWebhookForm } from "~/components/channel-settings/create-webhook-form"
 import { DeleteWebhookDialog } from "~/components/channel-settings/delete-webhook-dialog"
 import { EditWebhookForm } from "~/components/channel-settings/edit-webhook-form"
