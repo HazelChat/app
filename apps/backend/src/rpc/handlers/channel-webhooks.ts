@@ -1,6 +1,12 @@
 import { createHash, randomBytes } from "node:crypto"
 import { Database } from "@hazel/db"
-import { type ChannelWebhookId, CurrentUser, policyUse, withRemapDbErrors, withSystemActor } from "@hazel/domain"
+import {
+	type ChannelWebhookId,
+	CurrentUser,
+	policyUse,
+	withRemapDbErrors,
+	withSystemActor,
+} from "@hazel/domain"
 import {
 	ChannelNotFoundError,
 	ChannelWebhookCreatedResponse,
@@ -220,6 +226,23 @@ export const ChannelWebhookRpcLive = ChannelWebhookRpcs.toLayer(
 						}).pipe(policyUse(ChannelWebhookPolicy.canDelete(id))),
 					)
 					.pipe(withRemapDbErrors("ChannelWebhook", "delete")),
+
+			"channelWebhook.listByOrganization": () =>
+				Effect.gen(function* () {
+					const user = yield* CurrentUser.Context
+					const webhookRepo = yield* ChannelWebhookRepo
+
+					// User must have an organization to list webhooks
+					if (!user.organizationId) {
+						return new ChannelWebhookListResponse({ data: [] })
+					}
+
+					const webhooks = yield* webhookRepo
+						.findByOrganization(user.organizationId)
+						.pipe(withSystemActor)
+
+					return new ChannelWebhookListResponse({ data: webhooks })
+				}).pipe(withRemapDbErrors("ChannelWebhook", "select")),
 		}
 	}),
 )

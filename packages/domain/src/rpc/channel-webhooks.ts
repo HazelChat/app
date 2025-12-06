@@ -154,4 +154,19 @@ export class ChannelWebhookRpcs extends RpcGroup.make(
 		success: Schema.Struct({ transactionId: TransactionId }),
 		error: Schema.Union(ChannelWebhookNotFoundError, UnauthorizedError, InternalServerError),
 	}).middleware(AuthMiddleware),
+
+	/**
+	 * channelWebhook.listByOrganization
+	 *
+	 * Lists all webhooks for the user's organization.
+	 * Used by the integration settings page to show all configured webhooks.
+	 *
+	 * @returns Array of webhooks across all channels in the organization
+	 * @throws UnauthorizedError if user is not authenticated
+	 */
+	Rpc.make("channelWebhook.listByOrganization", {
+		payload: Schema.Struct({}),
+		success: ChannelWebhookListResponse,
+		error: Schema.Union(UnauthorizedError, InternalServerError),
+	}).middleware(AuthMiddleware),
 ) {}

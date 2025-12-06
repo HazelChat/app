@@ -172,6 +172,7 @@ function IntegrationsPage() {
 						channelId={channelId as ChannelId}
 						webhook={openStatusWebhook}
 						onWebhookChange={fetchWebhooks}
+						onDone={fetchWebhooks}
 					/>
 				</IntegrationSection>
 

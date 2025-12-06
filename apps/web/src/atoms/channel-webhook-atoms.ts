@@ -36,3 +36,9 @@ export const regenerateChannelWebhookTokenMutation = HazelRpcClient.mutation("ch
  * Mutation atom for deleting a webhook (soft delete).
  */
 export const deleteChannelWebhookMutation = HazelRpcClient.mutation("channelWebhook.delete")
+
+/**
+ * Mutation atom for listing all webhooks in the user's organization.
+ * Used by the integration settings page.
+ */
+export const listOrganizationWebhooksMutation = HazelRpcClient.mutation("channelWebhook.listByOrganization")

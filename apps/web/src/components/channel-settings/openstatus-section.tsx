@@ -25,13 +25,14 @@ const OPENSTATUS_NAME = "OpenStatus"
 interface OpenStatusSectionProps {
 	channelId: ChannelId
 	webhook: WebhookData | null
-	onWebhookChange: () => void
+	onWebhookChange: (operation: "create" | "delete") => void
+	onDone?: () => void
 }
 
-export function OpenStatusSection({ channelId, webhook, onWebhookChange }: OpenStatusSectionProps) {
+export function OpenStatusSection({ channelId, webhook, onWebhookChange, onDone }: OpenStatusSectionProps) {
 	const [isCreating, setIsCreating] = useState(false)
 	const [showToken, setShowToken] = useState(false)
-	const [createdToken, setCreatedToken] = useState<string | null>(null)
+	const [createdWebhook, setCreatedWebhook] = useState<{ id: string; token: string } | null>(null)
 	const [copied, setCopied] = useState<"url" | "token" | null>(null)
 	const [isDeleting, setIsDeleting] = useState(false)
 
@@ -39,9 +40,13 @@ export function OpenStatusSection({ channelId, webhook, onWebhookChange }: OpenS
 	const updateWebhook = useAtomSet(updateChannelWebhookMutation, { mode: "promiseExit" })
 	const deleteWebhook = useAtomSet(deleteChannelWebhookMutation, { mode: "promiseExit" })
 
-	const webhookUrl = webhook
-		? `${import.meta.env.VITE_BACKEND_URL}/webhooks/incoming/${webhook.id}/`
-		: null
+	// Use createdWebhook ID if available (right after creation), otherwise use webhook prop
+	const webhookUrl = createdWebhook
+		? `${import.meta.env.VITE_BACKEND_URL}/webhooks/incoming/${createdWebhook.id}/`
+		: webhook
+			? `${import.meta.env.VITE_BACKEND_URL}/webhooks/incoming/${webhook.id}/`
+			: null
+	const displayToken = createdWebhook?.token ?? null
 
 	const handleConnect = async () => {
 		setIsCreating(true)
@@ -56,10 +61,10 @@ export function OpenStatusSection({ channelId, webhook, onWebhookChange }: OpenS
 
 		Exit.match(exit, {
 			onSuccess: (result) => {
-				setCreatedToken(result.token)
+				setCreatedWebhook({ id: result.data.id, token: result.token })
 				setShowToken(true)
 				toast.success("OpenStatus webhook created")
-				onWebhookChange()
+				// Don't call onWebhookChange here - wait for user to click Done
 			},
 			onFailure: (cause) => {
 				console.error("Failed to create webhook:", cause)
@@ -81,7 +86,7 @@ export function OpenStatusSection({ channelId, webhook, onWebhookChange }: OpenS
 		Exit.match(exit, {
 			onSuccess: () => {
 				toast.success(webhook.isEnabled ? "OpenStatus disabled" : "OpenStatus enabled")
-				onWebhookChange()
+				onWebhookChange("create")
 			},
 			onFailure: () => {
 				toast.error("Failed to update webhook")
@@ -99,7 +104,7 @@ export function OpenStatusSection({ channelId, webhook, onWebhookChange }: OpenS
 		Exit.match(exit, {
 			onSuccess: () => {
 				toast.success("OpenStatus webhook deleted")
-				onWebhookChange()
+				onWebhookChange("delete")
 			},
 			onFailure: () => {
 				toast.error("Failed to delete webhook")
@@ -120,7 +125,7 @@ export function OpenStatusSection({ channelId, webhook, onWebhookChange }: OpenS
 	}
 
 	// Show token after creation
-	if (showToken && createdToken && webhookUrl) {
+	if (showToken && displayToken && webhookUrl) {
 		return (
 			<div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4">
 				<div className="flex items-start gap-3">
@@ -156,14 +161,14 @@ export function OpenStatusSection({ channelId, webhook, onWebhookChange }: OpenS
 								</Label>
 								<div className="flex gap-2">
 									<Input
-										value={`${webhookUrl}${createdToken}/openstatus`}
+										value={`${webhookUrl}${displayToken}/openstatus`}
 										readOnly
 										className="flex-1 font-mono text-xs"
 									/>
 									<Button
 										intent="outline"
 										size="sq-sm"
-										onPress={() => handleCopy(`${webhookUrl}${createdToken}/openstatus`, "url")}
+										onPress={() => handleCopy(`${webhookUrl}${displayToken}/openstatus`, "url")}
 									>
 										{copied === "url" ? (
 											<IconCheck className="size-4 text-emerald-500" />
@@ -180,7 +185,8 @@ export function OpenStatusSection({ channelId, webhook, onWebhookChange }: OpenS
 							size="sm"
 							onPress={() => {
 								setShowToken(false)
-								setCreatedToken(null)
+								setCreatedWebhook(null)
+								onDone?.()
 							}}
 						>
 							Done

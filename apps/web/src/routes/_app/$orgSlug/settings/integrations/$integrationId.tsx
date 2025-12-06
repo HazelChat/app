@@ -3,6 +3,7 @@ import type { IntegrationConnection } from "@hazel/domain/models"
 import { createFileRoute, notFound, useNavigate } from "@tanstack/react-router"
 import { Exit } from "effect"
 import { useState } from "react"
+import { OpenStatusIntegrationContent } from "~/components/integrations/openstatus-integration-content"
 import { Button } from "~/components/ui/button"
 import { Input, InputGroup } from "~/components/ui/input"
 import { SectionHeader } from "~/components/ui/section-header"
@@ -39,6 +40,7 @@ function IntegrationConfigPage() {
 	const [isDisconnecting, setIsDisconnecting] = useState(false)
 
 	// Query connection from TanStack DB collection (real-time sync via Electric)
+	// Only used for OAuth-based integrations (not OpenStatus)
 	const { connection, isConnected } = useIntegrationConnection(
 		user?.organizationId ?? null,
 		integrationId as IntegrationProvider,
@@ -98,6 +100,9 @@ function IntegrationConfigPage() {
 		navigate({ to: "/$orgSlug/settings/integrations", params: { orgSlug } })
 	}
 
+	// OpenStatus uses webhook-based integration (per-channel), not OAuth
+	const isOpenStatus = integrationId === "openstatus"
+
 	return (
 		<div className="flex flex-col gap-6 px-4 lg:px-8">
 			{/* Back link */}
@@ -132,7 +137,7 @@ function IntegrationConfigPage() {
 						<div className="flex flex-col gap-1">
 							<div className="flex items-center gap-3">
 								<SectionHeader.Heading>{integration.name}</SectionHeader.Heading>
-								<ConnectionBadge connected={isConnected} />
+								{!isOpenStatus && <ConnectionBadge connected={isConnected} />}
 							</div>
 							<SectionHeader.Subheading>{integration.description}</SectionHeader.Subheading>
 						</div>
@@ -142,43 +147,52 @@ function IntegrationConfigPage() {
 
 			{/* Main content */}
 			<div className="grid gap-8 lg:grid-cols-[1fr_320px]">
-				{/* Left column - Connection & Config */}
+				{/* Left column - Connection & Config (or OpenStatus content) */}
 				<div className="flex flex-col gap-8">
-					{/* Connection card */}
-					<div className="overflow-hidden rounded-xl border border-border bg-bg">
-						<div className="border-border border-b bg-bg-muted/30 px-5 py-3">
-							<h3 className="font-medium text-fg text-sm">Connection</h3>
-						</div>
-						<div className="p-5">
-							{isConnected ? (
-								<ConnectedState
-									integration={integration}
-									externalAccountName={externalAccountName}
-									isDisconnecting={isDisconnecting}
-									onDisconnect={handleDisconnect}
-								/>
-							) : (
-								<DisconnectedState
-									integration={integration}
-									isConnecting={isConnecting}
-									onConnect={handleConnect}
-								/>
-							)}
-						</div>
-					</div>
+					{isOpenStatus ? (
+						// OpenStatus: Show channel-based webhook configuration
+						user?.organizationId && (
+							<OpenStatusIntegrationContent organizationId={user.organizationId} />
+						)
+					) : (
+						<>
+							{/* OAuth-based integration: Connection card */}
+							<div className="overflow-hidden rounded-xl border border-border bg-bg">
+								<div className="border-border border-b bg-bg-muted/30 px-5 py-3">
+									<h3 className="font-medium text-fg text-sm">Connection</h3>
+								</div>
+								<div className="p-5">
+									{isConnected ? (
+										<ConnectedState
+											integration={integration}
+											externalAccountName={externalAccountName}
+											isDisconnecting={isDisconnecting}
+											onDisconnect={handleDisconnect}
+										/>
+									) : (
+										<DisconnectedState
+											integration={integration}
+											isConnecting={isConnecting}
+											onConnect={handleConnect}
+										/>
+									)}
+								</div>
+							</div>
 
-					{/* Configuration */}
-					{isConnected && (
-						<div className="overflow-hidden rounded-xl border border-border bg-bg">
-							<div className="border-border border-b bg-bg-muted/30 px-5 py-3">
-								<h3 className="font-medium text-fg text-sm">Configuration</h3>
-							</div>
-							<div className="flex flex-col divide-y divide-border">
-								{integration.configOptions.map((option) => (
-									<ConfigOptionRow key={option.id} option={option} />
-								))}
-							</div>
-						</div>
+							{/* Configuration */}
+							{isConnected && (
+								<div className="overflow-hidden rounded-xl border border-border bg-bg">
+									<div className="border-border border-b bg-bg-muted/30 px-5 py-3">
+										<h3 className="font-medium text-fg text-sm">Configuration</h3>
+									</div>
+									<div className="flex flex-col divide-y divide-border">
+										{integration.configOptions.map((option) => (
+											<ConfigOptionRow key={option.id} option={option} />
+										))}
+									</div>
+								</div>
+							)}
+						</>
 					)}
 				</div>
 

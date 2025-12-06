@@ -1,5 +1,5 @@
 import { and, Database, eq, isNull, ModelRepository, schema, type TransactionClient } from "@hazel/db"
-import { type ChannelId, type ChannelWebhookId, policyRequire } from "@hazel/domain"
+import { type ChannelId, type ChannelWebhookId, type OrganizationId, policyRequire } from "@hazel/domain"
 import { ChannelWebhook } from "@hazel/domain/models"
 import { Effect, Option } from "effect"
 import { DatabaseLive } from "../services/database"
@@ -107,6 +107,24 @@ export class ChannelWebhookRepo extends Effect.Service<ChannelWebhookRepo>()("Ch
 				policyRequire("ChannelWebhook", "delete"),
 			)({ id }, tx)
 
+		// Find all webhooks for an organization
+		const findByOrganization = (organizationId: OrganizationId, tx?: TxFn) =>
+			db.makeQuery(
+				(execute, data: { organizationId: OrganizationId }) =>
+					execute((client) =>
+						client
+							.select()
+							.from(schema.channelWebhooksTable)
+							.where(
+								and(
+									eq(schema.channelWebhooksTable.organizationId, data.organizationId),
+									isNull(schema.channelWebhooksTable.deletedAt),
+								),
+							),
+					),
+				policyRequire("ChannelWebhook", "select"),
+			)({ organizationId }, tx)
+
 		return {
 			...baseRepo,
 			findByChannel,
@@ -114,6 +132,7 @@ export class ChannelWebhookRepo extends Effect.Service<ChannelWebhookRepo>()("Ch
 			updateLastUsed,
 			updateToken,
 			softDelete,
+			findByOrganization,
 		}
 	}),
 	dependencies: [DatabaseLive],
