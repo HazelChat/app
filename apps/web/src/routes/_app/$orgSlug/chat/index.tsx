@@ -3,6 +3,9 @@ import { createFileRoute, Link, useParams } from "@tanstack/react-router"
 import { useMemo } from "react"
 import IconHashtag from "~/components/icons/icon-hashtag"
 import IconLock from "~/components/icons/icon-lock"
+import IconMsgs from "~/components/icons/icon-msgs"
+import { IconUsers } from "~/components/icons/icon-users"
+import IconVolumeMute from "~/components/icons/icon-volume-mute"
 import { Avatar } from "~/components/ui/avatar"
 import { SectionHeader } from "~/components/ui/section-header"
 import { Tab, TabList, TabPanel, Tabs } from "~/components/ui/tabs"
@@ -67,6 +70,7 @@ function RouteComponent() {
 				type: channel.type,
 				isMuted: myMember.isMuted,
 				currentUser: { notificationCount: myMember.notificationCount || 0 },
+				memberCount: members.length,
 			}
 
 			if (channel.type === "public") {
@@ -101,107 +105,175 @@ function RouteComponent() {
 					</div>
 				</SectionHeader.Group>
 			</SectionHeader.Root>
+
 			<Tabs defaultSelectedKey="public">
 				<TabList className="w-full">
-					<Tab id="public">Public</Tab>
-					<Tab id="private">Private</Tab>
-					<Tab id="dms">Direct message</Tab>
+					<Tab id="public">
+						<span className="flex items-center gap-2">
+							Public
+							{publicChannels.length > 0 && (
+								<span className="rounded-full bg-secondary px-2 py-0.5 font-medium text-muted-fg text-xs">
+									{publicChannels.length}
+								</span>
+							)}
+						</span>
+					</Tab>
+					<Tab id="private">
+						<span className="flex items-center gap-2">
+							Private
+							{privateChannels.length > 0 && (
+								<span className="rounded-full bg-secondary px-2 py-0.5 font-medium text-muted-fg text-xs">
+									{privateChannels.length}
+								</span>
+							)}
+						</span>
+					</Tab>
+					<Tab id="dms">
+						<span className="flex items-center gap-2">
+							Direct messages
+							{dmChannels.length > 0 && (
+								<span className="rounded-full bg-secondary px-2 py-0.5 font-medium text-muted-fg text-xs">
+									{dmChannels.length}
+								</span>
+							)}
+						</span>
+					</Tab>
 				</TabList>
 
 				<TabPanel id="public">
-					{publicChannels.length > 0 && (
-						<div className="w-full rounded-lg border border-border p-2">
+					{publicChannels.length > 0 ? (
+						<div className="overflow-hidden rounded-xl border border-border bg-bg shadow-sm">
 							<h2 className="sr-only">Public Channels</h2>
-							<div className="space-y-2">
+							<div className="divide-y divide-border">
 								{publicChannels.map((channel) => (
 									<ChannelCard key={channel._id} channel={channel} />
 								))}
 							</div>
 						</div>
+					) : (
+						<EmptyState
+							icon={IconHashtag}
+							title="No public channels"
+							description="Public channels are open for everyone in the organization to join."
+						/>
 					)}
 				</TabPanel>
+
 				<TabPanel id="private">
-					{privateChannels.length > 0 && (
-						<div className="w-full rounded-lg border border-border p-2">
+					{privateChannels.length > 0 ? (
+						<div className="overflow-hidden rounded-xl border border-border bg-bg shadow-sm">
 							<h2 className="sr-only">Private Channels</h2>
-							<div className="space-y-2">
+							<div className="divide-y divide-border">
 								{privateChannels.map((channel) => (
 									<ChannelCard key={channel._id} channel={channel} isPrivate />
 								))}
 							</div>
 						</div>
+					) : (
+						<EmptyState
+							icon={IconLock}
+							title="No private channels"
+							description="Private channels are invite-only spaces for focused discussions."
+						/>
 					)}
 				</TabPanel>
+
 				<TabPanel id="dms">
-					{dmChannels.length > 0 && (
-						<div className="w-full rounded-lg border border-border p-2">
-							<div className="space-y-2">
-								{dmChannels.length > 0 && (
-									<div className="w-full">
-										<h2 className="sr-only">Direct Messages</h2>
-										<div className="space-y-2">
-											{dmChannels.map((channel) => (
-												<DmCard
-													key={channel._id}
-													channel={channel}
-													currentUserId={me?.id}
-												/>
-											))}
-										</div>
-									</div>
-								)}
+					{dmChannels.length > 0 ? (
+						<div className="overflow-hidden rounded-xl border border-border bg-bg shadow-sm">
+							<h2 className="sr-only">Direct Messages</h2>
+							<div className="divide-y divide-border">
+								{dmChannels.map((channel) => (
+									<DmCard key={channel._id} channel={channel} currentUserId={me?.id} />
+								))}
 							</div>
 						</div>
+					) : (
+						<EmptyState
+							icon={IconMsgs}
+							title="No direct messages"
+							description="Start a conversation with someone in your organization."
+						/>
 					)}
 				</TabPanel>
 			</Tabs>
-
-			{!publicChannels.length && !privateChannels.length && !dmChannels.length && (
-				<div className="flex h-64 items-center justify-center">
-					<p className="text-muted-fg">No channels available</p>
-				</div>
-			)}
 		</div>
+	)
+}
+
+function EmptyState({
+	icon: Icon,
+	title,
+	description,
+}: {
+	icon: React.ComponentType<{ className?: string }>
+	title: string
+	description: string
+}) {
+	return (
+		<div className="flex flex-col items-center justify-center py-16 text-center">
+			<div className="mb-4 flex size-12 items-center justify-center rounded-xl bg-secondary">
+				<Icon className="size-6 text-muted-fg" />
+			</div>
+			<h3 className="font-semibold text-fg">{title}</h3>
+			<p className="mt-1 max-w-sm text-muted-fg text-sm">{description}</p>
+		</div>
+	)
+}
+
+function NotificationBadge({ count }: { count: number }) {
+	if (count <= 0) return null
+	return (
+		<span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-danger px-1.5 font-medium text-danger-fg text-xs">
+			{count > 99 ? "99+" : count}
+		</span>
 	)
 }
 
 function ChannelCard({ channel, isPrivate = false }: { channel: any; isPrivate?: boolean }) {
 	const { orgSlug } = useParams({ from: "/_app/$orgSlug" })
+
 	return (
 		<Link
 			to="/$orgSlug/chat/$id"
 			params={{ orgSlug, id: channel._id }}
-			className="inset-ring inset-ring-transparent flex items-center justify-between gap-4 rounded-lg px-2.5 py-2 hover:inset-ring-secondary hover:bg-quaternary/40"
+			className="group flex items-center justify-between gap-4 px-4 py-3 transition-all duration-200 hover:bg-secondary/50"
 		>
-			<div className="flex items-center gap-3">
-				<div className="inset-ring inset-ring-secondary flex size-10 items-center justify-center rounded-md bg-primary">
+			<div className="flex min-w-0 items-center gap-3">
+				<div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-secondary">
 					{isPrivate ? (
-						<IconLock className="size-5 text-secondary" />
+						<IconLock className="size-5 text-muted-fg" />
 					) : (
-						<IconHashtag className="size-5 text-secondary" />
+						<IconHashtag className="size-5 text-muted-fg" />
 					)}
 				</div>
-				<div>
+				<div className="min-w-0">
 					<div className="flex items-center gap-2">
-						<h3 className={cn("font-semibold text-sm/5", channel.isMuted && "opacity-60")}>
+						<h3
+							className={cn(
+								"truncate font-semibold text-fg text-sm",
+								channel.isMuted && "text-muted-fg",
+							)}
+						>
 							{channel.name}
 						</h3>
-						{channel.isFavorite && <span className="text-amber-500">★</span>}
+						{channel.isFavorite && <span className="shrink-0 text-favorite">★</span>}
 					</div>
-					{channel.description && (
-						<p className="line-clamp-1 text-secondary-fg text-sm">{channel.description}</p>
-					)}
-					<div className="mt-1 flex items-center gap-4 text-secondary-fg text-xs">
-						<span>{channel.members?.length || 0} members</span>
-						{channel.isMuted && <span>Muted</span>}
+					<div className="mt-0.5 flex items-center gap-3 text-muted-fg text-xs">
+						<span className="flex items-center gap-1">
+							<IconUsers className="size-3.5" />
+							{channel.memberCount || 0}
+						</span>
+						{channel.isMuted && (
+							<span className="flex items-center gap-1">
+								<IconVolumeMute className="size-3.5" />
+								Muted
+							</span>
+						)}
 					</div>
 				</div>
 			</div>
-			{channel.currentUser?.notificationCount > 0 && (
-				<div className="flex h-6 min-w-6 items-center justify-center rounded-full bg-fg-error-primary px-1.5 font-medium text-error-primary text-xs">
-					{channel.currentUser.notificationCount}
-				</div>
-			)}
+			<NotificationBadge count={channel.currentUser?.notificationCount || 0} />
 		</Link>
 	)
 }
@@ -211,91 +283,94 @@ function DmCard({ channel, currentUserId }: { channel: any; currentUserId?: stri
 	const otherMembers = channel.members.filter((member: any) => member.userId !== currentUserId)
 
 	if (channel.type === "single" && otherMembers.length === 1) {
-		const member = otherMembers[0]
-		const { isOnline, status } = useUserPresence(member.user.id)
-
-		return (
-			<Link
-				to="/$orgSlug/chat/$id"
-				params={{ orgSlug, id: channel._id }}
-				className="inset-ring inset-ring-transparent flex items-center justify-between gap-4 rounded-lg px-2.5 py-2 hover:inset-ring-secondary hover:bg-quaternary/40"
-			>
-				<div className="flex items-center gap-3">
-					<div className="relative">
-						<Avatar
-							size="md"
-							src={member.user.avatarUrl}
-							alt={`${member.user.firstName} ${member.user.lastName}`}
-						/>
-						{/* Status badge */}
-						<span
-							className={cn(
-								"absolute right-0 bottom-0 size-3 rounded-full border-2 border-bg",
-								isOnline ? "bg-success" : "bg-muted",
-							)}
-						/>
-					</div>
-					<div>
-						<h3 className={cn("font-medium", channel.isMuted && "opacity-60")}>
-							{member.user.firstName} {member.user.lastName}
-						</h3>
-						<p className="text-secondary text-sm">
-							{isOnline
-								? "Active now"
-								: status === "away"
-									? "Away"
-									: status === "busy"
-										? "Busy"
-										: status === "dnd"
-											? "Do not disturb"
-											: "Offline"}
-						</p>
-					</div>
-				</div>
-				{channel.currentUser?.notificationCount > 0 && (
-					<div className="flex h-6 min-w-6 items-center justify-center rounded-full bg-destructive px-1.5 font-medium text-destructive-foreground text-xs">
-						{channel.currentUser.notificationCount}
-					</div>
-				)}
-			</Link>
-		)
+		return <SingleDmCard channel={channel} member={otherMembers[0]} orgSlug={orgSlug} />
 	}
 
 	return (
 		<Link
 			to="/$orgSlug/chat/$id"
 			params={{ orgSlug, id: channel._id }}
-			className="inset-ring inset-ring-transparent flex items-center justify-between gap-4 rounded-lg px-2.5 py-2 hover:inset-ring-secondary hover:bg-quaternary/40"
+			className="group flex items-center justify-between gap-4 px-4 py-3 transition-all duration-200 hover:bg-secondary/50"
 		>
-			<div className="flex items-center gap-2.5">
-				<div className="-space-x-4 flex">
+			<div className="flex min-w-0 items-center gap-3">
+				<div className="-space-x-3 flex shrink-0">
 					{otherMembers.slice(0, 3).map((member: any) => (
 						<Avatar
 							key={member.user.id}
-							className="size-9 border-1 border-primary"
+							size="sm"
 							src={member.user.avatarUrl}
-							alt={member.user.firstName[0]}
+							alt={member.user.firstName}
+							className="ring-2 ring-bg"
 						/>
 					))}
 				</div>
-				<div>
-					<h3 className={cn("font-semibold text-sm/6", channel.isMuted && "opacity-60")}>
+				<div className="min-w-0">
+					<h3 className={cn("truncate font-semibold text-fg text-sm", channel.isMuted && "text-muted-fg")}>
 						{otherMembers
 							.slice(0, 3)
-							.map((member: any) => `${member.user.firstName} ${member.user.lastName}`)
-							.join(", ")}{" "}
+							.map((member: any) => member.user.firstName)
+							.join(", ")}
 						{otherMembers.length > 3 && (
-							<span className="text-muted">+{otherMembers.length - 3} more</span>
+							<span className="text-muted-fg"> +{otherMembers.length - 3}</span>
 						)}
 					</h3>
-					<p className="text-muted text-sm">{otherMembers.length} participants</p>
+					<p className="text-muted-fg text-xs">{otherMembers.length} participants</p>
 				</div>
 			</div>
-			{channel.currentUser?.notificationCount > 0 && (
-				<div className="flex h-6 min-w-6 items-center justify-center rounded-full bg-destructive px-1.5 font-medium text-destructive-foreground text-xs">
-					{channel.currentUser.notificationCount}
+			<NotificationBadge count={channel.currentUser?.notificationCount || 0} />
+		</Link>
+	)
+}
+
+function SingleDmCard({
+	channel,
+	member,
+	orgSlug,
+}: {
+	channel: any
+	member: any
+	orgSlug: string
+}) {
+	const { isOnline, status } = useUserPresence(member.user.id)
+
+	const statusText = isOnline
+		? "Active now"
+		: status === "away"
+			? "Away"
+			: status === "busy"
+				? "Busy"
+				: status === "dnd"
+					? "Do not disturb"
+					: "Offline"
+
+	return (
+		<Link
+			to="/$orgSlug/chat/$id"
+			params={{ orgSlug, id: channel._id }}
+			className="group flex items-center justify-between gap-4 px-4 py-3 transition-all duration-200 hover:bg-secondary/50"
+		>
+			<div className="flex min-w-0 items-center gap-3">
+				<div className="relative shrink-0">
+					<Avatar
+						size="md"
+						src={member.user.avatarUrl}
+						alt={`${member.user.firstName} ${member.user.lastName}`}
+					/>
+					<span
+						className={cn(
+							"absolute right-0 bottom-0 size-3 rounded-full border-2 border-bg",
+							isOnline ? "bg-success" : "bg-muted",
+						)}
+					/>
 				</div>
-			)}
+				<div className="min-w-0">
+					<h3 className={cn("truncate font-semibold text-fg text-sm", channel.isMuted && "text-muted-fg")}>
+						{member.user.firstName} {member.user.lastName}
+					</h3>
+					<p className="text-muted-fg text-xs">{statusText}</p>
+				</div>
+			</div>
+			<NotificationBadge count={channel.currentUser?.notificationCount || 0} />
 		</Link>
 	)
 }
