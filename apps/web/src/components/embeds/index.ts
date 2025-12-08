@@ -20,6 +20,8 @@ export type { EmbedErrorProps } from "./embed-error"
 export type { EmbedField, EmbedFieldsProps } from "./embed-fields"
 export type { EmbedFooterProps } from "./embed-footer"
 export type { EmbedImageProps } from "./embed-image"
+// Re-export standalone components
+export { EmbedMarkdown, type EmbedMarkdownProps } from "./embed-markdown"
 export type { EmbedSkeletonProps } from "./embed-skeleton"
 export type { EmbedThumbnailProps } from "./embed-thumbnail"
 

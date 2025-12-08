@@ -3,6 +3,7 @@
 import type { ReactNode } from "react"
 import { cn } from "~/lib/utils"
 import { useEmbedContext } from "./embed"
+import { EmbedMarkdown } from "./embed-markdown"
 
 export interface EmbedBodyProps {
 	/** Main title text */
@@ -37,7 +38,11 @@ export function EmbedBody({
 			? `${description.slice(0, descriptionMaxLength)}...`
 			: description
 
-	const titleElement = <h4 className="font-semibold text-fg text-sm leading-snug">{title}</h4>
+	const titleElement = (
+		<h4 className="font-semibold text-fg text-sm leading-snug">
+			<EmbedMarkdown>{title}</EmbedMarkdown>
+		</h4>
+	)
 
 	return (
 		<div className={cn("p-3", className)}>
@@ -57,7 +62,7 @@ export function EmbedBody({
 
 			{truncatedDescription && (
 				<p className="mt-1.5 line-clamp-2 text-muted-fg text-xs leading-relaxed">
-					{truncatedDescription}
+					<EmbedMarkdown>{truncatedDescription}</EmbedMarkdown>
 				</p>
 			)}
 

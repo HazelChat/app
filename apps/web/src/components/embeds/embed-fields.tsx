@@ -3,6 +3,7 @@
 import type { ReactNode } from "react"
 import { cn } from "~/lib/utils"
 import { embedSectionStyles } from "./embed"
+import { EmbedMarkdown } from "./embed-markdown"
 
 export interface EmbedField {
 	/** Field label/name */
@@ -41,7 +42,9 @@ export function EmbedFields({ fields, className }: EmbedFieldsProps) {
 					className={cn("flex items-center gap-1.5", !field.inline && "w-full")}
 				>
 					{typeof field.value === "string" ? (
-						<span className="text-muted-fg text-xs">{field.value}</span>
+						<span className="text-muted-fg text-xs">
+							<EmbedMarkdown>{field.value}</EmbedMarkdown>
+						</span>
 					) : (
 						field.value
 					)}
