@@ -25,7 +25,6 @@
 		"@hazel/domain": "workspace:*",
 		"@hazel/effect-electric-db-collection": "workspace:*",
 		"@hazel/link-preview-worker": "workspace:*",
-		"@hazel/rpc-devtools": "workspace:*",
 		"@hazel/schema": "workspace:*",
 		"@hazel/tanstack-db-atom": "workspace:*",
 		"@heroicons/react": "^2.2.0",

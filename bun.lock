@@ -130,7 +130,6 @@
         "@hazel/domain": "workspace:*",
         "@hazel/effect-electric-db-collection": "workspace:*",
         "@hazel/link-preview-worker": "workspace:*",
-        "@hazel/rpc-devtools": "workspace:*",
         "@hazel/schema": "workspace:*",
         "@hazel/tanstack-db-atom": "workspace:*",
         "@heroicons/react": "^2.2.0",
@@ -280,7 +279,6 @@
         "@effect/platform": "catalog:effect",
         "@effect/rpc": "catalog:effect",
         "@effect/workflow": "catalog:effect",
-        "@hazel/rpc-devtools": "workspace:*",
         "@hazel/schema": "workspace:*",
         "drizzle-orm": "^0.45.0",
         "effect": "catalog:effect",
@@ -322,21 +320,6 @@
         "@effect/language-service": "catalog:effect",
         "@vitest/coverage-istanbul": "^4.0.8",
         "typescript": "^5.9.3",
-      },
-    },
-    "packages/rpc-devtools": {
-      "name": "@hazel/rpc-devtools",
-      "version": "0.1.0",
-      "devDependencies": {
-        "@types/node": "^24.10.1",
-        "@types/react": "^19.2.7",
-        "typescript": "^5.9.3",
-      },
-      "peerDependencies": {
-        "@effect/rpc": ">=0.70.0",
-        "@tanstack/devtools-event-client": ">=0.3.0",
-        "effect": ">=3.0.0",
-        "react": ">=18.0.0",
       },
     },
     "packages/schema": {
@@ -736,8 +719,6 @@
     "@hazel/electric-proxy": ["@hazel/electric-proxy@workspace:apps/electric-proxy"],
 
     "@hazel/link-preview-worker": ["@hazel/link-preview-worker@workspace:apps/link-preview-worker"],
-
-    "@hazel/rpc-devtools": ["@hazel/rpc-devtools@workspace:packages/rpc-devtools"],
 
     "@hazel/schema": ["@hazel/schema@workspace:packages/schema"],
 

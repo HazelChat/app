@@ -21,7 +21,6 @@
 		"@effect/platform": "catalog:effect",
 		"@effect/rpc": "catalog:effect",
 		"@effect/workflow": "catalog:effect",
-		"@hazel/rpc-devtools": "workspace:*",
 		"@hazel/schema": "workspace:*",
 		"drizzle-orm": "^0.45.0",
 		"effect": "catalog:effect",
