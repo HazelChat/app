@@ -143,10 +143,14 @@ export function getWhereClauseForTable(
 		// Channel tables
 		// ===========================================
 
-		Match.when("channels", () =>
-			// All non-deleted channels visible
-			Effect.succeed(buildDeletedAtNullClause(schema.channelsTable.deletedAt)),
-		),
+		Match.when("channels", () => {
+			const { id, deletedAt } = schema.channelsTable
+			// Filter channels to only those the user is a member of (uses Electric subquery feature)
+			return Effect.succeed({
+				whereClause: `"${id.name}" IN (SELECT "channelId" FROM "channel_members" WHERE "userId" = $1 AND "deletedAt" IS NULL) AND "${deletedAt.name}" IS NULL`,
+				params: [user.internalUserId],
+			} satisfies WhereClauseResult)
+		}),
 
 		Match.when("channel_members", () =>
 			// All non-deleted channel members visible
