@@ -4,10 +4,10 @@ import { type ExternalToast, toast } from "sonner"
 import {
 	type CommonAppError,
 	DEFAULT_ERROR_MESSAGE,
-	type UserErrorMessage,
 	getCommonErrorMessage,
 	getUserFriendlyError,
 	isCommonAppError,
+	type UserErrorMessage,
 } from "./error-messages"
 
 /**
@@ -48,7 +48,11 @@ type CustomErrorHandlers<E> = {
  * be provided for context-specific overrides.
  */
 type RequireCustomErrorsIfNeeded<E> = NonCommonErrorTags<E> extends never
-	? { customErrors?: Partial<{ [K in AllErrorTags<E> & CommonErrorTag]: (error: Extract<E, { _tag: K }>) => UserErrorMessage }> }
+	? {
+			customErrors?: Partial<{
+				[K in AllErrorTags<E> & CommonErrorTag]: (error: Extract<E, { _tag: K }>) => UserErrorMessage
+			}>
+		}
 	: { customErrors: CustomErrorHandlers<E> }
 
 export type ToastExitOptions<A, E> = {

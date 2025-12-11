@@ -67,6 +67,13 @@ export function CreateOrganizationModal({ isOpen, onOpenChange }: CreateOrganiza
 
 						return "Server created successfully"
 					},
+					customErrors: {
+						OrganizationSlugAlreadyExistsError: (error) => ({
+							title: "Slug already taken",
+							description: `The slug "${error.slug}" is already in use. Please choose a different one.`,
+							isRetryable: false,
+						}),
+					},
 				},
 			)
 

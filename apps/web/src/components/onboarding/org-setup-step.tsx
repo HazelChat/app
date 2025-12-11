@@ -70,6 +70,13 @@ export function OrgSetupStep({ onBack, onContinue, defaultName = "", defaultSlug
 				{
 					loading: "Creating workspace...",
 					success: "Workspace created successfully",
+					customErrors: {
+						OrganizationSlugAlreadyExistsError: (error) => ({
+							title: "Slug already taken",
+							description: `The slug "${error.slug}" is already in use. Please choose a different one.`,
+							isRetryable: false,
+						}),
+					},
 				},
 			)
 

@@ -3,7 +3,6 @@ import type { ChannelId, ChannelWebhookId } from "@hazel/schema"
 import { formatDistanceToNow } from "date-fns"
 import { useState } from "react"
 import { toast } from "sonner"
-import { matchExitWithToast } from "~/lib/toast-exit"
 import {
 	createChannelWebhookMutation,
 	deleteChannelWebhookMutation,
@@ -14,6 +13,7 @@ import IconCheck from "~/components/icons/icon-check"
 import IconCopy from "~/components/icons/icon-copy"
 import { Badge } from "~/components/ui/badge"
 import { Button } from "~/components/ui/button"
+import { matchExitWithToast } from "~/lib/toast-exit"
 import { getProviderIconUrl } from "../embeds/use-embed-theme"
 
 type IntegrationProvider = "openstatus" | "railway"

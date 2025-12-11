@@ -165,7 +165,16 @@ export function ChatProvider({ channelId, organizationId, children, onMessageSen
 				attachmentIds: attachmentsToSend as AttachmentId[] | undefined,
 			})
 
-			toastExitOnError(tx, { error: "Failed to send message" })
+			toastExitOnError(tx, {
+				error: "Failed to send message",
+				customErrors: {
+					ChannelNotFoundError: () => ({
+						title: "Channel not found",
+						description: "This channel may have been deleted.",
+						isRetryable: false,
+					}),
+				},
+			})
 			if (Exit.isSuccess(tx)) {
 				setReplyToMessageId(null)
 				clearAttachments()
@@ -187,7 +196,16 @@ export function ChatProvider({ channelId, organizationId, children, onMessageSen
 	const editMessage = useCallback(
 		async (messageId: MessageId, content: string) => {
 			const exit = await editMessageMutation({ messageId, content })
-			toastExitOnError(exit, { error: "Failed to edit message" })
+			toastExitOnError(exit, {
+				error: "Failed to edit message",
+				customErrors: {
+					MessageNotFoundError: () => ({
+						title: "Message not found",
+						description: "This message may have been deleted.",
+						isRetryable: false,
+					}),
+				},
+			})
 		},
 		[editMessageMutation],
 	)
@@ -195,7 +213,16 @@ export function ChatProvider({ channelId, organizationId, children, onMessageSen
 	const deleteMessage = useCallback(
 		async (messageId: MessageId) => {
 			const exit = await deleteMessageMutation({ messageId })
-			toastExitOnError(exit, { error: "Failed to delete message" })
+			toastExitOnError(exit, {
+				error: "Failed to delete message",
+				customErrors: {
+					MessageNotFoundError: () => ({
+						title: "Message not found",
+						description: "This message may have already been deleted.",
+						isRetryable: false,
+					}),
+				},
+			})
 		},
 		[deleteMessageMutation],
 	)
@@ -211,7 +238,16 @@ export function ChatProvider({ channelId, organizationId, children, onMessageSen
 				userId: UserId.make(user.id),
 			})
 
-			toastExitOnError(tx, { error: "Failed to toggle reaction" })
+			toastExitOnError(tx, {
+				error: "Failed to toggle reaction",
+				customErrors: {
+					MessageNotFoundError: () => ({
+						title: "Message not found",
+						description: "This message may have been deleted.",
+						isRetryable: false,
+					}),
+				},
+			})
 		},
 		[user?.id, toggleReactionMutation],
 	)
@@ -235,6 +271,13 @@ export function ChatProvider({ channelId, organizationId, children, onMessageSen
 			matchExitWithToast(exit, {
 				onSuccess: () => {},
 				successMessage: "Message pinned",
+				customErrors: {
+					MessageNotFoundError: () => ({
+						title: "Message not found",
+						description: "This message may have been deleted.",
+						isRetryable: false,
+					}),
+				},
 			})
 		},
 		[channelId, user?.id, pinMessageMutation],
@@ -247,6 +290,13 @@ export function ChatProvider({ channelId, organizationId, children, onMessageSen
 			matchExitWithToast(exit, {
 				onSuccess: () => {},
 				successMessage: "Message unpinned",
+				customErrors: {
+					PinnedMessageNotFoundError: () => ({
+						title: "Pin not found",
+						description: "This message may have already been unpinned.",
+						isRetryable: false,
+					}),
+				},
 			})
 		},
 		[unpinMessageMutation],
@@ -269,7 +319,10 @@ export function ChatProvider({ channelId, organizationId, children, onMessageSen
 					currentUserId: UserId.make(user.id),
 				})
 
-				toastExitOnError(exit, { error: "Failed to create thread" })
+				toastExitOnError(exit, {
+					error: "Failed to create thread",
+					customErrors: {},
+				})
 				if (Exit.isSuccess(exit)) {
 					setActiveThreadChannelId(exit.value.mutateResult.threadChannelId)
 					setActiveThreadMessageId(messageId)

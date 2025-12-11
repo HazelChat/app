@@ -56,6 +56,13 @@ export function ProfileInfoStep({
 				{
 					loading: "Updating profile...",
 					success: "Profile updated successfully",
+					customErrors: {
+						UserNotFoundError: () => ({
+							title: "User not found",
+							description: "Your account could not be found. Please try signing in again.",
+							isRetryable: false,
+						}),
+					},
 				},
 			)
 

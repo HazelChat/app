@@ -44,6 +44,13 @@ export function ChannelItem({ channel, member }: ChannelItemProps) {
 		matchExitWithToast(exit, {
 			onSuccess: () => {},
 			successMessage: member.isMuted ? "Channel unmuted" : "Channel muted",
+			customErrors: {
+				ChannelMemberNotFoundError: () => ({
+					title: "Membership not found",
+					description: "You may no longer be a member of this channel.",
+					isRetryable: false,
+				}),
+			},
 		})
 	}
 
@@ -56,6 +63,13 @@ export function ChannelItem({ channel, member }: ChannelItemProps) {
 		matchExitWithToast(exit, {
 			onSuccess: () => {},
 			successMessage: member.isFavorite ? "Removed from favorites" : "Added to favorites",
+			customErrors: {
+				ChannelMemberNotFoundError: () => ({
+					title: "Membership not found",
+					description: "You may no longer be a member of this channel.",
+					isRetryable: false,
+				}),
+			},
 		})
 	}
 
@@ -65,6 +79,13 @@ export function ChannelItem({ channel, member }: ChannelItemProps) {
 		matchExitWithToast(exit, {
 			onSuccess: () => {},
 			successMessage: "Channel deleted successfully",
+			customErrors: {
+				ChannelNotFoundError: () => ({
+					title: "Channel not found",
+					description: "This channel may have already been deleted.",
+					isRetryable: false,
+				}),
+			},
 		})
 	}
 
@@ -76,6 +97,13 @@ export function ChannelItem({ channel, member }: ChannelItemProps) {
 		matchExitWithToast(exit, {
 			onSuccess: () => {},
 			successMessage: "Left channel successfully",
+			customErrors: {
+				ChannelMemberNotFoundError: () => ({
+					title: "Membership not found",
+					description: "You may have already left this channel.",
+					isRetryable: false,
+				}),
+			},
 		})
 	}
 

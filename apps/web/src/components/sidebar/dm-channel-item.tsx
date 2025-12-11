@@ -81,6 +81,13 @@ export const DmChannelItem = ({ channelId }: DmChannelItemProps) => {
 		matchExitWithToast(exit, {
 			onSuccess: () => {},
 			successMessage: channel.currentUser.isMuted ? "Channel unmuted" : "Channel muted",
+			customErrors: {
+				ChannelMemberNotFoundError: () => ({
+					title: "Membership not found",
+					description: "You may no longer be a member of this conversation.",
+					isRetryable: false,
+				}),
+			},
 		})
 	}, [channel, updateMember])
 
@@ -93,6 +100,13 @@ export const DmChannelItem = ({ channelId }: DmChannelItemProps) => {
 		matchExitWithToast(exit, {
 			onSuccess: () => {},
 			successMessage: channel.currentUser.isFavorite ? "Removed from favorites" : "Added to favorites",
+			customErrors: {
+				ChannelMemberNotFoundError: () => ({
+					title: "Membership not found",
+					description: "You may no longer be a member of this conversation.",
+					isRetryable: false,
+				}),
+			},
 		})
 	}, [channel, updateMember])
 
@@ -103,7 +117,15 @@ export const DmChannelItem = ({ channelId }: DmChannelItemProps) => {
 			isHidden: true,
 		})
 		// Silent success, only show error
-		toastExitOnError(exit, {})
+		toastExitOnError(exit, {
+			customErrors: {
+				ChannelMemberNotFoundError: () => ({
+					title: "Membership not found",
+					description: "You may no longer be a member of this conversation.",
+					isRetryable: false,
+				}),
+			},
+		})
 	}, [channel, updateMember])
 
 	if (!channel) {

@@ -96,6 +96,13 @@ function InvitationsSettings() {
 					loading: "Resending invitation...",
 					success: "Invitation resent successfully",
 					error: "Failed to resend invitation",
+					customErrors: {
+						InvitationNotFoundError: () => ({
+							title: "Invitation not found",
+							description: "This invitation may have been revoked or expired.",
+							isRetryable: false,
+						}),
+					},
 				},
 			)
 		} finally {
@@ -116,6 +123,13 @@ function InvitationsSettings() {
 					loading: "Revoking invitation...",
 					success: "Invitation revoked successfully",
 					error: "Failed to revoke invitation",
+					customErrors: {
+						InvitationNotFoundError: () => ({
+							title: "Invitation not found",
+							description: "This invitation may have already been revoked or expired.",
+							isRetryable: false,
+						}),
+					},
 				},
 			)
 		} finally {

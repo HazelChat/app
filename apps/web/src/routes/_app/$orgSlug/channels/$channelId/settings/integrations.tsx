@@ -4,7 +4,6 @@ import { createFileRoute } from "@tanstack/react-router"
 import { formatDistanceToNow } from "date-fns"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { toast } from "sonner"
-import { matchExitWithToast } from "~/lib/toast-exit"
 import {
 	deleteChannelWebhookMutation,
 	listChannelWebhooksMutation,
@@ -23,6 +22,7 @@ import { Badge } from "~/components/ui/badge"
 import { Button } from "~/components/ui/button"
 import { Menu, MenuContent, MenuItem, MenuLabel, MenuSeparator } from "~/components/ui/menu"
 import { SectionHeader } from "~/components/ui/section-header"
+import { matchExitWithToast } from "~/lib/toast-exit"
 
 export const Route = createFileRoute("/_app/$orgSlug/channels/$channelId/settings/integrations")({
 	component: IntegrationsPage,
@@ -60,6 +60,13 @@ function IntegrationsPage() {
 
 		matchExitWithToast(exit, {
 			onSuccess: (result) => setWebhooks(result.data as unknown as WebhookData[]),
+			customErrors: {
+				ChannelNotFoundError: () => ({
+					title: "Channel not found",
+					description: "This channel may have been deleted.",
+					isRetryable: false,
+				}),
+			},
 		})
 		setIsLoading(false)
 	}, [channelId])
@@ -191,6 +198,13 @@ function CompactWebhookItem({ webhook, onDelete }: { webhook: WebhookData; onDel
 		matchExitWithToast(exit, {
 			onSuccess: () => onDelete(),
 			successMessage: webhook.isEnabled ? "Webhook disabled" : "Webhook enabled",
+			customErrors: {
+				ChannelWebhookNotFoundError: () => ({
+					title: "Webhook not found",
+					description: "This webhook may have been deleted.",
+					isRetryable: false,
+				}),
+			},
 		})
 		setIsToggling(false)
 	}
@@ -210,6 +224,13 @@ function CompactWebhookItem({ webhook, onDelete }: { webhook: WebhookData; onDel
 		matchExitWithToast(exit, {
 			onSuccess: () => onDelete(),
 			successMessage: "Webhook deleted",
+			customErrors: {
+				ChannelWebhookNotFoundError: () => ({
+					title: "Webhook not found",
+					description: "This webhook may have already been deleted.",
+					isRetryable: false,
+				}),
+			},
 		})
 		setIsDeleting(false)
 	}

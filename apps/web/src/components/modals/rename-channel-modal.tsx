@@ -2,7 +2,6 @@ import { useAtomSet } from "@effect-atom/atom-react"
 import type { ChannelId } from "@hazel/schema"
 import { eq, useLiveQuery } from "@tanstack/react-db"
 import { type } from "arktype"
-import { matchExitWithToast } from "~/lib/toast-exit"
 import { Button } from "~/components/ui/button"
 import { Description, FieldError, Label } from "~/components/ui/field"
 import { Input } from "~/components/ui/input"
@@ -11,6 +10,7 @@ import { TextField } from "~/components/ui/text-field"
 import { updateChannelAction } from "~/db/actions"
 import { channelCollection } from "~/db/collections"
 import { useAppForm } from "~/hooks/use-app-form"
+import { matchExitWithToast } from "~/lib/toast-exit"
 
 const channelNameSchema = type({
 	name: "string.trim",
@@ -59,6 +59,13 @@ export function RenameChannelModal({ channelId, isOpen, onOpenChange }: RenameCh
 					form.reset()
 				},
 				successMessage: "Channel renamed successfully",
+				customErrors: {
+					ChannelNotFoundError: () => ({
+						title: "Channel not found",
+						description: "This channel may have been deleted.",
+						isRetryable: false,
+					}),
+				},
 			})
 		},
 	})
