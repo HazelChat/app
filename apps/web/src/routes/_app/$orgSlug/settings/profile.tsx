@@ -1,14 +1,18 @@
+import { useAtomSet } from "@effect-atom/atom-react"
+import type { UserId } from "@hazel/schema"
 import { createFileRoute } from "@tanstack/react-router"
 import { type } from "arktype"
+import { Exit } from "effect"
 import { toast } from "sonner"
 import IconEnvelope from "~/components/icons/icon-envelope"
+import { ProfilePictureUpload } from "~/components/profile/profile-picture-upload"
 import { Button } from "~/components/ui/button"
-import { Description, FieldError, Label } from "~/components/ui/field"
+import { FieldError, Label } from "~/components/ui/field"
 import { Input, InputGroup } from "~/components/ui/input"
 import { SectionHeader } from "~/components/ui/section-header"
 import { SectionLabel } from "~/components/ui/section-label"
 import { TextField } from "~/components/ui/text-field"
-import { userCollection } from "~/db/collections"
+import { updateUserAction } from "~/db/actions"
 import { useAppForm } from "~/hooks/use-app-form"
 import { useAuth } from "~/lib/auth"
 
@@ -25,6 +29,7 @@ type ProfileFormData = typeof profileSchema.infer
 
 function ProfileSettings() {
 	const { user } = useAuth()
+	const updateUserMutation = useAtomSet(updateUserAction, { mode: "promiseExit" })
 
 	const form = useAppForm({
 		defaultValues: {
@@ -36,15 +41,16 @@ function ProfileSettings() {
 		},
 		onSubmit: async ({ value }) => {
 			if (!user) return
-			try {
-				const tx = userCollection.update(user.id, (draft) => {
-					draft.firstName = value.firstName
-					draft.lastName = value.lastName
-				})
-				await tx.isPersisted.promise
+			const result = await updateUserMutation({
+				userId: user.id as UserId,
+				firstName: value.firstName,
+				lastName: value.lastName,
+			})
+
+			if (Exit.isSuccess(result)) {
 				toast.success("Profile updated successfully")
-			} catch (error) {
-				console.error("Error updating profile:", error)
+			} else {
+				console.error(result.cause)
 				toast.error("Failed to update profile")
 			}
 		},
@@ -71,6 +77,15 @@ function ProfileSettings() {
 			</SectionHeader.Root>
 
 			<div className="max-w-xl space-y-6">
+				<div className="space-y-2">
+					<SectionLabel.Root size="sm" title="Profile picture" className="max-lg:hidden" />
+					<ProfilePictureUpload
+						currentAvatarUrl={user?.avatarUrl}
+						userId={user?.id || ""}
+						userInitials={`${user?.firstName?.charAt(0) || ""}${user?.lastName?.charAt(0) || ""}`}
+					/>
+				</div>
+
 				<div className="space-y-2">
 					<SectionLabel.Root isRequired size="sm" title="Name" className="max-lg:hidden" />
 

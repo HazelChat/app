@@ -1,0 +1,117 @@
+import { useAtomSet } from "@effect-atom/atom-react"
+import type { UserId } from "@hazel/schema"
+import { Exit } from "effect"
+import { useCallback, useState } from "react"
+import { toast } from "sonner"
+import { updateUserAction } from "~/db/actions"
+import { useAuth } from "~/lib/auth"
+import { HazelApiClient } from "~/lib/services/common/atom-client"
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"]
+
+export function useProfilePictureUpload() {
+	const { user } = useAuth()
+	const [isUploading, setIsUploading] = useState(false)
+
+	const getUploadUrlMutation = useAtomSet(HazelApiClient.mutation("avatars", "getUploadUrl"), {
+		mode: "promiseExit",
+	})
+	const updateUserMutation = useAtomSet(updateUserAction, { mode: "promiseExit" })
+
+	const uploadProfilePicture = useCallback(
+		async (file: File): Promise<string | null> => {
+			if (!user?.id) {
+				toast.error("Authentication required", {
+					description: "You must be logged in to upload a profile picture",
+				})
+				return null
+			}
+
+			// Validate file type
+			if (!ALLOWED_TYPES.includes(file.type)) {
+				toast.error("Invalid file type", {
+					description: "Please select a JPEG, PNG, or WebP image",
+				})
+				return null
+			}
+
+			// Validate file size
+			if (file.size > MAX_FILE_SIZE) {
+				toast.error("File too large", {
+					description: "Image must be less than 5MB",
+				})
+				return null
+			}
+
+			setIsUploading(true)
+
+			try {
+				// Step 1: Get presigned URL from backend
+				const urlRes = await getUploadUrlMutation({
+					payload: {
+						contentType: file.type,
+					},
+				})
+
+				if (!Exit.isSuccess(urlRes)) {
+					toast.error("Upload failed", {
+						description: "Failed to get upload URL. Please try again.",
+					})
+					return null
+				}
+
+				const { uploadUrl, key } = urlRes.value
+
+				// Step 2: Upload file directly to R2 using presigned URL
+				const uploadResponse = await fetch(uploadUrl, {
+					method: "PUT",
+					body: file,
+					headers: {
+						"Content-Type": file.type,
+					},
+				})
+
+				if (!uploadResponse.ok) {
+					toast.error("Upload failed", {
+						description: "Failed to upload image. Please try again.",
+					})
+					return null
+				}
+
+				// Step 3: Construct public URL and update user's avatarUrl
+				const r2PublicUrl = import.meta.env.VITE_R2_PUBLIC_URL || "https://cdn.hazel.sh"
+				const publicUrl = `${r2PublicUrl}/${key}`
+
+				const result = await updateUserMutation({
+					userId: user.id as UserId,
+					avatarUrl: publicUrl,
+				})
+
+				if (!Exit.isSuccess(result)) {
+					toast.error("Upload failed", {
+						description: "Failed to update profile. Please try again.",
+					})
+					return null
+				}
+
+				toast.success("Profile picture updated")
+				return publicUrl
+			} catch (error) {
+				console.error("Profile picture upload error:", error)
+				toast.error("Upload failed", {
+					description: "An unexpected error occurred. Please try again.",
+				})
+				return null
+			} finally {
+				setIsUploading(false)
+			}
+		},
+		[user?.id, getUploadUrlMutation, updateUserMutation],
+	)
+
+	return {
+		uploadProfilePicture,
+		isUploading,
+	}
+}

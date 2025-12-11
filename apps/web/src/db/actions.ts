@@ -18,6 +18,7 @@ import {
 	messageCollection,
 	messageReactionCollection,
 	organizationCollection,
+	userCollection,
 } from "./collections"
 
 export const sendMessageAction = optimisticAction({
@@ -392,5 +393,36 @@ export const createThreadAction = optimisticAction({
 				data: { threadChannelId: channelResult.data.id },
 				transactionId: channelResult.transactionId,
 			}
+		}),
+})
+
+export const updateUserAction = optimisticAction({
+	collections: [userCollection],
+	runtime: runtime,
+
+	onMutate: (props: { userId: UserId; firstName?: string; lastName?: string; avatarUrl?: string }) => {
+		userCollection.update(props.userId, (draft) => {
+			if (props.firstName !== undefined) draft.firstName = props.firstName
+			if (props.lastName !== undefined) draft.lastName = props.lastName
+			if (props.avatarUrl !== undefined) draft.avatarUrl = props.avatarUrl
+		})
+
+		return { userId: props.userId }
+	},
+
+	mutate: (props, _ctx) =>
+		Effect.gen(function* () {
+			const client = yield* HazelRpcClient
+
+			console.log("Updating user:", props)
+
+			const result = yield* client("user.update", {
+				id: props.userId,
+				...(props.firstName !== undefined && { firstName: props.firstName }),
+				...(props.lastName !== undefined && { lastName: props.lastName }),
+				...(props.avatarUrl !== undefined && { avatarUrl: props.avatarUrl }),
+			})
+
+			return result
 		}),
 })
