@@ -401,16 +401,6 @@ export const updateUserAction = optimisticAction({
 	runtime: runtime,
 
 	onMutate: (props: { userId: UserId; firstName?: string; lastName?: string; avatarUrl?: string }) => {
-		console.log("Updating user:", props)
-		const test = userCollection.toArray
-
-		console.log(test)
-
-		console.log(
-			"user",
-			test.find((u) => u.id === props.userId),
-		)
-
 		userCollection.update(props.userId, (draft) => {
 			if (props.firstName !== undefined) draft.firstName = props.firstName
 			if (props.lastName !== undefined) draft.lastName = props.lastName
@@ -423,8 +413,6 @@ export const updateUserAction = optimisticAction({
 	mutate: (props, _ctx) =>
 		Effect.gen(function* () {
 			const client = yield* HazelRpcClient
-
-			console.log("Updating user:", props)
 
 			const result = yield* client("user.update", {
 				id: props.userId,
