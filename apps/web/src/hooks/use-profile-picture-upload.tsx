@@ -13,12 +13,37 @@ const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"]
 export function useProfilePictureUpload() {
 	const { user } = useAuth()
 	const [isUploading, setIsUploading] = useState(false)
+	const [uploadProgress, setUploadProgress] = useState(0)
 	const refreshCurrentUser = useAtomRefresh(currentUserQueryAtom)
 
 	const getUploadUrlMutation = useAtomSet(HazelApiClient.mutation("avatars", "getUploadUrl"), {
 		mode: "promiseExit",
 	})
 	const updateUserMutation = useAtomSet(updateUserAction, { mode: "promiseExit" })
+
+	// Upload file with progress tracking using XHR
+	const uploadToR2 = useCallback(
+		(url: string, file: File): Promise<boolean> => {
+			return new Promise((resolve) => {
+				const xhr = new XMLHttpRequest()
+
+				xhr.upload.onprogress = (event) => {
+					if (event.lengthComputable) {
+						const percent = Math.round((event.loaded / event.total) * 100)
+						setUploadProgress(percent)
+					}
+				}
+
+				xhr.onload = () => resolve(xhr.status >= 200 && xhr.status < 300)
+				xhr.onerror = () => resolve(false)
+
+				xhr.open("PUT", url)
+				xhr.setRequestHeader("Content-Type", file.type)
+				xhr.send(file)
+			})
+		},
+		[],
+	)
 
 	const uploadProfilePicture = useCallback(
 		async (file: File): Promise<string | null> => {
@@ -64,16 +89,10 @@ export function useProfilePictureUpload() {
 
 				const { uploadUrl, key } = urlRes.value
 
-				// Step 2: Upload file directly to R2 using presigned URL
-				const uploadResponse = await fetch(uploadUrl, {
-					method: "PUT",
-					body: file,
-					headers: {
-						"Content-Type": file.type,
-					},
-				})
+				// Step 2: Upload file directly to R2 using XHR (for progress tracking)
+				const uploadSuccess = await uploadToR2(uploadUrl, file)
 
-				if (!uploadResponse.ok) {
+				if (!uploadSuccess) {
 					toast.error("Upload failed", {
 						description: "Failed to upload image. Please try again.",
 					})
@@ -109,13 +128,15 @@ export function useProfilePictureUpload() {
 				return null
 			} finally {
 				setIsUploading(false)
+				setUploadProgress(0)
 			}
 		},
-		[user?.id, getUploadUrlMutation, updateUserMutation, refreshCurrentUser],
+		[user?.id, getUploadUrlMutation, updateUserMutation, refreshCurrentUser, uploadToR2],
 	)
 
 	return {
 		uploadProfilePicture,
 		isUploading,
+		uploadProgress,
 	}
 }
