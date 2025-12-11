@@ -130,11 +130,12 @@ export const SlateMessageComposer = ({ placeholder = "Type a message..." }: Slat
 
 							{uploadingFiles.map((file: any) => {
 								const fileType = getFileTypeFromName(file.fileName)
+								const progress = file.progress ?? 0
 
 								return (
 									<div
 										key={file.fileId}
-										className="group flex items-center gap-2 rounded-lg bg-bg p-2 transition-colors hover:bg-secondary"
+										className="group relative flex items-center gap-2 overflow-hidden rounded-lg bg-bg p-2 transition-colors hover:bg-secondary"
 									>
 										<FileIcon type={fileType} className="size-8 shrink-0 text-muted-fg" />
 										<div className="min-w-0 flex-1">
@@ -142,10 +143,19 @@ export const SlateMessageComposer = ({ placeholder = "Type a message..." }: Slat
 												{file.fileName}
 											</div>
 											<div className="text-muted-fg text-xs">
-												{formatFileSize(file.fileSize)}
+												{progress < 100
+													? `${progress}% of ${formatFileSize(file.fileSize)}`
+													: formatFileSize(file.fileSize)}
 											</div>
 										</div>
 										<Loader className="size-4" />
+										{/* Progress bar */}
+										<div className="-bottom-px absolute inset-x-0 h-1 bg-muted">
+											<div
+												className="h-full bg-primary transition-all duration-200"
+												style={{ width: `${progress}%` }}
+											/>
+										</div>
 									</div>
 								)
 							})}

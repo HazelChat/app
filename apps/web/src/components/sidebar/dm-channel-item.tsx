@@ -1,6 +1,9 @@
+import { useAtomSet } from "@effect-atom/atom-react"
 import type { ChannelId, UserId } from "@hazel/schema"
 import { useRouter } from "@tanstack/react-router"
+import { Cause, Exit } from "effect"
 import { useCallback } from "react"
+import { toast } from "sonner"
 import IconClose from "~/components/icons/icon-close"
 import IconDots from "~/components/icons/icon-dots"
 import IconPhone from "~/components/icons/icon-phone"
@@ -11,7 +14,8 @@ import { Avatar } from "~/components/ui/avatar/avatar"
 import { Button } from "~/components/ui/button"
 import { Menu, MenuContent, MenuItem, MenuLabel, MenuSeparator } from "~/components/ui/menu"
 import { SidebarItem, SidebarLabel, SidebarLink } from "~/components/ui/sidebar"
-import { channelMemberCollection, messageCollection } from "~/db/collections"
+import { updateChannelMemberAction } from "~/db/actions"
+import { messageCollection } from "~/db/collections"
 import { useChannelWithCurrentUser } from "~/db/hooks"
 import { useOrganization } from "~/hooks/use-organization"
 import { useUserPresence } from "~/hooks/use-presence"
@@ -54,6 +58,8 @@ export const DmChannelItem = ({ channelId }: DmChannelItemProps) => {
 
 	const { user: me } = useAuth()
 
+	const updateMember = useAtomSet(updateChannelMemberAction, { mode: "promiseExit" })
+
 	const filteredMembers = channel
 		? (channel.members || []).filter((member) => member.userId !== me?.id)
 		: []
@@ -67,26 +73,53 @@ export const DmChannelItem = ({ channelId }: DmChannelItemProps) => {
 		messageCollection.preload()
 	}, [router, orgSlug, channelId])
 
-	const handleToggleMute = useCallback(() => {
+	const handleToggleMute = useCallback(async () => {
 		if (!channel) return
-		channelMemberCollection.update(channel.currentUser.id, (member) => {
-			member.isMuted = !member.isMuted
+		const exit = await updateMember({
+			memberId: channel.currentUser.id,
+			isMuted: !channel.currentUser.isMuted,
 		})
-	}, [channel])
+		Exit.match(exit, {
+			onSuccess: () => {
+				toast.success(channel.currentUser.isMuted ? "Channel unmuted" : "Channel muted")
+			},
+			onFailure: (cause) => {
+				toast.error("Failed to update channel", { description: Cause.pretty(cause) })
+			},
+		})
+	}, [channel, updateMember])
 
-	const handleToggleFavorite = useCallback(() => {
+	const handleToggleFavorite = useCallback(async () => {
 		if (!channel) return
-		channelMemberCollection.update(channel.currentUser.id, (member) => {
-			member.isFavorite = !member.isFavorite
+		const exit = await updateMember({
+			memberId: channel.currentUser.id,
+			isFavorite: !channel.currentUser.isFavorite,
 		})
-	}, [channel])
+		Exit.match(exit, {
+			onSuccess: () => {
+				toast.success(channel.currentUser.isFavorite ? "Removed from favorites" : "Added to favorites")
+			},
+			onFailure: (cause) => {
+				toast.error("Failed to update channel", { description: Cause.pretty(cause) })
+			},
+		})
+	}, [channel, updateMember])
 
-	const handleClose = useCallback(() => {
+	const handleClose = useCallback(async () => {
 		if (!channel) return
-		channelMemberCollection.update(channel.currentUser.id, (member) => {
-			member.isHidden = true
+		const exit = await updateMember({
+			memberId: channel.currentUser.id,
+			isHidden: true,
 		})
-	}, [channel])
+		Exit.match(exit, {
+			onSuccess: () => {
+				// Channel hidden successfully
+			},
+			onFailure: (cause) => {
+				toast.error("Failed to hide channel", { description: Cause.pretty(cause) })
+			},
+		})
+	}, [channel, updateMember])
 
 	if (!channel) {
 		return null

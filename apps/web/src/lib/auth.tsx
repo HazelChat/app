@@ -31,7 +31,7 @@ const isPublicRouteAtom = Atom.make((get) => {
 /**
  * Query atom that fetches the current user from the API
  */
-const currentUserQueryAtom = HazelRpcClient.query("user.me", void 0, {
+export const currentUserQueryAtom = HazelRpcClient.query("user.me", void 0, {
 	reactivityKeys: ["currentUser"],
 })
 

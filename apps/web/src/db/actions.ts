@@ -7,6 +7,7 @@ import {
 	MessageId,
 	MessageReactionId,
 	OrganizationId,
+	PinnedMessageId,
 	type UserId,
 } from "@hazel/schema"
 import { Effect } from "effect"
@@ -18,6 +19,8 @@ import {
 	messageCollection,
 	messageReactionCollection,
 	organizationCollection,
+	pinnedMessageCollection,
+	userCollection,
 } from "./collections"
 
 export const sendMessageAction = optimisticAction({
@@ -392,5 +395,222 @@ export const createThreadAction = optimisticAction({
 				data: { threadChannelId: channelResult.data.id },
 				transactionId: channelResult.transactionId,
 			}
+		}),
+})
+
+export const updateUserAction = optimisticAction({
+	collections: [userCollection],
+	runtime: runtime,
+
+	onMutate: (props: { userId: UserId; firstName?: string; lastName?: string; avatarUrl?: string }) => {
+		console.log("user", userCollection.state.get(props.userId))
+		userCollection.update(props.userId, (draft) => {
+			if (props.firstName !== undefined) draft.firstName = props.firstName
+			if (props.lastName !== undefined) draft.lastName = props.lastName
+			if (props.avatarUrl !== undefined) draft.avatarUrl = props.avatarUrl
+		})
+
+		return { userId: props.userId }
+	},
+
+	mutate: (props, _ctx) =>
+		Effect.gen(function* () {
+			const client = yield* HazelRpcClient
+
+			const result = yield* client("user.update", {
+				id: props.userId,
+				...(props.firstName !== undefined && { firstName: props.firstName }),
+				...(props.lastName !== undefined && { lastName: props.lastName }),
+				...(props.avatarUrl !== undefined && { avatarUrl: props.avatarUrl }),
+			})
+
+			return result
+		}),
+})
+
+export const editMessageAction = optimisticAction({
+	collections: [messageCollection],
+	runtime: runtime,
+
+	onMutate: (props: { messageId: MessageId; content: string }) => {
+		messageCollection.update(props.messageId, (message) => {
+			message.content = props.content
+			message.updatedAt = new Date()
+		})
+		return { messageId: props.messageId }
+	},
+
+	mutate: (props, _ctx) =>
+		Effect.gen(function* () {
+			const client = yield* HazelRpcClient
+			const result = yield* client("message.update", {
+				id: props.messageId,
+				content: props.content,
+			})
+			return { data: result, transactionId: result.transactionId }
+		}),
+})
+
+export const deleteMessageAction = optimisticAction({
+	collections: [messageCollection],
+	runtime: runtime,
+
+	onMutate: (props: { messageId: MessageId }) => {
+		messageCollection.delete(props.messageId)
+		return { messageId: props.messageId }
+	},
+
+	mutate: (props, _ctx) =>
+		Effect.gen(function* () {
+			const client = yield* HazelRpcClient
+			const result = yield* client("message.delete", { id: props.messageId })
+			return { data: result, transactionId: result.transactionId }
+		}),
+})
+
+export const pinMessageAction = optimisticAction({
+	collections: [pinnedMessageCollection],
+	runtime: runtime,
+
+	onMutate: (props: { messageId: MessageId; channelId: ChannelId; userId: UserId }) => {
+		const pinnedMessageId = PinnedMessageId.make(crypto.randomUUID())
+		pinnedMessageCollection.insert({
+			id: pinnedMessageId,
+			channelId: props.channelId,
+			messageId: props.messageId,
+			pinnedBy: props.userId,
+			pinnedAt: new Date(),
+		})
+		return { pinnedMessageId }
+	},
+
+	mutate: (props, _ctx) =>
+		Effect.gen(function* () {
+			const client = yield* HazelRpcClient
+			const result = yield* client("pinnedMessage.create", {
+				channelId: props.channelId,
+				messageId: props.messageId,
+			})
+			return { data: result, transactionId: result.transactionId }
+		}),
+})
+
+export const unpinMessageAction = optimisticAction({
+	collections: [pinnedMessageCollection],
+	runtime: runtime,
+
+	onMutate: (props: { pinnedMessageId: PinnedMessageId }) => {
+		pinnedMessageCollection.delete(props.pinnedMessageId)
+		return { pinnedMessageId: props.pinnedMessageId }
+	},
+
+	mutate: (props, _ctx) =>
+		Effect.gen(function* () {
+			const client = yield* HazelRpcClient
+			const result = yield* client("pinnedMessage.delete", { id: props.pinnedMessageId })
+			return { data: result, transactionId: result.transactionId }
+		}),
+})
+
+export const updateChannelAction = optimisticAction({
+	collections: [channelCollection],
+	runtime: runtime,
+
+	onMutate: (props: { channelId: ChannelId; name: string }) => {
+		channelCollection.update(props.channelId, (channel) => {
+			channel.name = props.name
+		})
+		return { channelId: props.channelId }
+	},
+
+	mutate: (props, _ctx) =>
+		Effect.gen(function* () {
+			const client = yield* HazelRpcClient
+			const result = yield* client("channel.update", {
+				id: props.channelId,
+				name: props.name,
+			})
+			return { data: result, transactionId: result.transactionId }
+		}),
+})
+
+export const deleteChannelAction = optimisticAction({
+	collections: [channelCollection],
+	runtime: runtime,
+
+	onMutate: (props: { channelId: ChannelId }) => {
+		channelCollection.delete(props.channelId)
+		return { channelId: props.channelId }
+	},
+
+	mutate: (props, _ctx) =>
+		Effect.gen(function* () {
+			const client = yield* HazelRpcClient
+			const result = yield* client("channel.delete", { id: props.channelId })
+			return { data: result, transactionId: result.transactionId }
+		}),
+})
+
+export const joinChannelAction = optimisticAction({
+	collections: [channelMemberCollection],
+	runtime: runtime,
+
+	onMutate: (props: { channelId: ChannelId; userId: UserId }) => {
+		const memberId = ChannelMemberId.make(crypto.randomUUID())
+		const now = new Date()
+		channelMemberCollection.insert({
+			id: memberId,
+			channelId: props.channelId,
+			userId: props.userId,
+			isHidden: false,
+			isMuted: false,
+			isFavorite: false,
+			lastSeenMessageId: null,
+			notificationCount: 0,
+			joinedAt: now,
+			createdAt: now,
+			deletedAt: null,
+		})
+		return { memberId }
+	},
+
+	mutate: (props, _ctx) =>
+		Effect.gen(function* () {
+			const client = yield* HazelRpcClient
+			const result = yield* client("channelMember.create", {
+				channelId: props.channelId,
+			})
+			return { data: result, transactionId: result.transactionId }
+		}),
+})
+
+export const updateChannelMemberAction = optimisticAction({
+	collections: [channelMemberCollection],
+	runtime: runtime,
+
+	onMutate: (props: {
+		memberId: ChannelMemberId
+		isMuted?: boolean
+		isFavorite?: boolean
+		isHidden?: boolean
+	}) => {
+		channelMemberCollection.update(props.memberId, (member) => {
+			if (props.isMuted !== undefined) member.isMuted = props.isMuted
+			if (props.isFavorite !== undefined) member.isFavorite = props.isFavorite
+			if (props.isHidden !== undefined) member.isHidden = props.isHidden
+		})
+		return { memberId: props.memberId }
+	},
+
+	mutate: (props, _ctx) =>
+		Effect.gen(function* () {
+			const client = yield* HazelRpcClient
+			const result = yield* client("channelMember.update", {
+				id: props.memberId,
+				...(props.isMuted !== undefined && { isMuted: props.isMuted }),
+				...(props.isFavorite !== undefined && { isFavorite: props.isFavorite }),
+				...(props.isHidden !== undefined && { isHidden: props.isHidden }),
+			})
+			return { data: result, transactionId: result.transactionId }
 		}),
 })

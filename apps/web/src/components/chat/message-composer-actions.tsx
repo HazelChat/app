@@ -30,12 +30,14 @@ export const MessageComposerActions = forwardRef<MessageComposerActionsRef, Mess
 			isUploading,
 			setIsUploading,
 			addUploadingFile,
+			updateUploadingFileProgress,
 			removeUploadingFile,
 		} = useChat()
 
 		const { uploadFile } = useFileUpload({
 			organizationId: organizationId!,
 			channelId,
+			onProgress: updateUploadingFileProgress,
 		})
 
 		const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -54,8 +56,8 @@ export const MessageComposerActions = forwardRef<MessageComposerActionsRef, Mess
 						fileSize: file.size,
 					})
 
-					// Upload the file
-					const attachmentId = await uploadFile(file)
+					// Upload the file with file ID for progress tracking
+					const attachmentId = await uploadFile(file, fileId)
 
 					// Remove from uploading files state
 					removeUploadingFile(fileId)

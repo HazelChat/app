@@ -54,6 +54,7 @@ export interface UploadingFile {
 	fileId: string
 	fileName: string
 	fileSize: number
+	progress: number
 }
 
 export const uploadingFilesAtomFamily = Atom.family((_channelId: ChannelId) =>

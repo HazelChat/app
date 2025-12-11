@@ -66,7 +66,7 @@ services:
 
   # Electric - Real-time sync for Postgres
   electric:
-    image: electricsql/electric:1.2.7
+    image: electricsql/electric:1.2.8
     ports:
       - "3333:3000"
     environment:
@@ -85,7 +85,14 @@ services:
     image: redis:7
     ports:
       - "6380:6379"
-    command: ["redis-server", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru"]
+    command:
+      [
+        "redis-server",
+        "--maxmemory",
+        "256mb",
+        "--maxmemory-policy",
+        "allkeys-lru",
+      ]
     volumes:
       - cache_redis_data:/data
     restart: always

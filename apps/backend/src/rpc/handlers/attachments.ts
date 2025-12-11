@@ -26,6 +26,32 @@ export const AttachmentRpcLive = AttachmentRpcs.toLayer(
 						policyUse(AttachmentPolicy.canDelete(id)),
 						withRemapDbErrors("Attachment", "delete"),
 					),
+
+			"attachment.complete": ({ id }) =>
+				db
+					.transaction(
+						Effect.gen(function* () {
+							const attachment = yield* AttachmentRepo.update({ id, status: "complete" }).pipe(
+								policyUse(AttachmentPolicy.canUpdate(id)),
+							)
+
+							return attachment
+						}),
+					)
+					.pipe(withRemapDbErrors("Attachment", "update")),
+
+			"attachment.fail": ({ id, reason }) =>
+				db
+					.transaction(
+						Effect.gen(function* () {
+							yield* Effect.log(`Marking attachment ${id} as failed${reason ? `: ${reason}` : ""}`)
+
+							yield* AttachmentRepo.update({ id, status: "failed" }).pipe(
+								policyUse(AttachmentPolicy.canUpdate(id)),
+							)
+						}),
+					)
+					.pipe(withRemapDbErrors("Attachment", "update")),
 		}
 	}),
 )

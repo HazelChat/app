@@ -2,7 +2,7 @@ import { RpcGroup } from "@effect/rpc"
 import { Schema } from "effect"
 import { Rpc } from "effect-rpc-tanstack-devtools"
 import { InternalServerError, UnauthorizedError } from "../errors"
-import { PinnedMessageId } from "../ids"
+import { ChannelId, MessageId, PinnedMessageId } from "../ids"
 import { PinnedMessage } from "../models"
 import { TransactionId } from "../transaction-id"
 import { MessageNotFoundError } from "./messages"
@@ -65,14 +65,17 @@ export class PinnedMessageRpcs extends RpcGroup.make(
 	 * Pins a message in a channel.
 	 * The pinnedBy field is automatically set from the authenticated user (CurrentUser).
 	 *
-	 * @param payload - Pinned message data (channelId, messageId, etc.)
+	 * @param payload - channelId and messageId
 	 * @returns Pinned message data and transaction ID
 	 * @throws MessageNotFoundError if the message doesn't exist
 	 * @throws UnauthorizedError if user lacks permission
 	 * @throws InternalServerError for unexpected errors
 	 */
 	Rpc.mutation("pinnedMessage.create", {
-		payload: PinnedMessage.Model.jsonCreate,
+		payload: Schema.Struct({
+			channelId: ChannelId,
+			messageId: MessageId,
+		}),
 		success: PinnedMessageResponse,
 		error: Schema.Union(MessageNotFoundError, UnauthorizedError, InternalServerError),
 	}).middleware(AuthMiddleware),

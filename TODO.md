@@ -5,6 +5,10 @@
 - setup sequin locally with config as code
 - fix threads
 
+- Upload Improvements
+  - Add server side rate limtiing
+  - Add cropping and max size limits for avatars
+
 
 # Bugs 
 - linear throwing 500's on issue in prod

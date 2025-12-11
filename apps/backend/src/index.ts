@@ -133,6 +133,15 @@ const PolicyLive = Layer.mergeAll(
 	ChannelWebhookPolicy.Default,
 )
 
+const S3Live = S3.layer({
+	region: "auto",
+	endpoint: process.env.R2_ENDPOINT!,
+	credentials: {
+		accessKeyId: process.env.R2_ACCESS_KEY_ID!,
+		secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
+	},
+})
+
 const MainLive = Layer.mergeAll(
 	RepoLive,
 	PolicyLive,
@@ -149,16 +158,7 @@ const MainLive = Layer.mergeAll(
 	IntegrationBotService.Default,
 	WebhookBotService.Default,
 ).pipe(
-	Layer.provide(
-		S3.layer({
-			region: "auto",
-			endpoint: process.env.R2_ENDPOINT!,
-			credentials: {
-				accessKeyId: process.env.R2_ACCESS_KEY_ID!,
-				secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
-			},
-		}),
-	),
+	Layer.provide(S3Live),
 	Layer.provideMerge(FetchHttpClient.layer),
 )
 
@@ -167,6 +167,7 @@ HttpLayerRouter.serve(AllRoutes).pipe(
 		(request) => request.url === "/health" || request.method === "OPTIONS",
 	),
 	Layer.provide(MainLive),
+	Layer.provide(S3Live),
 	Layer.provide(TracerLive),
 	Layer.provide(
 		AuthorizationLive.pipe(

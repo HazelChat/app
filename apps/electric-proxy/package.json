@@ -17,7 +17,7 @@
 		"@effect/opentelemetry": "catalog:effect",
 		"@effect/platform": "catalog:effect",
 		"@effect/platform-bun": "catalog:effect",
-		"@electric-sql/client": "^1.2.0",
+		"@electric-sql/client": "^1.2.1",
 		"@hazel/db": "workspace:*",
 		"@hazel/schema": "workspace:*",
 		"@opentelemetry/exporter-trace-otlp-http": "^0.208.0",

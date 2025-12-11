@@ -16,6 +16,7 @@ export class Model extends M.Class<Model>("Attachment")({
 	uploadedBy: M.GeneratedByApp(UserId),
 	status: AttachmentStatus,
 	uploadedAt: JsonDate,
+	deletedAt: M.Generated(Schema.NullOr(JsonDate)),
 }) {}
 
 export const Insert = Model.insert

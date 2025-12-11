@@ -12,6 +12,7 @@ import {
 	channelMemberCollection,
 	organizationCollection,
 	organizationMemberCollection,
+	userCollection,
 } from "~/db/collections"
 import { useOrganization } from "~/hooks/use-organization"
 import { useAuth } from "~/lib/auth"
@@ -28,6 +29,7 @@ export const Route = createFileRoute("/_app/$orgSlug")({
 
 		await organizationCollection.preload()
 		await organizationMemberCollection.preload()
+		await userCollection.preload()
 
 		return null
 	},

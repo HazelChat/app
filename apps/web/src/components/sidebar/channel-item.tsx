@@ -1,10 +1,10 @@
 import { useAtomSet } from "@effect-atom/atom-react"
 import type { Channel, ChannelMember } from "@hazel/db/schema"
 import { useNavigate } from "@tanstack/react-router"
-import { Exit } from "effect"
+import { Cause, Exit } from "effect"
 import { useState } from "react"
 import { toast } from "sonner"
-import { deleteChannelMemberMutation, updateChannelMemberMutation } from "~/atoms/channel-member-atoms"
+import { deleteChannelMemberMutation } from "~/atoms/channel-member-atoms"
 import { ChannelIcon } from "~/components/channel-icon"
 import IconDots from "~/components/icons/icon-dots"
 import IconGear from "~/components/icons/icon-gear"
@@ -17,7 +17,7 @@ import { DeleteChannelModal } from "~/components/modals/delete-channel-modal"
 import { Button } from "~/components/ui/button"
 import { Menu, MenuContent, MenuItem, MenuLabel, MenuSeparator } from "~/components/ui/menu"
 import { SidebarItem, SidebarLabel, SidebarLink } from "~/components/ui/sidebar"
-import { channelCollection } from "~/db/collections"
+import { deleteChannelAction, updateChannelMemberAction } from "~/db/actions"
 import { useOrganization } from "~/hooks/use-organization"
 
 interface ChannelItemProps {
@@ -31,21 +31,15 @@ export function ChannelItem({ channel, member }: ChannelItemProps) {
 	const { slug } = useOrganization()
 	const navigate = useNavigate()
 
-	// Use Effect Atom mutations for channel member operations
-	const updateMember = useAtomSet(updateChannelMemberMutation, { mode: "promiseExit" })
+	// Use optimistic actions for channel member operations
+	const updateMember = useAtomSet(updateChannelMemberAction, { mode: "promiseExit" })
+	const deleteChannel = useAtomSet(deleteChannelAction, { mode: "promiseExit" })
 	const deleteMember = useAtomSet(deleteChannelMemberMutation, { mode: "promiseExit" })
 
 	const handleToggleMute = async () => {
 		const exit = await updateMember({
-			payload: {
-				id: member.id,
-				channelId: member.channelId,
-				isHidden: member.isHidden,
-				isMuted: !member.isMuted,
-				isFavorite: member.isFavorite,
-				lastSeenMessageId: member.lastSeenMessageId,
-				notificationCount: member.notificationCount,
-			},
+			memberId: member.id,
+			isMuted: !member.isMuted,
 		})
 
 		Exit.match(exit, {
@@ -53,23 +47,15 @@ export function ChannelItem({ channel, member }: ChannelItemProps) {
 				toast.success(member.isMuted ? "Channel unmuted" : "Channel muted")
 			},
 			onFailure: (cause) => {
-				console.error("Failed to toggle mute:", cause)
-				toast.error("Failed to update channel")
+				toast.error("Failed to update channel", { description: Cause.pretty(cause) })
 			},
 		})
 	}
 
 	const handleToggleFavorite = async () => {
 		const exit = await updateMember({
-			payload: {
-				id: member.id,
-				channelId: member.channelId,
-				isHidden: member.isHidden,
-				isMuted: member.isMuted,
-				isFavorite: !member.isFavorite,
-				lastSeenMessageId: member.lastSeenMessageId,
-				notificationCount: member.notificationCount,
-			},
+			memberId: member.id,
+			isFavorite: !member.isFavorite,
 		})
 
 		Exit.match(exit, {
@@ -77,20 +63,22 @@ export function ChannelItem({ channel, member }: ChannelItemProps) {
 				toast.success(member.isFavorite ? "Removed from favorites" : "Added to favorites")
 			},
 			onFailure: (cause) => {
-				console.error("Failed to toggle favorite:", cause)
-				toast.error("Failed to update channel")
+				toast.error("Failed to update channel", { description: Cause.pretty(cause) })
 			},
 		})
 	}
 
 	const handleDeleteChannel = async () => {
-		try {
-			channelCollection.delete(channel.id)
-			toast.success("Channel deleted successfully")
-		} catch (error) {
-			console.error("Failed to delete channel:", error)
-			toast.error("Failed to delete channel")
-		}
+		const exit = await deleteChannel({ channelId: channel.id })
+
+		Exit.match(exit, {
+			onSuccess: () => {
+				toast.success("Channel deleted successfully")
+			},
+			onFailure: (cause) => {
+				toast.error("Failed to delete channel", { description: Cause.pretty(cause) })
+			},
+		})
 	}
 
 	const handleLeaveChannel = async () => {
@@ -103,8 +91,7 @@ export function ChannelItem({ channel, member }: ChannelItemProps) {
 				toast.success("Left channel successfully")
 			},
 			onFailure: (cause) => {
-				console.error("Failed to leave channel:", cause)
-				toast.error("Failed to leave channel")
+				toast.error("Failed to leave channel", { description: Cause.pretty(cause) })
 			},
 		})
 	}

@@ -1,5 +1,5 @@
-import { FileSystem, HttpApiBuilder } from "@effect/platform"
-import { MultipartUpload } from "@effect-aws/s3"
+import { HttpApiBuilder } from "@effect/platform"
+import { S3 } from "@effect-aws/client-s3"
 import { Database } from "@hazel/db"
 import { CurrentUser, policyUse, withRemapDbErrors } from "@hazel/domain"
 import { AttachmentUploadError } from "@hazel/domain/http"
@@ -7,82 +7,77 @@ import { AttachmentId } from "@hazel/domain/ids"
 import { randomUUIDv7 } from "bun"
 import { Config, Effect } from "effect"
 import { HazelApi } from "../api"
-import { generateTransactionId } from "../lib/create-transactionId"
 import { AttachmentPolicy } from "../policies/attachment-policy"
 import { AttachmentRepo } from "../repositories/attachment-repo"
 
 export const HttpAttachmentLive = HttpApiBuilder.group(HazelApi, "attachments", (handlers) =>
 	Effect.gen(function* () {
 		const db = yield* Database.Database
-		const mu = yield* MultipartUpload.MultipartUpload
 
 		return handlers.handle(
-			"upload",
+			"getUploadUrl",
 			Effect.fn(function* ({ payload }) {
 				const user = yield* CurrentUser.Context
-				const fs = yield* FileSystem.FileSystem
-
-				yield* Effect.log("Uploading attachment...")
+				const bucketName = yield* Config.string("R2_BUCKET_NAME").pipe(Effect.orDie)
 
 				const attachmentId = AttachmentId.make(randomUUIDv7())
 
-				const bucketName = yield* Config.string("R2_BUCKET_NAME").pipe(Effect.orDie)
+				yield* Effect.log(
+					`Generating presigned URL for attachment upload: ${attachmentId} (size: ${payload.fileSize} bytes, type: ${payload.contentType})`,
+				)
 
-				yield* mu
-					.uploadObject(
-						{
-							Bucket: bucketName,
-							Key: attachmentId,
-							Body: fs.stream(payload.file.path),
-						},
-						{ queueSize: 3 },
+				// Create attachment record with "uploading" status
+				yield* db
+					.transaction(
+						Effect.gen(function* () {
+							yield* AttachmentRepo.insert({
+								id: attachmentId,
+								uploadedBy: user.id,
+								organizationId: payload.organizationId,
+								status: "uploading",
+								channelId: payload.channelId,
+								messageId: null,
+								fileName: payload.fileName,
+								fileSize: payload.fileSize,
+								uploadedAt: new Date(),
+							})
+						}),
 					)
-					.pipe(
-						Effect.mapError(
-							(error) =>
-								new AttachmentUploadError({
-									message: `Failed to upload file to R2: ${error}`,
-								}),
-						),
-					)
+					.pipe(withRemapDbErrors("AttachmentRepo", "create"), policyUse(AttachmentPolicy.canCreate()))
 
-				const stats = yield* fs.stat(payload.file.path).pipe(
+				// Generate presigned URL
+				const uploadUrl = yield* S3.putObject(
+					{
+						Bucket: bucketName,
+						Key: attachmentId,
+						ContentType: payload.contentType,
+					},
+					{
+						presigned: true,
+						expiresIn: 300, // 5 minutes
+					},
+				).pipe(
+					Effect.tapError((error) =>
+						Effect.logError("Failed to generate attachment presigned URL", {
+							userId: user.id,
+							attachmentId,
+							fileName: payload.fileName,
+							fileSize: payload.fileSize,
+							contentType: payload.contentType,
+							error: String(error),
+						}),
+					),
 					Effect.mapError(
 						(error) =>
 							new AttachmentUploadError({
-								message: `Failed to read file stats: ${error}`,
+								message: `Failed to generate presigned URL: ${error}`,
 							}),
 					),
 				)
 
-				const { createdAttachment, txid } = yield* db
-					.transaction(
-						Effect.gen(function* () {
-							const createdAttachment = yield* AttachmentRepo.insert({
-								id: attachmentId,
-								uploadedBy: user.id,
-								organizationId: payload.organizationId,
-								status: "complete",
-								channelId: payload.channelId,
-								messageId: null,
-								fileName: payload.file.name,
-								fileSize: Number(stats.size),
-								uploadedAt: new Date(),
-							}).pipe(Effect.map((res) => res[0]!))
-
-							const txid = yield* generateTransactionId()
-
-							return { createdAttachment, txid }
-						}),
-					)
-					.pipe(
-						withRemapDbErrors("AttachmentRepo", "create"),
-						policyUse(AttachmentPolicy.canCreate()),
-					)
-
 				return {
-					data: createdAttachment,
-					transactionId: txid,
+					uploadUrl,
+					attachmentId,
 				}
 			}),
 		)

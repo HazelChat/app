@@ -22,8 +22,15 @@ import {
 	uploadingFilesAtomFamily,
 } from "~/atoms/chat-atoms"
 import { channelByIdAtomFamily } from "~/atoms/chat-query-atoms"
-import { createThreadAction, sendMessageAction, toggleReactionAction } from "~/db/actions"
-import { messageCollection, messageReactionCollection, pinnedMessageCollection } from "~/db/collections"
+import {
+	createThreadAction,
+	deleteMessageAction,
+	editMessageAction,
+	pinMessageAction,
+	sendMessageAction,
+	toggleReactionAction,
+	unpinMessageAction,
+} from "~/db/actions"
 import { useAuth } from "~/lib/auth"
 
 interface ChatContextValue {
@@ -51,7 +58,8 @@ interface ChatContextValue {
 	isUploading: boolean
 	setIsUploading: (value: boolean) => void
 	uploadingFiles: UploadingFile[]
-	addUploadingFile: (file: UploadingFile) => void
+	addUploadingFile: (file: Omit<UploadingFile, "progress">) => void
+	updateUploadingFileProgress: (fileId: string, progress: number) => void
 	removeUploadingFile: (fileId: string) => void
 }
 
@@ -78,6 +86,10 @@ export function ChatProvider({ channelId, organizationId, children, onMessageSen
 	const sendMessageMutation = useAtomSet(sendMessageAction, { mode: "promiseExit" })
 	const toggleReactionMutation = useAtomSet(toggleReactionAction, { mode: "promiseExit" })
 	const createThreadMutation = useAtomSet(createThreadAction, { mode: "promiseExit" })
+	const editMessageMutation = useAtomSet(editMessageAction, { mode: "promiseExit" })
+	const deleteMessageMutation = useAtomSet(deleteMessageAction, { mode: "promiseExit" })
+	const pinMessageMutation = useAtomSet(pinMessageAction, { mode: "promiseExit" })
+	const unpinMessageMutation = useAtomSet(unpinMessageAction, { mode: "promiseExit" })
 
 	const replyToMessageId = useAtomValue(replyToMessageAtomFamily(channelId))
 	const setReplyToMessageId = useAtomSet(replyToMessageAtomFamily(channelId))
@@ -118,8 +130,15 @@ export function ChatProvider({ channelId, organizationId, children, onMessageSen
 	}, [setAttachmentIds])
 
 	const addUploadingFile = useCallback(
-		(file: UploadingFile) => {
-			setUploadingFiles((prev) => [...prev, file])
+		(file: Omit<UploadingFile, "progress">) => {
+			setUploadingFiles((prev) => [...prev, { ...file, progress: 0 }])
+		},
+		[setUploadingFiles],
+	)
+
+	const updateUploadingFileProgress = useCallback(
+		(fileId: string, progress: number) => {
+			setUploadingFiles((prev) => prev.map((f) => (f.fileId === fileId ? { ...f, progress } : f)))
 		},
 		[setUploadingFiles],
 	)
@@ -171,16 +190,39 @@ export function ChatProvider({ channelId, organizationId, children, onMessageSen
 		],
 	)
 
-	const editMessage = useCallback(async (messageId: MessageId, content: string) => {
-		messageCollection.update(messageId, (message) => {
-			message.content = content
-			message.updatedAt = new Date()
-		})
-	}, [])
+	const editMessage = useCallback(
+		async (messageId: MessageId, content: string) => {
+			const exit = await editMessageMutation({ messageId, content })
+			Exit.match(exit, {
+				onSuccess: () => {
+					// Message edited successfully
+				},
+				onFailure: (error) => {
+					toast.error("Failed to edit message", {
+						description: Cause.pretty(error),
+					})
+				},
+			})
+		},
+		[editMessageMutation],
+	)
 
-	const deleteMessage = useCallback((messageId: MessageId) => {
-		messageCollection.delete(messageId)
-	}, [])
+	const deleteMessage = useCallback(
+		async (messageId: MessageId) => {
+			const exit = await deleteMessageMutation({ messageId })
+			Exit.match(exit, {
+				onSuccess: () => {
+					// Message deleted successfully
+				},
+				onFailure: (error) => {
+					toast.error("Failed to delete message", {
+						description: Cause.pretty(error),
+					})
+				},
+			})
+		},
+		[deleteMessageMutation],
+	)
 
 	const addReaction = useCallback(
 		async (messageId: MessageId, channelId: ChannelId, emoji: string) => {
@@ -207,33 +249,56 @@ export function ChatProvider({ channelId, organizationId, children, onMessageSen
 		[user?.id, toggleReactionMutation],
 	)
 
+	// Note: removeReaction is deprecated - use addReaction which toggles reactions
+	// Keeping for interface compatibility but this is a no-op since toggleReaction handles removal
 	const removeReaction = useCallback(
-		(reactionId: MessageReactionId) => {
-			if (!user?.id) return
-
-			messageReactionCollection.delete(reactionId)
+		(_reactionId: MessageReactionId) => {
+			console.warn("removeReaction is deprecated - use addReaction to toggle reactions")
 		},
-		[user?.id],
+		[],
 	)
 
 	const pinMessage = useCallback(
-		(messageId: MessageId) => {
+		async (messageId: MessageId) => {
 			if (!user?.id) return
 
-			pinnedMessageCollection.insert({
-				id: PinnedMessageId.make(crypto.randomUUID()),
-				channelId,
+			const exit = await pinMessageMutation({
 				messageId,
-				pinnedBy: UserId.make(user.id),
-				pinnedAt: new Date(),
+				channelId,
+				userId: UserId.make(user.id),
+			})
+
+			Exit.match(exit, {
+				onSuccess: () => {
+					toast.success("Message pinned")
+				},
+				onFailure: (error) => {
+					toast.error("Failed to pin message", {
+						description: Cause.pretty(error),
+					})
+				},
 			})
 		},
-		[channelId, user?.id],
+		[channelId, user?.id, pinMessageMutation],
 	)
 
-	const unpinMessage = useCallback((pinnedMessageId: PinnedMessageId) => {
-		pinnedMessageCollection.delete(pinnedMessageId)
-	}, [])
+	const unpinMessage = useCallback(
+		async (pinnedMessageId: PinnedMessageId) => {
+			const exit = await unpinMessageMutation({ pinnedMessageId })
+
+			Exit.match(exit, {
+				onSuccess: () => {
+					toast.success("Message unpinned")
+				},
+				onFailure: (error) => {
+					toast.error("Failed to unpin message", {
+						description: Cause.pretty(error),
+					})
+				},
+			})
+		},
+		[unpinMessageMutation],
+	)
 
 	const createThread = useCallback(
 		async (messageId: MessageId, existingThreadChannelId: ChannelId | null) => {
@@ -315,6 +380,7 @@ export function ChatProvider({ channelId, organizationId, children, onMessageSen
 			setIsUploading,
 			uploadingFiles,
 			addUploadingFile,
+			updateUploadingFileProgress,
 			removeUploadingFile,
 		}),
 		[
@@ -343,6 +409,7 @@ export function ChatProvider({ channelId, organizationId, children, onMessageSen
 			setIsUploading,
 			uploadingFiles,
 			addUploadingFile,
+			updateUploadingFileProgress,
 			removeUploadingFile,
 		],
 	)

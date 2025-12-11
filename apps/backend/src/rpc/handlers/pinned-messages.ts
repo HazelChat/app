@@ -31,8 +31,10 @@ export const PinnedMessageRpcLive = PinnedMessageRpcs.toLayer(
 							const user = yield* CurrentUser.Context
 
 							const createdPinnedMessage = yield* PinnedMessageRepo.insert({
-								...payload,
+								channelId: payload.channelId,
+								messageId: payload.messageId,
 								pinnedBy: user.id,
+								pinnedAt: new Date(),
 							}).pipe(
 								Effect.map((res) => res[0]!),
 								policyUse(PinnedMessagePolicy.canCreate(payload.channelId)),

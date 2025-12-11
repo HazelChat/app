@@ -82,7 +82,7 @@ export class MessageRpcs extends RpcGroup.make(
 	 * Updates an existing message.
 	 * Only the message author or users with appropriate permissions can update.
 	 *
-	 * @param payload - Message ID and fields to update
+	 * @param payload - Message ID and optional fields to update
 	 * @returns Updated message data and transaction ID
 	 * @throws MessageNotFoundError if message doesn't exist
 	 * @throws UnauthorizedError if user lacks permission
@@ -91,8 +91,7 @@ export class MessageRpcs extends RpcGroup.make(
 	Rpc.mutation("message.update", {
 		payload: Schema.Struct({
 			id: MessageId,
-			...Message.Model.jsonUpdate.fields,
-		}),
+		}).pipe(Schema.extend(Schema.partial(Message.Model.jsonUpdate))),
 		success: MessageResponse,
 		error: Schema.Union(MessageNotFoundError, UnauthorizedError, InternalServerError),
 	}).middleware(AuthMiddleware),

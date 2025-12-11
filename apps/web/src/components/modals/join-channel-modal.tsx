@@ -1,5 +1,8 @@
-import { type ChannelId, ChannelMemberId } from "@hazel/schema"
+import { useAtomSet } from "@effect-atom/atom-react"
+import type { ChannelId } from "@hazel/schema"
+import { UserId } from "@hazel/schema"
 import { eq, inArray, not, or, useLiveQuery } from "@tanstack/react-db"
+import { Cause, Exit } from "effect"
 import { useState } from "react"
 import { toast } from "sonner"
 import IconHashtag from "~/components/icons/icon-hashtag"
@@ -7,6 +10,7 @@ import { Button } from "~/components/ui/button"
 import { Description } from "~/components/ui/field"
 import { Input } from "~/components/ui/input"
 import { Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalTitle } from "~/components/ui/modal"
+import { joinChannelAction } from "~/db/actions"
 import { channelCollection, channelMemberCollection } from "~/db/collections"
 import { useOrganization } from "~/hooks/use-organization"
 import { useAuth } from "~/lib/auth"
@@ -20,6 +24,8 @@ export function JoinChannelModal({ isOpen, onOpenChange }: JoinChannelModalProps
 	const [searchQuery, setSearchQuery] = useState("")
 	const { organizationId } = useOrganization()
 	const { user } = useAuth()
+
+	const joinChannel = useAtomSet(joinChannelAction, { mode: "promiseExit" })
 
 	// Get all channels the user is already a member of
 	const { data: userChannels } = useLiveQuery(
@@ -56,33 +62,26 @@ export function JoinChannelModal({ isOpen, onOpenChange }: JoinChannelModalProps
 	)
 
 	const handleJoinChannel = async (channelId: ChannelId) => {
-		try {
-			if (!user?.id) {
-				toast.error("User not authenticated")
-				return
-			}
-
-			await channelMemberCollection.insert({
-				id: ChannelMemberId.make(crypto.randomUUID()),
-				channelId,
-				userId: user.id,
-				isHidden: false,
-				isMuted: false,
-				isFavorite: false,
-				notificationCount: 0,
-				joinedAt: new Date(),
-				createdAt: new Date(),
-				deletedAt: null,
-				lastSeenMessageId: null,
-			})
-
-			toast.success("Successfully joined channel")
-			onOpenChange(false)
-			setSearchQuery("")
-		} catch (error) {
-			console.error("Failed to join channel:", error)
-			toast.error("Failed to join channel")
+		if (!user?.id) {
+			toast.error("User not authenticated")
+			return
 		}
+
+		const exit = await joinChannel({
+			channelId,
+			userId: UserId.make(user.id),
+		})
+
+		Exit.match(exit, {
+			onSuccess: () => {
+				toast.success("Successfully joined channel")
+				onOpenChange(false)
+				setSearchQuery("")
+			},
+			onFailure: (cause) => {
+				toast.error("Failed to join channel", { description: Cause.pretty(cause) })
+			},
+		})
 	}
 
 	const filteredChannels =

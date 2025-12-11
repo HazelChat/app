@@ -21,7 +21,6 @@ import {
 import { TweetEmbed } from "~/components/tweet-embed"
 import { Badge } from "~/components/ui/badge"
 import { YoutubeEmbed } from "~/components/youtube-embed"
-import { messageCollection } from "~/db/collections"
 import { useChat } from "~/hooks/use-chat"
 import { useEmojiStats } from "~/hooks/use-emoji-stats"
 import { useAuth } from "~/lib/auth"
@@ -231,12 +230,12 @@ export const MessageItem = memo(function MessageItem({
 
 // Export handlers for use by MessageList's shared toolbar
 export function useMessageHandlers(message: MessageWithPinned | null) {
-	const { setReplyToMessageId, pinMessage, unpinMessage, createThread } = useChat()
+	const { setReplyToMessageId, deleteMessage, pinMessage, unpinMessage, createThread } = useChat()
 	const { user: currentUser } = useAuth()
 
 	const handleDelete = () => {
 		if (!message) return
-		messageCollection.delete(message.id)
+		deleteMessage(message.id)
 	}
 
 	const handleCopy = () => {

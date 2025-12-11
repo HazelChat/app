@@ -18,9 +18,13 @@ export const ChannelMemberRpcLive = ChannelMemberRpcs.toLayer(
 							const user = yield* CurrentUser.Context
 
 							const createdChannelMember = yield* ChannelMemberRepo.insert({
-								...payload,
-								notificationCount: 0,
+								channelId: payload.channelId,
 								userId: user.id,
+								isHidden: false,
+								isMuted: false,
+								isFavorite: false,
+								lastSeenMessageId: null,
+								notificationCount: 0,
 								joinedAt: new Date(),
 								deletedAt: null,
 							}).pipe(Effect.map((res) => res[0]!))

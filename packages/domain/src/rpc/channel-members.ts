@@ -70,14 +70,16 @@ export class ChannelMemberRpcs extends RpcGroup.make(
 	 * The userId is automatically set from the authenticated user (CurrentUser).
 	 * Requires permission to join the channel (e.g., public channels or organization admin).
 	 *
-	 * @param payload - Channel member data (channelId, preferences, etc.)
+	 * @param payload - channelId (other fields use defaults)
 	 * @returns Channel member data and transaction ID
 	 * @throws ChannelNotFoundError if channel doesn't exist
 	 * @throws UnauthorizedError if user lacks permission
 	 * @throws InternalServerError for unexpected errors
 	 */
 	Rpc.mutation("channelMember.create", {
-		payload: ChannelMember.Model.jsonCreate,
+		payload: Schema.Struct({
+			channelId: ChannelId,
+		}),
 		success: ChannelMemberResponse,
 		error: Schema.Union(ChannelNotFoundError, UnauthorizedError, InternalServerError),
 	}).middleware(AuthMiddleware),
@@ -89,7 +91,7 @@ export class ChannelMemberRpcs extends RpcGroup.make(
 	 * Members can update their own preferences (mute, hide, favorite).
 	 * Organization admins can update any member's settings.
 	 *
-	 * @param payload - Channel member ID and fields to update
+	 * @param payload - Channel member ID and optional fields to update
 	 * @returns Updated channel member data and transaction ID
 	 * @throws ChannelMemberNotFoundError if channel member doesn't exist
 	 * @throws UnauthorizedError if user lacks permission
@@ -98,8 +100,7 @@ export class ChannelMemberRpcs extends RpcGroup.make(
 	Rpc.mutation("channelMember.update", {
 		payload: Schema.Struct({
 			id: ChannelMemberId,
-			...ChannelMember.Model.jsonUpdate.fields,
-		}),
+		}).pipe(Schema.extend(Schema.partial(ChannelMember.Model.jsonUpdate))),
 		success: ChannelMemberResponse,
 		error: Schema.Union(ChannelMemberNotFoundError, UnauthorizedError, InternalServerError),
 	}).middleware(AuthMiddleware),
