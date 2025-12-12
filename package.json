@@ -22,8 +22,6 @@
 				"@effect/cluster": "^0.53.5",
 				"@effect/opentelemetry": "0.59.0",
 				"@effect/workflow": "0.13.0",
-				"@effect-aws/client-s3": "1.10.6",
-				"@effect-aws/s3": "0.2.4",
 				"@effect-atom/atom": "0.4.1",
 				"@effect-atom/atom-react": "0.4.0"
 			}

@@ -8,8 +8,7 @@ import {
 } from "@effect/platform"
 import { BunHttpServer, BunRuntime } from "@effect/platform-bun"
 import { RpcSerialization, RpcServer } from "@effect/rpc"
-import { S3 } from "@effect-aws/client-s3"
-import { MultipartUpload } from "@effect-aws/s3"
+import { S3 } from "@hazel/effect-bun"
 import { Config, Layer } from "effect"
 import { HazelApi } from "./api"
 import { HttpApiRoutes } from "./http"
@@ -133,15 +132,6 @@ const PolicyLive = Layer.mergeAll(
 	ChannelWebhookPolicy.Default,
 )
 
-const S3Live = S3.layer({
-	region: "auto",
-	endpoint: process.env.R2_ENDPOINT!,
-	credentials: {
-		accessKeyId: process.env.R2_ACCESS_KEY_ID!,
-		secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
-	},
-})
-
 const MainLive = Layer.mergeAll(
 	RepoLive,
 	PolicyLive,
@@ -151,20 +141,19 @@ const MainLive = Layer.mergeAll(
 	WorkOSSync.Default,
 	WorkOSWebhookVerifier.Default,
 	DatabaseLive,
-	MultipartUpload.layerWithoutS3Service,
+	S3.Default,
 	IntegrationTokenService.Default,
 	OAuthProviderRegistry.Default,
 	CommandRegistry.Default,
 	IntegrationBotService.Default,
 	WebhookBotService.Default,
-).pipe(Layer.provide(S3Live), Layer.provideMerge(FetchHttpClient.layer))
+).pipe(Layer.provideMerge(FetchHttpClient.layer))
 
 HttpLayerRouter.serve(AllRoutes).pipe(
 	HttpMiddleware.withTracerDisabledWhen(
 		(request) => request.url === "/health" || request.method === "OPTIONS",
 	),
 	Layer.provide(MainLive),
-	Layer.provide(S3Live),
 	Layer.provide(TracerLive),
 	Layer.provide(
 		AuthorizationLive.pipe(
