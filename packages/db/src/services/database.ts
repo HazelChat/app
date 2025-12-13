@@ -70,6 +70,14 @@ export class DatabaseConnectionLostError extends Data.TaggedError("DatabaseConne
 	message: string
 }> {}
 
+/** Sentinel error used to trigger Drizzle transaction rollback when an Effect fails */
+class EffectTransactionRollback extends Error {
+	constructor() {
+		super("Effect transaction rollback")
+		this.name = "EffectTransactionRollback"
+	}
+}
+
 export type Config = {
 	url: Redacted.Redacted
 	ssl: boolean
@@ -140,15 +148,14 @@ const makeService = (config: Config) =>
 							)
 
 							const result = await runPromiseExit(withContext)
-							Exit.match(result, {
-								onSuccess: (value) => {
-									resume(Effect.succeed(value))
-								},
-								onFailure: (cause) => {
-									resume(Effect.failCause(cause))
-								},
-							})
+							if (Exit.isFailure(result)) {
+								resume(Effect.failCause(result.cause))
+								throw new EffectTransactionRollback()
+							}
+							resume(Effect.succeed(result.value))
 						}).catch((cause) => {
+							// Ignore our sentinel error - already handled via resume() in onFailure
+							if (cause instanceof EffectTransactionRollback) return
 							const error = matchPgError(cause)
 							resume(error !== null ? Effect.fail(error) : Effect.die(cause))
 						})
