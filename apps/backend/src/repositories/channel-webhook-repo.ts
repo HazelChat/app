@@ -19,6 +19,26 @@ export class ChannelWebhookRepo extends Effect.Service<ChannelWebhookRepo>()("Ch
 		)
 		const db = yield* Database.Database
 
+		// Override findById to filter by deletedAt = NULL (respect soft deletes)
+		const findById = (id: ChannelWebhookId, tx?: TxFn) =>
+			db
+				.makeQuery(
+					(execute, data: { id: ChannelWebhookId }) =>
+						execute((client) =>
+							client
+								.select()
+								.from(schema.channelWebhooksTable)
+								.where(
+									and(
+										eq(schema.channelWebhooksTable.id, data.id),
+										isNull(schema.channelWebhooksTable.deletedAt),
+									),
+								)
+								.limit(1),
+						).pipe(Effect.map((results) => Option.fromNullable(results[0]))),
+					policyRequire("ChannelWebhook", "select"),
+				)({ id }, tx)
+
 		// Find all webhooks for a channel
 		const findByChannel = (channelId: ChannelId, tx?: TxFn) =>
 			db.makeQuery(
@@ -66,7 +86,12 @@ export class ChannelWebhookRepo extends Effect.Service<ChannelWebhookRepo>()("Ch
 						client
 							.update(schema.channelWebhooksTable)
 							.set({ lastUsedAt: new Date(), updatedAt: new Date() })
-							.where(eq(schema.channelWebhooksTable.id, data.id))
+							.where(
+								and(
+									eq(schema.channelWebhooksTable.id, data.id),
+									isNull(schema.channelWebhooksTable.deletedAt),
+								),
+							)
 							.returning(),
 					),
 				policyRequire("ChannelWebhook", "update"),
@@ -84,13 +109,18 @@ export class ChannelWebhookRepo extends Effect.Service<ChannelWebhookRepo>()("Ch
 								tokenSuffix: data.tokenSuffix,
 								updatedAt: new Date(),
 							})
-							.where(eq(schema.channelWebhooksTable.id, data.id))
+							.where(
+								and(
+									eq(schema.channelWebhooksTable.id, data.id),
+									isNull(schema.channelWebhooksTable.deletedAt),
+								),
+							)
 							.returning(),
 					),
 				policyRequire("ChannelWebhook", "update"),
 			)({ id, tokenHash, tokenSuffix }, tx)
 
-		// Soft delete webhook
+		// Soft delete webhook (only if not already deleted)
 		const softDelete = (id: ChannelWebhookId, tx?: TxFn) =>
 			db.makeQuery(
 				(execute, data: { id: ChannelWebhookId }) =>
@@ -101,7 +131,12 @@ export class ChannelWebhookRepo extends Effect.Service<ChannelWebhookRepo>()("Ch
 								deletedAt: new Date(),
 								updatedAt: new Date(),
 							})
-							.where(eq(schema.channelWebhooksTable.id, data.id))
+							.where(
+								and(
+									eq(schema.channelWebhooksTable.id, data.id),
+									isNull(schema.channelWebhooksTable.deletedAt),
+								),
+							)
 							.returning(),
 					),
 				policyRequire("ChannelWebhook", "delete"),
@@ -127,6 +162,7 @@ export class ChannelWebhookRepo extends Effect.Service<ChannelWebhookRepo>()("Ch
 
 		return {
 			...baseRepo,
+			findById,
 			findByChannel,
 			findByTokenHash,
 			updateLastUsed,
