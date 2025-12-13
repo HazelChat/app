@@ -205,17 +205,20 @@ export class IntegrationTokenService extends Effect.Service<IntegrationTokenServ
 
 				// Encrypt and store the new tokens
 				const encryptedAccess = yield* encryption.encrypt(newTokens.accessToken)
-				const encryptedRefresh = newTokens.refreshToken
-					? yield* encryption.encrypt(newTokens.refreshToken)
-					: null
+				// Always re-encrypt the refresh token with the current key version to avoid
+				// key version mismatch when the provider doesn't return a new refresh token.
+				// If provider returned a new refresh token, use it; otherwise re-encrypt the
+				// existing decrypted refresh token with the current key.
+				const refreshTokenToStore = newTokens.refreshToken ?? decryptedRefreshToken
+				const encryptedRefresh = yield* encryption.encrypt(refreshTokenToStore)
 
 				// Update the token in the database
 				yield* tokenRepo
 					.updateToken(token.id, {
 						encryptedAccessToken: encryptedAccess.ciphertext,
-						encryptedRefreshToken: encryptedRefresh?.ciphertext ?? token.encryptedRefreshToken,
+						encryptedRefreshToken: encryptedRefresh.ciphertext,
 						iv: encryptedAccess.iv,
-						refreshTokenIv: encryptedRefresh?.iv ?? token.refreshTokenIv,
+						refreshTokenIv: encryptedRefresh.iv,
 						encryptionKeyVersion: encryptedAccess.keyVersion,
 						expiresAt: newTokens.expiresAt ?? null,
 						scope: newTokens.scope ?? null,
