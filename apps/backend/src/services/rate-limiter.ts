@@ -1,5 +1,5 @@
 import { Redis, type RedisErrors } from "@hazel/effect-bun"
-import { Effect, Layer } from "effect"
+import { Effect, Layer, Schema } from "effect"
 
 /**
  * Result of a rate limit check
@@ -15,15 +15,10 @@ export interface RateLimitResult {
 	readonly limit: number
 }
 
-export class RateLimiterError extends Error {
-	readonly _tag = "RateLimiterError"
-	constructor(
-		readonly cause: unknown,
-		message?: string,
-	) {
-		super(message ?? "Rate limiter error")
-	}
-}
+export class RateLimiterError extends Schema.TaggedError<RateLimiterError>()("RateLimiterError", {
+	message: Schema.String,
+	cause: Schema.optional(Schema.Unknown),
+}) {}
 
 /**
  * Fixed-window rate limiting Lua script.
@@ -93,7 +88,13 @@ export class RateLimiter extends Effect.Service<RateLimiter>()("RateLimiter", {
 							resetAfterMs,
 							limit,
 						})),
-						Effect.mapError((e: RedisErrors) => new RateLimiterError(e, "Failed to execute rate limit check")),
+						Effect.mapError(
+							(e: RedisErrors) =>
+								new RateLimiterError({
+									message: "Failed to execute rate limit check",
+									cause: e,
+								}),
+						),
 					),
 		}
 	}),
