@@ -1,9 +1,14 @@
-import { type ChangeEvent, useRef } from "react"
+import { type ChangeEvent, useRef, useState } from "react"
+import { toast } from "sonner"
 import IconEdit from "~/components/icons/icon-edit"
 import { Avatar } from "~/components/ui/avatar/avatar"
 import { Loader } from "~/components/ui/loader"
 import { useProfilePictureUpload } from "~/hooks/use-profile-picture-upload"
 import { cx } from "~/utils/cx"
+import { AvatarCropModal } from "./avatar-crop-modal"
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"]
 
 interface ProfilePictureUploadProps {
 	currentAvatarUrl?: string | null
@@ -14,12 +19,14 @@ interface ProfilePictureUploadProps {
 
 export function ProfilePictureUpload({
 	currentAvatarUrl,
-	userId,
+	userId: _userId,
 	userInitials,
 	className,
 }: ProfilePictureUploadProps) {
 	const fileInputRef = useRef<HTMLInputElement>(null)
 	const { uploadProfilePicture, isUploading, uploadProgress } = useProfilePictureUpload()
+	const [selectedFile, setSelectedFile] = useState<File | null>(null)
+	const [isCropModalOpen, setIsCropModalOpen] = useState(false)
 
 	const handleClick = () => {
 		if (!isUploading) {
@@ -27,12 +34,48 @@ export function ProfilePictureUpload({
 		}
 	}
 
-	const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
+	const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
 		const file = event.target.files?.[0]
-		if (file) {
-			await uploadProfilePicture(file)
-			// Reset input so the same file can be selected again
-			event.target.value = ""
+		if (!file) return
+
+		// Reset input so the same file can be selected again
+		event.target.value = ""
+
+		// Validate file type
+		if (!ALLOWED_TYPES.includes(file.type)) {
+			toast.error("Invalid file type", {
+				description: "Please select a JPEG, PNG, or WebP image",
+			})
+			return
+		}
+
+		// Validate file size
+		if (file.size > MAX_FILE_SIZE) {
+			toast.error("File too large", {
+				description: "Image must be less than 5MB",
+			})
+			return
+		}
+
+		// Open crop modal with the selected file
+		setSelectedFile(file)
+		setIsCropModalOpen(true)
+	}
+
+	const handleCropComplete = async (croppedBlob: Blob) => {
+		setIsCropModalOpen(false)
+
+		// Convert Blob to File for existing upload function
+		const croppedFile = new File([croppedBlob], "avatar.webp", { type: "image/webp" })
+		await uploadProfilePicture(croppedFile)
+
+		setSelectedFile(null)
+	}
+
+	const handleCropModalOpenChange = (open: boolean) => {
+		setIsCropModalOpen(open)
+		if (!open) {
+			setSelectedFile(null)
 		}
 	}
 
@@ -122,7 +165,13 @@ export function ProfilePictureUpload({
 			{/* Helper text */}
 			<p className="mt-2 text-center text-muted-fg text-xs">Click to upload</p>
 
-			{/* TODO: Add cropping modal here (build from scratch, no library) */}
+			{/* Avatar cropping modal */}
+			<AvatarCropModal
+				isOpen={isCropModalOpen}
+				onOpenChange={handleCropModalOpenChange}
+				imageFile={selectedFile}
+				onCropComplete={handleCropComplete}
+			/>
 		</div>
 	)
 }
