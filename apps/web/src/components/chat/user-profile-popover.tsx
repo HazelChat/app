@@ -170,8 +170,8 @@ export function UserProfilePopover({ userId }: UserProfilePopoverProps) {
 									className="w-full"
 									onPress={() => {
 										navigate({
-											to: "/$orgSlug/profile/$userId",
-											params: { orgSlug, userId },
+											to: "/$orgSlug/settings/profile",
+											params: { orgSlug },
 										})
 									}}
 								>
