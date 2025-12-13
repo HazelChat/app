@@ -1,4 +1,4 @@
-import { Config, Context, Effect, Layer, Option, type Redacted } from "effect"
+import { Config, Context, Effect, Layer, Option, Redacted } from "effect"
 
 /**
  * Proxy configuration service
@@ -15,7 +15,7 @@ export interface ProxyConfig {
 	readonly isDev: boolean
 	readonly port: number
 	readonly otlpEndpoint: string | undefined
-	readonly redisUrl: string
+	readonly redisUrl: Redacted.Redacted<string>
 }
 
 export class ProxyConfigService extends Context.Tag("ProxyConfigService")<
@@ -48,7 +48,9 @@ export const ProxyConfigLive = Layer.effect(
 			Config.option,
 			Effect.map(Option.getOrUndefined),
 		)
-		const redisUrl = yield* Config.string("REDIS_URL").pipe(Config.withDefault("redis://localhost:6380"))
+		const redisUrl = yield* Config.redacted("REDIS_URL").pipe(
+			Config.withDefault(Redacted.make("redis://localhost:6380")),
+		)
 
 		return {
 			electricUrl,
